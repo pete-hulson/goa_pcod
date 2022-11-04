@@ -131,6 +131,51 @@ rho_output_ss3diags <- ss3diags::SSplotRetro(retroSummary,
                                              pwidth = 8.5,
                                              pheight = 4.5)
 
+## plot year-class retrospective - put into function at some point
+yc_retro <- vroom::vroom(here::here('2022', 'output', 'yc_retro.csv'))
+
+yc_retro %>% 
+  group_by(ass_yr) %>% 
+  mutate(avg_00_05 = mean(c(yc_2000, yc_2001, yc_2002, yc_2003, yc_2004, yc_2005), na.rm = TRUE),
+         avg_06_11 = mean(c(yc_2006, yc_2007, yc_2008, yc_2009, yc_2010, yc_2011), na.rm = TRUE)) %>% 
+  select(ass_yr, avg_00_05, avg_06_11, yc_2012, yc_2013, yc_2014, yc_2015, yc_2016, yc_2017, yc_2018) %>% 
+  pivot_longer(c("avg_00_05", "avg_06_11", paste0("yc_", seq(2012, 2018))), names_to = 'yearclass', values_to = 'Recruitment') -> plot_dat
+
+plot_dat %>% 
+  filter(ass_yr == 2022) %>% 
+  mutate(yearclass = case_when(yearclass == 'avg_00_05' ~ '00-05',
+                               yearclass == 'avg_06_11' ~ '06-11',
+                               yearclass == 'yc_2012' ~ '2012',
+                               yearclass == 'yc_2013' ~ '2013',
+                               yearclass == 'yc_2014' ~ '2014',
+                               yearclass == 'yc_2015' ~ '2015',
+                               yearclass == 'yc_2016' ~ '2016',
+                               yearclass == 'yc_2017' ~ '2017',
+                               yearclass == 'yc_2018' ~ '2018')) -> lab_dat
+ggplot(data = plot_dat, 
+       aes(x = ass_yr, y = Recruitment, color = factor(yearclass), fill = yearclass)) + 
+  geom_point(size = 3) + 
+  geom_path(aes(group = yearclass)) +
+  scale_color_nmfs("waves", name = "") +
+  scale_fill_nmfs("waves", name = "") +
+  theme_bw(base_size = 18) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = 'none',
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Recruitment (billions)", x = "Assessment year") +
+  geom_label_repel(data = lab_dat, 
+                   aes(x = ass_yr, y = Recruitment, label = yearclass), 
+                   color = "black", 
+                   label.padding = unit(0.3, "lines"),
+                   nudge_x = 0.5,
+                   nudge_y = 0.1) +
+  scale_x_continuous(limits = c(2011.5, 2022.5), breaks = seq(2012, 2022, by = 1))
+
+dev.print(png, file = here::here("2022", "plots", "other", "yc_retro.png"), width = 700, height = 400)
+dev.off()
+
+
 #######################################################################################
 ######## Plot fancy phase-plane
 
