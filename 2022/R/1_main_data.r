@@ -20,20 +20,6 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 
 lapply(libs, library, character.only = TRUE)
 
-# Make folders for output and plots
-if (!file.exists(here::here("output"))){
-  dir.create(here::here("output"))
-}
-if (!file.exists(here::here("plots"))){
-  dir.create(here::here("plots", "assessment"), recursive = TRUE)
-  dir.create(here::here("plots", "nonSS"), recursive = TRUE)
-}
-
-# Remove previous dat files from output folder
-if (file.exists(here::here("output")) & length(list.files(here::here("output"), pattern = "GOAPcod")) > 0) {
-  file.remove(here::here("output", list.files(here::here("output"), pattern = "GOAPcod")))
-}
-
 ## DEFINE ALL CONSTANTS FOR THIS RUN
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
@@ -94,32 +80,46 @@ len_bins <- seq(min_size, max_size, bin_width)
 max_age <- 10
 
 ## Get all the alternative data that isn't in AKFIN or AFSC databases
-OLD_SEAS_GEAR_CATCH <- vroom::vroom(here::here('data', 'OLD_SEAS_GEAR_CATCH.csv'))
-Larval_indices <- vroom::vroom(here::here('data', 'Larval_indices.csv'))
-ALL_STATE_LENGTHS <- vroom::vroom(here::here('data', 'ALL_STATE_LENGTHS.csv'))
-TEMPHW <- vroom::vroom(here::here('data', 'TEMPANDHEAT.csv'))
+OLD_SEAS_GEAR_CATCH <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'OLD_SEAS_GEAR_CATCH.csv'))
+Larval_indices <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'Larval_indices.csv'))
+ALL_STATE_LENGTHS <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ALL_STATE_LENGTHS.csv'))
+TEMPHW <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'TEMPANDHEAT.csv'))
 if(update_adfg_iphc == TRUE){
-  ADFG_IPHC <- vroom::vroom(here::here('data', 'ADFG_IPHC.csv'))
-}else{ADFG_IPHC <- vroom::vroom(here::here('data', 'ADFG_IPHC_updated.csv'))}
+  ADFG_IPHC <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ADFG_IPHC.csv'))
+}else{ADFG_IPHC <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ADFG_IPHC_updated.csv'))}
+
+# Make folders for output and plots
+if (!file.exists(here::here(new_SS_dat_year, "output"))){
+  dir.create(here::here(new_SS_dat_year, "output"))
+}
+if (!file.exists(here::here(new_SS_dat_year, "plots"))){
+  dir.create(here::here(new_SS_dat_year, "plots", "assessment"), recursive = TRUE)
+  dir.create(here::here(new_SS_dat_year, "plots", "nonSS"), recursive = TRUE)
+}
+
+# Remove previous dat files from output folder
+if (file.exists(here::here(new_SS_dat_year, "output")) & length(list.files(here::here(new_SS_dat_year, "output"), pattern = "GOAPcod")) > 0) {
+  file.remove(here::here(new_SS_dat_year, "output", list.files(here::here(new_SS_dat_year, "output"), pattern = "GOAPcod")))
+}
 
 ## Get all the functions for pulling GOA Pcod data
-source(here::here("R", "data", "BIN_LEN_DATA.r"))
-source(here::here("R", "data", "cond_length_age_corFISH.r"))
-source(here::here("R", "data", "conditional_Length_AGE_cor.r"))
-source(here::here("R", "data", "find_ALF.r"))
-source(here::here("R", "data", "FISH_AGE_COMP.r"))
-source(here::here("R", "data", "FORMAT_AGE_MEANS1.r"))
-source(here::here("R", "data", "GET_DOM_AGE.r"))
-source(here::here("R", "data", "GET_GOA_ACOMP1.r"))
-source(here::here("R", "data", "GET_GOA_BIOM.r"))
-source(here::here("R", "data", "GET_GOA_LCOMP1.r"))
-source(here::here("R", "data", "GET_GOA_LENCOM2.r"))
-source(here::here("R", "data", "GET_GOA_LL_RPN.r"))
-source(here::here("R", "data", "GET_LENGTH_BY_CATCH_GOA.R"))
-source(here::here("R", "data", "GET_SURV_AGE_cor.r"))
+source(here::here(new_SS_dat_year, "R", "data", "BIN_LEN_DATA.r"))
+source(here::here(new_SS_dat_year, "R", "data", "cond_length_age_corFISH.r"))
+source(here::here(new_SS_dat_year, "R", "data", "conditional_Length_AGE_cor.r"))
+source(here::here(new_SS_dat_year, "R", "data", "find_ALF.r"))
+source(here::here(new_SS_dat_year, "R", "data", "FISH_AGE_COMP.r"))
+source(here::here(new_SS_dat_year, "R", "data", "FORMAT_AGE_MEANS1.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_DOM_AGE.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_ACOMP1.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_BIOM.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LCOMP1.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LENCOM2.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LL_RPN.r"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_LENGTH_BY_CATCH_GOA.R"))
+source(here::here(new_SS_dat_year, "R", "data", "GET_SURV_AGE_cor.r"))
 
 ## Open up data base connections
-db <- vroom::vroom(here::here("database_specs.csv"))
+db <- vroom::vroom(here::here(new_SS_dat_year, "database_specs.csv"))
 afsc_user = db$username[db$database == "AFSC"]
 afsc_pass = db$password[db$database == "AFSC"]
 akfin_user = db$username[db$database == "AKFIN"]
@@ -135,10 +135,10 @@ CHINA = odbcConnect("AKFIN",
                     believeNRows=FALSE)
 
 ## Get all data for data file
-source(here::here("R", "data", "SBSS_GET_ALL_DATA_GOA_PCOD_cor.r"))
+source(here::here(new_SS_dat_year, "R", "data", "SBSS_GET_ALL_DATA_GOA_PCOD_cor.r"))
 
 if (!is_new_SS_DAT_file){
-  old_data <- r4ss::SS_readdat_3.30(here::here("data", old_SS_dat_filename))
+  old_data <- r4ss::SS_readdat_3.30(here::here(new_SS_dat_year, "data", old_SS_dat_filename))
   new_data <- old_data}else{print(" Warning:  Need to enter old SS data file name")}
 
 # historical data
@@ -163,7 +163,7 @@ new_data <- SBSS_GET_ALL_DATA(new_data = new_data,
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
-                       here::here("output", new_SS_dat_filename), overwrite = TRUE)
+                       here::here(new_SS_dat_year, "output", new_SS_dat_filename), overwrite = TRUE)
 # w/ adf&g catch
 new_data_adfg <- SBSS_GET_ALL_DATA(new_data = new_data,
                               new_file = new_SS_dat_filename,
@@ -186,7 +186,7 @@ new_data_adfg <- SBSS_GET_ALL_DATA(new_data = new_data,
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data_adfg,
-                       here::here("output", new_SS_dat_filename_wADFG), overwrite = TRUE)
+                       here::here(new_SS_dat_year, "output", new_SS_dat_filename_wADFG), overwrite = TRUE)
 
 # # test that the new file is readable
 # test_dat <- r4ss::SS_readdat_3.30(here::here("output", new_SS_dat_filename), verbose = TRUE)

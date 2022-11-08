@@ -11,6 +11,7 @@ libs <- c("r4ss",
           "RODBC",
           "data.table",
           "ggplot2",
+          "ggrepel",
           "car",
           "dplyr",
           "tidyr",
@@ -36,7 +37,7 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 data_query = TRUE
 
 if(data_query == TRUE){
-  db <- read.csv(here::here("database_specs.csv"))
+  db <- read.csv(here::here(new_SS_dat_year, "database_specs.csv"))
   afsc_user = db$username[db$database == "AFSC"]
   afsc_pass = db$password[db$database == "AFSC"]
   akfin_user = db$username[db$database == "AKFIN"]
@@ -82,12 +83,12 @@ multiplot <- function(..., plotlist = NULL, cols) {
 ######## Model comparisons (for appendix)
 
 # read model outputs
-model_dir_old <- here::here("Stock_Synthesis_files", Model_name_old)
+model_dir_old <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_old)
 model_run_old <- r4ss::SS_output(dir = model_dir_old,
                                  verbose = TRUE,
                                  printstats = TRUE)
 
-model_dir_new <- here::here("Stock_Synthesis_files", Model_name_new)
+model_dir_new <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new)
 model_run_new <- r4ss::SS_output(dir = model_dir_new,
                                  verbose = TRUE,
                                  printstats = TRUE)
@@ -96,22 +97,22 @@ model_comp <- r4ss::SSsummarize(list(model_run_old, model_run_new))
 
 r4ss::SSplotComparisons(model_comp,
                         print = TRUE,
-                        plotdir = here::here("plots", "comp_apndx") )
+                        plotdir = here::here(new_SS_dat_year, "plots", "comp_apndx") )
 
 
 #######################################################################################
 ######## Plot base model
 
-load(here::here("output", "model_run.RData"))
+load(here::here(new_SS_dat_year, "output", "model_run.RData"))
 r4ss::SS_plots(model_run_new,
                printfolder = "",
-               dir = here::here("plots", "r4ss"))
+               dir = here::here(new_SS_dat_year, "plots", "r4ss"))
 
 
 #######################################################################################
 ######## Plot retrospective analysis
 
-load(here::here("output", "retroSummary.RData"))
+load(here::here(new_SS_dat_year, "output", "retroSummary.RData"))
 
 # make plots comparing the retrospective models
 endyrvec <- retroSummary[["endyrs"]] + 0:-10
@@ -127,12 +128,12 @@ rho_output_ss3diags <- ss3diags::SSplotRetro(retroSummary,
                                              endyrvec = endyrvec,
                                              legendlabels = paste("Data", 0:-10, "years"),
                                              print = TRUE,
-                                             plotdir = here::here("plots", "other"),
+                                             plotdir = here::here(new_SS_dat_year, "plots", "other"),
                                              pwidth = 8.5,
                                              pheight = 4.5)
 
 ## plot year-class retrospective - put into function at some point
-yc_retro <- vroom::vroom(here::here('2022', 'output', 'yc_retro.csv'))
+yc_retro <- vroom::vroom(here::here(new_SS_dat_year, 'output', 'yc_retro.csv'))
 
 yc_retro %>% 
   group_by(ass_yr) %>% 
@@ -172,16 +173,16 @@ ggplot(data = plot_dat,
                    nudge_y = 0.1) +
   scale_x_continuous(limits = c(2011.5, 2022.5), breaks = seq(2012, 2022, by = 1))
 
-dev.print(png, file = here::here("2022", "plots", "other", "yc_retro.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "yc_retro.png"), width = 700, height = 400)
 dev.off()
 
 
 #######################################################################################
 ######## Plot fancy phase-plane
 
-load(here::here("output", "mgmnt_scen.RData"))
-load(here::here("output", "model_run.RData"))
-source(here::here("R", "plots", "phase_plane_figure.r"))
+load(here::here(new_SS_dat_year, "output", "mgmnt_scen.RData"))
+load(here::here(new_SS_dat_year, "output", "model_run.RData"))
+source(here::here(new_SS_dat_year, "R", "plots", "phase_plane_figure.r"))
 
 Fabc = mscen$Tables$F$scenario_1[16]
 Fmsy = mscen$Tables$F$scenario_7[16]
@@ -203,16 +204,16 @@ plot.phase.plane(SSB0 = SSB0,
                  header = "Pacific cod 2022 Model 19.1",
                  eyr = new_SS_dat_year + 2)
 
-dev.print(png, file = here::here("plots", "other", "phase_plane.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "phase_plane.png"), width = 700, height = 700)
 dev.off()
 
 #######################################################################################
 ######## Plot index time series
 
-source(here::here("R", "plots", "index_figures.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "index_figures.r"))
 
 # Get data file name
-ss_datname <- list.files(here::here("output"), pattern = "GOAPcod")[2]
+ss_datname <- list.files(here::here(new_SS_dat_year, "output"), pattern = "GOAPcod")[2]
 
 
 # Plot indices
@@ -221,57 +222,57 @@ index_plots <- plot_indices(styr = 1990,
                             ss_datname = ss_datname)
 
 index_plots[[1]]
-dev.print(png, file = here::here("plots", "other", "fitted_indices.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "fitted_indices.png"), width = 700, height = 700)
 dev.off()
 
 index_plots[[2]]
-dev.print(png, file = here::here("plots", "other", "nonfitted_indices.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "nonfitted_indices.png"), width = 700, height = 700)
 dev.off()
 
 index_plots[[3]]
-dev.print(png, file = here::here("plots", "other", "age0_index.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "age0_index.png"), width = 700, height = 400)
 dev.off()
 
 
 #######################################################################################
 ######## Plot Leave-One-Out analysis results
 
-load(here::here("output", "LOO.RData"))
+load(here::here(new_SS_dat_year, "output", "LOO.RData"))
 
 # Plot parameters from Leave one out
 LOO[[2]]
-dev.print(png, file = here::here("plots", "other", "LOO.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "LOO.png"), width = 700, height = 700)
 dev.off()
 
 
-load(here::here("output", "LOO_add_data.RData"))
+load(here::here(new_SS_dat_year, "output", "LOO_add_data.RData"))
 
 # Plot parameters from Leave one out
 LOO_add_data[[1]]
-dev.print(png, file = here::here("plots", "other", "LOO_add_data.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "LOO_add_data.png"), width = 700, height = 700)
 dev.off()
 
 
 #######################################################################################
 ######## Plot MCMC
 
-load(here::here("output", "mcmc.RData"))
-source(here::here("R", "plots", "mcmcplots.r"))
+load(here::here(new_SS_dat_year, "output", "mcmc.RData"))
+source(here::here(new_SS_dat_year, "R", "plots", "mcmcplots.r"))
 
-mcmc_dir <- here::here("Stock_Synthesis_files", Model_name_new, "MCMC")
+mcmc_dir <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC")
 
 mcmc_plots <- plot_mcmc(mcmc_dir, new_SS_dat_year)
 
 # Save plot
 multiplot(mcmc_plots[[1]], mcmc_plots[[2]], cols = 1)
-dev.print(png, file = here::here("plots", "other", "SSB_Rec.png"), width = 1024, height = 1000)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "SSB_Rec.png"), width = 1024, height = 1000)
 dev.off()
 
 
 #######################################################################################
 ######## Plot Cumulative catch
 
-source(here::here("R", "plots", "cumulative_catch_plots.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "cumulative_catch_plots.r"))
 
 # Current week
 curr_wk <- as.numeric(format(Sys.Date(), format = "%W"))
@@ -285,62 +286,62 @@ cumul_plots <- plot_cumulative(data_query = TRUE,
                                curr_wk = curr_wk)
 
 cumul_plots[[1]]
-dev.print(png, file = here::here("plots", "nonSS", "cummC_CG.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "cummC_CG.png"), width = 700, height = 400)
 dev.off()
 
 cumul_plots[[2]]
-dev.print(png, file = here::here("plots", "nonSS", "cummC_WG.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "cummC_WG.png"), width = 700, height = 400)
 dev.off()
 
 
 #######################################################################################
 ######## Plot fishery condition
 
-source(here::here("R", "plots", "fisheries_condition.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "fisheries_condition.r"))
 
 # Fish condition
 cond_plot <- plot_fish_cond(CYR = new_SS_dat_year,
                             data_query = FALSE)
 
 cond_plot[[1]]
-dev.print(png, file = here::here("plots", "nonSS", "Cond_WGOA.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "Cond_WGOA.png"), width = 700, height = 700)
 dev.off()
 
 cond_plot[[2]]
-dev.print(png, file = here::here("plots", "nonSS", "Cond_CGOA.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "Cond_CGOA.png"), width = 700, height = 700)
 dev.off()
 
 #######################################################################################
 ######## Plot number of vessels
 
-source(here::here("R", "plots", "num_vess.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "num_vess.r"))
 
 ## number of vessels
 num_vess <- num_fish_vess(CYR = new_SS_dat_year,
                           data_query = FALSE)
 
 num_vess
-dev.print(png, file = here::here("plots", "nonSS", "num_vess.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "num_vess.png"), width = 700, height = 400)
 dev.off()
 
 
 #######################################################################################
 ######## Plot PCod bycatch in pollock and swf fisheries
 
-source(here::here("R", "plots", "cod_bycatch_plots.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "cod_bycatch_plots.r"))
 
 # Pollock plots
 pol_plots <- pollock_bycatch(data_query = FALSE)
 
 multiplot(pol_plots[[1]], pol_plots[[2]], cols = 1)
-dev.print(png, file = here::here("plots", "nonSS", "poll_bycatch.png"), width = 700, height = 700)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "poll_bycatch.png"), width = 700, height = 700)
 dev.off()
 
 # SWF plots
 swf_plot <- swf_bycatch(CYR = new_SS_dat_year, data_query = FALSE)
 
 swf_plot
-dev.print(png, file = here::here("plots", "nonSS", "swf_bycatch.png"), width = 700, height = 400)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "nonSS", "swf_bycatch.png"), width = 700, height = 400)
 dev.off()
 
 #######################################################################################
@@ -350,28 +351,28 @@ dev.off()
 #######################################################################################
 ######## Plot catch weighted depth and mean length
 
-source(here::here("R", "plots", "mean_depth_len.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "mean_depth_len.r"))
 
 mean_dl <- plot_mean_dl(data_query = FALSE)
 
 multiplot(mean_dl[[1]], mean_dl[[2]], cols = 1)
-dev.print(png, file = here::here("plots", "other", "Mean_len.png"), width = 1024, height = 1000)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "Mean_len.png"), width = 1024, height = 1000)
 dev.off()
 
 multiplot(mean_dl[[3]], mean_dl[[4]], cols = 1)
-dev.print(png, file = here::here("plots", "other", "Mean_dep.png"), width = 1024, height = 1000)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "Mean_dep.png"), width = 1024, height = 1000)
 dev.off()
 
 #######################################################################################
 ######## Plot environmental indices
 
-env_data <- vroom::vroom(here::here('data', 'raw_cfsr.csv'))
+env_data <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw_cfsr.csv'))
 
-source(here::here("R", "plots", "env_indices.r"))
+source(here::here(new_SS_dat_year, "R", "plots", "env_indices.r"))
 
 env_ind <- plot_env_ind(env_data)
 
 multiplot(env_ind[[1]], env_ind[[2]], cols = 1)
-dev.print(png, file = here::here("plots", "other", "Env_indx.png"), width = 1024, height = 1000)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "Env_indx.png"), width = 1024, height = 1000)
 dev.off()
 

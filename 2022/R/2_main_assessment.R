@@ -25,7 +25,7 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 ######## Run models
 
 # Old model
-model_dir_old <- here::here("Stock_Synthesis_files", Model_name_old)
+model_dir_old <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_old)
 
 r4ss::run(dir = model_dir_old,
           skipfinished = FALSE,
@@ -37,7 +37,7 @@ model_run_old <- r4ss::SS_output(dir = model_dir_old,
                     printstats = TRUE)
 
 # Recommended model
-model_dir_new <- here::here("Stock_Synthesis_files", Model_name_new)
+model_dir_new <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new)
 
 r4ss::run(dir = model_dir_new,
           skipfinished = FALSE,
@@ -62,9 +62,9 @@ model_run_new$timeseries$Yr %>%
          year <= new_SS_dat_year + 1) -> tot_trwl_pred
 
 # Save output
-save(model_run_new, file = here::here("output", "model_run.RData"))
-write.csv(ssb_pred, here::here("output", "ssb_pred.csv"))
-write.csv(tot_trwl_pred, here::here("output", "tot_trwl_pred.csv"))
+save(model_run_new, file = here::here(new_SS_dat_year, "output", "model_run.RData"))
+write.csv(ssb_pred, here::here(new_SS_dat_year, "output", "ssb_pred.csv"))
+write.csv(tot_trwl_pred, here::here(new_SS_dat_year, "output", "tot_trwl_pred.csv"))
 
 #######################################################################################
 ######## Run retrospective analysis
@@ -94,15 +94,15 @@ rho_output_ss3diags <- ss3diags::SSplotRetro(retroSummary,
                                              endyrvec = endyrvec,
                                              legendlabels = paste("Data", 0:-ret_yr, "years"),
                                              print = TRUE,
-                                             plotdir = here::here("plots", "nonSS"),
+                                             plotdir = here::here(new_SS_dat_year, "plots", "other"),
                                              pwidth = 8.5,
                                              pheight = 4.5)
 
 # Save output
-save(retroSummary, file = here::here("output", "retroSummary.RData"))
-write.csv(retroSummary$SpawnBio, here::here("output", "retro_SSB.csv"))
-write.csv(retroSummary$recruits, here::here("output", "retro_Rec.csv"))
-write.csv(rho_output_ss3diags, here::here("output", "retro_Rho_ss3diags.csv"))
+save(retroSummary, file = here::here(new_SS_dat_year, "output", "retroSummary.RData"))
+write.csv(retroSummary$SpawnBio, here::here(new_SS_dat_year, "output", "retro_SSB.csv"))
+write.csv(retroSummary$recruits, here::here(new_SS_dat_year, "output", "retro_Rec.csv"))
+write.csv(rho_output_ss3diags, here::here(new_SS_dat_year, "output", "retro_Rho_ss3diags.csv"))
 
 ## All the r4ss retrospective stuff kinda sux but keeping it here to maybe use in future
 # r4ss::SSplotComparisons(retroSummary,
@@ -121,7 +121,7 @@ write.csv(rho_output_ss3diags, here::here("output", "retro_Rho_ss3diags.csv"))
 #######################################################################################
 ######## Run management scenarios
 
-source(here::here("R", "assessment", "run_mngmnt_scenarios.r"))
+source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
 
 # Run management scenarios function
 mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
@@ -133,9 +133,9 @@ mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
                          SEXES = 1)
 
 # Save output
-save(mscen, file = here::here("output", "mgmnt_scen.RData"))
-write.csv(mscen$Tables, here::here("output", "mgmnt_scen_table.csv"))
-write.csv(mscen$Two_year, here::here("output", "mgmnt_exec_summ.csv"))
+save(mscen, file = here::here(new_SS_dat_year, "output", "mgmnt_scen.RData"))
+write.csv(mscen$Tables, here::here(new_SS_dat_year, "output", "mgmnt_scen_table.csv"))
+write.csv(mscen$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_summ.csv"))
 
 
 #######################################################################################
@@ -145,9 +145,9 @@ write.csv(mscen$Two_year, here::here("output", "mgmnt_exec_summ.csv"))
 # loo_yr <- 1 # For testing
 loo_yr <- 10 # For full
 
-ss_datname <- list.files(here::here("Stock_synthesis_files", Model_name_new), pattern = "GOAPcod")
+ss_datname <- list.files(here::here(new_SS_dat_year, "Stock_synthesis_files", Model_name_new), pattern = "GOAPcod")
 
-source(here::here("R", "assessment", "LeaveOneOut.r"))
+source(here::here(new_SS_dat_year, "R", "assessment", "LeaveOneOut.r"))
 
 LOO <- SS_doLOO(Model_name = Model_name_new,
                 newsubdir = "LeaveOneOut", 
@@ -156,8 +156,8 @@ LOO <- SS_doLOO(Model_name = Model_name_new,
                 CYR = new_SS_dat_year)
 
 # Save output
-save(LOO, file = here::here("output", "LOO.RData"))
-write.csv(LOO[[1]], here::here("output", "LOO_table.csv"))
+save(LOO, file = here::here(new_SS_dat_year, "output", "LOO.RData"))
+write.csv(LOO[[1]], here::here(new_SS_dat_year, "output", "LOO_table.csv"))
 
 # Run for newly added data
 LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
@@ -165,7 +165,7 @@ LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
                 CYR = new_SS_dat_year)
 
 # Save output
-save(LOO_add_data, file = here::here("output", "LOO_add_data.RData"))
+save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RData"))
 
 
 
@@ -177,20 +177,20 @@ save(LOO_add_data, file = here::here("output", "LOO_add_data.RData"))
 Njitter <- 50 # For full
 
 # define a new directory
-if (!file.exists(here::here("Stock_Synthesis_files", Model_name_new, "jitter"))) 
-  dir.create(here::here("Stock_Synthesis_files", Model_name_new, "jitter"))
+if (!file.exists(here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter"))) 
+  dir.create(here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter"))
 
-jitter_dir <- here::here("Stock_Synthesis_files", Model_name_new, "jitter")
+jitter_dir <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter")
 
 # copy over the stock synthesis model files to the new directory
-r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name_new), 
-                     dir.new = here::here("Stock_Synthesis_files", Model_name_new, "jitter"),
+r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new), 
+                     dir.new = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter"),
                      overwrite = TRUE)
-base::file.copy(from = here::here("Stock_Synthesis_files", Model_name_new, "ss.exe"),
-                to = here::here("Stock_Synthesis_files", Model_name_new, "jitter", "ss.exe"),
+base::file.copy(from = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "ss.exe"),
+                to = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter", "ss.exe"),
                 overwrite = TRUE)
-base::file.copy(from = here::here("Stock_Synthesis_files", Model_name_new, "ss.par"),
-                to = here::here("Stock_Synthesis_files", Model_name_new, "jitter", "ss.par"),
+base::file.copy(from = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "ss.par"),
+                to = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "jitter", "ss.par"),
                 overwrite = TRUE)
 
 # run the jitters
@@ -199,7 +199,7 @@ jitter_loglike <- r4ss::jitter(dir = jitter_dir,
                                jitter_fraction = 0.05)
 
 # Save output
-write.csv(jitter_loglike, here::here("output", "jitter_table.csv"))
+write.csv(jitter_loglike, here::here(new_SS_dat_year, "output", "jitter_table.csv"))
 
 
 #######################################################################################
@@ -213,41 +213,41 @@ starter$MCMCburn <- 10000 # For full
 chain <- 1000000 # For full
 save <- 2000 # For full
 
-mcmc_dir <- here::here("Stock_Synthesis_files", Model_name_new, "MCMC")
+mcmc_dir <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC")
 
 # Write SS files in MCMC subfolder
 r4ss::copy_SS_inputs(dir.old = model_dir_new, 
                      dir.new = mcmc_dir,
                      overwrite = TRUE)
-base::file.copy(from = here::here("Stock_Synthesis_files", Model_name_new, "ss.exe"),
-                to = here::here("Stock_Synthesis_files", Model_name_new, "MCMC", "ss.exe"),
+base::file.copy(from = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "ss.exe"),
+                to = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC", "ss.exe"),
                 overwrite = TRUE)
-base::file.copy(from = here::here("Stock_Synthesis_files", Model_name_new, "ss.par"),
-                to = here::here("Stock_Synthesis_files", Model_name_new, "MCMC", "ss.par"),
+base::file.copy(from = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "ss.par"),
+                to = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC", "ss.par"),
                 overwrite = TRUE)
 
 # Run MCMC
-starter <- r4ss::SS_readstarter(file = here::here("Stock_Synthesis_files", Model_name_new, "MCMC", "starter.ss"))
+starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC", "starter.ss"))
 
 r4ss::SS_writestarter(starter, 
-                      dir = here::here("Stock_Synthesis_files", Model_name_new, "MCMC"), 
+                      dir = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC"), 
                       file = "starter.ss",
                       overwrite = TRUE)
 
-r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name_new, "MCMC"), 
+r4ss::run(dir = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC"), 
           extras = paste0("-mcmc ", chain," -mcsave ", save),
           skipfinished = FALSE,
           show_in_console = TRUE)
 
-r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name_new, "MCMC"), 
+r4ss::run(dir = here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC"), 
           extras = "-mceval",
           skipfinished = FALSE,
           show_in_console = TRUE)
 
 # Read output
-mcmc <- r4ss::SSgetMCMC(here::here("Stock_Synthesis_files", Model_name_new, "MCMC"))
+mcmc <- r4ss::SSgetMCMC(here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new, "MCMC"))
 
 # Save output
-save(mcmc, file = here::here("output", "mcmc.RData"))
+save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
 
 
