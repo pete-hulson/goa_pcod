@@ -25,6 +25,7 @@
 ##
 
 Do_AK_Scenarios<-function(Model_name = NULL,
+                          Model_dir = NULL,
                           CYR = NULL,
                           SYR = 1977,
                           FCASTY = 15,
@@ -33,11 +34,11 @@ Do_AK_Scenarios<-function(Model_name = NULL,
                           SEXES = 1){
 
   # Set up management scenario folder
-  if (!file.exists(here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios"))) 
-    dir.create(here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios"))
+  if (!file.exists(paste0(Model_dir, "/mgmnt_scenarios"))) 
+    dir.create(paste0(Model_dir, "/mgmnt_scenarios"))
 
   # Read in base model forecast.ss file
-  base_fore <- r4ss::SS_readforecast(file = here::here("Stock_Synthesis_files", Model_name, "forecast.ss"))
+  base_fore <- r4ss::SS_readforecast(file = paste0(Model_dir, "/forecast.ss"))
   
 ###############################
 ## Scenario 1: F is set equal to max FABC
@@ -49,23 +50,23 @@ Do_AK_Scenarios<-function(Model_name = NULL,
   scenario_1$Flimitfraction <- 1.0
   
   # Write SS files
-  r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-                       dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"),
+  r4ss::copy_SS_inputs(dir.old = Model_dir, 
+                       dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
                        overwrite = TRUE)
-  base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-            to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1", "ss.exe"),
+  base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+            to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1", "/ss.exe"),
             overwrite = TRUE)
-  base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-            to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1", "ss.par"),
+  base::file.copy(from = paste0(Model_dir, "/ss.par"),
+            to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1", "/ss.par"),
             overwrite = TRUE)
   r4ss::SS_writeforecast(scenario_1, 
-                         dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"), 
+                         dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"), 
                          file = "forecast.ss", 
                          writeAll = TRUE, 
                          overwrite = TRUE)
     
   # Run model
-  r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"), 
+  r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
             skipfinished = FALSE,
             show_in_console = TRUE)
 
@@ -74,8 +75,8 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 ## Scenario 2: For GOA Pcod, Scenario 2 = Scenario 1
   
   # Copy scenario 1 files
-	R.utils::copyDirectory(from = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"),
-	                       to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_2"),
+	R.utils::copyDirectory(from = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
+	                       to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_2"),
 	                       recursive = FALSE)
   
 
@@ -88,23 +89,23 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_3$Fcast_years [c(3,4)] <- c(CYR - 5, CYR - 1)
 		
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_3"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_3", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_3", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_3, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_3"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_3"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
 	
@@ -118,26 +119,25 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_4$SPRtarget <- 0.75
 	
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_4"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_4", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_4", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_4, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_4"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_4"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
-	
 	
 ###############################	
 ## Scenario 5: F is 0
@@ -152,23 +152,23 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_5$ForeCatch <- rbind(scenario_5$ForeCatch,catch)	
 	
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_5"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_5", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_5", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_5, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_5"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_5"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
 	
@@ -183,23 +183,23 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_6$Flimitfraction <- 1.0
 	
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_6"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_6", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_6", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_6, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_6"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_6"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
 	
@@ -212,27 +212,27 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_7$Btarget <- 0.35
 	scenario_7$SPRtarget <- 0.35
 	scenario_7$Flimitfraction <- 1.0
-	x <- r4ss::SS_output(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"))
+	x <- r4ss::SS_output(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"))
 	scenario_7$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = CYR:(CYR + 2))
 	
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_7"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_7", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_7", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_7, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_7"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_7"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
 
@@ -245,27 +245,27 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	scenario_8$Btarget <- 0.35
 	scenario_8$SPRtarget <- 0.35
 	scenario_8$Flimitfraction <- 1.0
-	x <- r4ss::SS_output(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_1"))
+	x <- r4ss::SS_output(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"))
 	scenario_8$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = CYR:(CYR + 1))
 	
 	# Write SS files
-	r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-	                     dir.new = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_8"),
+	r4ss::copy_SS_inputs(dir.old = Model_dir, 
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
 	                     overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_8", "ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8", "/ss.exe"),
 	                overwrite = TRUE)
-	base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-	                to = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_8", "ss.par"),
+	base::file.copy(from = paste0(Model_dir, "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8", "/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_8, 
-	                       dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_8"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", "scenario_8"), 
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
 	          skipfinished = FALSE,
 	          show_in_console = TRUE)
 	
@@ -274,7 +274,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 ## Compile scenario output
 
 	scen <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8")
-	mods1 <- r4ss::SSgetoutput(dirvec =  here::here("Stock_Synthesis_files", Model_name, "mgmnt_scenarios", scen[1:8]))
+	mods1 <- r4ss::SSgetoutput(dirvec =  paste0(Model_dir, "/mgmnt_scenarios/", scen[1:8]))
 	
 	if(SEXES == 1) sex = 2
 	if(SEXES > 1) sex = 1
@@ -370,7 +370,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	if(do_fig){
 	  
 	  # Get figure data together
-	  x <- r4ss::SS_output(here::here("Stock_Synthesis_files", Model_name))
+	  x <- r4ss::SS_output(Model_dir)
 	  SSB_unfished <- data.table(x$derived_quants)[Label == "SSB_unfished"]$Value / sex
 	  
 	  y <- data.table(Yr = c(SYR:EYR),
@@ -431,7 +431,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 2:6, 8, 9), name = "Scenarios")+
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections")
-	  ggsave(here::here("plots", "SS_ALL.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_ALL.png"),
 	         plot = SS_ALL)
 	  
 	  SS_1 <- ggplot(summ2[model %in% unique(summ2$model)[1:4]],
@@ -444,7 +444,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_fill_manual(values = c("dark green","orange","red",2),name = "Scenarios")+
 	    scale_color_manual(values = c("dark green","orange","red",2),name = "Scenarios")+
 	    scale_size_manual(values = c(rep(1.5,3),rep(1,7)),name = "Scenarios")+labs(y = "Spawning biomass (t)",x = "Year",title = "Projections MaxFABC")
-	  ggsave(here::here("plots", "SS_1.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_1.png"),
 	         plot = SS_1)
 	  
 	  SS_2 <- ggplot(summ2[model %in% unique(summ2$model)[c(1:3, 5)]],
@@ -458,7 +458,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 3), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections Scenario_2")
-	  ggsave(here::here("plots", "SS_2.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_2.png"),
 	         plot = SS_2)
 	  
 	  SS_3 <- ggplot(summ2[model %in% unique(summ2$model)[c(1:3, 6)]], 
@@ -472,7 +472,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 4), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections Scenario 3 - Average F")
-	  ggsave(here::here("plots", "SS_3.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_3.png"),
 	         plot = SS_3)
 	  
 	  SS_4 <- ggplot(summ2[model %in% unique(summ2$model)[c(1:3, 7)]], 
@@ -486,7 +486,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 5), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections Scenario 4 - F75%")
-	  ggsave(here::here("plots", "SS_4.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_4.png"),
 	         plot = SS_4)
 	  
 	  SS_5 <- ggplot(summ2[model %in% unique(summ2$model)[c(1:3, 8)]], 
@@ -500,7 +500,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 6), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections Scenario 5 - No catch")   
-	  ggsave(here::here("plots", "SS_2.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_2.png"),
 	         plot = SS_5)
 	  
 	  SS_6 <- ggplot(summ2[model %in% unique(summ2$model)[c(1:3, 9, 10)]], 
@@ -514,7 +514,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", "red", 8, 9), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 3), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Spawning biomass (t)", x = "Year", title = "Projections Scenarios 6 and 7")
-	  ggsave(here::here("plots", "SS_6.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "SS_6.png"),
 	         plot = SS_6)
 	  
 	  Figs_SSB <- list(SS_ALL, SS_1, SS_2, SS_3, SS_4, SS_5, SS_6)
@@ -530,7 +530,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 2:6, 8, 9), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections")
-	  ggsave(here::here("plots", "C_ALL.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_ALL.png"),
 	         plot = C_ALL)
 	  
 	  C_1 <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[1:3]], 
@@ -544,7 +544,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 2), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections MaxFABC")
-	  ggsave(here::here("plots", "C_1.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_1.png"),
 	         plot = C_1)
 	  
 	  C_2 <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[c(1:2, 4)]], 
@@ -558,7 +558,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 3), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections Scenario 2")
-	  ggsave(here::here("plots", "C_2.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_2.png"),
 	         plot = C_2)
 	  
 	  C_3 <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[c(1:2, 5)]], 
@@ -572,7 +572,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 5), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections Scenario 3 - Average F")
-	  ggsave(here::here("plots", "C_3.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_3.png"),
 	         plot = C_3)
 	  
 	  C_4 <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[c(1:2, 6)]], 
@@ -586,7 +586,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 4), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections Scenario 4 - F75%")
-	  ggsave(here::here("plots", "C_4.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_4.png"),
 	         plot = C_4)
 	  
 	  C_6 <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[c(1:2, 8, 9)]], 
@@ -600,13 +600,13 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	    scale_color_manual(values = c("dark green", "orange", 8, 9), name = "Scenarios") +
 	    scale_size_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
 	    labs(y = "Catch (t)", x = "Year", title = "Projections Scenarios 6 and 7")
-	  ggsave(here::here("plots", "C_6.png"),
+	  ggsave(here::here(CYR, "plots", "proj", Model_name, "C_6.png"),
 	         plot = C_6)
 	  
 	  Figs_Catch <- list(C_ALL, C_1, C_2, C_3, C_4, C_6)
 	  output$FIGS = list(Figs_SSB, Figs_Catch)
 	}
  
-	output
+	return(output)
 }
 
