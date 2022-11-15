@@ -80,8 +80,9 @@ plot.phase.plane <- function(SSB0,
    
 
    par(oma = c(0.5, 0.5, 0.5, 0.5))
-   filled.contour.TAB(kernel.dens$x1, kernel.dens$x2, kernel.dens$fhat, nlevels = 15, color.palette = paletteable.egg,
-               xlab = "", ylab = "", xlim = xlim, ylim = ylim, cex.lab = 1.3)
+   # filled.contour.TAB(kernel.dens$x1, kernel.dens$x2, kernel.dens$fhat, nlevels = 15, color.palette = paletteable.egg,
+   #             xlab = "", ylab = "", xlim = xlim, ylim = ylim, cex.lab = 1.3)
+   # 
    par(new = T)
 
    plot(x = BoverBmsy, y = FoverFmsy, type = "l", xlim = xlim, ylim = ylim, las = 1, 
@@ -110,8 +111,8 @@ plot.phase.plane <- function(SSB0,
     points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.1, ylim[2] - 0.1), lwd = 2, type = "l", col = "red")
     points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.2, ylim[2] - 0.2), lwd = 2, type = "l")
 
-   mtext(side = 1, line = 3.2, text = expression(B / B[MSY]), cex = 1.3)
-   mtext(side = 2, line = 3, expression(F / F[MSY]), cex = 1.3)
+   mtext(side = 1, line = 3.2, text = expression(italic(B) / italic(B)["35%"]), cex = 1.3)
+   mtext(side = 2, line = 3, expression(italic(F) / italic(F)["35%"]), cex = 1.3)
    mtext(side = 3, line = 0.5, header, cex = 1.3)
    abline(h = 1, lty = 2)
    abline(v = 1, lty = 2)

@@ -201,7 +201,7 @@ plot.phase.plane(SSB0 = SSB0,
                  FoverFmsy = FoverFmsy,
                  xlim = c(0, 5),
                  ylim = c(0, 1.5),
-                 header = "Pacific cod 2022 Model 19.1",
+                 header = "Pacific cod 2022 Model 19.1a",
                  eyr = new_SS_dat_year + 2)
 
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "phase_plane.png"), width = 700, height = 700)
