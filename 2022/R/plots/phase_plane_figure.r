@@ -105,11 +105,11 @@ plot.phase.plane <- function(SSB0,
     points(c(0, (0.4 / 0.35)), c(0, 1), type = "l", lwd = 2, col = "red")
     points(c((0.2 / 0.35), (0.2 / 0.35)), c(0, 2), type = "l", lty = 2, lwd = 2, col = "brown")
 
-    text(xlim[2] - 1, ylim[2] - 0.1, "OFL Definition", pos = 4)
-    text(xlim[2] - 1, ylim[2] - 0.2, "ABC Control Rule", pos = 4)
+    text(xlim[2] - 1, ylim[2] - 0.05, "OFL Definition", pos = 4)
+    text(xlim[2] - 1, ylim[2] - 0.1, "ABC Control Rule", pos = 4)
 
-    points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.1, ylim[2] - 0.1), lwd = 2, type = "l", col = "red")
-    points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.2, ylim[2] - 0.2), lwd = 2, type = "l")
+    points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.05, ylim[2] - 0.05), lwd = 2, type = "l", col = "red")
+    points(c(xlim[2] - 1.2, xlim[2] - 1), c(ylim[2] - 0.1, ylim[2] - 0.1), lwd = 2, type = "l")
 
    mtext(side = 1, line = 3.2, text = expression(italic(B) / italic(B)["35%"]), cex = 1.3)
    mtext(side = 2, line = 3, expression(italic(F) / italic(F)["35%"]), cex = 1.3)

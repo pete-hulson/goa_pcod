@@ -143,7 +143,7 @@ yc_retro %>%
   pivot_longer(c("avg_00_05", "avg_06_11", paste0("yc_", seq(2012, 2018))), names_to = 'yearclass', values_to = 'Recruitment') -> plot_dat
 
 plot_dat %>% 
-  filter(ass_yr == 2022) %>% 
+  #filter(ass_yr == 2022) %>% 
   mutate(yearclass = case_when(yearclass == 'avg_00_05' ~ '00-05',
                                yearclass == 'avg_06_11' ~ '06-11',
                                yearclass == 'yc_2012' ~ '2012',
@@ -153,6 +153,26 @@ plot_dat %>%
                                yearclass == 'yc_2016' ~ '2016',
                                yearclass == 'yc_2017' ~ '2017',
                                yearclass == 'yc_2018' ~ '2018')) -> lab_dat
+ggplot(data = lab_dat, 
+       aes(x = ass_yr, y = Recruitment, color = factor(yearclass))) + 
+  geom_point(size = 3) + 
+  geom_path(aes(group = yearclass)) +
+  scale_color_nmfs("waves", name = "") +
+  scale_fill_nmfs("waves", name = "") +
+  theme_bw(base_size = 18) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = 'none',
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Recruitment (billions)", x = "Assessment year") +
+  facet_wrap(~yearclass, 
+             scales = "free_y",
+             strip.position = "top") +
+  scale_x_continuous(limits = c(2011.5, 2022.5), breaks = seq(2012, 2022, by = 1))
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "yc_retro_grid.png"), width = 700, height = 700)
+dev.off()
+
 ggplot(data = plot_dat, 
        aes(x = ass_yr, y = Recruitment, color = factor(yearclass), fill = yearclass)) + 
   geom_point(size = 3) + 
@@ -165,9 +185,9 @@ ggplot(data = plot_dat,
         legend.position = 'none',
         axis.text.x = element_text(vjust = 0.5, angle = 90)) +
   labs(y = "Recruitment (billions)", x = "Assessment year") +
-  geom_label_repel(data = lab_dat, 
-                   aes(x = ass_yr, y = Recruitment, label = yearclass), 
-                   color = "black", 
+  geom_label_repel(data = lab_dat,
+                   aes(x = ass_yr, y = Recruitment, label = yearclass),
+                   color = "black",
                    label.padding = unit(0.3, "lines"),
                    nudge_x = 0.5,
                    nudge_y = 0.1) +
@@ -175,6 +195,8 @@ ggplot(data = plot_dat,
 
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "yc_retro.png"), width = 700, height = 400)
 dev.off()
+
+
 
 
 #######################################################################################
@@ -200,7 +222,7 @@ plot.phase.plane(SSB0 = SSB0,
                  BoverBmsy = BoverBmsy, 
                  FoverFmsy = FoverFmsy,
                  xlim = c(0, 5),
-                 ylim = c(0, 1.5),
+                 ylim = c(0, 1.2),
                  header = "Pacific cod 2022 Model 19.1a",
                  eyr = new_SS_dat_year + 2)
 
