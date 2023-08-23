@@ -628,15 +628,15 @@
 #
 #_age_info
 #_mintailcomp	addtocomp	combine_M_F	CompressBins	CompError	ParmSelect	minsamplesize
--1	1e-04	0	0	0	0	1	#_FshTrawl
--1	1e-04	0	0	0	0	1	#_FshLL   
--1	1e-04	0	0	0	0	1	#_FshPot  
--1	1e-04	0	0	0	0	1	#_Srv     
--1	1e-04	0	0	0	0	1	#_LLSrv   
--1	1e-04	0	0	0	0	1	#_IPHCLL  
--1	1e-04	0	0	0	0	1	#_ADFG    
--1	1e-04	0	0	0	0	1	#_SPAWN   
--1	1e-04	0	0	0	0	1	#_Seine   
+-1	1e-04	0	0	0	0	0.01	#_FshTrawl
+-1	1e-04	0	0	0	0	0.01	#_FshLL   
+-1	1e-04	0	0	0	0	0.01	#_FshPot  
+-1	1e-04	0	0	0	0	0.01	#_Srv     
+-1	1e-04	0	0	0	0	0.01	#_LLSrv   
+-1	1e-04	0	0	0	0	0.01	#_IPHCLL  
+-1	1e-04	0	0	0	0	0.01	#_ADFG    
+-1	1e-04	0	0	0	0	0.01	#_SPAWN   
+-1	1e-04	0	0	0	0	0.01	#_Seine   
 1 #_Lbin_method: 1=poplenbins; 2=datalenbins; 3=lengths
  #_combine males into females at or below this bin number
 #_Yr	Seas	FltSvy	Gender	Part	Ageerr	Lbin_lo	Lbin_hi	Nsamp	a1	a2	a3	a4	a5	a6	a7	a8	a9	a10
