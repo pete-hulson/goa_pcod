@@ -1,0 +1,14 @@
+###
+console output
+2023-08-25 10:09:32.228196
+###
+ 
+ reading from STARTER.SS
+ reading from data file
+Data read sucessful 999
+
+ reading forecast file 
+ reading from control file
+Error: Invalid index 0 used for array range [1, 10] in "int& ivector::operator() (int i)".
+array bound exceeded -- index too low
+
