@@ -43,12 +43,12 @@ base::file.copy(from = here::here(ass_yr, 'rsch', base_mdl, "ss.par"),
                 overwrite = TRUE)
 
 # correct minsamplesize in dat file
-dat <- r4ss::SS_readdat(here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = 'dat')))
+dat <- r4ss::SS_readdat(here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = '.dat')))
 
 dat$age_info$minsamplesize <- 0.01
 
 r4ss::SS_writedat(datlist = dat, 
-                  outfile = here::here(ass_yr, 'rsch', new_mdl1, list.files(here::here(ass_yr, 'rsch', new_mdl1), pattern = 'dat')),
+                  outfile = here::here(ass_yr, 'rsch', new_mdl1, list.files(here::here(ass_yr, 'rsch', new_mdl1), pattern = '.dat')),
                   overwrite = TRUE)
 
 # run model
@@ -75,6 +75,14 @@ base::file.copy(from = here::here(ass_yr, 'rsch', base_mdl, "ss.par"),
                 to = here::here(ass_yr, 'rsch', new_mdl2, "ss.par"),
                 overwrite = TRUE)
 
+# correct minsamplesize in dat file
+dat <- r4ss::SS_readdat(here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = '.dat')))
+
+dat$age_info$minsamplesize <- 0.01
+
+r4ss::SS_writedat(datlist = dat, 
+                  outfile = here::here(ass_yr, 'rsch', new_mdl2, list.files(here::here(ass_yr, 'rsch', new_mdl2), pattern = '.dat')),
+                  overwrite = TRUE)
 
 
 # add env link to ctl file - something doesn't work here, changing it manually
@@ -112,6 +120,11 @@ all_summ <- r4ss::SSsummarize(list(base_res, mdl1_res, mdl2_res))
 names(all_summ)
 
 all_summ$SpawnBio
+
+all_summ$likelihoods
+
+all_summ$pars
+
 
 r4ss::SSplotComparisons(all_summ)
 
