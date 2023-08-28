@@ -75,17 +75,49 @@ base::file.copy(from = here::here(ass_yr, 'rsch', base_mdl, "ss.par"),
                 to = here::here(ass_yr, 'rsch', new_mdl2, "ss.par"),
                 overwrite = TRUE)
 
+
+
 # correct minsamplesize in dat file
 dat <- r4ss::SS_readdat(here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = '.dat')))
 
 dat$age_info$minsamplesize <- 0.01
+
+# add env timeseries to dat file
+
+# dat$N_environ_variables <- 2
+
+tempheat <- vroom::vroom(here::here(ass_yr, 'data', 'TEMPANDHEAT.csv')) %>% 
+  dplyr::rename_with(., tolower)
+
+tempheat %>% 
+  tidytable::filter(yr %in% 1982:2012) %>% 
+  tidytable::summarise(mu_temp = mean(june_temp)) -> mu_temp
+
+# Based on larval growth by temp from Laurel et al. 2016 getting growth L0 index
+growth_L0 <- function(data, T){
+  exp(0.2494 + 0.3216 * (T + data) - 0.0069 * (T + data) ^ 2 - 0.0004 * (T + data) ^ 3) / exp(0.2494 + 0.3216*(T)-0.0069 * (T) ^ 2 - 0.0004 * (T) ^ 3)
+}
+
+
+tidytable::bind_cols(c(1977, 1978), c(1, 1), c(0, 0)) %>% 
+  tidytable::rename(Yr = '...1',
+                    Variable = '...2',
+                    Value = '...3') %>% 
+  tidytable::bind_rows(dat$envdat) %>% 
+  tidytable::bind_rows(tidytable::bind_cols(c(1977, 1978), c(1, 1)) %>% 
+                         tidytable::bind_rows(tidytable::bind_cols(tempheat$yr, growth_L0(tempheat$temp, as.numeric(mu_temp)))) %>% 
+                         tidytable::rename(Yr = '...1',
+                                           Value = '...2') %>% 
+                         tidytable::mutate(Variable = 2)) -> new_env
+
+dat$envdat <- as.data.frame(new_env)
 
 r4ss::SS_writedat(datlist = dat, 
                   outfile = here::here(ass_yr, 'rsch', new_mdl2, list.files(here::here(ass_yr, 'rsch', new_mdl2), pattern = '.dat')),
                   overwrite = TRUE)
 
 
-# add env link to ctl file - something doesn't work here, changing it manually
+# add env link to ctl file - something doesn't work here, change it manually
 
 # ctl <- r4ss::SS_readctl(here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = 'ctl')),
 #                         datlist = here::here(ass_yr, 'rsch', base_mdl, list.files(here::here(ass_yr, 'rsch', base_mdl), pattern = 'dat')[2]))
@@ -123,7 +155,7 @@ all_summ$SpawnBio
 
 all_summ$likelihoods
 
-all_summ$pars
+all_summ$npars
 
 
 r4ss::SSplotComparisons(all_summ)
