@@ -142,7 +142,7 @@ cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>%
 # read in ss data
 dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')))
 
-# run model scenarios for linf
+# linf ----
 linf_1_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l0_20")
 linf_2_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l0_20")
 linf_3_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l0_20")
@@ -217,7 +217,7 @@ linf_summ <- r4ss::SSsummarize(list(mdl1_res, linf_1_20,linf_2_20, linf_3_20, li
 vroom::vroom_write(linf_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'linf_likes.csv'), delim = ",")
 base::save(linf_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'linf.RData'))
 
-# run model scenarios for kappa
+# kappa ----
 kappa_1_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l0_20")
 kappa_2_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l0_20")
 kappa_3_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l0_20")
@@ -292,9 +292,7 @@ kappa_summ <- r4ss::SSsummarize(list(mdl1_res, kappa_1_20,kappa_2_20, kappa_3_20
 vroom::vroom_write(kappa_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'kappa_likes.csv'), delim = ",")
 base::save(kappa_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'kappa.RData'))
 
-
-
-# run model scenarios for lzero
+# lzero ----
 
 lzero_1 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 1)
 lzero_2 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 2)
@@ -309,14 +307,9 @@ lzero_10 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 1
 lzero_11 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 11)
 lzero_12 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 12)
 
-lzero_summ <- r4ss::SSsummarize(list(lzero_1,lzero_2, lzero_3, lzero_4, lzero_5, lzero_6, lzero_7, lzero_8, lzero_9, lzero_10, lzero_11, lzero_12))
+lzero_summ <- r4ss::SSsummarize(list(mdl1_res, lzero_1,lzero_2, lzero_3, lzero_4, lzero_5, lzero_6, lzero_7, lzero_8, lzero_9, lzero_10, lzero_11, lzero_12))
 
 vroom::vroom_write(lzero_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'lzero_likes.csv'), delim = ",")
 base::save(lzero_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'lzero.RData'))
-
-lzero_summ <- r4ss::SSsummarize(list(lzero_1,lzero_2))
-
-lzero_summ$pars
-
 
 

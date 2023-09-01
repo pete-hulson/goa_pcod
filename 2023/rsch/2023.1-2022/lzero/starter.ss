@@ -5,7 +5,7 @@
 #
 GOAPcod2022Oct25_wADFG.dat #_datfile
 Model19.1a_22.ctl #_ctlfile
-0 #_init_values_src
+1 #_init_values_src
 1 #_run_display_detail
 1 #_detailed_age_structure
 0 #_checkup
