@@ -17,6 +17,7 @@ lapply(libs, library, character.only = TRUE)
 base_mdl <- "2019.1a-2022" # 2022 accepted model
 new_base <- "2019.1b-2022" # 2022 model with minsamplesize correction
 new_base_noll <- "2019.1c-2022" # 2022 model with no llq env link
+new_base_llq <- "2019.1d-2022" # 2022 model with new llq env link
 new_mdl1 <- "2023.1-2022" # 2022 model with env growth link
 new_mdl2 <- "2023.2-2022" # 2022 model with env growth link and pref llq env link
 
@@ -160,6 +161,74 @@ retro_new_base_noll <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
 
 vroom::vroom_write(retro_new_base_noll$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_noll_likes.csv'), delim = ",")
 base::save(retro_new_base_noll, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_noll.RData'))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# llq new env link model (model 2019.1d) ----
+
+# copy over the stock synthesis model files to the new directory for model 2019.1b
+# start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
+#               to = here::here(asmnt_yr, 'rsch', new_base_llq))
+
+if(isTRUE(run_mdl)){
+  # read in env data
+  cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>% 
+    dplyr::rename_with(., tolower) %>% 
+    tidytable::rename(l0_20 = '0_20',
+                      l20_40 = '20_40',
+                      l40_60 = '40_60',
+                      l60_80 = '60_80',
+                      l80plus = '80plus')
+  
+  # read in ss data
+  ss_dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_base_llq, list.files(here::here(asmnt_yr, 'rsch', new_base_llq), pattern = '.dat')))
+  
+  cfsr %>% 
+    tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
+    tidytable::filter(month == 3 & name == 'l40_60') %>% 
+    tidytable::mutate(Value = value - as.numeric(cfsr %>% 
+                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
+                                                   tidytable::filter(month == 3 & name == 'l40_60' & year %in% 1982:2012) %>% 
+                                                   tidytable::summarise(mean(value))),
+                      Variable = 1) %>% 
+    tidytable::rename(Yr = year) %>% 
+    tidytable::select(Yr, Variable, Value) -> new_env1
+  
+  new_env1 %>% 
+    tidytable::bind_rows(ss_dat$envdat %>% 
+                           tidytable::filter(Variable != 1)) -> new_env
+  
+  ss_dat$envdat <- as.data.frame(new_env)
+  r4ss::SS_writedat(datlist = ss_dat, 
+                    outfile = here::here(asmnt_yr, 'rsch', new_base_llq, list.files(here::here(asmnt_yr, 'rsch', new_base_llq), pattern = '.dat')),
+                    overwrite = TRUE)
+  
+  # run model
+  run_ss_model(asmnt_yr, mdl = new_mdl2)
+  
+}
+
+
+# read the model output and print diagnostic messages
+new_base_llq_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_llq),
+                                    verbose = TRUE,
+                                    printstats = TRUE)
+
+
+# run retro
+if(isTRUE(run_retro)){
+  r4ss::SS_doRetro(masterdir = here::here(asmnt_yr, 'rsch', new_base_llq),
+                   oldsubdir = "",
+                   newsubdir = "retrospectives",
+                   years = 0:-ret_yr)
+}
+
+# get retro results
+retro_new_base_llq <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
+  here::here(asmnt_yr, 'rsch', new_base_llq), "retrospectives",
+  paste("retro", 0:-ret_yr, sep = ""))))
+
+vroom::vroom_write(retro_new_base_llq$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_llq_likes.csv'), delim = ",")
+base::save(retro_new_base_llq, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_llq.RData'))
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -427,11 +496,63 @@ retro_new_base$likelihoods %>%
                          tidytable::filter(Label == 'TOTAL') %>% 
                          tidytable::mutate(model = new_mdl1)) %>% 
   vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'plots', 'grwth', 'retro_like_tbl.csv'), delim = ",")
-  
 
 r4ss::SSmohnsrho(retro_new_base)
 r4ss::SSmohnsrho(retro_mdl1)
 
+
+
+# plot 2019.1b vs 2019.1c vs 2023.2
+llq_summ <- r4ss::SSsummarize(list(new_base_res, new_base_noll_res, mdl2_res))
+
+r4ss::SSplotComparisons(llq_summ,
+                        print = TRUE,
+                        legendlabels = c(new_base, new_base_noll, new_mdl2),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq'))
+
+
+
+# plot 2019.1b vs 2019.1c vs 2019.1d
+llq_summ <- r4ss::SSsummarize(list(new_base_res, new_base_noll_res, new_base_llq_res))
+
+r4ss::SSplotComparisons(llq_summ,
+                        print = TRUE,
+                        legendlabels = c(new_base, new_base_noll, new_base_llq),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq'))
+
+
+# make statistics table for 2019.1b vs 2019.1c vs 2019.1d
+llq_summ$likelihoods %>% 
+  tidytable::filter(Label == 'TOTAL') %>%
+  tidytable::select(-Label) %>% 
+  tidytable::pivot_longer(names_to = 'model', values_to = 'tot_like') %>% 
+  tidytable::mutate(model = c(new_base, new_base_noll, new_base_llq)) %>% 
+  tidytable::bind_cols(dplyr::as_tibble(llq_summ$npars)) %>% 
+  tidytable::rename(npars = 'value') %>% 
+  tidytable::mutate(aic = 2 * npars + 2* tot_like) %>% 
+  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq', 'aic_tbl.csv'), delim = ",")
+
+
+
+
+
+
+
+
+
+
+
+
+
+# do retro comp for  2019.1b vs 2019.1c vs 2023.2
+
+retro_new_base$likelihoods %>% 
+  tidytable::filter(Label == 'TOTAL') %>% 
+  tidytable::mutate(model = new_base) %>% 
+  tidytable::bind_rows(retro_mdl1$likelihoods %>% 
+                         tidytable::filter(Label == 'TOTAL') %>% 
+                         tidytable::mutate(model = new_mdl1)) %>% 
+  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'plots', 'grwth', 'retro_like_tbl.csv'), delim = ",")
 
 
 

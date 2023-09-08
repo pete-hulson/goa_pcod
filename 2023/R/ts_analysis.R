@@ -14,18 +14,13 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 lapply(libs, library, character.only = TRUE)
 
 # model names
-base_mdl <- "2019.1a-2022" # 2022 accepted model
-new_mdl1 <- "2019.1b-2022" # 2022 model with minsamplesize correction
-new_mdl2 <- "2023.1-2022" # 2022 model with env growth link
-new_mdl3 <- "2023.2-2022" # 2022 model with env growth link and ll surv q invest
+new_base_llq <- "2019.1d-2022" # 2022 model with new llq env link
+new_mdl1 <- "2023.1-2022" # 2022 model with env growth link
+new_mdl2 <- "2023.2-2022" # 2022 model with env growth link and pref llq env link
+
 
 # assessment year
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
-
-# base model output
-mdl1_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl1),
-                            verbose = TRUE,
-                            printstats = TRUE)
 
 # helper fcns ----
 growth_L0 <- function(data, T){
@@ -41,7 +36,7 @@ start_ss_fldr <- function(from, to){
                   overwrite = TRUE)
 }
 
-run_env_mdl <- function(env_data, ss_dat, param, mo, indx){
+run_env_mdl <- function(mdl, env_data, ss_dat, param, mo, indx){
   
   env_data %>% 
     tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
@@ -61,22 +56,22 @@ run_env_mdl <- function(env_data, ss_dat, param, mo, indx){
   ss_dat$envdat <- as.data.frame(new_env)
   
   r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_mdl2, param, list.files(here::here(asmnt_yr, 'rsch', new_mdl2, param), pattern = '.dat')),
+                    outfile = here::here(asmnt_yr, 'rsch', mdl, param, list.files(here::here(asmnt_yr, 'rsch', mdl, param), pattern = '.dat')),
                     overwrite = TRUE)
   
   # run model
-  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', new_mdl2, param),
+  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', mdl, param),
                       skipfinished = FALSE,
                       intern = TRUE)
   
   # read the model output and print diagnostic messages
-  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl2, param),
+  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', mdl, param),
                          verbose = TRUE,
                          printstats = TRUE)
   
   res}
 
-run_lzero_mdl <- function(env_data, ss_dat, param, mo){
+run_lzero_mdl <- function(mdl, env_data, ss_dat, param, mo){
   
   tidytable::bind_cols(c(1977, 1978), c(2, 2), c(1, 1)) %>% 
     tidytable::rename(Yr = '...1',
@@ -105,22 +100,22 @@ run_lzero_mdl <- function(env_data, ss_dat, param, mo){
   ss_dat$envdat <- as.data.frame(new_env)
   
   r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_mdl2, param, list.files(here::here(asmnt_yr, 'rsch', new_mdl2, param), pattern = '.dat')),
+                    outfile = here::here(asmnt_yr, 'rsch', mdl, param, list.files(here::here(asmnt_yr, 'rsch', mdl, param), pattern = '.dat')),
                     overwrite = TRUE)
   
   # run model
-  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', new_mdl2, param),
+  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', mdl, param),
                       skipfinished = FALSE,
                       intern = TRUE)
   
   # read the model output and print diagnostic messages
-  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl2, param),
+  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', mdl, param),
                          verbose = TRUE,
                          printstats = TRUE)
   
   res}
 
-run_llq_mdl <- function(env_data, ss_dat, param, mo, indx){
+run_llq_mdl <- function(mdl, env_data, ss_dat, param, mo, indx){
   
   env_data %>% 
     tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
@@ -140,16 +135,16 @@ run_llq_mdl <- function(env_data, ss_dat, param, mo, indx){
   ss_dat$envdat <- as.data.frame(new_env)
   
   r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_mdl3, param, list.files(here::here(asmnt_yr, 'rsch', new_mdl3, param), pattern = '.dat')),
+                    outfile = here::here(asmnt_yr, 'rsch', mdl, param, list.files(here::here(asmnt_yr, 'rsch', mdl, param), pattern = '.dat')),
                     overwrite = TRUE)
   
   # run model
-  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', new_mdl3, param),
+  r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', mdl, param),
                       skipfinished = FALSE,
                       intern = TRUE)
   
   # read the model output and print diagnostic messages
-  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl3, param),
+  res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', mdl, param),
                          verbose = TRUE,
                          printstats = TRUE)
   
@@ -181,70 +176,70 @@ cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>%
 dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')))
 
 # linf ----
-linf_1_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l0_20")
-linf_2_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l0_20")
-linf_3_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l0_20")
-linf_4_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l0_20")
-linf_5_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l0_20")
-linf_6_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l0_20")
-linf_7_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l0_20")
-linf_8_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l0_20")
-linf_9_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l0_20")
-linf_10_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l0_20")
-linf_11_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l0_20")
-linf_12_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l0_20")
+linf_1_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l0_20")
+linf_2_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l0_20")
+linf_3_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l0_20")
+linf_4_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l0_20")
+linf_5_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l0_20")
+linf_6_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l0_20")
+linf_7_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l0_20")
+linf_8_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l0_20")
+linf_9_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l0_20")
+linf_10_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l0_20")
+linf_11_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l0_20")
+linf_12_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l0_20")
 
-linf_1_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l20_40")
-linf_2_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l20_40")
-linf_3_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l20_40")
-linf_4_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l20_40")
-linf_5_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l20_40")
-linf_6_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l20_40")
-linf_7_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l20_40")
-linf_8_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l20_40")
-linf_9_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l20_40")
-linf_10_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l20_40")
-linf_11_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l20_40")
-linf_12_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l20_40")
+linf_1_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l20_40")
+linf_2_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l20_40")
+linf_3_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l20_40")
+linf_4_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l20_40")
+linf_5_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l20_40")
+linf_6_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l20_40")
+linf_7_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l20_40")
+linf_8_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l20_40")
+linf_9_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l20_40")
+linf_10_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l20_40")
+linf_11_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l20_40")
+linf_12_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l20_40")
 
-linf_1_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l40_60")
-linf_2_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l40_60")
-linf_3_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l40_60")
-linf_4_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l40_60")
-linf_5_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l40_60")
-linf_6_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l40_60")
-linf_7_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l40_60")
-linf_8_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l40_60")
-linf_9_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l40_60")
-linf_10_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l40_60")
-linf_11_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l40_60")
-linf_12_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l40_60")
+linf_1_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l40_60")
+linf_2_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l40_60")
+linf_3_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l40_60")
+linf_4_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l40_60")
+linf_5_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l40_60")
+linf_6_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l40_60")
+linf_7_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l40_60")
+linf_8_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l40_60")
+linf_9_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l40_60")
+linf_10_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l40_60")
+linf_11_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l40_60")
+linf_12_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l40_60")
 
-linf_1_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l60_80")
-linf_2_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l60_80")
-linf_3_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l60_80")
-linf_4_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l60_80")
-linf_5_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l60_80")
-linf_6_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l60_80")
-linf_7_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l60_80")
-linf_8_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l60_80")
-linf_9_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l60_80")
-linf_10_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l60_80")
-linf_11_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l60_80")
-linf_12_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l60_80")
+linf_1_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l60_80")
+linf_2_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l60_80")
+linf_3_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l60_80")
+linf_4_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l60_80")
+linf_5_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l60_80")
+linf_6_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l60_80")
+linf_7_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l60_80")
+linf_8_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l60_80")
+linf_9_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l60_80")
+linf_10_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l60_80")
+linf_11_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l60_80")
+linf_12_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l60_80")
 
-linf_1_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l80plus")
-linf_2_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l80plus")
-linf_3_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l80plus")
-linf_4_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l80plus")
-linf_5_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l80plus")
-linf_6_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l80plus")
-linf_7_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l80plus")
-linf_8_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l80plus")
-linf_9_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l80plus")
-linf_10_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l80plus")
-linf_11_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l80plus")
-linf_12_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l80plus")
+linf_1_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l80plus")
+linf_2_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 2, indx = "l80plus")
+linf_3_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 3, indx = "l80plus")
+linf_4_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 4, indx = "l80plus")
+linf_5_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 5, indx = "l80plus")
+linf_6_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 6, indx = "l80plus")
+linf_7_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 7, indx = "l80plus")
+linf_8_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 8, indx = "l80plus")
+linf_9_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 9, indx = "l80plus")
+linf_10_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 10, indx = "l80plus")
+linf_11_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 11, indx = "l80plus")
+linf_12_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 12, indx = "l80plus")
 
 linf_summ <- r4ss::SSsummarize(list(mdl1_res, linf_1_20,linf_2_20, linf_3_20, linf_4_20, linf_5_20, linf_6_20, linf_7_20, linf_8_20, linf_9_20, linf_10_20, linf_11_20, linf_12_20,
                                     linf_1_40,linf_2_40, linf_3_40, linf_4_40, linf_5_40, linf_6_40, linf_7_40, linf_8_40, linf_9_40, linf_10_40, linf_11_40, linf_12_40,
@@ -256,70 +251,70 @@ vroom::vroom_write(linf_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output',
 base::save(linf_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'linf.RData'))
 
 # kappa ----
-kappa_1_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l0_20")
-kappa_2_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l0_20")
-kappa_3_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l0_20")
-kappa_4_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l0_20")
-kappa_5_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l0_20")
-kappa_6_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l0_20")
-kappa_7_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l0_20")
-kappa_8_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l0_20")
-kappa_9_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l0_20")
-kappa_10_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l0_20")
-kappa_11_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l0_20")
-kappa_12_20 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l0_20")
+kappa_1_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l0_20")
+kappa_2_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l0_20")
+kappa_3_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l0_20")
+kappa_4_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l0_20")
+kappa_5_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l0_20")
+kappa_6_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l0_20")
+kappa_7_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l0_20")
+kappa_8_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l0_20")
+kappa_9_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l0_20")
+kappa_10_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l0_20")
+kappa_11_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l0_20")
+kappa_12_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l0_20")
 
-kappa_1_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l20_40")
-kappa_2_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l20_40")
-kappa_3_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l20_40")
-kappa_4_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l20_40")
-kappa_5_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l20_40")
-kappa_6_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l20_40")
-kappa_7_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l20_40")
-kappa_8_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l20_40")
-kappa_9_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l20_40")
-kappa_10_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l20_40")
-kappa_11_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l20_40")
-kappa_12_40 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l20_40")
+kappa_1_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l20_40")
+kappa_2_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l20_40")
+kappa_3_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l20_40")
+kappa_4_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l20_40")
+kappa_5_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l20_40")
+kappa_6_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l20_40")
+kappa_7_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l20_40")
+kappa_8_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l20_40")
+kappa_9_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l20_40")
+kappa_10_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l20_40")
+kappa_11_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l20_40")
+kappa_12_40 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l20_40")
 
-kappa_1_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l40_60")
-kappa_2_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l40_60")
-kappa_3_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l40_60")
-kappa_4_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l40_60")
-kappa_5_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l40_60")
-kappa_6_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l40_60")
-kappa_7_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l40_60")
-kappa_8_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l40_60")
-kappa_9_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l40_60")
-kappa_10_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l40_60")
-kappa_11_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l40_60")
-kappa_12_60 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l40_60")
+kappa_1_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l40_60")
+kappa_2_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l40_60")
+kappa_3_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l40_60")
+kappa_4_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l40_60")
+kappa_5_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l40_60")
+kappa_6_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l40_60")
+kappa_7_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l40_60")
+kappa_8_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l40_60")
+kappa_9_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l40_60")
+kappa_10_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l40_60")
+kappa_11_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l40_60")
+kappa_12_60 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l40_60")
 
-kappa_1_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l60_80")
-kappa_2_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l60_80")
-kappa_3_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l60_80")
-kappa_4_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l60_80")
-kappa_5_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l60_80")
-kappa_6_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l60_80")
-kappa_7_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l60_80")
-kappa_8_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l60_80")
-kappa_9_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l60_80")
-kappa_10_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l60_80")
-kappa_11_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l60_80")
-kappa_12_80 <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l60_80")
+kappa_1_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l60_80")
+kappa_2_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l60_80")
+kappa_3_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l60_80")
+kappa_4_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l60_80")
+kappa_5_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l60_80")
+kappa_6_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l60_80")
+kappa_7_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l60_80")
+kappa_8_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l60_80")
+kappa_9_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l60_80")
+kappa_10_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l60_80")
+kappa_11_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l60_80")
+kappa_12_80 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l60_80")
 
-kappa_1_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l80plus")
-kappa_2_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l80plus")
-kappa_3_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l80plus")
-kappa_4_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l80plus")
-kappa_5_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l80plus")
-kappa_6_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l80plus")
-kappa_7_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l80plus")
-kappa_8_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l80plus")
-kappa_9_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l80plus")
-kappa_10_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l80plus")
-kappa_11_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l80plus")
-kappa_12_80p <- run_env_mdl(env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l80plus")
+kappa_1_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 1, indx = "l80plus")
+kappa_2_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 2, indx = "l80plus")
+kappa_3_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 3, indx = "l80plus")
+kappa_4_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 4, indx = "l80plus")
+kappa_5_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 5, indx = "l80plus")
+kappa_6_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 6, indx = "l80plus")
+kappa_7_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 7, indx = "l80plus")
+kappa_8_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 8, indx = "l80plus")
+kappa_9_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 9, indx = "l80plus")
+kappa_10_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 10, indx = "l80plus")
+kappa_11_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 11, indx = "l80plus")
+kappa_12_80p <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "kappa", mo = 12, indx = "l80plus")
 
 kappa_summ <- r4ss::SSsummarize(list(mdl1_res, kappa_1_20,kappa_2_20, kappa_3_20, kappa_4_20, kappa_5_20, kappa_6_20, kappa_7_20, kappa_8_20, kappa_9_20, kappa_10_20, kappa_11_20, kappa_12_20,
                                      kappa_1_40,kappa_2_40, kappa_3_40, kappa_4_40, kappa_5_40, kappa_6_40, kappa_7_40, kappa_8_40, kappa_9_40, kappa_10_40, kappa_11_40, kappa_12_40,
@@ -332,18 +327,18 @@ base::save(kappa_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'kappa.RDat
 
 # lzero ----
 
-lzero_1 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 1)
-lzero_2 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 2)
-lzero_3 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 3)
-lzero_4 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 4)
-lzero_5 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 5)
-lzero_6 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 6)
-lzero_7 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 7)
-lzero_8 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 8)
-lzero_9 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 9)
-lzero_10 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 10)
-lzero_11 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 11)
-lzero_12 <- run_lzero_mdl(env_data = cfsr, ss_dat = dat, param = "lzero", mo = 12)
+lzero_1 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 1)
+lzero_2 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 2)
+lzero_3 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 3)
+lzero_4 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 4)
+lzero_5 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 5)
+lzero_6 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 6)
+lzero_7 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 7)
+lzero_8 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 8)
+lzero_9 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 9)
+lzero_10 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 10)
+lzero_11 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 11)
+lzero_12 <- run_lzero_mdl(new_mdl1, env_data = cfsr, ss_dat = dat, param = "lzero", mo = 12)
 
 lzero_summ <- r4ss::SSsummarize(list(mdl1_res, lzero_1,lzero_2, lzero_3, lzero_4, lzero_5, lzero_6, lzero_7, lzero_8, lzero_9, lzero_10, lzero_11, lzero_12))
 
@@ -352,71 +347,71 @@ base::save(lzero_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'lzero.RDat
 
 # ll survey q ----
 
-# llq ----
-llq_1_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l0_20")
-llq_2_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l0_20")
-llq_3_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l0_20")
-llq_4_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l0_20")
-llq_5_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l0_20")
-llq_6_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l0_20")
-llq_7_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l0_20")
-llq_8_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l0_20")
-llq_9_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l0_20")
-llq_10_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l0_20")
-llq_11_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l0_20")
-llq_12_20 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l0_20")
+# llq w/ env link for growth ----
+llq_1_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l0_20")
+llq_2_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l0_20")
+llq_3_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l0_20")
+llq_4_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l0_20")
+llq_5_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l0_20")
+llq_6_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l0_20")
+llq_7_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l0_20")
+llq_8_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l0_20")
+llq_9_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l0_20")
+llq_10_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l0_20")
+llq_11_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l0_20")
+llq_12_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l0_20")
 
-llq_1_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l20_40")
-llq_2_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l20_40")
-llq_3_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l20_40")
-llq_4_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l20_40")
-llq_5_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l20_40")
-llq_6_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l20_40")
-llq_7_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l20_40")
-llq_8_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l20_40")
-llq_9_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l20_40")
-llq_10_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l20_40")
-llq_11_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l20_40")
-llq_12_40 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l20_40")
+llq_1_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l20_40")
+llq_2_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l20_40")
+llq_3_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l20_40")
+llq_4_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l20_40")
+llq_5_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l20_40")
+llq_6_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l20_40")
+llq_7_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l20_40")
+llq_8_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l20_40")
+llq_9_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l20_40")
+llq_10_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l20_40")
+llq_11_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l20_40")
+llq_12_40 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l20_40")
 
-llq_1_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l40_60")
-llq_2_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l40_60")
-llq_3_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l40_60")
-llq_4_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l40_60")
-llq_5_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l40_60")
-llq_6_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l40_60")
-llq_7_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l40_60")
-llq_8_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l40_60")
-llq_9_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l40_60")
-llq_10_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l40_60")
-llq_11_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l40_60")
-llq_12_60 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l40_60")
+llq_1_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l40_60")
+llq_2_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l40_60")
+llq_3_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l40_60")
+llq_4_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l40_60")
+llq_5_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l40_60")
+llq_6_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l40_60")
+llq_7_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l40_60")
+llq_8_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l40_60")
+llq_9_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l40_60")
+llq_10_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l40_60")
+llq_11_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l40_60")
+llq_12_60 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l40_60")
 
-llq_1_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l60_80")
-llq_2_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l60_80")
-llq_3_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l60_80")
-llq_4_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l60_80")
-llq_5_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l60_80")
-llq_6_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l60_80")
-llq_7_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l60_80")
-llq_8_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l60_80")
-llq_9_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l60_80")
-llq_10_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l60_80")
-llq_11_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l60_80")
-llq_12_80 <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l60_80")
+llq_1_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l60_80")
+llq_2_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l60_80")
+llq_3_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l60_80")
+llq_4_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l60_80")
+llq_5_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l60_80")
+llq_6_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l60_80")
+llq_7_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l60_80")
+llq_8_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l60_80")
+llq_9_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l60_80")
+llq_10_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l60_80")
+llq_11_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l60_80")
+llq_12_80 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l60_80")
 
-llq_1_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l80plus")
-llq_2_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l80plus")
-llq_3_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l80plus")
-llq_4_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l80plus")
-llq_5_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l80plus")
-llq_6_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l80plus")
-llq_7_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l80plus")
-llq_8_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l80plus")
-llq_9_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l80plus")
-llq_10_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l80plus")
-llq_11_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l80plus")
-llq_12_80p <- run_llq_mdl(env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l80plus")
+llq_1_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l80plus")
+llq_2_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l80plus")
+llq_3_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l80plus")
+llq_4_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l80plus")
+llq_5_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l80plus")
+llq_6_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l80plus")
+llq_7_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l80plus")
+llq_8_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l80plus")
+llq_9_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l80plus")
+llq_10_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l80plus")
+llq_11_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l80plus")
+llq_12_80p <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l80plus")
 
 llq_summ <- r4ss::SSsummarize(list(mdl1_res, llq_1_20,llq_2_20, llq_3_20, llq_4_20, llq_5_20, llq_6_20, llq_7_20, llq_8_20, llq_9_20, llq_10_20, llq_11_20, llq_12_20,
                                      llq_1_40,llq_2_40, llq_3_40, llq_4_40, llq_5_40, llq_6_40, llq_7_40, llq_8_40, llq_9_40, llq_10_40, llq_11_40, llq_12_40,
@@ -426,5 +421,80 @@ llq_summ <- r4ss::SSsummarize(list(mdl1_res, llq_1_20,llq_2_20, llq_3_20, llq_4_
 
 vroom::vroom_write(llq_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'llq_likes.csv'), delim = ",")
 base::save(llq_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'llq.RData'))
+
+# llq for base ----
+llq_1_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l0_20")
+llq_2_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l0_20")
+llq_3_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l0_20")
+llq_4_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l0_20")
+llq_5_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l0_20")
+llq_6_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l0_20")
+llq_7_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l0_20")
+llq_8_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l0_20")
+llq_9_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l0_20")
+llq_10_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l0_20")
+llq_11_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l0_20")
+llq_12_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l0_20")
+
+llq_1_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l20_40")
+llq_2_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l20_40")
+llq_3_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l20_40")
+llq_4_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l20_40")
+llq_5_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l20_40")
+llq_6_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l20_40")
+llq_7_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l20_40")
+llq_8_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l20_40")
+llq_9_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l20_40")
+llq_10_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l20_40")
+llq_11_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l20_40")
+llq_12_40 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l20_40")
+
+llq_1_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l40_60")
+llq_2_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l40_60")
+llq_3_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l40_60")
+llq_4_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l40_60")
+llq_5_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l40_60")
+llq_6_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l40_60")
+llq_7_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l40_60")
+llq_8_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l40_60")
+llq_9_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l40_60")
+llq_10_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l40_60")
+llq_11_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l40_60")
+llq_12_60 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l40_60")
+
+llq_1_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l60_80")
+llq_2_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l60_80")
+llq_3_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l60_80")
+llq_4_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l60_80")
+llq_5_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l60_80")
+llq_6_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l60_80")
+llq_7_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l60_80")
+llq_8_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l60_80")
+llq_9_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l60_80")
+llq_10_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l60_80")
+llq_11_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l60_80")
+llq_12_80 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l60_80")
+
+llq_1_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l80plus")
+llq_2_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l80plus")
+llq_3_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l80plus")
+llq_4_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 4, indx = "l80plus")
+llq_5_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 5, indx = "l80plus")
+llq_6_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 6, indx = "l80plus")
+llq_7_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 7, indx = "l80plus")
+llq_8_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 8, indx = "l80plus")
+llq_9_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 9, indx = "l80plus")
+llq_10_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 10, indx = "l80plus")
+llq_11_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 11, indx = "l80plus")
+llq_12_80p <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 12, indx = "l80plus")
+
+llq_summ <- r4ss::SSsummarize(list(mdl1_res, llq_1_20,llq_2_20, llq_3_20, llq_4_20, llq_5_20, llq_6_20, llq_7_20, llq_8_20, llq_9_20, llq_10_20, llq_11_20, llq_12_20,
+                                   llq_1_40,llq_2_40, llq_3_40, llq_4_40, llq_5_40, llq_6_40, llq_7_40, llq_8_40, llq_9_40, llq_10_40, llq_11_40, llq_12_40,
+                                   llq_1_60,llq_2_60, llq_3_60, llq_4_60, llq_5_60, llq_6_60, llq_7_60, llq_8_60, llq_9_60, llq_10_60, llq_11_60, llq_12_60,
+                                   llq_1_80,llq_2_80, llq_3_80, llq_4_80, llq_5_80, llq_6_80, llq_7_80, llq_8_80, llq_9_80, llq_10_80, llq_11_80, llq_12_80,
+                                   llq_1_80p,llq_2_80p, llq_3_80p, llq_4_80p, llq_5_80p, llq_6_80p, llq_7_80p, llq_8_80p, llq_9_80p, llq_10_80p, llq_11_80p, llq_12_80p))
+
+vroom::vroom_write(llq_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'llq_base_likes.csv'), delim = ",")
+base::save(llq_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'llq_base.RData'))
 
 
