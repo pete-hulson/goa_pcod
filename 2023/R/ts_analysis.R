@@ -173,7 +173,7 @@ cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>%
                     l80plus = '80plus')
 
 # read in ss data
-dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')))
+dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl1, list.files(here::here(asmnt_yr, 'rsch', new_mdl1), pattern = '.dat')))
 
 # linf ----
 linf_1_20 <- run_env_mdl(new_mdl1, env_dat = cfsr, ss_dat = dat, param = "linf", mo = 1, indx = "l0_20")
@@ -347,6 +347,9 @@ base::save(lzero_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'lzero.RDat
 
 # ll survey q ----
 
+# read in ss data
+dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')))
+
 # llq w/ env link for growth ----
 llq_1_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l0_20")
 llq_2_20 <- run_llq_mdl(new_mdl2, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l0_20")
@@ -423,6 +426,10 @@ vroom::vroom_write(llq_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 
 base::save(llq_summ, file = here::here(asmnt_yr, 'rsch', 'output', 'llq.RData'))
 
 # llq for base ----
+
+# read in ss data
+dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_base_llq, list.files(here::here(asmnt_yr, 'rsch', new_base_llq), pattern = '.dat')))
+
 llq_1_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 1, indx = "l0_20")
 llq_2_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 2, indx = "l0_20")
 llq_3_20 <- run_llq_mdl(new_base_llq, env_dat = cfsr, ss_dat = dat, param = "llq", mo = 3, indx = "l0_20")

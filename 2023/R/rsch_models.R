@@ -463,12 +463,68 @@ r4ss::SSplotComparisons(base_summ,
 vroom::vroom_write(base_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes.csv'), delim = ",")
 vroom::vroom_write(base_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes_by_fleet.csv'), delim = ",")
 
+# plot 2019.1a vs 2019.1b vs 2019.1d
+llq_summ <- r4ss::SSsummarize(list(base_res, new_base_res, new_base_llq_res))
+
+r4ss::SSplotComparisons(llq_summ,
+                        print = TRUE,
+                        pch = "",
+                        legendlabels = c(base_mdl, new_base, new_base_llq),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq'))
+
+vroom::vroom_write(llq_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq', 'llq_summ_likes.csv'), delim = ",")
+vroom::vroom_write(llq_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq', 'llq_summ_likes_by_fleet.csv'), delim = ",")
+
+# plot 2019.1b vs 2019.1c
+llq_noel_summ <- r4ss::SSsummarize(list(new_base_res, new_base_noll_res))
+
+r4ss::SSplotComparisons(llq_noel_summ,
+                        print = TRUE,
+                        pch = "",
+                        legendlabels = c(new_base, new_base_noll),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq_no_el'))
+
+rstats_new_base <- r4ss::SSmohnsrho(retro_new_base)
+rstats_new_base_noll <- r4ss::SSmohnsrho(retro_new_base_noll)
+rstats_new_base_llq <- r4ss::SSmohnsrho(retro_new_base_llq)
+
+rstats_new_base$AFSC_Hurtado_SSB
+rstats_new_base_noll$AFSC_Hurtado_SSB
+rstats_new_base_llq$AFSC_Hurtado_SSB
+
+
+# make statistics table for 2019.1b vs 2019.1c vs 2019.1d
+llq_summ$likelihoods %>% 
+  tidytable::filter(Label == 'TOTAL') %>%
+  tidytable::select(-Label) %>% 
+  tidytable::pivot_longer(names_to = 'model', values_to = 'tot_like') %>% 
+  tidytable::mutate(model = c(new_base, new_base_noll, new_base_llq)) %>% 
+  tidytable::bind_cols(dplyr::as_tibble(llq_summ$npars)) %>% 
+  tidytable::rename(npars = 'value') %>% 
+  tidytable::mutate(aic = 2 * npars + 2* tot_like) %>% 
+  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq', 'aic_tbl.csv'), delim = ",")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # plot 2019.1b vs 2023.1
 grwth_summ <- r4ss::SSsummarize(list(new_base_res, mdl1_res))
 
 r4ss::SSplotComparisons(grwth_summ,
                         print = TRUE,
+                        pch = "",
                         legendlabels = c(new_base, new_mdl1),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'grwth'))
 
@@ -502,6 +558,10 @@ r4ss::SSmohnsrho(retro_mdl1)
 
 
 
+
+
+
+
 # plot 2019.1b vs 2019.1c vs 2023.2
 llq_summ <- r4ss::SSsummarize(list(new_base_res, new_base_noll_res, mdl2_res))
 
@@ -511,26 +571,6 @@ r4ss::SSplotComparisons(llq_summ,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq'))
 
 
-
-# plot 2019.1b vs 2019.1c vs 2019.1d
-llq_summ <- r4ss::SSsummarize(list(new_base_res, new_base_noll_res, new_base_llq_res))
-
-r4ss::SSplotComparisons(llq_summ,
-                        print = TRUE,
-                        legendlabels = c(new_base, new_base_noll, new_base_llq),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq'))
-
-
-# make statistics table for 2019.1b vs 2019.1c vs 2019.1d
-llq_summ$likelihoods %>% 
-  tidytable::filter(Label == 'TOTAL') %>%
-  tidytable::select(-Label) %>% 
-  tidytable::pivot_longer(names_to = 'model', values_to = 'tot_like') %>% 
-  tidytable::mutate(model = c(new_base, new_base_noll, new_base_llq)) %>% 
-  tidytable::bind_cols(dplyr::as_tibble(llq_summ$npars)) %>% 
-  tidytable::rename(npars = 'value') %>% 
-  tidytable::mutate(aic = 2 * npars + 2* tot_like) %>% 
-  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'plots', 'llq', 'aic_tbl.csv'), delim = ",")
 
 
 
