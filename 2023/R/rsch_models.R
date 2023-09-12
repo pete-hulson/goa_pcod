@@ -231,6 +231,23 @@ vroom::vroom_write(retro_new_base_llq$likelihoods, here::here(asmnt_yr, 'rsch', 
 base::save(retro_new_base_llq, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_llq.RData'))
 
 
+# run management scenarios function
+source(here::here(asmnt_yr, "R", "assessment", "run_mngmnt_scenarios.r"))
+mscen_new_base_llq <- Do_AK_Scenarios(Model_name = new_base_llq,
+                                      Model_dir = here::here(asmnt_yr, 'rsch', new_base_llq),
+                                      CYR = 2022,
+                                      SYR = 1977,
+                                      FCASTY = 15,
+                                      FLEETS = c(1:3),
+                                      do_fig = TRUE,
+                                      SEXES = 1)
+
+# save output
+write.csv(mscen_new_base_llq$Two_year, here::here(asmnt_yr, 'rsch', 'output', 'mgmnt_exec_summ_new_base_llq.csv'))
+
+
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # growth env link model (model 2023.1) ----
 

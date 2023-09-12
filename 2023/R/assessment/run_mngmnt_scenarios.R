@@ -66,10 +66,10 @@ Do_AK_Scenarios<-function(Model_name = NULL,
                          overwrite = TRUE)
     
   # Run model
-  r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-
+  r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
+                      skipfinished = FALSE,
+                      intern = TRUE)
+  
   
 ###############################
 ## Scenario 2: For GOA Pcod, Scenario 2 = Scenario 1
@@ -105,9 +105,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 	
 ###############################	
@@ -135,9 +135,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 ###############################	
 ## Scenario 5: F is 0
@@ -168,9 +168,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 
 ###############################	
@@ -199,10 +199,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
-	
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 ###############################	
 ## Scenario 7: F = FABC for endyr + 1 & 2 and FOFL for all remaining years
@@ -232,10 +231,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
-
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 ###############################	
 ## Scenario 8: for calculating OFL value for endyr + 2
@@ -265,9 +263,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
-	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
+	                    skipfinished = FALSE,
+	                    intern = TRUE)
 	
 
 ###############################	
