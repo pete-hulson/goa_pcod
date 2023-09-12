@@ -235,7 +235,7 @@ base::save(retro_new_base_llq, file = here::here(asmnt_yr, 'rsch', 'output', 're
 source(here::here(asmnt_yr, "R", "assessment", "run_mngmnt_scenarios.r"))
 mscen_new_base_llq <- Do_AK_Scenarios(Model_name = new_base_llq,
                                       Model_dir = here::here(asmnt_yr, 'rsch', new_base_llq),
-                                      CYR = 2022,
+                                      CYR = asmnt_yr,
                                       SYR = 1977,
                                       FCASTY = 15,
                                       FLEETS = c(1:3),
