@@ -228,7 +228,7 @@ LENGTH4AGE_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=201
     DLENGTH_NS<-DLENGTH1[,list(PROP=sum(PROP1)),by=c("YEAR,GEAR,SEX,LENGTH")]
   
 	
-    SLENGTH<-read.csv(here::here("data", "ALL_STATE_LENGTHS.csv"))
+    SLENGTH<-read.csv(here::here(ly, "data", "ALL_STATE_LENGTHS.csv"))
     SLENGTH<-data.table(SLENGTH[,1:9])
     SLENGTH<-SLENGTH[LENGTH>0]
     SLENGTH$AREA<-trunc(SLENGTH$AREA/10)*10

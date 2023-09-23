@@ -25,17 +25,11 @@ lapply(libs, library, character.only = TRUE)
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # previous SS DAT filename, if it exists
-old_SS_dat_filename <- "GOAPcod2021OCT1_10P_CL.dat"
+old_SS_dat_filename <- "GOAPcod2022Oct25_wADFG.dat"
 
-# historical SS DAT filename
+# SS DAT filename
 new_SS_dat_filename <- paste0("GOAPcod", 
                               format(Sys.Date(), format = "%Y%b%d"),
-                              ".dat")
-
-# SS DAT filename w/ ADF&G catch
-new_SS_dat_filename_wADFG <- paste0("GOAPcod", 
-                              format(Sys.Date(), format = "%Y%b%d"),
-                              "_wADFG",
                               ".dat")
 
 # Update IPHC & ADF&G survey indices? TRUE if first time running this script, FALSE for every run thereafter
@@ -141,31 +135,17 @@ if (!is_new_SS_DAT_file){
   old_data <- r4ss::SS_readdat_3.30(here::here(new_SS_dat_year, "data", old_SS_dat_filename))
   new_data <- old_data}else{print(" Warning:  Need to enter old SS data file name")}
 
-# historical data
-new_data <- SBSS_GET_ALL_DATA(new_data = new_data,
-                              new_file = new_SS_dat_filename,
-                              new_year = new_SS_dat_year,
-                              sp_area = sp_area,
-                              fsh_sp_label = fsh_sp_label,
-                              fsh_sp_area = fsh_sp_area,
-                              fsh_sp_str = fsh_sp_str,
-                              fsh_start_yr = fsh_start_yr,
-                              srv_sp_str = srv_sp_str,
-                              srv_start_yr = srv_start_yr,
-                              len_bins = len_bins,
-                              max_age = max_age,
-                              is_new_SS_DAT_file = is_new_SS_DAT_file,
-                              update_adfg_iphc = update_adfg_iphc,
-                              inc_ADFG = FALSE,
-                              sndz_lc = FALSE,
-                              catch_table = FALSE,
-                              AUXFCOMP = 3)
+# # for testing functions
+# new_data = new_data
+# new_file = new_SS_dat_filename
+# new_year = new_SS_dat_year
+# inc_ADFG = TRUE
+# sndz_lc = FALSE
+# catch_table = TRUE
+# AUXFCOMP = 3
 
-# Write out data script
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_SS_dat_year, "output", new_SS_dat_filename), overwrite = TRUE)
-# w/ adf&g catch
-new_data_adfg <- SBSS_GET_ALL_DATA(new_data = new_data,
+# get new data file
+new_data <- SBSS_GET_ALL_DATA(new_data = new_data,
                               new_file = new_SS_dat_filename,
                               new_year = new_SS_dat_year,
                               sp_area = sp_area,
@@ -185,8 +165,8 @@ new_data_adfg <- SBSS_GET_ALL_DATA(new_data = new_data,
                               AUXFCOMP = 3)
 
 # Write out data script
-r4ss::SS_writedat_3.30(new_data_adfg,
-                       here::here(new_SS_dat_year, "output", new_SS_dat_filename_wADFG), overwrite = TRUE)
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_SS_dat_year, "output", new_SS_dat_filename), overwrite = TRUE)
 
 # # test that the new file is readable
 # test_dat <- r4ss::SS_readdat_3.30(here::here("output", new_SS_dat_filename), verbose = TRUE)

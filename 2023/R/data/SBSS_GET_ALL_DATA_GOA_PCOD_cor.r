@@ -292,8 +292,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
       mutate(total = discarded + retained) -> dr_tbl
     
     # Write out results
-    vroom::vroom_write(juris_gr_tbl, here::here('output', 'juris_gr_tbl.csv'), delim = ",")
-    vroom::vroom_write(dr_tbl, here::here('output', 'dr_tbl.csv'), delim = ",")
+    vroom::vroom_write(juris_gr_tbl, here::here(new_year, 'output', 'juris_gr_tbl.csv'), delim = ",")
+    vroom::vroom_write(dr_tbl, here::here(new_year, 'output', 'dr_tbl.csv'), delim = ",")
 
   }
   
@@ -365,8 +365,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
         rename(obs = rpn2) -> iphc
       
       # Update ADF&G (model and raw catches not included in github)
-      dglm = dget(here::here('data', "delta_glm_1-7-2.get"))
-      coddata <- vroom::vroom(here::here('data', 'ADFGsurvcatch.csv'))
+      dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
+      coddata <- vroom::vroom(here::here(new_year, 'data', 'ADFGsurvcatch.csv'))
       
       coddata %>% 
         filter(district %in% c(1,2,6),
@@ -393,7 +393,7 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
       # Update both indices in SS file and data folder
       iphc %>% 
         bind_rows(adfg) -> adfg_iphc 
-      vroom::vroom_write(adfg_iphc, here::here('data', 'ADFG_IPHC_updated.csv'), delim = ",")
+      vroom::vroom_write(adfg_iphc, here::here(new_year, 'data', 'ADFG_IPHC_updated.csv'), delim = ",")
       names(adfg_iphc) <- names(CPUE)
       CPUE <- rbind(CPUE, iphc, adfg)
     }
