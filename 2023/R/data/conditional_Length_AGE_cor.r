@@ -13,7 +13,8 @@ cond_length_age_cor<-function(species = srv_sp_str,
                               area = sp_area,
                               start_year = fsh_start_yr,
                               max_age1 = max_age,
-                              len_bins = len_bins){
+                              len_bins = len_bins,
+                              new_year){
     if(area == "'GOA'") survey=47
     if(area == "'AI'") survey=52
     if(area == "'EBS'") survey=98

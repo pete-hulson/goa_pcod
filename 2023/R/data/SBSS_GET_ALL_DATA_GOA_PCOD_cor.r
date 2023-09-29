@@ -302,7 +302,7 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
   
   ## ----- Get trawl survey pop'n estimates -----
   
-  GOA_BIOM <- GET_GOA_BIOM(srv_sp_str)
+  GOA_BIOM <- GET_GOA_BIOM(srv_sp_str, new_year)
   GOA_BIOM$index <- 4
   
   BIOM <- rbind(GOA_BIOM)
@@ -327,7 +327,7 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
   ## ----- Get LL survey RPN estimates -----
   
   LLsrv_start_yr <- 1990
-  LL_RPN <- GET_GOA_LL_RPN(species = srv_sp_str, FYR = LLsrv_start_yr)
+  LL_RPN <- GET_GOA_LL_RPN(species = srv_sp_str, FYR = LLsrv_start_yr, new_year)
   LL_RPN <- LL_RPN[year >= LLsrv_start_yr]
   LL_CPUE <- data.frame(year = LL_RPN$year,
                         seas = 7,
@@ -429,7 +429,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
                                             flt = 4,
                                             gender = 0,
                                             part = 0,
-                                            Nsamp = 100))
+                                            Nsamp = 100,
+                                            new_year))
   names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
   
   
@@ -532,7 +533,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
                               Ageerr = 1,
                               Lgin_lo = -1,
                               Lgin_hi = -1,
-                              Nsamp = 100)
+                              Nsamp = 100,
+                              new_year)
   print("Survey agecomp done")
   
   ## ----- Get fishery age composition data -----
@@ -554,7 +556,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
                                      area = sp_area,
                                      start_year = fsh_start_yr,
                                      max_age1 = max_age,
-                                     len_bins = len_bins)
+                                     len_bins = len_bins,
+                                     new_year)
   cond_age_length <- data.frame(svr_cond_al$norm)
   names(cond_age_length) <- names(GOA_ACOMP)
   print("Conditional survey age length done")      
@@ -565,7 +568,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
                                           area = sp_area,
                                           start_year = fsh_start_yr,
                                           max_age1 = max_age,
-                                          len_bins = len_bins)
+                                          len_bins = len_bins,
+                                          new_year)
   cond_age_lengthFISH <- data.frame(fish_cond_al$norm)
   
   ## negating the older fish ages from the file
@@ -594,7 +598,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
   Age <- GET_SURV_AGE_cor(sp_area = sp_area,
                           srv_sp_str = srv_sp_str,
                           start_yr = srv_start_yr,
-                          max_age = max_age)
+                          max_age = max_age,
+                          new_year)
   Age$Sur <- 4          #Survey 4 is bottom trawl
   
   

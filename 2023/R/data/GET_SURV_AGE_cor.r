@@ -5,7 +5,7 @@
 # 2013-07-16 - per Nancy Roberson, use "RACEBASE.specimen_orig" instead of "RACEBASE.SPECIMEN" for now
 
 ##GOA and AI BT = 172, BS = 44 pollock - 21740 Greenland turbot=10115
-GET_SURV_AGE_cor <- function(sp_area="'foo'",srv_sp_str="99999",start_yr=1977,max_age=10)
+GET_SURV_AGE_cor <- function(sp_area="'foo'",srv_sp_str="99999",start_yr=1977,max_age=10, new_year)
 {
 
     if(sp_area=="'GOA'"){ survey<- 47

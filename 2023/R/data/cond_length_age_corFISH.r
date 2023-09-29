@@ -2,7 +2,8 @@ cond_length_age_corFISH<-function(species = fsh_sp_str,
                                   area = sp_area,
                                   start_year = fsh_start_yr,
                                   max_age1 = max_age,
-                                  len_bins = len_bins){
+                                  len_bins = len_bins,
+                                  new_year){
 
 
   len_age_data<-data.table(GET_DOM_AGE(fsh_sp_str=species,sp_area=area,max_age=max_age1))

@@ -2,7 +2,7 @@
 # generating SS files for EBS/AI Greenland Turbot
 # ZTA, 2013-05-08, R version 2.15.1, 32-bit
 
-GET_GOA_BIOM <- function(srv_sp_str="99999")
+GET_GOA_BIOM <- function(srv_sp_str="99999", new_year)
 {
     test<-paste("SELECT GOA.BIOMASS_TOTAL.YEAR as YEAR,\n ",
                 "GOA.BIOMASS_TOTAL.TOTAL_BIOMASS as BIOM,\n ",

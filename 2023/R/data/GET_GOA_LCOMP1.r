@@ -1,4 +1,4 @@
-GET_GOA_LCOMP1<-function(species="99999",bins=seq(0,109,1),bin=TRUE,SS=TRUE,seas=1,flt=3,gender=1,part=0,Nsamp=100){
+GET_GOA_LCOMP1<-function(species="99999",bins=seq(0,109,1),bin=TRUE,SS=TRUE,seas=1,flt=3,gender=1,part=0,Nsamp=100, new_year){
   ## create sql query
 
 test<-paste("SELECT GOA.SIZECOMP_TOTAL.YEAR AS YEAR, \n ",

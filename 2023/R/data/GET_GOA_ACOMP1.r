@@ -1,4 +1,4 @@
-GET_GOA_ACOMP1<-function(srv_sp_str="99999",max_age=20,Seas=1,FLT=2,Gender=1,Part=0,Ageerr=1,Lgin_lo=-1,Lgin_hi=-1,Nsamp=100){
+GET_GOA_ACOMP1<-function(srv_sp_str="99999",max_age=20,Seas=1,FLT=2,Gender=1,Part=0,Ageerr=1,Lgin_lo=-1,Lgin_hi=-1,Nsamp=100, new_year){
   ## create sql query
 
   test<-paste("SELECT GOA.AGECOMP_TOTAL.SURVEY_YEAR AS YEAR, \n",

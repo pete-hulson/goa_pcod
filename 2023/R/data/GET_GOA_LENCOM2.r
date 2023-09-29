@@ -39,7 +39,7 @@ GET_GOA_LENCOMP2<-function(fsh_sp_str1=202, len_bins1=len_bins, fsh_start_yr1=fs
       "AND NORPAC.FOREIGN_LENGTH.SPECIES in (",fsh_sp_str1,")" ,sep="")
 
   Fspcomp = sqlQuery(AFSC,test)
-  vroom::vroom_write(Fspcomp, here::here(new_year, 'data', 'raw', 'fish_lencomp_foreign.csv'), delim = ",")
+  vroom::vroom_write(Fspcomp, here::here(new_SS_dat_year1, 'data', 'raw', 'fish_lencomp_foreign.csv'), delim = ",")
   Fspcomp$GEAR1<-"TRAWL"
   Fspcomp$GEAR1[Fspcomp$GEAR==0]<-"POT"
   Fspcomp$GEAR1[Fspcomp$GEAR==1]<-"LONGLINE"
@@ -111,7 +111,7 @@ GET_GOA_LENCOMP2<-function(fsh_sp_str1=202, len_bins1=len_bins, fsh_start_yr1=fs
       "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str1,")",sep="")
 
   Dspcomp=sqlQuery(AFSC,test)
-  vroom::vroom_write(Dspcomp, here::here(new_year, 'data', 'raw', 'fish_lencomp_domestic.csv'), delim = ",")
+  vroom::vroom_write(Dspcomp, here::here(new_SS_dat_year1, 'data', 'raw', 'fish_lencomp_domestic.csv'), delim = ",")
   Dspcomp$GEAR1<-"TRAWL"
   Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
   Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"

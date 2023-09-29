@@ -1,7 +1,7 @@
 ## getting AFSC longline survey data
 
 
-GET_GOA_LL_RPN<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
+GET_GOA_LL_RPN<-function(species = srv_sp_str, FYR = LLsrv_start_yr, new_year){
        
      goarpn <- sqlQuery(CHINA, query = paste0("
                 select    *
@@ -25,7 +25,7 @@ GET_GOA_LL_RPN<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
 }
 
 
-GET_GOA_LL_LENGTH<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
+GET_GOA_LL_LENGTH<-function(species = srv_sp_str, FYR = LLsrv_start_yr, new_year){
 
   lens <- sqlQuery(CHINA, query = paste0("
                 select    *
