@@ -69,7 +69,8 @@ LENGTH_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=new_yea
       "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str,")",sep="")
 
   Dspcomp=data.table(sqlQuery(AFSC,test))
-
+  vroom::vroom_write(Dspcomp, here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv'), delim = ",")
+  
     Dspcomp$GEAR1<-"TRAWL"
     Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
     Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
@@ -182,7 +183,8 @@ LENGTH_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=new_yea
 
 
     CATCH<-data.table(sqlQuery(CHINA,test))
-
+    vroom::vroom_write(CATCH, here::here(new_year, 'data', 'raw', 'catch4fish_lencomp_wstate.csv'), delim = ",")
+    
     CATCH$WED<-date(CATCH$WED)
     CATCH$STATE[is.na(CATCH$STATE)]<-"F"
     CATCH$GEAR1<-"TRAWL"

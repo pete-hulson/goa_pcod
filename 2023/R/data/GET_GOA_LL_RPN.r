@@ -13,7 +13,8 @@ GET_GOA_LL_RPN<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
                           fmp_management_area = 'GOA'
                 order by  year asc
                 ")) %>% 
-  rename_all(tolower)
+       rename_all(tolower) %>% 
+       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'afsc_ll.csv'), delim = ",")
 
 
      goa_rpn <- goarpn %>% 
@@ -26,7 +27,7 @@ GET_GOA_LL_RPN<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
 
 GET_GOA_LL_LENGTH<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
 
-     lens <- sqlQuery(CHINA, query = paste0("
+  lens <- sqlQuery(CHINA, query = paste0("
                 select    *
                 from      afsc.lls_length_rpn_by_area_all_strata
                 where     species_code =",species," and 
@@ -36,7 +37,8 @@ GET_GOA_LL_LENGTH<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
                           length < 999
                 order by  year asc
                 ")) %>% 
-      rename_all(tolower)
+    rename_all(tolower) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'afsc_ll_len.csv'), delim = ",")
 
      areaview <- sqlQuery(CHINA, query = ("
                 select distinct   council_sablefish_management_area, council_management_area, 
@@ -44,7 +46,8 @@ GET_GOA_LL_LENGTH<-function(species=srv_sp_str,FYR=LLsrv_start_yr){
                                   exploitable, area_code
                 from              afsc.lls_area_view
                 ")) %>% 
-     rename_all(tolower)
+       rename_all(tolower) %>% 
+       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'afsc_ll_area.csv'), delim = ",")
 
      lens <- lens %>% 
           left_join(areaview, by = c("area_code", "geographic_area_name", "council_sablefish_management_area"))

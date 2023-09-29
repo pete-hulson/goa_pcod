@@ -54,6 +54,7 @@ catch_diffs.xlsx
 Hist_SSB.xlsx
 Hist_trawl_fit.xlsx
 COMPREHENSIVE_OBS_EM.csv
+data/raw/
 emailed data/
 retrospectives/
 LeaveOneOut/

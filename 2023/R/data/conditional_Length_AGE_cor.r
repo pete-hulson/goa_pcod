@@ -34,6 +34,7 @@ test<-paste("SELECT s.REGION, TO_CHAR(h.START_TIME, 'yyyy') AS YEAR, s.CRUISEJOI
  "ORDER BY s.SPECIES_CODE, TO_CHAR(h.START_TIME, 'yyyy'), s.SEX, s.AGE, s.LENGTH",sep="")
 
 len_age_data<-data.table(sqlQuery(AFSC,test))
+vroom::vroom_write(len_age_data, here::here(new_year, 'data', 'raw', 'afsc_trawl_lenage.csv'), delim = ",")
 len_age_data2<-len_age_data
 
 

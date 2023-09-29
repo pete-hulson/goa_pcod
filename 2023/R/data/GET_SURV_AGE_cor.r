@@ -50,6 +50,7 @@ GET_SURV_AGE_cor <- function(sp_area="'foo'",srv_sp_str="99999",start_yr=1977,ma
                 "ORDER BY RACE_DATA.V_CRUISES.YEAR",sep="")
 
     Age=data.table(sqlQuery(AFSC,test))
+    vroom::vroom_write(Age, here::here(new_year, 'data', 'raw', 'afsc_meanage.csv'), delim = ",")
 
           if("Steves pcod4.csv" %in% dir()){    
               library(data.table)

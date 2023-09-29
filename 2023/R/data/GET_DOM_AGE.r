@@ -39,6 +39,7 @@ GET_DOM_AGE<-function(fsh_sp_str="99999",sp_area="'foo'",max_age=30)
                   "ORDER BY OBSINT.DEBRIEFED_AGE.YEAR",sep="")
 
     Dage=sqlQuery(AFSC,test)
+    vroom::vroom_write(Dage, here::here(new_year, 'data', 'raw', 'fish_agelen.csv'), delim = ",")
 
     Dage$AGE1<-Dage$AGE
     Dage$AGE1[Dage$AGE >= max_age]=max_age

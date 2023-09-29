@@ -19,6 +19,7 @@ GET_GOA_ACOMP1<-function(srv_sp_str="99999",max_age=20,Seas=1,FLT=2,Gender=1,Par
 
    ## run database query
     Acomp=sqlQuery(AFSC,test)
+    vroom::vroom_write(Acomp, here::here(new_year, 'data', 'raw', 'afsc_trawl_age.csv'), delim = ",")
     YR<-unique(sort(Acomp$YEAR))
     grid=expand.grid(AGE=c(1:max_age),YEAR=YR)
     Acomp30<-subset(Acomp,Acomp$AGE>=max_age)

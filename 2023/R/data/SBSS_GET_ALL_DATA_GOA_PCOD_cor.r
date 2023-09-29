@@ -69,6 +69,7 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
   
   
   CATCH <- sqlQuery(CHINA, test)
+  vroom::vroom_write(CATCH, here::here(new_year, 'data', 'raw', 'catch.csv'), delim = ",")
   
   CATCH$GEAR1 <- "TRAWL"
   
@@ -127,6 +128,7 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
                    "akfin_year")
     
     ADFG_CATCH <- sqlQuery(CHINA, test)
+    vroom::vroom_write(ADFG_CATCH, here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
     
     ADFG_CATCH %>% 
       group_by(AKFIN_YEAR, FMP_GEAR) %>% 
@@ -347,7 +349,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
       IPHC <- sqlQuery(CHINA, query = ("
                 select    *
                 from      afsc_host.fiss_rpn
-                where     species in ('Pacific cod')"))
+                where     species in ('Pacific cod')")) %>% 
+        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_ll.csv'), delim = ",")
       
       IPHC %>%
         rename_all(tolower) %>%

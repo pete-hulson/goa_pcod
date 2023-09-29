@@ -16,7 +16,8 @@ GET_GOA_BIOM <- function(srv_sp_str="99999")
                 "ORDER BY GOA.BIOMASS_TOTAL.YEAR",sep="")
 
     biom <- sqlQuery(AFSC,test)
-
+    vroom::vroom_write(biom, here::here(new_year, 'data', 'raw', 'afsc_trawl.csv'), delim = ",")
+    
     # this calculation assumes that YEAR is the first column for biom
     sum.biom <- aggregate(biom[,-1],by=list(YEAR=biom$YEAR),FUN=sum)
     sum.biom

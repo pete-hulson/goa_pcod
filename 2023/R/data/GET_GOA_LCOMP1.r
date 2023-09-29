@@ -10,7 +10,8 @@ test<-paste("SELECT GOA.SIZECOMP_TOTAL.YEAR AS YEAR, \n ",
     "GOA.SIZECOMP_TOTAL.LENGTH \n ", sep="")
    
    ## run database query
-   lcomp=sqlQuery(AFSC,test)
+   lcomp <- sqlQuery(AFSC,test)
+   vroom::vroom_write(lcomp, here::here(new_year, 'data', 'raw', 'afsc_trawl_len.csv'), delim = ",")
    
    ## create grid for zero fill and merge with data 
    len<-c(0:max(lcomp$LENGTH))
