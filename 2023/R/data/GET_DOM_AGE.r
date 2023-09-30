@@ -2,7 +2,7 @@
 # generating SS files for EBS/AI Greenland Turbot
 # ZTA, 2013-05-08, R version 2.15.1, 32-bit
 
-GET_DOM_AGE<-function(fsh_sp_str="99999",sp_area="'foo'",max_age=30)
+GET_DOM_AGE<-function(fsh_sp_str="99999",sp_area="'foo'",max_age=30, new_year)
 {
     incl_str <- ""
     if(sp_area=="'AI'")

@@ -488,7 +488,8 @@ SBSS_GET_ALL_DATA <- function(new_data = new_data,
   ## ----- Get LL survey size composition data -----
   
   LL_length <- GET_GOA_LL_LENGTH(species = srv_sp_str,
-                                 FYR = LLsrv_start_yr)
+                                 FYR = LLsrv_start_yr,
+                                 new_year)
   
   names(LL_length) <- c("year", "length", "FREQ")
   

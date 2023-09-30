@@ -341,7 +341,7 @@ LENGTH4AGE_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=201
     ldata<-data.table(LENGTHS[[STATE]])
     ldata$FREQUENCY<-ldata$PROP*10000
  
-    age=data.table(GET_DOM_AGE(fsh_sp_str=202,sp_area="'GOA'",max_age=20))
+    age=data.table(GET_DOM_AGE(fsh_sp_str=202,sp_area="'GOA'",max_age=20, ly))
     age<-age[!is.na(AGE)]
     age$GEAR<-as.character(age$GEAR)
     age[GEAR %in% c(1,2,3,4)]$GEAR<- "TRAWL"

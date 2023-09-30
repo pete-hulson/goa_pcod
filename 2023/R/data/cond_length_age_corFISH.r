@@ -6,7 +6,7 @@ cond_length_age_corFISH<-function(species = fsh_sp_str,
                                   new_year){
 
 
-  len_age_data<-data.table(GET_DOM_AGE(fsh_sp_str=species,sp_area=area,max_age=max_age1))
+  len_age_data<-data.table(GET_DOM_AGE(fsh_sp_str=species,sp_area=area,max_age=max_age1, new_year))
 
   len_age_data<-len_age_data[!is.na(AGE)]
   len_age_data$HAULJOIN<-len_age_data$HAUL_JOIN
