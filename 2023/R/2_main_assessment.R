@@ -25,26 +25,22 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # Run models ----
 
 # Old model
-model_dir_old <- here::here(new_SS_dat_year, "mgmt", Model_name_old)
-
-r4ss::run(dir = model_dir_old,
-          skipfinished = FALSE,
-          show_in_console = TRUE)
+r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                    skipfinished = FALSE,
+                    intern = TRUE)
 
 # read the model output and print diagnostic messages
-model_run_old <- r4ss::SS_output(dir = model_dir_old,
-                    verbose = TRUE,
-                    printstats = TRUE)
+model_run_old <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                                 verbose = TRUE,
+                                 printstats = TRUE)
 
 # Recommended model
-model_dir_new <- here::here(new_SS_dat_year, "mgmt", Model_name_new)
-
-r4ss::run(dir = model_dir_new,
-          skipfinished = FALSE,
-          show_in_console = TRUE)
+r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                    skipfinished = FALSE,
+                    intern = TRUE)
 
 # read the model output and print diagnostic messages
-model_run_new <- r4ss::SS_output(dir = model_dir_new,
+model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                                  verbose = TRUE,
                                  printstats = TRUE)
 
@@ -75,14 +71,15 @@ ret_yr <- 1 # For testing
 # ret_yr <- 10 # For full
 
 # Run retrospective
-r4ss::retro(dir = model_dir_new,
-            oldsubdir = "",
-            newsubdir = "retrospectives",
-            years = 0:-ret_yr)
+r4ss::SS_doRetro(masterdir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                 oldsubdir = "",
+                 newsubdir = "retrospectives",
+                 years = 0:-ret_yr)
 
 # load the retrospective models
 retroModels <- r4ss::SSgetoutput(dirvec = file.path(
-  model_dir_new, "retrospectives",
+  here::here(new_SS_dat_year, "mgmt", Model_name_new),
+  "retrospectives",
   paste("retro", 0:-ret_yr, sep = "")))
 
 # summarize the model results
@@ -124,9 +121,15 @@ write.csv(rho_output_ss3diags, here::here(new_SS_dat_year, "output", "retro_Rho_
 
 source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
 
+
+r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                    skipfinished = FALSE,
+                    intern = TRUE)
+
+
 # Run management scenarios function
 mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
-                         Model_dir = model_dir_new,
+                         Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                          CYR = new_SS_dat_year,
                          SYR = 1977,
                          FCASTY = 15,
