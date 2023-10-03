@@ -1,0 +1,2982 @@
+###
+console output
+2023-10-02 11:57:37.95879
+###
+ 
+ reading from STARTER.SS
+ reading from data file
+Data read sucessful 999
+
+ reading forecast file 
+ reading from control file
+End of control file successful! 999
+ end of parameter section 
+ ready to evaluate once in prelim
+
+
+Estimating...please wait...
+0 0 -log(L): 0  between 
+ MG setup OK 
+ growth1 OK
+ natmort OK
+ migr OK
+ ageerr_key OK
+ selex OK, ready to call ALK and fishselex 
+ ready for virgin age struc 
+ ready for initial age struc 
+ OK with initial conditions 
+ OK with time series
+ did survey obj_fun  0 0 0 71.8688 426.081 0 0 0 0
+ did lencomp obj_fun   1224.42 786.416 749.798 324.236 525.355 0 0 0 0
+ did agecomp obj_fun  503.236 550.127 478.512 775.779 0 0 0 0 0
+ did meanlength obj_fun  0 0 0 0 0 0 0 0 0
+ initequ_catch -log(L)  0 0 0 0 0 0 0 0 0
+ catch -log(L)  1.35354e-05 2.04306e-05 2.27537e-05 0 0 0 0 0 0
+ did recruitdev obj_fun -31.8968 38.852 0.3872
+ OK with obj_func 6386.99
+1 1 -log(L): 6386.99  Spbio: 227494 218929
+
+Initial statistics: 64 variables; iteration 0; function evaluation 0; phase 1
+Function value   6.3869904e+03; maximum gradient component mag  -6.2594e+04
+1 2 -log(L): 6386.97  Spbio: 227494 218929
+1 3 -log(L): 6386.77  Spbio: 227499 218937
+1 4 -log(L): 6384.77  Spbio: 227550 219011
+1 5 -log(L): 6364.98  Spbio: 228059 219757
+1 6 -log(L): 6185.02  Spbio: 233204 227295
+1 7 -log(L): 6826.03  Spbio: 238948 239378
+1 8 -log(L): 6146.15  Spbio: 234308 229614
+1 9 -log(L): 6072.76  Spbio: 229438 227231
+1 10 -log(L): 5945.15  Spbio: 216488 217657
+1 11 -log(L): 5723.11  Spbio: 198229 204448
+1 12 -log(L): 5337.56  Spbio: 173199 180883
+1 13 -log(L): 4769.51  Spbio: 160070 150958
+1 14 -log(L): 7261.12  Spbio: 131517 101706
+1 15 -log(L): 4680.6  Spbio: 155162 140635
+1 16 -log(L): 4622.4  Spbio: 148169 117255
+1 17 -log(L): 4601.8  Spbio: 178122 95932.3
+
+Intermediate statistics: 64 variables; iteration 10; function evaluation 16; phase 1
+Function value   4.6018029e+03; maximum gradient component mag  -2.6538e+04
+1 18 -log(L): 4572.38  Spbio: 193758 90217
+1 19 -log(L): 4546.24  Spbio: 169076 83701.8
+1 20 -log(L): 4528.34  Spbio: 182092 81673.8
+1 21 -log(L): 4509.17  Spbio: 212858 83843.5
+1 22 -log(L): 4567.59  Spbio: 154817 86958.9
+1 23 -log(L): 4505.21  Spbio: 199382 84244.9
+1 24 -log(L): 4501.76  Spbio: 218481 84197.9
+1 25 -log(L): 4499.54  Spbio: 205681 84658.8
+1 26 -log(L): 4499.53  Spbio: 201715 83909.1
+1 27 -log(L): 4498.43  Spbio: 203681 84260.3
+1 28 -log(L): 4496.99  Spbio: 203303 83203.6
+1 29 -log(L): 4495.48  Spbio: 203759 81601.9
+64 variables; iteration 20; function evaluation 28; phase 1
+Function value   4.4954814e+03; maximum gradient component mag  -2.3231e+04
+1 30 -log(L): 4494.9  Spbio: 198064 80647.6
+1 31 -log(L): 4494.15  Spbio: 192450 80381.3
+1 32 -log(L): 4493.31  Spbio: 193912 79825.2
+1 33 -log(L): 4492.99  Spbio: 202556 78964.3
+1 34 -log(L): 4492.67  Spbio: 206673 77941.8
+1 35 -log(L): 4492.58  Spbio: 208250 77146
+1 36 -log(L): 4492.45  Spbio: 208579 77077.6
+1 37 -log(L): 4492.26  Spbio: 209048 77334
+1 38 -log(L): 4491.93  Spbio: 210022 77714
+1 39 -log(L): 4491.47  Spbio: 211825 77251.9
+64 variables; iteration 30; function evaluation 38; phase 1
+Function value   4.4914748e+03; maximum gradient component mag  -2.3175e+04
+1 40 -log(L): 4490.96  Spbio: 214160 76759.5
+1 41 -log(L): 4491.33  Spbio: 213752 78768
+1 42 -log(L): 4490.76  Spbio: 213993 77497
+1 43 -log(L): 4490.66  Spbio: 216942 78113.6
+1 44 -log(L): 4490.51  Spbio: 219656 78059.3
+1 45 -log(L): 4490.24  Spbio: 220396 78165.1
+1 46 -log(L): 4489.78  Spbio: 220948 78466.3
+1 47 -log(L): 4488.94  Spbio: 222426 78745.2
+1 48 -log(L): 4487.52  Spbio: 222544 78608.8
+1 49 -log(L): 4485.24  Spbio: 221894 79707.3
+1 50 -log(L): 4481.1  Spbio: 219625 80325.3
+64 variables; iteration 40; function evaluation 49; phase 1
+Function value   4.4810984e+03; maximum gradient component mag  -2.1939e+04
+1 51 -log(L): 4473.72  Spbio: 203309 79329.9
+1 52 -log(L): 4460.15  Spbio: 210737 80487.1
+1 53 -log(L): 4437.69  Spbio: 199720 83259.2
+1 54 -log(L): 4412.09  Spbio: 231462 80254.3
+1 55 -log(L): 4409.79  Spbio: 229217 92474.7
+1 56 -log(L): 4398.46  Spbio: 230225 86166.2
+1 57 -log(L): 4411.3  Spbio: 232049 85587.6
+1 58 -log(L): 4393.71  Spbio: 230845 85705.3
+1 59 -log(L): 4400.31  Spbio: 219824 90142.6
+1 60 -log(L): 4392.32  Spbio: 227543 86952.7
+1 61 -log(L): 4390.89  Spbio: 224018 88698.2
+1 62 -log(L): 4389.72  Spbio: 225781 89445
+1 63 -log(L): 4390.69  Spbio: 222411 89684
+1 64 -log(L): 4389.3  Spbio: 224568 89521.7
+64 variables; iteration 50; function evaluation 63; phase 1
+Function value   4.3892984e+03; maximum gradient component mag  -6.0851e+03
+1 65 -log(L): 4389.51  Spbio: 228732 90090.4
+1 66 -log(L): 4389.13  Spbio: 226229 89745
+1 67 -log(L): 4388.84  Spbio: 226245 89779.9
+1 68 -log(L): 4388.36  Spbio: 226418 90168.4
+1 69 -log(L): 4387.5  Spbio: 227644 90506.7
+1 70 -log(L): 4385.95  Spbio: 224682 90811.4
+1 71 -log(L): 4383.21  Spbio: 219896 91247.5
+1 72 -log(L): 4378.82  Spbio: 215838 90408.1
+1 73 -log(L): 4376.22  Spbio: 220242 93264.8
+1 74 -log(L): 4386.25  Spbio: 214071 93904.5
+1 75 -log(L): 4375.78  Spbio: 219180 93252.4
+1 76 -log(L): 4375.93  Spbio: 220681 93082.8
+1 77 -log(L): 4375.59  Spbio: 219818 93171.1
+64 variables; iteration 60; function evaluation 76; phase 1
+Function value   4.3755923e+03; maximum gradient component mag  -6.1903e+03
+1 78 -log(L): 4375.37  Spbio: 220066 93391
+1 79 -log(L): 4375.17  Spbio: 220515 93280.8
+1 80 -log(L): 4374.8  Spbio: 220119 93439.7
+1 81 -log(L): 4374.09  Spbio: 220176 93968
+1 82 -log(L): 4370.36  Spbio: 220779 99604.6
+1 83 -log(L): 4364.83  Spbio: 214784 102939
+1 84 -log(L): 4355.52  Spbio: 212388 105051
+1 85 -log(L): 4353.7  Spbio: 210116 108654
+1 86 -log(L): 4350.24  Spbio: 210546 108780
+1 87 -log(L): 4336.13  Spbio: 214741 110354
+1 88 -log(L): 4325.75  Spbio: 215325 114599
+1 89 -log(L): 4318.15  Spbio: 220544 115785
+64 variables; iteration 70; function evaluation 88; phase 1
+Function value   4.3181548e+03; maximum gradient component mag  -3.6730e+03
+1 90 -log(L): 4310.6  Spbio: 234831 116976
+1 91 -log(L): 4306.55  Spbio: 239359 115287
+1 92 -log(L): 4301.59  Spbio: 251010 115563
+1 93 -log(L): 4310.88  Spbio: 262081 113867
+1 94 -log(L): 4299.77  Spbio: 254913 114904
+1 95 -log(L): 4297.41  Spbio: 249649 115657
+1 96 -log(L): 4294.02  Spbio: 239538 116122
+1 97 -log(L): 4288.38  Spbio: 227399 116009
+1 98 -log(L): 4278.79  Spbio: 218930 116383
+1 99 -log(L): 4264.43  Spbio: 210591 118687
+1 100 -log(L): 4264.03  Spbio: 210413 127995
+1 101 -log(L): 4258.91  Spbio: 210489 123255
+64 variables; iteration 80; function evaluation 100; phase 1
+Function value   4.2589054e+03; maximum gradient component mag   2.2432e+03
+Maximum number of function evaluations exceeded
+ - final statistics:
+64 variables; iteration 81; function evaluation 100
+Function value   4.2589e+03; maximum gradient component mag   2.2432e+03
+Exit code = 3;  converg criter   1.0000e+01
+1 102 -log(L): 4258.91  Spbio: 210489 123255
+1 102 -log(L): 4258.91  between 
+2 103 -log(L): 4258.91  Spbio: 210489 123255
+
+Initial statistics: 119 variables; iteration 0; function evaluation 0; phase 2
+Function value   4.2589054e+03; maximum gradient component mag   2.2432e+03
+2 104 -log(L): 4258.89  Spbio: 210486 123252
+2 105 -log(L): 4258.69  Spbio: 210457 123221
+2 106 -log(L): 4257.39  Spbio: 210169 122909
+2 107 -log(L): 4254.75  Spbio: 210042 122607
+2 108 -log(L): 4250.55  Spbio: 211517 123412
+2 109 -log(L): 4244.88  Spbio: 210045 121269
+2 110 -log(L): 4241.26  Spbio: 213540 122623
+2 111 -log(L): 4237.52  Spbio: 216727 123543
+2 112 -log(L): 4232.85  Spbio: 221063 124582
+2 113 -log(L): 4229.38  Spbio: 223227 122557
+2 114 -log(L): 4225.98  Spbio: 226722 122921
+2 115 -log(L): 4222.95  Spbio: 228766 123318
+
+Intermediate statistics: 119 variables; iteration 10; function evaluation 12; phase 2
+Function value   4.2229498e+03; maximum gradient component mag   1.6844e+03
+2 116 -log(L): 4218.12  Spbio: 227476 122443
+2 117 -log(L): 4211.84  Spbio: 230908 123495
+2 118 -log(L): 4211.48  Spbio: 240060 125233
+2 119 -log(L): 4208.59  Spbio: 235553 124374
+2 120 -log(L): 4206.32  Spbio: 238543 124856
+2 121 -log(L): 4204.09  Spbio: 239795 124991
+2 122 -log(L): 4201.31  Spbio: 243865 123380
+2 123 -log(L): 4201.29  Spbio: 255270 125976
+2 124 -log(L): 4199.92  Spbio: 249494 124667
+2 125 -log(L): 4200.1  Spbio: 254820 126209
+2 126 -log(L): 4199.26  Spbio: 251986 125389
+2 127 -log(L): 4198.12  Spbio: 254572 125616
+2 128 -log(L): 4198.13  Spbio: 256291 127170
+2 129 -log(L): 4197.56  Spbio: 255412 126384
+119 variables; iteration 20; function evaluation 26; phase 2
+Function value   4.1975581e+03; maximum gradient component mag   1.8061e+03
+2 130 -log(L): 4196.69  Spbio: 254209 126498
+2 131 -log(L): 4196.21  Spbio: 261734 126178
+2 132 -log(L): 4195.59  Spbio: 266221 125783
+2 133 -log(L): 4194.91  Spbio: 268951 125149
+2 134 -log(L): 4194.66  Spbio: 271301 125291
+2 135 -log(L): 4194.38  Spbio: 274253 125461
+2 136 -log(L): 4194.07  Spbio: 280629 126241
+2 137 -log(L): 4193.67  Spbio: 282545 126586
+2 138 -log(L): 4193.31  Spbio: 288542 126517
+2 139 -log(L): 4192.96  Spbio: 294807 126402
+119 variables; iteration 30; function evaluation 36; phase 2
+Function value   4.1929634e+03; maximum gradient component mag   1.8111e+03
+2 140 -log(L): 4192.9  Spbio: 290561 126802
+2 141 -log(L): 4192.8  Spbio: 291447 126880
+2 142 -log(L): 4192.81  Spbio: 286911 126743
+2 143 -log(L): 4192.76  Spbio: 289229 126813
+2 144 -log(L): 4192.73  Spbio: 286569 126798
+2 145 -log(L): 4192.73  Spbio: 288397 126801
+2 146 -log(L): 4192.72  Spbio: 287286 126840
+2 147 -log(L): 4192.71  Spbio: 287538 126891
+2 148 -log(L): 4192.7  Spbio: 286575 126793
+2 149 -log(L): 4192.69  Spbio: 286180 126719
+2 150 -log(L): 4192.67  Spbio: 286464 126693
+119 variables; iteration 40; function evaluation 47; phase 2
+Function value   4.1926673e+03; maximum gradient component mag   1.8023e+03
+2 151 -log(L): 4192.64  Spbio: 285052 126744
+2 152 -log(L): 4192.59  Spbio: 286330 126837
+2 153 -log(L): 4192.52  Spbio: 284298 126802
+2 154 -log(L): 4192.44  Spbio: 287082 126530
+2 155 -log(L): 4192.34  Spbio: 287908 126717
+2 156 -log(L): 4192.25  Spbio: 290352 126846
+2 157 -log(L): 4192.1  Spbio: 290983 127025
+2 158 -log(L): 4191.85  Spbio: 291780 126917
+2 159 -log(L): 4191.43  Spbio: 292062 126829
+2 160 -log(L): 4190.81  Spbio: 292292 126719
+119 variables; iteration 50; function evaluation 57; phase 2
+Function value   4.1908115e+03; maximum gradient component mag   1.5620e+03
+2 161 -log(L): 4189.94  Spbio: 290279 127297
+2 162 -log(L): 4188.84  Spbio: 286244 127133
+2 163 -log(L): 4187.27  Spbio: 283260 126796
+2 164 -log(L): 4185.61  Spbio: 280687 127572
+2 165 -log(L): 4184.48  Spbio: 282448 123613
+2 166 -log(L): 4185.71  Spbio: 286016 125400
+2 167 -log(L): 4184.12  Spbio: 283523 124186
+2 168 -log(L): 4183.88  Spbio: 283942 124934
+2 169 -log(L): 4183.69  Spbio: 283922 124118
+2 170 -log(L): 4183.6  Spbio: 283677 123719
+2 171 -log(L): 4183.5  Spbio: 283695 124190
+119 variables; iteration 60; function evaluation 68; phase 2
+Function value   4.1834998e+03; maximum gradient component mag   1.6399e+02
+2 172 -log(L): 4183.51  Spbio: 283571 124683
+2 173 -log(L): 4183.45  Spbio: 283617 124424
+2 174 -log(L): 4183.44  Spbio: 283502 125298
+2 175 -log(L): 4183.44  Spbio: 283385 125189
+2 176 -log(L): 4183.43  Spbio: 283083 125291
+2 177 -log(L): 4183.42  Spbio: 282467 125420
+2 178 -log(L): 4183.42  Spbio: 281890 125162
+2 179 -log(L): 4183.42  Spbio: 281975 125165
+2 180 -log(L): 4183.41  Spbio: 282280 125273
+2 181 -log(L): 4183.41  Spbio: 282383 125223
+2 182 -log(L): 4183.4  Spbio: 282106 124836
+119 variables; iteration 70; function evaluation 79; phase 2
+Function value   4.1833999e+03; maximum gradient component mag   1.5666e+02
+2 183 -log(L): 4183.39  Spbio: 281700 124997
+2 184 -log(L): 4183.39  Spbio: 280771 124693
+2 185 -log(L): 4183.38  Spbio: 280856 124753
+2 186 -log(L): 4183.38  Spbio: 281706 124883
+2 187 -log(L): 4183.38  Spbio: 281940 124869
+2 188 -log(L): 4183.38  Spbio: 282314 124902
+2 189 -log(L): 4183.38  Spbio: 282125 124880
+2 190 -log(L): 4183.37  Spbio: 281867 124902
+2 191 -log(L): 4183.36  Spbio: 281714 124935
+2 192 -log(L): 4183.35  Spbio: 281720 124979
+2 193 -log(L): 4183.25  Spbio: 281801 125417
+119 variables; iteration 80; function evaluation 90; phase 2
+Function value   4.1832528e+03; maximum gradient component mag   1.0659e+02
+2 194 -log(L): 4183.14  Spbio: 284001 125383
+2 195 -log(L): 4183.04  Spbio: 282517 125214
+2 196 -log(L): 4183.07  Spbio: 278881 125732
+2 197 -log(L): 4183  Spbio: 280883 125442
+2 198 -log(L): 4182.98  Spbio: 281189 125907
+2 199 -log(L): 4182.96  Spbio: 281933 125895
+2 200 -log(L): 4183.05  Spbio: 283219 125611
+2 201 -log(L): 4182.96  Spbio: 282137 125849
+2 202 -log(L): 4182.96  Spbio: 281428 125956
+2 203 -log(L): 4182.96  Spbio: 281885 125887
+Maximum number of function evaluations exceeded
+ - final statistics:
+119 variables; iteration 88; function evaluation 100
+Function value   4.1830e+03; maximum gradient component mag  -1.0999e+01
+Exit code = 3;  converg criter   1.0000e+01
+2 204 -log(L): 4182.96  Spbio: 281885 125887
+2 204 -log(L): 4182.96  between 
+3 205 -log(L): 4182.96  Spbio: 281885 125887
+
+Initial statistics: 182 variables; iteration 0; function evaluation 0; phase 3
+Function value   4.1829602e+03; maximum gradient component mag  -5.2896e+02
+3 206 -log(L): 4182.94  Spbio: 281885 125887
+3 207 -log(L): 4182.74  Spbio: 281890 125887
+3 208 -log(L): 4180.85  Spbio: 281939 125892
+3 209 -log(L): 4171.86  Spbio: 282429 125934
+3 210 -log(L): 5568.33  Spbio: 306872 133574
+3 211 -log(L): 4171.77  Spbio: 282613 125993
+3 212 -log(L): 4171.62  Spbio: 282852 125991
+3 213 -log(L): 4171.32  Spbio: 283636 126114
+3 214 -log(L): 4170.77  Spbio: 284265 125855
+3 215 -log(L): 4169.8  Spbio: 285795 125918
+3 216 -log(L): 4168.57  Spbio: 287624 126845
+3 217 -log(L): 4166.84  Spbio: 286154 127228
+3 218 -log(L): 4164.72  Spbio: 280609 126346
+3 219 -log(L): 4162.86  Spbio: 270835 126175
+
+Intermediate statistics: 182 variables; iteration 10; function evaluation 14; phase 3
+Function value   4.1628632e+03; maximum gradient component mag   4.5585e+02
+3 220 -log(L): 4160.9  Spbio: 258376 125805
+3 221 -log(L): 4158.81  Spbio: 245333 125552
+3 222 -log(L): 4155.69  Spbio: 236516 126355
+3 223 -log(L): 4151.76  Spbio: 225095 126528
+3 224 -log(L): 4148.18  Spbio: 209037 124435
+3 225 -log(L): 4144.21  Spbio: 201364 125578
+3 226 -log(L): 4157.65  Spbio: 194289 125485
+3 227 -log(L): 4143.45  Spbio: 200002 125562
+3 228 -log(L): 4142.93  Spbio: 200553 125954
+3 229 -log(L): 4142.26  Spbio: 200658 126029
+3 230 -log(L): 4141.36  Spbio: 199402 125776
+182 variables; iteration 20; function evaluation 25; phase 3
+Function value   4.1413564e+03; maximum gradient component mag   9.7980e+02
+3 231 -log(L): 4140.88  Spbio: 194249 126304
+3 232 -log(L): 4140.29  Spbio: 190261 126085
+3 233 -log(L): 4139.64  Spbio: 187451 126286
+3 234 -log(L): 4139.65  Spbio: 185580 125711
+3 235 -log(L): 4139.32  Spbio: 186522 126000
+3 236 -log(L): 4138.94  Spbio: 188907 126045
+3 237 -log(L): 4138.81  Spbio: 191950 125843
+3 238 -log(L): 4138.76  Spbio: 188297 125833
+3 239 -log(L): 4138.69  Spbio: 186766 125837
+3 240 -log(L): 4138.63  Spbio: 185849 125818
+3 241 -log(L): 4138.53  Spbio: 185577 125790
+182 variables; iteration 30; function evaluation 36; phase 3
+Function value   4.1385342e+03; maximum gradient component mag   9.6576e+02
+3 242 -log(L): 4138.58  Spbio: 187291 125756
+3 243 -log(L): 4138.5  Spbio: 186262 125777
+3 244 -log(L): 4138.45  Spbio: 186449 125784
+3 245 -log(L): 4138.4  Spbio: 186025 125773
+3 246 -log(L): 4138.38  Spbio: 186157 125827
+3 247 -log(L): 4138.36  Spbio: 186996 125847
+3 248 -log(L): 4138.31  Spbio: 186908 125781
+3 249 -log(L): 4138.29  Spbio: 186048 125843
+3 250 -log(L): 4138.26  Spbio: 185489 125778
+3 251 -log(L): 4138.21  Spbio: 185969 125804
+3 252 -log(L): 4138.13  Spbio: 185605 125901
+182 variables; iteration 40; function evaluation 47; phase 3
+Function value   4.1381275e+03; maximum gradient component mag   8.8712e+02
+3 253 -log(L): 4138  Spbio: 184412 125908
+3 254 -log(L): 4137.78  Spbio: 183374 125922
+3 255 -log(L): 4137.62  Spbio: 183923 125819
+3 256 -log(L): 4138.14  Spbio: 182021 126424
+3 257 -log(L): 4137.59  Spbio: 183547 125935
+3 258 -log(L): 4137.57  Spbio: 182429 126010
+3 259 -log(L): 4137.56  Spbio: 181442 125943
+3 260 -log(L): 4137.55  Spbio: 180962 125874
+3 261 -log(L): 4137.55  Spbio: 180686 125889
+3 262 -log(L): 4137.53  Spbio: 180405 125907
+3 263 -log(L): 4137.52  Spbio: 180170 125838
+182 variables; iteration 50; function evaluation 58; phase 3
+Function value   4.1375177e+03; maximum gradient component mag   5.9275e+02
+3 264 -log(L): 4137.49  Spbio: 180134 125861
+3 265 -log(L): 4137.45  Spbio: 180333 125837
+3 266 -log(L): 4137.4  Spbio: 180870 125800
+3 267 -log(L): 4137.32  Spbio: 181115 125695
+3 268 -log(L): 4137.2  Spbio: 180086 125723
+3 269 -log(L): 4137.05  Spbio: 178019 125712
+3 270 -log(L): 4136.82  Spbio: 176665 125741
+3 271 -log(L): 4136.5  Spbio: 175279 125342
+3 272 -log(L): 4136.18  Spbio: 173348 125367
+3 273 -log(L): 4135.94  Spbio: 174364 125773
+182 variables; iteration 60; function evaluation 68; phase 3
+Function value   4.1359446e+03; maximum gradient component mag   4.7887e+02
+3 274 -log(L): 4135.68  Spbio: 176305 125836
+3 275 -log(L): 4135.38  Spbio: 179120 125986
+3 276 -log(L): 4135.11  Spbio: 180628 125003
+3 277 -log(L): 4134.76  Spbio: 181159 124164
+3 278 -log(L): 4134.31  Spbio: 183856 124859
+3 279 -log(L): 4133.7  Spbio: 186325 125529
+3 280 -log(L): 4132.77  Spbio: 188065 125357
+3 281 -log(L): 4131.73  Spbio: 187826 123257
+3 282 -log(L): 4130.55  Spbio: 190038 122514
+3 283 -log(L): 4129.65  Spbio: 191593 125584
+182 variables; iteration 70; function evaluation 78; phase 3
+Function value   4.1296516e+03; maximum gradient component mag  -4.4943e+02
+3 284 -log(L): 4129.1  Spbio: 193335 125069
+3 285 -log(L): 4128.89  Spbio: 193475 123769
+3 286 -log(L): 4128.6  Spbio: 192122 123977
+3 287 -log(L): 4128.36  Spbio: 187828 124425
+3 288 -log(L): 4128.11  Spbio: 188460 123496
+3 289 -log(L): 4128.02  Spbio: 191294 124533
+3 290 -log(L): 4127.9  Spbio: 191993 124742
+3 291 -log(L): 4127.76  Spbio: 192959 124286
+3 292 -log(L): 4127.69  Spbio: 193000 124560
+3 293 -log(L): 4127.61  Spbio: 194259 124684
+182 variables; iteration 80; function evaluation 88; phase 3
+Function value   4.1276062e+03; maximum gradient component mag   4.3180e+02
+3 294 -log(L): 4127.54  Spbio: 195273 124597
+3 295 -log(L): 4127.49  Spbio: 193747 124893
+3 296 -log(L): 4127.46  Spbio: 191701 124501
+3 297 -log(L): 4127.43  Spbio: 191018 124578
+3 298 -log(L): 4127.41  Spbio: 190417 124616
+3 299 -log(L): 4127.39  Spbio: 190016 124595
+3 300 -log(L): 4127.37  Spbio: 191372 124610
+3 301 -log(L): 4127.37  Spbio: 191711 124713
+3 302 -log(L): 4127.36  Spbio: 191538 124661
+3 303 -log(L): 4127.35  Spbio: 191276 124545
+3 304 -log(L): 4127.34  Spbio: 191219 124648
+182 variables; iteration 90; function evaluation 99; phase 3
+Function value   4.1273447e+03; maximum gradient component mag   4.0870e+02
+3 305 -log(L): 4127.33  Spbio: 191132 124617
+Maximum number of function evaluations exceeded
+ - final statistics:
+182 variables; iteration 92; function evaluation 100
+Function value   4.1273e+03; maximum gradient component mag   4.0411e+02
+Exit code = 3;  converg criter   1.0000e+00
+3 306 -log(L): 4127.33  Spbio: 191132 124617
+3 306 -log(L): 4127.33  between 
+4 307 -log(L): 4127.33  Spbio: 191132 124617
+
+Initial statistics: 182 variables; iteration 0; function evaluation 0; phase 4
+Function value   4.1273338e+03; maximum gradient component mag   4.0411e+02
+4 308 -log(L): 4127.31  Spbio: 191149 124625
+4 309 -log(L): 4127.14  Spbio: 191313 124700
+4 310 -log(L): 4126.83  Spbio: 191441 124678
+4 311 -log(L): 4126.55  Spbio: 190583 123743
+4 312 -log(L): 4126.45  Spbio: 189709 123239
+4 313 -log(L): 4126.29  Spbio: 189514 123217
+4 314 -log(L): 4126.18  Spbio: 189234 123259
+4 315 -log(L): 4125.99  Spbio: 189002 123255
+4 316 -log(L): 4125.69  Spbio: 188556 123259
+4 317 -log(L): 4125.36  Spbio: 187243 123350
+4 318 -log(L): 4125.15  Spbio: 185358 122856
+
+Intermediate statistics: 182 variables; iteration 10; function evaluation 11; phase 4
+Function value   4.1251533e+03; maximum gradient component mag  -8.0843e+02
+4 319 -log(L): 4124.99  Spbio: 184246 122871
+4 320 -log(L): 4124.9  Spbio: 183693 123072
+4 321 -log(L): 4124.79  Spbio: 183351 123011
+4 322 -log(L): 4124.68  Spbio: 182810 122933
+4 323 -log(L): 4124.55  Spbio: 182212 123126
+4 324 -log(L): 4124.51  Spbio: 180680 122723
+4 325 -log(L): 4124.45  Spbio: 180436 122794
+4 326 -log(L): 4124.44  Spbio: 180528 122818
+4 327 -log(L): 4124.42  Spbio: 180560 122800
+4 328 -log(L): 4124.39  Spbio: 180781 122821
+182 variables; iteration 20; function evaluation 21; phase 4
+Function value   4.1243944e+03; maximum gradient component mag  -8.8249e+02
+4 329 -log(L): 4124.36  Spbio: 180568 122645
+4 330 -log(L): 4124.32  Spbio: 180314 122745
+4 331 -log(L): 4124.31  Spbio: 180499 122709
+4 332 -log(L): 4124.3  Spbio: 180348 122720
+4 333 -log(L): 4124.29  Spbio: 180313 122742
+4 334 -log(L): 4124.27  Spbio: 180798 122768
+4 335 -log(L): 4124.24  Spbio: 181220 122774
+4 336 -log(L): 4124.21  Spbio: 180867 122675
+4 337 -log(L): 4124.18  Spbio: 179977 122620
+4 338 -log(L): 4124.16  Spbio: 180001 122553
+182 variables; iteration 30; function evaluation 31; phase 4
+Function value   4.1241622e+03; maximum gradient component mag  -8.7882e+02
+4 339 -log(L): 4124.13  Spbio: 180751 122579
+4 340 -log(L): 4124.1  Spbio: 181864 122558
+4 341 -log(L): 4124.06  Spbio: 182781 122644
+4 342 -log(L): 4124  Spbio: 182202 122727
+4 343 -log(L): 4123.95  Spbio: 181808 122635
+4 344 -log(L): 4123.92  Spbio: 183079 122716
+4 345 -log(L): 4123.88  Spbio: 184073 122685
+4 346 -log(L): 4123.86  Spbio: 183678 122698
+4 347 -log(L): 4123.86  Spbio: 183013 122689
+4 348 -log(L): 4123.84  Spbio: 183369 122693
+4 349 -log(L): 4123.84  Spbio: 183235 122741
+182 variables; iteration 40; function evaluation 42; phase 4
+Function value   4.1238380e+03; maximum gradient component mag  -8.1643e+02
+4 350 -log(L): 4123.83  Spbio: 183056 122727
+4 351 -log(L): 4123.83  Spbio: 182526 122727
+4 352 -log(L): 4123.82  Spbio: 182274 122704
+4 353 -log(L): 4123.82  Spbio: 182360 122698
+4 354 -log(L): 4123.82  Spbio: 182203 122695
+4 355 -log(L): 4123.81  Spbio: 182156 122745
+4 356 -log(L): 4123.81  Spbio: 182078 122789
+4 357 -log(L): 4123.81  Spbio: 182017 122788
+4 358 -log(L): 4123.81  Spbio: 182000 122760
+4 359 -log(L): 4123.81  Spbio: 182065 122734
+182 variables; iteration 50; function evaluation 52; phase 4
+Function value   4.1238083e+03; maximum gradient component mag  -8.0949e+02
+4 360 -log(L): 4123.8  Spbio: 182151 122738
+4 361 -log(L): 4123.8  Spbio: 182178 122771
+4 362 -log(L): 4123.8  Spbio: 182083 122751
+4 363 -log(L): 4123.8  Spbio: 182309 122757
+4 364 -log(L): 4123.79  Spbio: 182427 122757
+4 365 -log(L): 4123.79  Spbio: 182298 122751
+4 366 -log(L): 4123.78  Spbio: 182130 122710
+4 367 -log(L): 4123.78  Spbio: 182179 122710
+4 368 -log(L): 4123.77  Spbio: 182229 122761
+4 369 -log(L): 4123.77  Spbio: 182113 122798
+182 variables; iteration 60; function evaluation 62; phase 4
+Function value   4.1237685e+03; maximum gradient component mag  -8.1361e+02
+4 370 -log(L): 4123.76  Spbio: 182254 122789
+4 371 -log(L): 4123.75  Spbio: 182209 122801
+4 372 -log(L): 4123.74  Spbio: 182185 122772
+4 373 -log(L): 4123.73  Spbio: 182531 122808
+4 374 -log(L): 4123.71  Spbio: 182980 122953
+4 375 -log(L): 4123.69  Spbio: 182179 122869
+4 376 -log(L): 4123.67  Spbio: 182200 122656
+4 377 -log(L): 4123.65  Spbio: 181317 122836
+4 378 -log(L): 4123.64  Spbio: 181505 122894
+4 379 -log(L): 4123.61  Spbio: 181724 122899
+182 variables; iteration 70; function evaluation 72; phase 4
+Function value   4.1236084e+03; maximum gradient component mag  -7.4320e+02
+4 380 -log(L): 4123.58  Spbio: 179893 123008
+4 381 -log(L): 4123.55  Spbio: 180531 123016
+4 382 -log(L): 4123.5  Spbio: 180540 122837
+4 383 -log(L): 4123.44  Spbio: 180286 122807
+4 384 -log(L): 4123.37  Spbio: 180076 123385
+4 385 -log(L): 4123.31  Spbio: 181027 123293
+4 386 -log(L): 4123.24  Spbio: 181633 122764
+4 387 -log(L): 4123.17  Spbio: 181268 123454
+4 388 -log(L): 4123.09  Spbio: 181927 123667
+4 389 -log(L): 4123.01  Spbio: 181976 123785
+182 variables; iteration 80; function evaluation 82; phase 4
+Function value   4.1230085e+03; maximum gradient component mag  -3.4082e+02
+4 390 -log(L): 4122.92  Spbio: 181317 123162
+4 391 -log(L): 4122.85  Spbio: 180666 124224
+4 392 -log(L): 4122.79  Spbio: 179690 123811
+4 393 -log(L): 4122.74  Spbio: 180094 123732
+4 394 -log(L): 4122.7  Spbio: 180995 123916
+4 395 -log(L): 4122.69  Spbio: 182567 123939
+4 396 -log(L): 4122.66  Spbio: 182556 123779
+4 397 -log(L): 4122.67  Spbio: 182072 124026
+4 398 -log(L): 4122.65  Spbio: 182317 123900
+4 399 -log(L): 4122.65  Spbio: 181759 123851
+4 400 -log(L): 4122.64  Spbio: 181389 123613
+182 variables; iteration 90; function evaluation 93; phase 4
+Function value   4.1226413e+03; maximum gradient component mag   1.1667e+02
+4 401 -log(L): 4122.64  Spbio: 181224 123927
+4 402 -log(L): 4122.64  Spbio: 181090 123802
+4 403 -log(L): 4122.64  Spbio: 181289 123905
+4 404 -log(L): 4122.64  Spbio: 181182 123849
+4 405 -log(L): 4122.64  Spbio: 181308 123840
+4 406 -log(L): 4122.64  Spbio: 181342 123871
+4 407 -log(L): 4122.64  Spbio: 181312 123857
+Maximum number of function evaluations exceeded
+ - final statistics:
+182 variables; iteration 97; function evaluation 100
+Function value   4.1226e+03; maximum gradient component mag   1.1662e+02
+Exit code = 3;  converg criter   1.0000e+00
+4 408 -log(L): 4122.64  Spbio: 181312 123857
+4 408 -log(L): 4122.64  between 
+5 409 -log(L): 4122.64  Spbio: 181312 123857
+
+Initial statistics: 188 variables; iteration 0; function evaluation 0; phase 5
+Function value   4.1226355e+03; maximum gradient component mag   1.7511e+02
+5 410 -log(L): 4122.62  Spbio: 181357 123878
+5 411 -log(L): 4122.53  Spbio: 181786 124082
+5 412 -log(L): 4122.71  Spbio: 181474 123565
+5 413 -log(L): 4122.5  Spbio: 181701 123942
+5 414 -log(L): 4122.5  Spbio: 181529 123723
+5 415 -log(L): 4122.49  Spbio: 181548 123730
+5 416 -log(L): 4122.42  Spbio: 181739 123792
+5 417 -log(L): 4122.29  Spbio: 181606 123564
+5 418 -log(L): 4122.1  Spbio: 181277 123302
+5 419 -log(L): 4121.87  Spbio: 180094 122588
+5 420 -log(L): 4121.77  Spbio: 178105 121738
+5 421 -log(L): 4121.6  Spbio: 177043 121613
+5 422 -log(L): 4121.52  Spbio: 175533 121889
+
+Intermediate statistics: 188 variables; iteration 10; function evaluation 13; phase 5
+Function value   4.1215229e+03; maximum gradient component mag  -3.7921e+02
+5 423 -log(L): 4121.44  Spbio: 175033 121950
+5 424 -log(L): 4121.34  Spbio: 174124 121735
+5 425 -log(L): 4121.22  Spbio: 173284 121934
+5 426 -log(L): 4121.09  Spbio: 172131 121996
+5 427 -log(L): 4121.15  Spbio: 170775 122261
+5 428 -log(L): 4121.04  Spbio: 171581 122103
+5 429 -log(L): 4120.96  Spbio: 171119 122179
+5 430 -log(L): 4120.9  Spbio: 171258 122562
+5 431 -log(L): 4120.81  Spbio: 171259 122736
+5 432 -log(L): 4120.76  Spbio: 169751 122974
+5 433 -log(L): 4120.68  Spbio: 168291 122890
+188 variables; iteration 20; function evaluation 24; phase 5
+Function value   4.1206801e+03; maximum gradient component mag  -3.8311e+02
+5 434 -log(L): 4120.61  Spbio: 166449 122634
+5 435 -log(L): 4120.54  Spbio: 164741 122086
+5 436 -log(L): 4120.47  Spbio: 162835 121540
+5 437 -log(L): 4120.47  Spbio: 160629 120863
+5 438 -log(L): 4120.43  Spbio: 161687 121188
+5 439 -log(L): 4120.4  Spbio: 161044 120852
+5 440 -log(L): 4120.38  Spbio: 159726 120720
+5 441 -log(L): 4120.35  Spbio: 158989 120707
+5 442 -log(L): 4120.35  Spbio: 158567 120746
+5 443 -log(L): 4120.34  Spbio: 158600 120746
+5 444 -log(L): 4120.32  Spbio: 158555 120727
+188 variables; iteration 30; function evaluation 35; phase 5
+Function value   4.1203233e+03; maximum gradient component mag  -4.1949e+02
+5 445 -log(L): 4120.3  Spbio: 158068 120720
+5 446 -log(L): 4120.28  Spbio: 157331 120718
+5 447 -log(L): 4120.25  Spbio: 156668 120701
+5 448 -log(L): 4120.23  Spbio: 156976 120852
+5 449 -log(L): 4120.23  Spbio: 157155 120951
+5 450 -log(L): 4120.22  Spbio: 157065 120901
+5 451 -log(L): 4120.21  Spbio: 157192 120856
+5 452 -log(L): 4120.2  Spbio: 157344 120846
+5 453 -log(L): 4120.2  Spbio: 157570 120805
+5 454 -log(L): 4120.19  Spbio: 157767 120740
+5 455 -log(L): 4120.18  Spbio: 158199 120723
+188 variables; iteration 40; function evaluation 46; phase 5
+Function value   4.1201837e+03; maximum gradient component mag  -4.0085e+02
+5 456 -log(L): 4120.18  Spbio: 158440 120780
+5 457 -log(L): 4120.18  Spbio: 158682 120848
+5 458 -log(L): 4120.17  Spbio: 158828 120911
+5 459 -log(L): 4120.16  Spbio: 158592 120913
+5 460 -log(L): 4120.16  Spbio: 158752 120805
+5 461 -log(L): 4120.15  Spbio: 158841 120697
+5 462 -log(L): 4120.14  Spbio: 158172 120718
+5 463 -log(L): 4120.14  Spbio: 158042 120876
+5 464 -log(L): 4120.13  Spbio: 157863 121076
+5 465 -log(L): 4120.12  Spbio: 157277 120999
+188 variables; iteration 50; function evaluation 56; phase 5
+Function value   4.1201191e+03; maximum gradient component mag  -3.9816e+02
+5 466 -log(L): 4120.11  Spbio: 157540 120805
+5 467 -log(L): 4120.11  Spbio: 156910 120698
+5 468 -log(L): 4120.1  Spbio: 156938 120689
+5 469 -log(L): 4120.1  Spbio: 157332 120789
+5 470 -log(L): 4120.1  Spbio: 157204 120853
+5 471 -log(L): 4120.09  Spbio: 157564 120868
+5 472 -log(L): 4120.09  Spbio: 157632 120796
+5 473 -log(L): 4120.09  Spbio: 157636 120751
+5 474 -log(L): 4120.09  Spbio: 157370 120766
+5 475 -log(L): 4120.08  Spbio: 157467 120811
+188 variables; iteration 60; function evaluation 66; phase 5
+Function value   4.1200838e+03; maximum gradient component mag  -4.0202e+02
+5 476 -log(L): 4120.08  Spbio: 157366 120865
+5 477 -log(L): 4120.08  Spbio: 157306 120871
+5 478 -log(L): 4120.07  Spbio: 157148 120820
+5 479 -log(L): 4120.07  Spbio: 157209 120696
+5 480 -log(L): 4120.06  Spbio: 157072 120678
+5 481 -log(L): 4120.05  Spbio: 156874 120666
+5 482 -log(L): 4120.05  Spbio: 156862 120760
+5 483 -log(L): 4120.04  Spbio: 156617 120762
+5 484 -log(L): 4120.03  Spbio: 156957 120671
+5 485 -log(L): 4120.03  Spbio: 156828 120711
+188 variables; iteration 70; function evaluation 76; phase 5
+Function value   4.1200288e+03; maximum gradient component mag  -3.8597e+02
+5 486 -log(L): 4120.02  Spbio: 157098 120800
+5 487 -log(L): 4120.01  Spbio: 157228 120794
+5 488 -log(L): 4120  Spbio: 157555 120777
+5 489 -log(L): 4119.99  Spbio: 157524 120713
+5 490 -log(L): 4119.98  Spbio: 157517 120722
+5 491 -log(L): 4119.96  Spbio: 157685 120779
+5 492 -log(L): 4119.92  Spbio: 157333 120654
+5 493 -log(L): 4119.88  Spbio: 156900 120436
+5 494 -log(L): 4119.81  Spbio: 157092 120517
+5 495 -log(L): 4119.75  Spbio: 156168 120024
+188 variables; iteration 80; function evaluation 86; phase 5
+Function value   4.1197487e+03; maximum gradient component mag  -2.8244e+02
+5 496 -log(L): 4119.66  Spbio: 155546 120257
+5 497 -log(L): 4119.56  Spbio: 155864 119293
+5 498 -log(L): 4119.43  Spbio: 154477 119405
+5 499 -log(L): 4119.4  Spbio: 153456 118556
+5 500 -log(L): 4119.37  Spbio: 153294 118544
+5 501 -log(L): 4119.33  Spbio: 153362 118557
+5 502 -log(L): 4119.31  Spbio: 152649 118509
+5 503 -log(L): 4119.3  Spbio: 152088 118648
+5 504 -log(L): 4119.29  Spbio: 151997 118636
+5 505 -log(L): 4119.28  Spbio: 152023 118587
+188 variables; iteration 90; function evaluation 96; phase 5
+Function value   4.1192750e+03; maximum gradient component mag  -7.2009e+01
+5 506 -log(L): 4119.27  Spbio: 151802 118551
+5 507 -log(L): 4119.27  Spbio: 151836 118539
+5 508 -log(L): 4119.27  Spbio: 151980 118578
+5 509 -log(L): 4119.27  Spbio: 151815 118486
+Maximum number of function evaluations exceeded
+ - final statistics:
+188 variables; iteration 94; function evaluation 100
+Function value   4.1193e+03; maximum gradient component mag  -7.0422e+01
+Exit code = 3;  converg criter   1.0000e+00
+5 510 -log(L): 4119.27  Spbio: 151980 118578
+5 510 -log(L): 4119.27  between 
+6 511 -log(L): 4119.27  Spbio: 151980 118578
+
+Initial statistics: 189 variables; iteration 0; function evaluation 0; phase 6
+Function value   4.1192680e+03; maximum gradient component mag  -7.0422e+01
+6 512 -log(L): 4119.28  Spbio: 152175 118816
+6 513 -log(L): 4119.26  Spbio: 152040 118652
+6 514 -log(L): 4119.27  Spbio: 152036 118669
+6 515 -log(L): 4119.26  Spbio: 152039 118658
+6 516 -log(L): 4119.26  Spbio: 152018 118647
+6 517 -log(L): 4119.26  Spbio: 152007 118659
+6 518 -log(L): 4119.25  Spbio: 151996 118697
+6 519 -log(L): 4119.24  Spbio: 151989 118766
+6 520 -log(L): 4119.22  Spbio: 152005 118871
+6 521 -log(L): 4119.19  Spbio: 151903 118866
+6 522 -log(L): 4119.16  Spbio: 151725 118864
+6 523 -log(L): 4119.14  Spbio: 151424 118789
+
+Intermediate statistics: 189 variables; iteration 10; function evaluation 12; phase 6
+Function value   4.1191356e+03; maximum gradient component mag   6.4776e+01
+6 524 -log(L): 4119.11  Spbio: 151178 118807
+6 525 -log(L): 4119.09  Spbio: 150876 118623
+6 526 -log(L): 4119.06  Spbio: 150532 118468
+6 527 -log(L): 4119  Spbio: 149931 118183
+6 528 -log(L): 4119  Spbio: 149568 117724
+6 529 -log(L): 4118.97  Spbio: 149750 117955
+6 530 -log(L): 4118.93  Spbio: 149708 117644
+6 531 -log(L): 4118.86  Spbio: 149639 117110
+6 532 -log(L): 4118.88  Spbio: 148862 116439
+6 533 -log(L): 4118.83  Spbio: 149309 116826
+6 534 -log(L): 4118.8  Spbio: 148748 116628
+6 535 -log(L): 4118.77  Spbio: 147738 116472
+189 variables; iteration 20; function evaluation 24; phase 6
+Function value   4.1187651e+03; maximum gradient component mag  -6.4722e+01
+6 536 -log(L): 4118.74  Spbio: 146410 116342
+6 537 -log(L): 4118.73  Spbio: 145367 116334
+6 538 -log(L): 4118.72  Spbio: 145172 116317
+6 539 -log(L): 4118.72  Spbio: 145189 116223
+6 540 -log(L): 4118.71  Spbio: 144770 116026
+6 541 -log(L): 4118.7  Spbio: 144288 115826
+6 542 -log(L): 4118.7  Spbio: 143802 115655
+6 543 -log(L): 4118.69  Spbio: 143544 115569
+6 544 -log(L): 4118.69  Spbio: 143269 115478
+6 545 -log(L): 4118.68  Spbio: 142949 115424
+189 variables; iteration 30; function evaluation 34; phase 6
+Function value   4.1186784e+03; maximum gradient component mag  -1.4157e+02
+6 546 -log(L): 4118.68  Spbio: 142438 115316
+6 547 -log(L): 4118.67  Spbio: 142077 115270
+6 548 -log(L): 4118.67  Spbio: 141845 115187
+6 549 -log(L): 4118.67  Spbio: 141630 115076
+6 550 -log(L): 4118.66  Spbio: 141500 115015
+6 551 -log(L): 4118.66  Spbio: 141235 114975
+6 552 -log(L): 4118.66  Spbio: 141212 114982
+6 553 -log(L): 4118.66  Spbio: 141321 115017
+6 554 -log(L): 4118.65  Spbio: 141278 115044
+6 555 -log(L): 4118.65  Spbio: 141078 115053
+189 variables; iteration 40; function evaluation 44; phase 6
+Function value   4.1186521e+03; maximum gradient component mag  -1.6275e+02
+6 556 -log(L): 4118.65  Spbio: 140970 115042
+6 557 -log(L): 4118.65  Spbio: 140937 115015
+6 558 -log(L): 4118.65  Spbio: 140936 114948
+6 559 -log(L): 4118.64  Spbio: 140980 114925
+6 560 -log(L): 4118.64  Spbio: 141038 114938
+6 561 -log(L): 4118.64  Spbio: 141009 114968
+6 562 -log(L): 4118.64  Spbio: 140944 114967
+6 563 -log(L): 4118.63  Spbio: 140750 114936
+6 564 -log(L): 4118.63  Spbio: 141004 114907
+6 565 -log(L): 4118.63  Spbio: 140917 114914
+189 variables; iteration 50; function evaluation 54; phase 6
+Function value   4.1186322e+03; maximum gradient component mag  -1.5933e+02
+6 566 -log(L): 4118.63  Spbio: 141118 114911
+6 567 -log(L): 4118.63  Spbio: 141024 114924
+6 568 -log(L): 4118.63  Spbio: 140961 114915
+6 569 -log(L): 4118.63  Spbio: 140992 114928
+6 570 -log(L): 4118.63  Spbio: 140986 114950
+6 571 -log(L): 4118.63  Spbio: 141043 114936
+6 572 -log(L): 4118.63  Spbio: 141051 114916
+6 573 -log(L): 4118.63  Spbio: 141005 114912
+6 574 -log(L): 4118.63  Spbio: 141032 114952
+6 575 -log(L): 4118.63  Spbio: 141169 114988
+189 variables; iteration 60; function evaluation 64; phase 6
+Function value   4.1186267e+03; maximum gradient component mag  -1.5736e+02
+6 576 -log(L): 4118.63  Spbio: 141187 114967
+6 577 -log(L): 4118.63  Spbio: 141389 114907
+6 578 -log(L): 4118.62  Spbio: 141352 114846
+6 579 -log(L): 4118.62  Spbio: 141409 114866
+6 580 -log(L): 4118.62  Spbio: 141309 114897
+6 581 -log(L): 4118.62  Spbio: 141190 114875
+6 582 -log(L): 4118.61  Spbio: 140896 114745
+6 583 -log(L): 4118.61  Spbio: 140611 114651
+6 584 -log(L): 4118.61  Spbio: 140348 114679
+6 585 -log(L): 4118.6  Spbio: 140340 114716
+189 variables; iteration 70; function evaluation 74; phase 6
+Function value   4.1186004e+03; maximum gradient component mag  -1.6203e+02
+6 586 -log(L): 4118.59  Spbio: 140091 114669
+6 587 -log(L): 4118.58  Spbio: 140364 114633
+6 588 -log(L): 4118.58  Spbio: 140214 114632
+6 589 -log(L): 4118.57  Spbio: 140504 114632
+6 590 -log(L): 4118.56  Spbio: 140396 114677
+6 591 -log(L): 4118.54  Spbio: 140343 114600
+6 592 -log(L): 4118.53  Spbio: 140302 114532
+6 593 -log(L): 4118.52  Spbio: 140194 114576
+6 594 -log(L): 4118.5  Spbio: 140038 114492
+6 595 -log(L): 4118.49  Spbio: 139716 114125
+189 variables; iteration 80; function evaluation 84; phase 6
+Function value   4.1184863e+03; maximum gradient component mag  -1.3750e+02
+6 596 -log(L): 4118.47  Spbio: 139974 114293
+6 597 -log(L): 4118.46  Spbio: 140481 114161
+6 598 -log(L): 4118.45  Spbio: 140423 114096
+6 599 -log(L): 4118.44  Spbio: 140508 113995
+6 600 -log(L): 4118.44  Spbio: 140332 113984
+6 601 -log(L): 4118.43  Spbio: 140081 113916
+6 602 -log(L): 4118.42  Spbio: 139702 113998
+6 603 -log(L): 4118.42  Spbio: 139272 113830
+6 604 -log(L): 4118.42  Spbio: 139014 113873
+6 605 -log(L): 4118.41  Spbio: 138895 113850
+189 variables; iteration 90; function evaluation 94; phase 6
+Function value   4.1184143e+03; maximum gradient component mag  -1.1717e+02
+6 606 -log(L): 4118.41  Spbio: 138852 113815
+6 607 -log(L): 4118.41  Spbio: 138911 113816
+6 608 -log(L): 4118.41  Spbio: 139041 113803
+6 609 -log(L): 4118.41  Spbio: 139060 113792
+6 610 -log(L): 4118.41  Spbio: 139050 113797
+6 611 -log(L): 4118.41  Spbio: 139077 113783
+Maximum number of function evaluations exceeded
+ - final statistics:
+189 variables; iteration 96; function evaluation 100
+Function value   4.1184e+03; maximum gradient component mag  -1.1009e+02
+Exit code = 3;  converg criter   1.0000e+00
+6 612 -log(L): 4118.41  Spbio: 139077 113783
+6 612 -log(L): 4118.41  between 
+7 613 -log(L): 4118.41  Spbio: 139077 113783
+
+Initial statistics: 189 variables; iteration 0; function evaluation 0; phase 7
+Function value   4.1184126e+03; maximum gradient component mag  -1.1009e+02
+7 614 -log(L): 4118.42  Spbio: 139218 113952
+7 615 -log(L): 4118.41  Spbio: 139135 113852
+7 616 -log(L): 4118.41  Spbio: 139082 113788
+7 617 -log(L): 4118.41  Spbio: 139114 113827
+7 618 -log(L): 4118.4  Spbio: 139081 113785
+7 619 -log(L): 4118.4  Spbio: 139063 113734
+7 620 -log(L): 4118.4  Spbio: 139054 113691
+7 621 -log(L): 4118.4  Spbio: 139045 113652
+7 622 -log(L): 4118.4  Spbio: 139051 113642
+7 623 -log(L): 4118.4  Spbio: 139037 113621
+7 624 -log(L): 4118.4  Spbio: 138997 113595
+7 625 -log(L): 4118.4  Spbio: 138935 113575
+
+Intermediate statistics: 189 variables; iteration 10; function evaluation 12; phase 7
+Function value   4.1183998e+03; maximum gradient component mag  -1.9253e+01
+7 626 -log(L): 4118.4  Spbio: 138894 113537
+7 627 -log(L): 4118.4  Spbio: 138926 113567
+7 628 -log(L): 4118.4  Spbio: 138930 113570
+7 629 -log(L): 4118.4  Spbio: 138927 113555
+7 630 -log(L): 4118.4  Spbio: 138900 113536
+7 631 -log(L): 4118.4  Spbio: 138840 113519
+7 632 -log(L): 4118.4  Spbio: 138765 113506
+7 633 -log(L): 4118.4  Spbio: 138687 113477
+7 634 -log(L): 4118.4  Spbio: 138617 113440
+7 635 -log(L): 4118.4  Spbio: 138653 113459
+7 636 -log(L): 4118.4  Spbio: 138643 113446
+7 637 -log(L): 4118.4  Spbio: 138615 113436
+189 variables; iteration 20; function evaluation 24; phase 7
+Function value   4.1183968e+03; maximum gradient component mag  -1.9379e+01
+7 638 -log(L): 4118.4  Spbio: 138596 113421
+7 639 -log(L): 4118.4  Spbio: 138578 113411
+7 640 -log(L): 4118.4  Spbio: 138501 113394
+7 641 -log(L): 4118.4  Spbio: 138349 113369
+7 642 -log(L): 4118.4  Spbio: 138231 113342
+7 643 -log(L): 4118.4  Spbio: 138131 113307
+7 644 -log(L): 4118.4  Spbio: 138062 113281
+7 645 -log(L): 4118.39  Spbio: 138003 113252
+7 646 -log(L): 4118.39  Spbio: 137928 113231
+7 647 -log(L): 4118.39  Spbio: 137878 113214
+189 variables; iteration 30; function evaluation 34; phase 7
+Function value   4.1183947e+03; maximum gradient component mag  -1.9824e+01
+7 648 -log(L): 4118.39  Spbio: 137828 113198
+7 649 -log(L): 4118.39  Spbio: 137793 113186
+7 650 -log(L): 4118.39  Spbio: 137755 113180
+7 651 -log(L): 4118.39  Spbio: 137741 113177
+7 652 -log(L): 4118.39  Spbio: 137741 113170
+7 653 -log(L): 4118.39  Spbio: 137734 113157
+7 654 -log(L): 4118.39  Spbio: 137709 113145
+7 655 -log(L): 4118.39  Spbio: 137697 113141
+7 656 -log(L): 4118.39  Spbio: 137696 113142
+7 657 -log(L): 4118.39  Spbio: 137725 113145
+189 variables; iteration 40; function evaluation 44; phase 7
+Function value   4.1183938e+03; maximum gradient component mag  -1.9862e+01
+7 658 -log(L): 4118.39  Spbio: 137723 113140
+7 659 -log(L): 4118.39  Spbio: 137724 113143
+7 660 -log(L): 4118.39  Spbio: 137723 113140
+7 661 -log(L): 4118.39  Spbio: 137740 113138
+7 662 -log(L): 4118.39  Spbio: 137743 113145
+7 663 -log(L): 4118.39  Spbio: 137714 113156
+7 664 -log(L): 4118.39  Spbio: 137789 113170
+7 665 -log(L): 4118.39  Spbio: 137763 113167
+7 666 -log(L): 4118.39  Spbio: 137772 113159
+7 667 -log(L): 4118.39  Spbio: 137784 113167
+7 668 -log(L): 4118.39  Spbio: 137785 113176
+189 variables; iteration 50; function evaluation 55; phase 7
+Function value   4.1183933e+03; maximum gradient component mag  -1.9622e+01
+7 669 -log(L): 4118.39  Spbio: 137793 113178
+7 670 -log(L): 4118.39  Spbio: 137803 113176
+7 671 -log(L): 4118.39  Spbio: 137790 113174
+7 672 -log(L): 4118.39  Spbio: 137817 113177
+7 673 -log(L): 4118.39  Spbio: 137810 113180
+7 674 -log(L): 4118.39  Spbio: 137816 113181
+7 675 -log(L): 4118.39  Spbio: 137822 113178
+7 676 -log(L): 4118.39  Spbio: 137832 113178
+7 677 -log(L): 4118.39  Spbio: 137830 113178
+7 678 -log(L): 4118.39  Spbio: 137859 113177
+189 variables; iteration 60; function evaluation 65; phase 7
+Function value   4.1183931e+03; maximum gradient component mag  -1.9456e+01
+7 679 -log(L): 4118.39  Spbio: 137860 113177
+7 680 -log(L): 4118.39  Spbio: 137872 113177
+7 681 -log(L): 4118.39  Spbio: 137856 113178
+7 682 -log(L): 4118.39  Spbio: 137848 113176
+7 683 -log(L): 4118.39  Spbio: 137831 113173
+7 684 -log(L): 4118.39  Spbio: 137817 113170
+7 685 -log(L): 4118.39  Spbio: 137802 113169
+7 686 -log(L): 4118.39  Spbio: 137795 113170
+7 687 -log(L): 4118.39  Spbio: 137789 113169
+7 688 -log(L): 4118.39  Spbio: 137790 113166
+189 variables; iteration 70; function evaluation 75; phase 7
+Function value   4.1183931e+03; maximum gradient component mag  -1.9158e+01
+7 689 -log(L): 4118.39  Spbio: 137790 113168
+7 690 -log(L): 4118.39  Spbio: 137789 113170
+7 691 -log(L): 4118.39  Spbio: 137790 113167
+7 692 -log(L): 4118.39  Spbio: 137795 113171
+7 693 -log(L): 4118.39  Spbio: 137792 113169
+7 694 -log(L): 4118.39  Spbio: 137781 113165
+7 695 -log(L): 4118.39  Spbio: 137787 113169
+7 696 -log(L): 4118.39  Spbio: 137794 113167
+7 697 -log(L): 4118.39  Spbio: 137786 113161
+7 698 -log(L): 4118.39  Spbio: 137795 113171
+189 variables; iteration 80; function evaluation 85; phase 7
+Function value   4.1183930e+03; maximum gradient component mag  -1.7891e+01
+7 699 -log(L): 4118.39  Spbio: 137803 113162
+7 700 -log(L): 4118.39  Spbio: 137796 113169
+7 701 -log(L): 4118.39  Spbio: 137806 113170
+7 702 -log(L): 4118.39  Spbio: 137815 113163
+7 703 -log(L): 4118.39  Spbio: 137835 113174
+7 704 -log(L): 4118.39  Spbio: 137845 113169
+7 705 -log(L): 4118.39  Spbio: 137829 113164
+7 706 -log(L): 4118.39  Spbio: 137788 113165
+7 707 -log(L): 4118.39  Spbio: 137746 113148
+7 708 -log(L): 4118.39  Spbio: 137707 113148
+189 variables; iteration 90; function evaluation 95; phase 7
+Function value   4.1183924e+03; maximum gradient component mag  -1.0277e+01
+7 709 -log(L): 4118.39  Spbio: 137685 113134
+7 710 -log(L): 4118.39  Spbio: 137683 113118
+7 711 -log(L): 4118.39  Spbio: 137710 113131
+7 712 -log(L): 4118.39  Spbio: 137708 113112
+7 713 -log(L): 4118.39  Spbio: 137698 113123
+Maximum number of function evaluations exceeded
+ - final statistics:
+189 variables; iteration 96; function evaluation 100
+Function value   4.1184e+03; maximum gradient component mag  -3.2737e+00
+Exit code = 3;  converg criter   1.0000e+00
+7 714 -log(L): 4118.39  Spbio: 137698 113123
+7 714 -log(L): 4118.39  between 
+8 715 -log(L): 4118.39  Spbio: 137698 113123
+
+Initial statistics: 189 variables; iteration 0; function evaluation 0; phase 8
+Function value   4.1183920e+03; maximum gradient component mag  -3.2737e+00
+8 716 -log(L): 4141.96  Spbio: 138569 114629
+8 717 -log(L): 4118.39  Spbio: 137698 113124
+8 718 -log(L): 4118.39  Spbio: 137698 113124
+8 719 -log(L): 4118.39  Spbio: 137693 113120
+8 720 -log(L): 4118.39  Spbio: 137696 113122
+8 721 -log(L): 4118.39  Spbio: 137697 113123
+8 722 -log(L): 4118.39  Spbio: 137695 113122
+8 723 -log(L): 4118.39  Spbio: 137694 113122
+8 724 -log(L): 4118.39  Spbio: 137692 113121
+8 725 -log(L): 4118.39  Spbio: 137693 113120
+8 726 -log(L): 4118.39  Spbio: 137697 113118
+8 727 -log(L): 4118.39  Spbio: 137700 113113
+
+Intermediate statistics: 189 variables; iteration 10; function evaluation 12; phase 8
+Function value   4.1183919e+03; maximum gradient component mag   3.5775e+00
+8 728 -log(L): 4118.39  Spbio: 137698 113111
+8 729 -log(L): 4118.39  Spbio: 137696 113108
+8 730 -log(L): 4118.39  Spbio: 137692 113107
+8 731 -log(L): 4118.39  Spbio: 137688 113107
+8 732 -log(L): 4118.39  Spbio: 137687 113108
+8 733 -log(L): 4118.39  Spbio: 137686 113107
+8 734 -log(L): 4118.39  Spbio: 137687 113109
+8 735 -log(L): 4118.39  Spbio: 137685 113110
+8 736 -log(L): 4118.39  Spbio: 137681 113110
+8 737 -log(L): 4118.39  Spbio: 137682 113110
+189 variables; iteration 20; function evaluation 22; phase 8
+Function value   4.1183919e+03; maximum gradient component mag   3.5777e+00
+8 738 -log(L): 4118.39  Spbio: 137688 113112
+8 739 -log(L): 4118.39  Spbio: 137690 113114
+8 740 -log(L): 4118.39  Spbio: 137691 113114
+8 741 -log(L): 4118.39  Spbio: 137695 113114
+8 742 -log(L): 4118.39  Spbio: 137694 113114
+8 743 -log(L): 4118.39  Spbio: 137693 113115
+8 744 -log(L): 4118.39  Spbio: 137693 113114
+8 745 -log(L): 4118.39  Spbio: 137693 113115
+8 746 -log(L): 4118.39  Spbio: 137695 113115
+8 747 -log(L): 4118.39  Spbio: 137696 113116
+189 variables; iteration 30; function evaluation 32; phase 8
+Function value   4.1183919e+03; maximum gradient component mag   3.5679e+00
+8 748 -log(L): 4118.39  Spbio: 137695 113117
+8 749 -log(L): 4118.39  Spbio: 137697 113119
+8 750 -log(L): 4118.39  Spbio: 137701 113120
+8 751 -log(L): 4118.39  Spbio: 137705 113121
+8 752 -log(L): 4118.39  Spbio: 137702 113122
+8 753 -log(L): 4118.39  Spbio: 137702 113122
+8 754 -log(L): 4118.39  Spbio: 137709 113124
+8 755 -log(L): 4118.39  Spbio: 137713 113125
+8 756 -log(L): 4118.39  Spbio: 137710 113124
+8 757 -log(L): 4118.39  Spbio: 137711 113125
+189 variables; iteration 40; function evaluation 42; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   3.5450e+00
+8 758 -log(L): 4118.39  Spbio: 137719 113126
+8 759 -log(L): 4118.39  Spbio: 137719 113126
+8 760 -log(L): 4118.39  Spbio: 137715 113126
+8 761 -log(L): 4118.39  Spbio: 137714 113127
+8 762 -log(L): 4118.39  Spbio: 137715 113126
+8 763 -log(L): 4118.39  Spbio: 137711 113125
+8 764 -log(L): 4118.39  Spbio: 137716 113124
+8 765 -log(L): 4118.39  Spbio: 137710 113124
+8 766 -log(L): 4118.39  Spbio: 137709 113125
+8 767 -log(L): 4118.39  Spbio: 137708 113125
+189 variables; iteration 50; function evaluation 52; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   3.5172e+00
+8 768 -log(L): 4118.39  Spbio: 137708 113125
+8 769 -log(L): 4118.39  Spbio: 137708 113124
+8 770 -log(L): 4118.39  Spbio: 137705 113124
+8 771 -log(L): 4118.39  Spbio: 137706 113124
+8 772 -log(L): 4118.39  Spbio: 137704 113124
+8 773 -log(L): 4118.39  Spbio: 137705 113125
+8 774 -log(L): 4118.39  Spbio: 137705 113125
+8 775 -log(L): 4118.39  Spbio: 137706 113125
+8 776 -log(L): 4118.39  Spbio: 137705 113125
+8 777 -log(L): 4118.39  Spbio: 137705 113124
+189 variables; iteration 60; function evaluation 62; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   3.4788e+00
+8 778 -log(L): 4118.39  Spbio: 137706 113125
+8 779 -log(L): 4118.39  Spbio: 137706 113125
+8 780 -log(L): 4118.39  Spbio: 137706 113126
+8 781 -log(L): 4118.39  Spbio: 137706 113125
+8 782 -log(L): 4118.39  Spbio: 137705 113125
+8 783 -log(L): 4118.39  Spbio: 137705 113125
+8 784 -log(L): 4118.39  Spbio: 137704 113126
+8 785 -log(L): 4118.39  Spbio: 137703 113126
+8 786 -log(L): 4118.39  Spbio: 137703 113126
+8 787 -log(L): 4118.39  Spbio: 137704 113126
+189 variables; iteration 70; function evaluation 72; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   3.3965e+00
+8 788 -log(L): 4118.39  Spbio: 137705 113126
+8 789 -log(L): 4118.39  Spbio: 137706 113126
+8 790 -log(L): 4118.39  Spbio: 137707 113126
+8 791 -log(L): 4118.39  Spbio: 137708 113126
+8 792 -log(L): 4118.39  Spbio: 137707 113125
+8 793 -log(L): 4118.39  Spbio: 137706 113125
+8 794 -log(L): 4118.39  Spbio: 137706 113126
+8 795 -log(L): 4118.39  Spbio: 137705 113125
+8 796 -log(L): 4118.39  Spbio: 137704 113126
+8 797 -log(L): 4118.39  Spbio: 137705 113126
+189 variables; iteration 80; function evaluation 82; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   3.1830e+00
+8 798 -log(L): 4118.39  Spbio: 137705 113126
+8 799 -log(L): 4118.39  Spbio: 137705 113126
+8 800 -log(L): 4118.39  Spbio: 137708 113127
+8 801 -log(L): 4118.39  Spbio: 137706 113127
+8 802 -log(L): 4118.39  Spbio: 137707 113125
+8 803 -log(L): 4118.39  Spbio: 137704 113127
+8 804 -log(L): 4118.39  Spbio: 137705 113125
+8 805 -log(L): 4118.39  Spbio: 137703 113125
+8 806 -log(L): 4118.39  Spbio: 137701 113125
+8 807 -log(L): 4118.39  Spbio: 137706 113127
+189 variables; iteration 90; function evaluation 92; phase 8
+Function value   4.1183918e+03; maximum gradient component mag   1.5540e+00
+8 808 -log(L): 4118.39  Spbio: 137714 113130
+8 809 -log(L): 4118.39  Spbio: 137722 113130
+8 810 -log(L): 4118.39  Spbio: 137724 113131
+
+ - final statistics:
+189 variables; iteration 93; function evaluation 95
+Function value   4.1184e+03; maximum gradient component mag   8.3596e-01
+Exit code = 1;  converg criter   1.0000e+00
+8 811 -log(L): 4118.39  Spbio: 137724 113131
+8 811 -log(L): 4118.39  between 
+9 812 -log(L): 4118.39  Spbio: 137724 113131
+
+Initial statistics: 191 variables; iteration 0; function evaluation 0; phase 9
+Function value   4.1183918e+03; maximum gradient component mag  -2.7157e+02
+9 813 -log(L): 4118.37  Spbio: 137724 113131
+9 814 -log(L): 4118.19  Spbio: 137725 113133
+9 815 -log(L): 4122.36  Spbio: 138892 114361
+9 816 -log(L): 4118.18  Spbio: 137776 113186
+9 817 -log(L): 4118.17  Spbio: 137809 113214
+9 818 -log(L): 4118.15  Spbio: 137712 113077
+9 819 -log(L): 4118.13  Spbio: 137635 113015
+9 820 -log(L): 4118.08  Spbio: 137582 113002
+9 821 -log(L): 4118.03  Spbio: 137593 113053
+9 822 -log(L): 4118  Spbio: 137549 113022
+9 823 -log(L): 4118.03  Spbio: 137520 113135
+9 824 -log(L): 4117.99  Spbio: 137540 113058
+9 825 -log(L): 4118  Spbio: 137589 113206
+9 826 -log(L): 4117.98  Spbio: 137553 113098
+
+Intermediate statistics: 191 variables; iteration 10; function evaluation 14; phase 9
+Function value   4.1179834e+03; maximum gradient component mag   3.0526e+02
+9 827 -log(L): 4117.98  Spbio: 137558 113076
+9 828 -log(L): 4117.98  Spbio: 137548 113035
+9 829 -log(L): 4117.97  Spbio: 137570 113053
+9 830 -log(L): 4117.97  Spbio: 137509 113033
+9 831 -log(L): 4117.97  Spbio: 137406 113017
+9 832 -log(L): 4117.97  Spbio: 137268 113033
+9 833 -log(L): 4117.97  Spbio: 137334 113025
+9 834 -log(L): 4117.97  Spbio: 137214 113027
+9 835 -log(L): 4117.96  Spbio: 137117 113019
+9 836 -log(L): 4117.97  Spbio: 137068 113003
+9 837 -log(L): 4117.96  Spbio: 137101 113014
+9 838 -log(L): 4117.96  Spbio: 137081 113010
+191 variables; iteration 20; function evaluation 26; phase 9
+Function value   4.1179634e+03; maximum gradient component mag   3.0545e+02
+9 839 -log(L): 4117.96  Spbio: 137026 113006
+9 840 -log(L): 4117.96  Spbio: 137003 112986
+9 841 -log(L): 4117.96  Spbio: 137006 112983
+9 842 -log(L): 4117.96  Spbio: 136958 112986
+9 843 -log(L): 4117.96  Spbio: 136909 113014
+9 844 -log(L): 4117.96  Spbio: 136901 113032
+9 845 -log(L): 4117.96  Spbio: 136917 113044
+9 846 -log(L): 4117.96  Spbio: 136939 113047
+9 847 -log(L): 4117.96  Spbio: 136964 113046
+9 848 -log(L): 4117.96  Spbio: 136895 113040
+191 variables; iteration 30; function evaluation 36; phase 9
+Function value   4.1179571e+03; maximum gradient component mag   3.0484e+02
+9 849 -log(L): 4117.96  Spbio: 136914 113029
+9 850 -log(L): 4117.96  Spbio: 136988 113018
+9 851 -log(L): 4117.96  Spbio: 137012 113007
+9 852 -log(L): 4117.96  Spbio: 137054 112994
+9 853 -log(L): 4117.95  Spbio: 137039 112996
+9 854 -log(L): 4117.95  Spbio: 137055 112998
+9 855 -log(L): 4117.95  Spbio: 137152 113012
+9 856 -log(L): 4117.95  Spbio: 137214 113013
+9 857 -log(L): 4117.95  Spbio: 137165 112996
+9 858 -log(L): 4117.95  Spbio: 137067 113014
+191 variables; iteration 40; function evaluation 46; phase 9
+Function value   4.1179509e+03; maximum gradient component mag   3.0265e+02
+9 859 -log(L): 4117.95  Spbio: 137024 112979
+9 860 -log(L): 4117.95  Spbio: 137029 112975
+9 861 -log(L): 4117.95  Spbio: 137024 112954
+9 862 -log(L): 4117.94  Spbio: 136890 112966
+9 863 -log(L): 4117.94  Spbio: 136862 112942
+9 864 -log(L): 4117.94  Spbio: 136740 112847
+9 865 -log(L): 4117.93  Spbio: 136705 112719
+9 866 -log(L): 4117.93  Spbio: 136626 112705
+9 867 -log(L): 4117.92  Spbio: 137022 112747
+9 868 -log(L): 4117.92  Spbio: 136440 112749
+191 variables; iteration 50; function evaluation 56; phase 9
+Function value   4.1179179e+03; maximum gradient component mag   2.8568e+02
+9 869 -log(L): 4117.91  Spbio: 136689 112699
+9 870 -log(L): 4117.9  Spbio: 136407 112637
+9 871 -log(L): 4117.89  Spbio: 136333 112596
+9 872 -log(L): 4117.88  Spbio: 136168 112557
+9 873 -log(L): 4117.86  Spbio: 135661 112558
+9 874 -log(L): 4117.86  Spbio: 135465 112610
+9 875 -log(L): 4117.85  Spbio: 135182 112663
+9 876 -log(L): 4117.84  Spbio: 135065 112659
+9 877 -log(L): 4117.82  Spbio: 135312 112616
+9 878 -log(L): 4117.8  Spbio: 135106 112627
+191 variables; iteration 60; function evaluation 66; phase 9
+Function value   4.1178009e+03; maximum gradient component mag   2.1642e+02
+9 879 -log(L): 4117.78  Spbio: 135016 112596
+9 880 -log(L): 4117.76  Spbio: 135229 112521
+9 881 -log(L): 4117.73  Spbio: 135216 112374
+9 882 -log(L): 4117.7  Spbio: 135715 112397
+9 883 -log(L): 4117.66  Spbio: 135525 112497
+9 884 -log(L): 4117.63  Spbio: 136257 112396
+9 885 -log(L): 4117.59  Spbio: 136209 112039
+9 886 -log(L): 4117.59  Spbio: 136446 112231
+9 887 -log(L): 4117.58  Spbio: 136565 112271
+9 888 -log(L): 4117.57  Spbio: 136536 112249
+191 variables; iteration 70; function evaluation 76; phase 9
+Function value   4.1175672e+03; maximum gradient component mag   5.6428e+01
+9 889 -log(L): 4117.56  Spbio: 136219 112184
+9 890 -log(L): 4117.55  Spbio: 136572 112392
+9 891 -log(L): 4117.54  Spbio: 136421 112604
+9 892 -log(L): 4117.53  Spbio: 136360 112644
+9 893 -log(L): 4117.53  Spbio: 136448 112875
+9 894 -log(L): 4117.53  Spbio: 136731 112984
+9 895 -log(L): 4117.52  Spbio: 137060 113010
+9 896 -log(L): 4117.51  Spbio: 137198 113129
+9 897 -log(L): 4117.51  Spbio: 137433 113430
+9 898 -log(L): 4117.51  Spbio: 137557 113301
+191 variables; iteration 80; function evaluation 86; phase 9
+Function value   4.1175069e+03; maximum gradient component mag   2.0660e+01
+9 899 -log(L): 4117.5  Spbio: 137581 113366
+9 900 -log(L): 4117.49  Spbio: 137662 113326
+9 901 -log(L): 4117.49  Spbio: 137401 113013
+9 902 -log(L): 4117.48  Spbio: 137118 113019
+9 903 -log(L): 4117.48  Spbio: 136924 112932
+9 904 -log(L): 4117.48  Spbio: 136481 112811
+9 905 -log(L): 4117.48  Spbio: 136367 112798
+9 906 -log(L): 4117.48  Spbio: 136173 112702
+9 907 -log(L): 4117.48  Spbio: 136173 112741
+9 908 -log(L): 4117.48  Spbio: 136149 112739
+191 variables; iteration 90; function evaluation 96; phase 9
+Function value   4.1174810e+03; maximum gradient component mag  -1.1461e+01
+9 909 -log(L): 4117.48  Spbio: 136187 112713
+9 910 -log(L): 4117.48  Spbio: 136180 112742
+9 911 -log(L): 4117.48  Spbio: 136185 112735
+9 912 -log(L): 4117.48  Spbio: 136186 112748
+Maximum number of function evaluations exceeded
+ - final statistics:
+191 variables; iteration 95; function evaluation 100
+Function value   4.1175e+03; maximum gradient component mag  -1.1375e+01
+Exit code = 3;  converg criter   1.0000e+00
+9 913 -log(L): 4117.48  Spbio: 136186 112748
+9 913 -log(L): 4117.48  between 
+10 914 -log(L): 4117.48  Spbio: 136186 112748
+
+Initial statistics: 193 variables; iteration 0; function evaluation 0; phase 10
+Function value   4.1174805e+03; maximum gradient component mag  -1.1169e+02
+10 915 -log(L): 4117.46  Spbio: 136183 112750
+10 916 -log(L): 4117.3  Spbio: 136156 112775
+10 917 -log(L): 4117.09  Spbio: 136008 112702
+10 918 -log(L): 4117.02  Spbio: 135072 111724
+10 919 -log(L): 4116.95  Spbio: 134921 111675
+10 920 -log(L): 4116.98  Spbio: 134598 111572
+10 921 -log(L): 4116.91  Spbio: 134789 111633
+10 922 -log(L): 4116.88  Spbio: 134544 111514
+10 923 -log(L): 4116.84  Spbio: 134169 111336
+10 924 -log(L): 4116.79  Spbio: 133893 111417
+10 925 -log(L): 4116.74  Spbio: 133652 111344
+10 926 -log(L): 4116.71  Spbio: 133338 111240
+
+Intermediate statistics: 193 variables; iteration 10; function evaluation 12; phase 10
+Function value   4.1167066e+03; maximum gradient component mag  -7.4571e+02
+10 927 -log(L): 4116.68  Spbio: 133375 111329
+10 928 -log(L): 4116.66  Spbio: 133616 111462
+10 929 -log(L): 4116.63  Spbio: 133794 111449
+10 930 -log(L): 4116.61  Spbio: 134123 111444
+10 931 -log(L): 4116.58  Spbio: 134163 111221
+10 932 -log(L): 4116.58  Spbio: 134152 111131
+10 933 -log(L): 4116.57  Spbio: 134153 111112
+10 934 -log(L): 4116.56  Spbio: 134060 111088
+10 935 -log(L): 4116.54  Spbio: 133915 111088
+10 936 -log(L): 4116.55  Spbio: 133987 111036
+10 937 -log(L): 4116.54  Spbio: 133943 111068
+193 variables; iteration 20; function evaluation 23; phase 10
+Function value   4.1165383e+03; maximum gradient component mag  -7.4235e+02
+10 938 -log(L): 4116.53  Spbio: 134007 111024
+10 939 -log(L): 4116.52  Spbio: 134167 111049
+10 940 -log(L): 4116.52  Spbio: 134317 111077
+10 941 -log(L): 4116.51  Spbio: 134003 111157
+10 942 -log(L): 4116.51  Spbio: 134007 111163
+10 943 -log(L): 4116.51  Spbio: 134065 111176
+10 944 -log(L): 4116.51  Spbio: 134118 111205
+10 945 -log(L): 4116.51  Spbio: 134258 111196
+10 946 -log(L): 4116.51  Spbio: 134312 111178
+10 947 -log(L): 4116.51  Spbio: 134276 111155
+193 variables; iteration 30; function evaluation 33; phase 10
+Function value   4.1165057e+03; maximum gradient component mag  -7.4043e+02
+10 948 -log(L): 4116.5  Spbio: 134362 111140
+10 949 -log(L): 4116.5  Spbio: 134503 111159
+10 950 -log(L): 4116.5  Spbio: 134592 111187
+10 951 -log(L): 4116.5  Spbio: 134731 111296
+10 952 -log(L): 4116.5  Spbio: 134784 111386
+10 953 -log(L): 4116.5  Spbio: 134803 111456
+10 954 -log(L): 4116.5  Spbio: 134901 111504
+10 955 -log(L): 4116.5  Spbio: 135003 111517
+10 956 -log(L): 4116.5  Spbio: 135059 111505
+10 957 -log(L): 4116.49  Spbio: 135194 111494
+193 variables; iteration 40; function evaluation 43; phase 10
+Function value   4.1164949e+03; maximum gradient component mag  -7.3249e+02
+10 958 -log(L): 4116.49  Spbio: 135324 111507
+10 959 -log(L): 4116.49  Spbio: 135347 111526
+10 960 -log(L): 4116.49  Spbio: 135386 111562
+10 961 -log(L): 4116.49  Spbio: 135483 111601
+10 962 -log(L): 4116.49  Spbio: 135631 111618
+10 963 -log(L): 4116.49  Spbio: 135595 111637
+10 964 -log(L): 4116.49  Spbio: 135618 111665
+10 965 -log(L): 4116.49  Spbio: 135700 111710
+10 966 -log(L): 4116.49  Spbio: 135627 111743
+10 967 -log(L): 4116.49  Spbio: 135705 111730
+193 variables; iteration 50; function evaluation 53; phase 10
+Function value   4.1164890e+03; maximum gradient component mag  -7.2527e+02
+10 968 -log(L): 4116.49  Spbio: 135636 111692
+10 969 -log(L): 4116.49  Spbio: 135607 111659
+10 970 -log(L): 4116.49  Spbio: 135601 111678
+10 971 -log(L): 4116.49  Spbio: 135464 111692
+10 972 -log(L): 4116.49  Spbio: 135458 111653
+10 973 -log(L): 4116.48  Spbio: 135361 111569
+10 974 -log(L): 4116.48  Spbio: 135260 111493
+10 975 -log(L): 4116.48  Spbio: 135199 111453
+10 976 -log(L): 4116.48  Spbio: 135102 111472
+10 977 -log(L): 4116.48  Spbio: 135174 111471
+193 variables; iteration 60; function evaluation 63; phase 10
+Function value   4.1164785e+03; maximum gradient component mag  -7.0914e+02
+10 978 -log(L): 4116.48  Spbio: 134934 111409
+10 979 -log(L): 4116.47  Spbio: 134996 111325
+10 980 -log(L): 4116.47  Spbio: 134742 111301
+10 981 -log(L): 4116.47  Spbio: 134789 111325
+10 982 -log(L): 4116.46  Spbio: 134515 111325
+10 983 -log(L): 4116.45  Spbio: 134704 111292
+10 984 -log(L): 4116.43  Spbio: 134478 111293
+10 985 -log(L): 4116.42  Spbio: 134574 111292
+10 986 -log(L): 4116.4  Spbio: 134854 111230
+10 987 -log(L): 4116.38  Spbio: 135152 111402
+193 variables; iteration 70; function evaluation 73; phase 10
+Function value   4.1163801e+03; maximum gradient component mag  -4.7630e+02
+10 988 -log(L): 4116.36  Spbio: 134968 111615
+10 989 -log(L): 4116.34  Spbio: 135368 111735
+10 990 -log(L): 4116.34  Spbio: 134988 111749
+10 991 -log(L): 4116.34  Spbio: 135071 111771
+10 992 -log(L): 4116.33  Spbio: 134919 111841
+10 993 -log(L): 4116.32  Spbio: 135002 111721
+10 994 -log(L): 4116.32  Spbio: 135393 111728
+10 995 -log(L): 4116.31  Spbio: 135501 111698
+10 996 -log(L): 4116.3  Spbio: 135634 111712
+10 997 -log(L): 4116.29  Spbio: 135863 111476
+193 variables; iteration 80; function evaluation 83; phase 10
+Function value   4.1162871e+03; maximum gradient component mag  -1.4934e+02
+10 998 -log(L): 4116.28  Spbio: 135526 111509
+10 999 -log(L): 4116.27  Spbio: 134912 111544
+10 1000 -log(L): 4116.27  Spbio: 134717 111474
+10 1001 -log(L): 4116.26  Spbio: 134710 111446
+10 1002 -log(L): 4116.26  Spbio: 134646 111427
+10 1003 -log(L): 4116.25  Spbio: 134949 111504
+10 1004 -log(L): 4116.25  Spbio: 134821 111520
+10 1005 -log(L): 4116.25  Spbio: 134795 111575
+10 1006 -log(L): 4116.25  Spbio: 134772 111586
+10 1007 -log(L): 4116.25  Spbio: 134793 111582
+193 variables; iteration 90; function evaluation 93; phase 10
+Function value   4.1162496e+03; maximum gradient component mag  -1.3589e+01
+10 1008 -log(L): 4116.25  Spbio: 134884 111584
+10 1009 -log(L): 4116.25  Spbio: 134982 111575
+10 1010 -log(L): 4116.25  Spbio: 134930 111580
+10 1011 -log(L): 4116.25  Spbio: 134984 111584
+10 1012 -log(L): 4116.25  Spbio: 135019 111608
+10 1013 -log(L): 4116.25  Spbio: 134971 111574
+10 1014 -log(L): 4116.25  Spbio: 134996 111592
+10 1015 -log(L): 4116.25  Spbio: 134979 111612
+10 1016 -log(L): 4116.25  Spbio: 134978 111597
+10 1017 -log(L): 4116.25  Spbio: 134984 111593
+10 1018 -log(L): 4116.25  Spbio: 134978 111598
+10 1019 -log(L): 4116.25  Spbio: 134940 111594
+193 variables; iteration 100; function evaluation 105; phase 10
+Function value   4.1162481e+03; maximum gradient component mag   1.0517e+01
+10 1020 -log(L): 4116.25  Spbio: 134908 111587
+10 1021 -log(L): 4116.25  Spbio: 134898 111588
+10 1022 -log(L): 4116.25  Spbio: 134899 111590
+10 1023 -log(L): 4116.25  Spbio: 134961 111611
+10 1024 -log(L): 4116.25  Spbio: 135018 111643
+10 1025 -log(L): 4116.24  Spbio: 134993 111654
+10 1026 -log(L): 4116.24  Spbio: 135123 111598
+10 1027 -log(L): 4116.24  Spbio: 135253 111587
+10 1028 -log(L): 4116.24  Spbio: 135252 111552
+10 1029 -log(L): 4116.24  Spbio: 135310 111572
+193 variables; iteration 110; function evaluation 115; phase 10
+Function value   4.1162380e+03; maximum gradient component mag  -3.5036e+00
+10 1030 -log(L): 4116.24  Spbio: 135305 111559
+10 1031 -log(L): 4116.24  Spbio: 135442 111603
+10 1032 -log(L): 4116.24  Spbio: 135366 111578
+10 1033 -log(L): 4116.24  Spbio: 135388 111617
+10 1034 -log(L): 4116.24  Spbio: 135407 111646
+10 1035 -log(L): 4116.24  Spbio: 135433 111652
+10 1036 -log(L): 4116.24  Spbio: 135453 111650
+10 1037 -log(L): 4116.24  Spbio: 135458 111652
+10 1038 -log(L): 4116.24  Spbio: 135467 111656
+10 1039 -log(L): 4116.24  Spbio: 135472 111660
+10 1040 -log(L): 4116.23  Spbio: 135481 111658
+193 variables; iteration 120; function evaluation 126; phase 10
+Function value   4.1162350e+03; maximum gradient component mag  -1.1254e+00
+10 1041 -log(L): 4116.24  Spbio: 135455 111671
+10 1042 -log(L): 4116.23  Spbio: 135471 111663
+10 1043 -log(L): 4116.23  Spbio: 135406 111667
+10 1044 -log(L): 4116.23  Spbio: 135450 111664
+10 1045 -log(L): 4116.23  Spbio: 135420 111658
+10 1046 -log(L): 4116.23  Spbio: 135417 111656
+10 1047 -log(L): 4116.23  Spbio: 135416 111658
+10 1048 -log(L): 4116.23  Spbio: 135422 111658
+10 1049 -log(L): 4116.23  Spbio: 135427 111658
+10 1050 -log(L): 4116.23  Spbio: 135429 111660
+10 1051 -log(L): 4116.23  Spbio: 135430 111662
+10 1052 -log(L): 4116.23  Spbio: 135450 111665
+193 variables; iteration 130; function evaluation 138; phase 10
+Function value   4.1162347e+03; maximum gradient component mag  -9.3642e-01
+10 1053 -log(L): 4116.23  Spbio: 135467 111667
+10 1054 -log(L): 4116.23  Spbio: 135392 111665
+10 1055 -log(L): 4116.23  Spbio: 135273 111660
+10 1056 -log(L): 4116.23  Spbio: 135361 111664
+10 1057 -log(L): 4116.23  Spbio: 135326 111653
+10 1058 -log(L): 4116.23  Spbio: 135351 111661
+10 1059 -log(L): 4116.23  Spbio: 135370 111663
+10 1060 -log(L): 4116.23  Spbio: 135359 111662
+10 1061 -log(L): 4116.23  Spbio: 135357 111662
+10 1062 -log(L): 4116.23  Spbio: 135357 111662
+10 1063 -log(L): 4116.23  Spbio: 135361 111662
+10 1064 -log(L): 4116.23  Spbio: 135371 111664
+10 1065 -log(L): 4116.23  Spbio: 135382 111666
+193 variables; iteration 140; function evaluation 151; phase 10
+Function value   4.1162343e+03; maximum gradient component mag  -3.9357e-01
+10 1066 -log(L): 4116.23  Spbio: 135388 111668
+10 1067 -log(L): 4116.23  Spbio: 135371 111665
+10 1068 -log(L): 4116.23  Spbio: 135386 111667
+10 1069 -log(L): 4116.23  Spbio: 135401 111669
+10 1070 -log(L): 4116.23  Spbio: 135391 111668
+10 1071 -log(L): 4116.23  Spbio: 135394 111668
+10 1072 -log(L): 4116.23  Spbio: 135398 111669
+10 1073 -log(L): 4116.23  Spbio: 135438 111675
+10 1074 -log(L): 4116.23  Spbio: 135483 111686
+10 1075 -log(L): 4116.23  Spbio: 135486 111683
+10 1076 -log(L): 4116.23  Spbio: 135484 111686
+10 1077 -log(L): 4116.23  Spbio: 135524 111686
+10 1078 -log(L): 4116.23  Spbio: 135488 111686
+10 1079 -log(L): 4116.23  Spbio: 135491 111687
+10 1080 -log(L): 4116.23  Spbio: 135489 111686
+10 1081 -log(L): 4116.23  Spbio: 135488 111686
+193 variables; iteration 150; function evaluation 167; phase 10
+Function value   4.1162342e+03; maximum gradient component mag   5.2054e-02
+10 1082 -log(L): 4116.23  Spbio: 135490 111686
+10 1083 -log(L): 4116.23  Spbio: 135490 111686
+10 1084 -log(L): 4116.23  Spbio: 135495 111686
+10 1085 -log(L): 4116.23  Spbio: 135510 111688
+10 1086 -log(L): 4116.23  Spbio: 135502 111687
+10 1087 -log(L): 4116.23  Spbio: 135522 111688
+10 1088 -log(L): 4116.23  Spbio: 135504 111687
+10 1089 -log(L): 4116.23  Spbio: 135500 111687
+10 1090 -log(L): 4116.23  Spbio: 135504 111687
+10 1091 -log(L): 4116.23  Spbio: 135504 111687
+10 1092 -log(L): 4116.23  Spbio: 135504 111687
+10 1093 -log(L): 4116.23  Spbio: 135505 111687
+10 1094 -log(L): 4116.23  Spbio: 135513 111688
+10 1095 -log(L): 4116.23  Spbio: 135508 111687
+10 1096 -log(L): 4116.23  Spbio: 135515 111689
+10 1097 -log(L): 4116.23  Spbio: 135509 111688
+10 1098 -log(L): 4116.23  Spbio: 135509 111688
+10 1099 -log(L): 4116.23  Spbio: 135508 111687
+193 variables; iteration 160; function evaluation 185; phase 10
+Function value   4.1162342e+03; maximum gradient component mag   1.4814e-02
+10 1100 -log(L): 4116.23  Spbio: 135509 111687
+10 1101 -log(L): 4116.23  Spbio: 135516 111689
+10 1102 -log(L): 4116.23  Spbio: 135512 111688
+10 1103 -log(L): 4116.23  Spbio: 135514 111688
+10 1104 -log(L): 4116.23  Spbio: 135512 111688
+10 1105 -log(L): 4116.23  Spbio: 135512 111688
+10 1106 -log(L): 4116.23  Spbio: 135509 111687
+10 1107 -log(L): 4116.23  Spbio: 135509 111687
+10 1108 -log(L): 4116.23  Spbio: 135512 111686
+10 1109 -log(L): 4116.23  Spbio: 135511 111686
+10 1110 -log(L): 4116.23  Spbio: 135512 111686
+10 1111 -log(L): 4116.23  Spbio: 135512 111686
+10 1112 -log(L): 4116.23  Spbio: 135512 111686
+10 1113 -log(L): 4116.23  Spbio: 135511 111686
+10 1114 -log(L): 4116.23  Spbio: 135507 111686
+10 1115 -log(L): 4116.23  Spbio: 135503 111687
+10 1116 -log(L): 4116.23  Spbio: 135499 111687
+10 1117 -log(L): 4116.23  Spbio: 135502 111687
+193 variables; iteration 170; function evaluation 203; phase 10
+Function value   4.1162340e+03; maximum gradient component mag  -1.1851e-03
+10 1118 -log(L): 4116.23  Spbio: 135502 111687
+10 1119 -log(L): 4116.23  Spbio: 135503 111687
+10 1120 -log(L): 4116.23  Spbio: 135503 111687
+10 1121 -log(L): 4116.23  Spbio: 135503 111687
+10 1122 -log(L): 4116.23  Spbio: 135503 111687
+10 1123 -log(L): 4116.23  Spbio: 135503 111687
+10 1124 -log(L): 4116.23  Spbio: 135503 111687
+10 1125 -log(L): 4116.23  Spbio: 135503 111687
+10 1126 -log(L): 4116.23  Spbio: 135503 111687
+10 1127 -log(L): 4116.23  Spbio: 135503 111687
+10 1128 -log(L): 4116.23  Spbio: 135503 111687
+10 1129 -log(L): 4116.23  Spbio: 135503 111687
+10 1130 -log(L): 4116.23  Spbio: 135503 111687
+10 1131 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 180; function evaluation 217; phase 10
+Function value   4.1162340e+03; maximum gradient component mag   3.1673e-04
+10 1132 -log(L): 4116.23  Spbio: 135503 111687
+10 1133 -log(L): 4116.23  Spbio: 135503 111687
+10 1134 -log(L): 4116.23  Spbio: 135503 111687
+10 1135 -log(L): 4116.23  Spbio: 135503 111687
+10 1136 -log(L): 4116.23  Spbio: 135503 111687
+10 1137 -log(L): 4116.23  Spbio: 135503 111687
+10 1138 -log(L): 4116.23  Spbio: 135503 111687
+10 1139 -log(L): 4116.23  Spbio: 135503 111687
+10 1140 -log(L): 4116.23  Spbio: 135503 111687
+10 1141 -log(L): 4116.23  Spbio: 135503 111687
+10 1142 -log(L): 4116.23  Spbio: 135503 111687
+10 1143 -log(L): 4116.23  Spbio: 135503 111687
+10 1144 -log(L): 4116.23  Spbio: 135503 111687
+10 1145 -log(L): 4116.23  Spbio: 135503 111687
+10 1146 -log(L): 4116.23  Spbio: 135503 111687
+10 1147 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 190; function evaluation 233; phase 10
+Function value   4.1162340e+03; maximum gradient component mag  -2.4600e-03
+10 1148 -log(L): 4116.23  Spbio: 135503 111687
+10 1149 -log(L): 4116.23  Spbio: 135503 111687
+10 1150 -log(L): 4116.23  Spbio: 135503 111687
+10 1151 -log(L): 4116.23  Spbio: 135503 111687
+10 1152 -log(L): 4116.23  Spbio: 135503 111687
+10 1153 -log(L): 4116.23  Spbio: 135503 111687
+10 1154 -log(L): 4116.23  Spbio: 135503 111687
+10 1155 -log(L): 4116.23  Spbio: 135503 111687
+10 1156 -log(L): 4116.23  Spbio: 135504 111686
+10 1157 -log(L): 4116.23  Spbio: 135503 111686
+10 1158 -log(L): 4116.24  Spbio: 135510 111685
+10 1159 -log(L): 4116.24  Spbio: 135506 111686
+10 1160 -log(L): 4116.23  Spbio: 135504 111686
+10 1161 -log(L): 4116.24  Spbio: 135505 111686
+10 1162 -log(L): 4116.23  Spbio: 135504 111686
+10 1163 -log(L): 4116.23  Spbio: 135504 111686
+10 1164 -log(L): 4116.23  Spbio: 135504 111686
+10 1165 -log(L): 4116.23  Spbio: 135503 111686
+10 1166 -log(L): 4116.23  Spbio: 135503 111687
+10 1167 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 200; function evaluation 253; phase 10
+Function value   4.1162339e+03; maximum gradient component mag  -9.3450e-03
+10 1168 -log(L): 4116.24  Spbio: 135503 111687
+10 1169 -log(L): 4116.23  Spbio: 135503 111687
+10 1170 -log(L): 4116.23  Spbio: 135503 111687
+10 1171 -log(L): 4116.23  Spbio: 135503 111687
+10 1172 -log(L): 4116.23  Spbio: 135503 111687
+10 1173 -log(L): 4116.23  Spbio: 135503 111687
+10 1174 -log(L): 4116.23  Spbio: 135503 111687
+10 1175 -log(L): 4116.23  Spbio: 135503 111687
+10 1176 -log(L): 4116.23  Spbio: 135503 111687
+10 1177 -log(L): 4116.23  Spbio: 135503 111687
+10 1178 -log(L): 4116.23  Spbio: 135503 111687
+10 1179 -log(L): 4116.23  Spbio: 135503 111687
+10 1180 -log(L): 4116.23  Spbio: 135503 111687
+10 1181 -log(L): 4116.23  Spbio: 135503 111687
+10 1182 -log(L): 4116.23  Spbio: 135503 111687
+10 1183 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 210; function evaluation 269; phase 10
+Function value   4.1162339e+03; maximum gradient component mag   8.8681e-03
+10 1184 -log(L): 4116.23  Spbio: 135503 111687
+10 1185 -log(L): 4116.23  Spbio: 135503 111687
+10 1186 -log(L): 4116.23  Spbio: 135503 111687
+10 1187 -log(L): 4116.23  Spbio: 135503 111687
+10 1188 -log(L): 4116.23  Spbio: 135503 111687
+10 1189 -log(L): 4116.23  Spbio: 135503 111687
+10 1190 -log(L): 4116.23  Spbio: 135503 111687
+10 1191 -log(L): 4116.23  Spbio: 135503 111687
+10 1192 -log(L): 4116.23  Spbio: 135503 111687
+10 1193 -log(L): 4116.23  Spbio: 135503 111687
+10 1194 -log(L): 4116.23  Spbio: 135503 111687
+10 1195 -log(L): 4116.23  Spbio: 135503 111687
+10 1196 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 220; function evaluation 282; phase 10
+Function value   4.1162339e+03; maximum gradient component mag  -7.8673e-04
+10 1197 -log(L): 4116.23  Spbio: 135503 111687
+10 1198 -log(L): 4116.23  Spbio: 135503 111687
+10 1199 -log(L): 4116.23  Spbio: 135503 111687
+10 1200 -log(L): 4116.23  Spbio: 135503 111687
+10 1201 -log(L): 4116.23  Spbio: 135503 111687
+10 1202 -log(L): 4116.23  Spbio: 135503 111687
+10 1203 -log(L): 4116.23  Spbio: 135503 111687
+10 1204 -log(L): 4116.23  Spbio: 135503 111687
+10 1205 -log(L): 4116.23  Spbio: 135503 111687
+10 1206 -log(L): 4116.23  Spbio: 135503 111687
+193 variables; iteration 230; function evaluation 292; phase 10
+Function value   4.1162338e+03; maximum gradient component mag   3.3690e-05
+10 1207 -log(L): 4116.23  Spbio: 135503 111687
+10 1208 -log(L): 4116.23  Spbio: 135503 111687
+10 1209 -log(L): 4116.23  Spbio: 135503 111687
+10 1210 -log(L): 4116.23  Spbio: 135503 111687
+10 1211 -log(L): 4116.23  Spbio: 135503 111687
+10 1212 -log(L): 4116.23  Spbio: 135503 111687
+10 1213 -log(L): 4116.23  Spbio: 135503 111687
+10 1214 -log(L): 4116.23  Spbio: 135503 111687
+10 1215 -log(L): 4116.23  Spbio: 135503 111687
+
+ - final statistics:
+193 variables; iteration 239; function evaluation 301
+Function value   4.1162e+03; maximum gradient component mag   9.7441e-06
+Exit code = 1;  converg criter   1.0000e-05
+10 1216 -log(L): 4116.23  Spbio: 135503 111687
+10 1216 -log(L): 4116.23  between 
+11 1217 -log(L): 4116.23  Spbio: 135503 111687
+
+Initial statistics: 212 variables; iteration 0; function evaluation 0; phase 11
+Function value   4.1162338e+03; maximum gradient component mag   3.0833e+02
+11 1218 -log(L): 4116.21  Spbio: 135503 111684
+11 1219 -log(L): 4116.02  Spbio: 135503 111655
+11 1220 -log(L): 4114.16  Spbio: 135503 111375
+11 1221 -log(L): 4113.36  Spbio: 135266 109842
+11 1222 -log(L): 4116.66  Spbio: 135855 109944
+11 1223 -log(L): 4113.23  Spbio: 135362 109859
+11 1224 -log(L): 4113.05  Spbio: 135543 109882
+11 1225 -log(L): 4113.39  Spbio: 134677 108465
+11 1226 -log(L): 4113  Spbio: 135320 109517
+11 1227 -log(L): 4112.91  Spbio: 135321 109385
+11 1228 -log(L): 4112.75  Spbio: 135360 109175
+11 1229 -log(L): 4112.49  Spbio: 135566 108859
+11 1230 -log(L): 4112.09  Spbio: 135636 107828
+11 1231 -log(L): 4111.59  Spbio: 135615 105871
+
+Intermediate statistics: 212 variables; iteration 10; function evaluation 14; phase 11
+Function value   4.1115911e+03; maximum gradient component mag   7.3757e+02
+11 1232 -log(L): 4111.07  Spbio: 135999 103120
+11 1233 -log(L): 4111.18  Spbio: 137557 101960
+11 1234 -log(L): 4110.84  Spbio: 136702 102592
+11 1235 -log(L): 4110.61  Spbio: 137060 102209
+11 1236 -log(L): 4110.23  Spbio: 137383 102051
+11 1237 -log(L): 4109.87  Spbio: 138055 101906
+11 1238 -log(L): 4109.4  Spbio: 138815 102411
+11 1239 -log(L): 4109.08  Spbio: 140116 103141
+11 1240 -log(L): 4108.61  Spbio: 140634 103719
+11 1241 -log(L): 4108.47  Spbio: 142163 104530
+11 1242 -log(L): 4108.29  Spbio: 142540 104879
+212 variables; iteration 20; function evaluation 25; phase 11
+Function value   4.1082891e+03; maximum gradient component mag  -6.6761e+02
+11 1243 -log(L): 4108.07  Spbio: 142750 105365
+11 1244 -log(L): 4107.76  Spbio: 143395 105736
+11 1245 -log(L): 4107.52  Spbio: 144850 105869
+11 1246 -log(L): 4107.21  Spbio: 146676 106114
+11 1247 -log(L): 4106.95  Spbio: 149129 106171
+11 1248 -log(L): 4106.62  Spbio: 150641 106109
+11 1249 -log(L): 4106.22  Spbio: 152627 105947
+11 1250 -log(L): 4106.28  Spbio: 157099 105698
+11 1251 -log(L): 4106.03  Spbio: 154693 105825
+11 1252 -log(L): 4106.24  Spbio: 154644 105929
+11 1253 -log(L): 4105.97  Spbio: 154677 105857
+11 1254 -log(L): 4105.91  Spbio: 154721 105826
+212 variables; iteration 30; function evaluation 37; phase 11
+Function value   4.1059059e+03; maximum gradient component mag   6.3842e+02
+11 1255 -log(L): 4105.87  Spbio: 154850 106010
+11 1256 -log(L): 4105.82  Spbio: 154940 106114
+11 1257 -log(L): 4105.79  Spbio: 155231 106403
+11 1258 -log(L): 4105.76  Spbio: 155565 106619
+11 1259 -log(L): 4105.74  Spbio: 156671 107017
+11 1260 -log(L): 4105.71  Spbio: 156690 107331
+11 1261 -log(L): 4105.7  Spbio: 156876 107677
+11 1262 -log(L): 4105.7  Spbio: 156728 107719
+11 1263 -log(L): 4105.69  Spbio: 156767 107727
+11 1264 -log(L): 4105.68  Spbio: 156817 107630
+212 variables; iteration 40; function evaluation 47; phase 11
+Function value   4.1056805e+03; maximum gradient component mag   6.3611e+02
+11 1265 -log(L): 4105.67  Spbio: 156845 107593
+11 1266 -log(L): 4105.67  Spbio: 156774 107557
+11 1267 -log(L): 4105.66  Spbio: 156708 107527
+11 1268 -log(L): 4105.65  Spbio: 156800 107499
+11 1269 -log(L): 4105.64  Spbio: 156696 107489
+11 1270 -log(L): 4105.63  Spbio: 157066 107532
+11 1271 -log(L): 4105.61  Spbio: 157346 107645
+11 1272 -log(L): 4105.59  Spbio: 157603 107808
+11 1273 -log(L): 4105.56  Spbio: 158024 107990
+11 1274 -log(L): 4105.53  Spbio: 159584 108123
+212 variables; iteration 50; function evaluation 57; phase 11
+Function value   4.1055275e+03; maximum gradient component mag   6.3991e+02
+11 1275 -log(L): 4105.48  Spbio: 159700 108325
+11 1276 -log(L): 4105.43  Spbio: 161715 108788
+11 1277 -log(L): 4105.35  Spbio: 161730 109124
+11 1278 -log(L): 4105.2  Spbio: 164004 109241
+11 1279 -log(L): 4104.97  Spbio: 164560 109044
+11 1280 -log(L): 4104.64  Spbio: 166682 108512
+11 1281 -log(L): 4104.28  Spbio: 167095 108459
+11 1282 -log(L): 4103.71  Spbio: 168368 108162
+11 1283 -log(L): 4102.96  Spbio: 168211 107247
+11 1284 -log(L): 4102.2  Spbio: 163505 106195
+212 variables; iteration 60; function evaluation 67; phase 11
+Function value   4.1021954e+03; maximum gradient component mag   4.6888e+02
+11 1285 -log(L): 4101.51  Spbio: 160284 104779
+11 1286 -log(L): 4101.4  Spbio: 157845 104313
+11 1287 -log(L): 4101.24  Spbio: 155655 104189
+11 1288 -log(L): 4101.02  Spbio: 155483 104106
+11 1289 -log(L): 4100.81  Spbio: 154429 103832
+11 1290 -log(L): 4100.61  Spbio: 150099 103280
+11 1291 -log(L): 4100.36  Spbio: 149939 103051
+11 1292 -log(L): 4100.14  Spbio: 147847 103141
+11 1293 -log(L): 4099.95  Spbio: 147538 103075
+11 1294 -log(L): 4099.73  Spbio: 145458 102599
+212 variables; iteration 70; function evaluation 77; phase 11
+Function value   4.0997278e+03; maximum gradient component mag   2.4177e+02
+11 1295 -log(L): 4099.51  Spbio: 146672 102663
+11 1296 -log(L): 4099.26  Spbio: 145443 102667
+11 1297 -log(L): 4099.01  Spbio: 147112 102106
+11 1298 -log(L): 4098.82  Spbio: 145971 102123
+11 1299 -log(L): 4098.55  Spbio: 146941 102103
+11 1300 -log(L): 4098.24  Spbio: 148015 101876
+11 1301 -log(L): 4097.84  Spbio: 149576 101796
+11 1302 -log(L): 4097.49  Spbio: 148894 102400
+11 1303 -log(L): 4097.15  Spbio: 151072 101907
+11 1304 -log(L): 4096.93  Spbio: 155381 102035
+212 variables; iteration 80; function evaluation 87; phase 11
+Function value   4.0969277e+03; maximum gradient component mag   9.7471e+01
+11 1305 -log(L): 4096.82  Spbio: 157110 102598
+11 1306 -log(L): 4096.74  Spbio: 159755 102306
+11 1307 -log(L): 4096.67  Spbio: 161282 102505
+11 1308 -log(L): 4096.65  Spbio: 162339 102629
+11 1309 -log(L): 4096.62  Spbio: 162597 102634
+11 1310 -log(L): 4096.58  Spbio: 162641 102794
+11 1311 -log(L): 4096.57  Spbio: 161238 102507
+11 1312 -log(L): 4096.56  Spbio: 161379 102534
+11 1313 -log(L): 4096.54  Spbio: 161075 102523
+11 1314 -log(L): 4096.54  Spbio: 161452 102549
+212 variables; iteration 90; function evaluation 97; phase 11
+Function value   4.0965407e+03; maximum gradient component mag   8.3647e+01
+11 1315 -log(L): 4096.54  Spbio: 161494 102528
+11 1316 -log(L): 4096.53  Spbio: 161729 102487
+11 1317 -log(L): 4096.53  Spbio: 161832 102449
+11 1318 -log(L): 4096.53  Spbio: 161878 102457
+11 1319 -log(L): 4096.53  Spbio: 161939 102460
+11 1320 -log(L): 4096.53  Spbio: 162103 102465
+11 1321 -log(L): 4096.52  Spbio: 162287 102508
+11 1322 -log(L): 4096.51  Spbio: 162312 102498
+11 1323 -log(L): 4096.49  Spbio: 162005 102528
+11 1324 -log(L): 4096.47  Spbio: 161990 102544
+212 variables; iteration 100; function evaluation 107; phase 11
+Function value   4.0964721e+03; maximum gradient component mag   9.0248e+01
+11 1325 -log(L): 4096.45  Spbio: 162184 102564
+11 1326 -log(L): 4096.41  Spbio: 162099 102601
+11 1327 -log(L): 4096.38  Spbio: 161974 102598
+11 1328 -log(L): 4096.34  Spbio: 161539 102653
+11 1329 -log(L): 4096.3  Spbio: 160301 102596
+11 1330 -log(L): 4096.27  Spbio: 159781 102545
+11 1331 -log(L): 4096.23  Spbio: 160592 102499
+11 1332 -log(L): 4096.18  Spbio: 161789 102576
+11 1333 -log(L): 4096.15  Spbio: 162579 102800
+11 1334 -log(L): 4096.12  Spbio: 162954 102886
+212 variables; iteration 110; function evaluation 117; phase 11
+Function value   4.0961207e+03; maximum gradient component mag  -6.3122e+01
+11 1335 -log(L): 4096.09  Spbio: 163809 102947
+11 1336 -log(L): 4096.07  Spbio: 163769 102949
+11 1337 -log(L): 4096.06  Spbio: 163634 102898
+11 1338 -log(L): 4096.05  Spbio: 162826 102842
+11 1339 -log(L): 4096.05  Spbio: 162443 102795
+11 1340 -log(L): 4096.04  Spbio: 162658 102822
+11 1341 -log(L): 4096.04  Spbio: 162773 102800
+11 1342 -log(L): 4096.04  Spbio: 162680 102773
+11 1343 -log(L): 4096.04  Spbio: 162735 102789
+11 1344 -log(L): 4096.04  Spbio: 162801 102802
+11 1345 -log(L): 4096.04  Spbio: 162703 102804
+11 1346 -log(L): 4096.04  Spbio: 162708 102805
+212 variables; iteration 120; function evaluation 129; phase 11
+Function value   4.0960377e+03; maximum gradient component mag   4.7581e+01
+11 1347 -log(L): 4096.04  Spbio: 162872 102790
+11 1348 -log(L): 4096.03  Spbio: 162916 102793
+11 1349 -log(L): 4096.03  Spbio: 162884 102800
+11 1350 -log(L): 4096.03  Spbio: 162800 102774
+11 1351 -log(L): 4096.02  Spbio: 162592 102772
+11 1352 -log(L): 4096  Spbio: 162175 102794
+11 1353 -log(L): 4095.99  Spbio: 162756 102832
+11 1354 -log(L): 4095.98  Spbio: 163557 102847
+11 1355 -log(L): 4095.98  Spbio: 163449 102865
+11 1356 -log(L): 4095.97  Spbio: 163503 102925
+212 variables; iteration 130; function evaluation 139; phase 11
+Function value   4.0959692e+03; maximum gradient component mag  -1.5196e+01
+11 1357 -log(L): 4095.97  Spbio: 163629 103007
+11 1358 -log(L): 4095.97  Spbio: 163560 102962
+11 1359 -log(L): 4095.97  Spbio: 163576 103022
+11 1360 -log(L): 4095.97  Spbio: 163568 102992
+11 1361 -log(L): 4095.97  Spbio: 163762 103032
+11 1362 -log(L): 4095.96  Spbio: 163610 103001
+11 1363 -log(L): 4095.96  Spbio: 163600 103020
+11 1364 -log(L): 4095.96  Spbio: 163605 103010
+11 1365 -log(L): 4095.96  Spbio: 163553 103009
+11 1366 -log(L): 4095.96  Spbio: 163517 103002
+11 1367 -log(L): 4095.96  Spbio: 163531 103004
+11 1368 -log(L): 4095.96  Spbio: 163523 103003
+11 1369 -log(L): 4095.96  Spbio: 163496 103000
+11 1370 -log(L): 4095.96  Spbio: 163232 102970
+11 1371 -log(L): 4095.95  Spbio: 162600 102931
+212 variables; iteration 140; function evaluation 154; phase 11
+Function value   4.0959546e+03; maximum gradient component mag   3.1554e+00
+11 1372 -log(L): 4095.95  Spbio: 162424 102924
+11 1373 -log(L): 4095.96  Spbio: 162108 102948
+11 1374 -log(L): 4095.95  Spbio: 162374 102928
+11 1375 -log(L): 4095.95  Spbio: 162528 102940
+11 1376 -log(L): 4095.95  Spbio: 162406 102930
+11 1377 -log(L): 4095.95  Spbio: 162396 102922
+11 1378 -log(L): 4095.95  Spbio: 162403 102928
+11 1379 -log(L): 4095.95  Spbio: 162409 102923
+11 1380 -log(L): 4095.95  Spbio: 162406 102923
+11 1381 -log(L): 4095.95  Spbio: 162406 102923
+11 1382 -log(L): 4095.95  Spbio: 162403 102924
+11 1383 -log(L): 4095.95  Spbio: 162412 102918
+11 1384 -log(L): 4095.95  Spbio: 162434 102927
+11 1385 -log(L): 4095.95  Spbio: 162157 102945
+11 1386 -log(L): 4095.95  Spbio: 162401 102930
+212 variables; iteration 150; function evaluation 169; phase 11
+Function value   4.0959494e+03; maximum gradient component mag   1.1304e+00
+11 1387 -log(L): 4095.95  Spbio: 162479 102921
+11 1388 -log(L): 4095.95  Spbio: 162420 102927
+11 1389 -log(L): 4095.95  Spbio: 162392 102916
+11 1390 -log(L): 4095.95  Spbio: 162414 102925
+11 1391 -log(L): 4095.95  Spbio: 162418 102926
+11 1392 -log(L): 4095.95  Spbio: 162417 102925
+11 1393 -log(L): 4095.95  Spbio: 162414 102921
+11 1394 -log(L): 4095.95  Spbio: 162424 102915
+11 1395 -log(L): 4095.95  Spbio: 162456 102924
+11 1396 -log(L): 4095.95  Spbio: 162426 102916
+11 1397 -log(L): 4095.95  Spbio: 162429 102915
+11 1398 -log(L): 4095.95  Spbio: 162427 102915
+11 1399 -log(L): 4095.95  Spbio: 162425 102915
+11 1400 -log(L): 4095.95  Spbio: 162425 102915
+11 1401 -log(L): 4095.95  Spbio: 162426 102914
+11 1402 -log(L): 4095.95  Spbio: 162416 102912
+212 variables; iteration 160; function evaluation 185; phase 11
+Function value   4.0959491e+03; maximum gradient component mag   1.3603e-01
+11 1403 -log(L): 4095.95  Spbio: 162389 102907
+11 1404 -log(L): 4095.95  Spbio: 162415 102911
+11 1405 -log(L): 4095.95  Spbio: 162414 102911
+11 1406 -log(L): 4095.95  Spbio: 162415 102911
+11 1407 -log(L): 4095.95  Spbio: 162415 102911
+11 1408 -log(L): 4095.95  Spbio: 162417 102911
+11 1409 -log(L): 4095.95  Spbio: 162416 102911
+11 1410 -log(L): 4095.95  Spbio: 162410 102910
+11 1411 -log(L): 4095.95  Spbio: 162412 102910
+11 1412 -log(L): 4095.95  Spbio: 162411 102910
+11 1413 -log(L): 4095.95  Spbio: 162410 102910
+11 1414 -log(L): 4095.95  Spbio: 162409 102910
+11 1415 -log(L): 4095.95  Spbio: 162418 102908
+11 1416 -log(L): 4095.95  Spbio: 162410 102909
+11 1417 -log(L): 4095.95  Spbio: 162410 102909
+11 1418 -log(L): 4095.95  Spbio: 162410 102909
+11 1419 -log(L): 4095.95  Spbio: 162410 102909
+11 1420 -log(L): 4095.95  Spbio: 162408 102909
+212 variables; iteration 170; function evaluation 203; phase 11
+Function value   4.0959491e+03; maximum gradient component mag  -3.3461e-02
+11 1421 -log(L): 4095.95  Spbio: 162406 102908
+11 1422 -log(L): 4095.95  Spbio: 162404 102907
+11 1423 -log(L): 4095.95  Spbio: 162402 102906
+11 1424 -log(L): 4095.95  Spbio: 162402 102906
+11 1425 -log(L): 4095.95  Spbio: 162406 102908
+11 1426 -log(L): 4095.95  Spbio: 162409 102909
+11 1427 -log(L): 4095.95  Spbio: 162406 102908
+11 1428 -log(L): 4095.95  Spbio: 162407 102908
+11 1429 -log(L): 4095.95  Spbio: 162408 102909
+11 1430 -log(L): 4095.95  Spbio: 162409 102909
+11 1431 -log(L): 4095.95  Spbio: 162410 102909
+11 1432 -log(L): 4095.95  Spbio: 162411 102910
+11 1433 -log(L): 4095.95  Spbio: 162410 102909
+212 variables; iteration 180; function evaluation 216; phase 11
+Function value   4.0959490e+03; maximum gradient component mag   1.7254e-02
+11 1434 -log(L): 4095.95  Spbio: 162410 102909
+11 1435 -log(L): 4095.95  Spbio: 162410 102909
+11 1436 -log(L): 4095.95  Spbio: 162412 102910
+11 1437 -log(L): 4095.95  Spbio: 162411 102910
+11 1438 -log(L): 4095.95  Spbio: 162410 102910
+11 1439 -log(L): 4095.95  Spbio: 162408 102909
+11 1440 -log(L): 4095.95  Spbio: 162410 102909
+11 1441 -log(L): 4095.95  Spbio: 162410 102909
+11 1442 -log(L): 4095.95  Spbio: 162409 102909
+11 1443 -log(L): 4095.95  Spbio: 162408 102909
+11 1444 -log(L): 4095.95  Spbio: 162407 102908
+11 1445 -log(L): 4095.95  Spbio: 162408 102909
+11 1446 -log(L): 4095.95  Spbio: 162408 102909
+11 1447 -log(L): 4095.95  Spbio: 162408 102909
+11 1448 -log(L): 4095.95  Spbio: 162408 102909
+212 variables; iteration 190; function evaluation 231; phase 11
+Function value   4.0959490e+03; maximum gradient component mag  -1.3050e-02
+11 1449 -log(L): 4095.95  Spbio: 162409 102909
+11 1450 -log(L): 4095.95  Spbio: 162408 102909
+11 1451 -log(L): 4095.95  Spbio: 162408 102909
+11 1452 -log(L): 4095.95  Spbio: 162408 102909
+11 1453 -log(L): 4095.95  Spbio: 162409 102909
+11 1454 -log(L): 4095.95  Spbio: 162409 102909
+11 1455 -log(L): 4095.95  Spbio: 162409 102909
+11 1456 -log(L): 4095.95  Spbio: 162409 102909
+11 1457 -log(L): 4095.95  Spbio: 162409 102909
+11 1458 -log(L): 4095.95  Spbio: 162409 102909
+11 1459 -log(L): 4095.95  Spbio: 162409 102909
+11 1460 -log(L): 4095.95  Spbio: 162409 102909
+11 1461 -log(L): 4095.95  Spbio: 162409 102909
+11 1462 -log(L): 4095.95  Spbio: 162409 102909
+11 1463 -log(L): 4095.95  Spbio: 162409 102909
+11 1464 -log(L): 4095.95  Spbio: 162409 102909
+212 variables; iteration 200; function evaluation 247; phase 11
+Function value   4.0959490e+03; maximum gradient component mag   6.5678e-03
+11 1465 -log(L): 4095.95  Spbio: 162409 102909
+11 1466 -log(L): 4095.95  Spbio: 162409 102909
+11 1467 -log(L): 4095.95  Spbio: 162409 102909
+11 1468 -log(L): 4095.95  Spbio: 162409 102909
+11 1469 -log(L): 4095.95  Spbio: 162409 102909
+11 1470 -log(L): 4095.95  Spbio: 162409 102909
+11 1471 -log(L): 4095.95  Spbio: 162409 102909
+11 1472 -log(L): 4095.95  Spbio: 162409 102909
+11 1473 -log(L): 4095.95  Spbio: 162409 102909
+11 1474 -log(L): 4095.95  Spbio: 162409 102909
+11 1475 -log(L): 4095.95  Spbio: 162409 102909
+11 1476 -log(L): 4095.95  Spbio: 162409 102909
+212 variables; iteration 210; function evaluation 259; phase 11
+Function value   4.0959490e+03; maximum gradient component mag  -5.8809e-04
+11 1477 -log(L): 4095.95  Spbio: 162409 102909
+11 1478 -log(L): 4095.95  Spbio: 162409 102909
+11 1479 -log(L): 4095.95  Spbio: 162409 102909
+11 1480 -log(L): 4095.95  Spbio: 162409 102909
+11 1481 -log(L): 4095.95  Spbio: 162409 102909
+11 1482 -log(L): 4095.95  Spbio: 162409 102909
+11 1483 -log(L): 4095.95  Spbio: 162409 102909
+11 1484 -log(L): 4095.95  Spbio: 162409 102909
+11 1485 -log(L): 4095.95  Spbio: 162409 102909
+11 1486 -log(L): 4095.95  Spbio: 162409 102909
+11 1487 -log(L): 4095.95  Spbio: 162409 102909
+11 1488 -log(L): 4095.95  Spbio: 162409 102909
+212 variables; iteration 220; function evaluation 271; phase 11
+Function value   4.0959490e+03; maximum gradient component mag  -1.2987e-04
+11 1489 -log(L): 4095.95  Spbio: 162409 102909
+11 1490 -log(L): 4095.95  Spbio: 162409 102909
+11 1491 -log(L): 4095.95  Spbio: 162409 102909
+11 1492 -log(L): 4095.95  Spbio: 162409 102909
+11 1493 -log(L): 4095.95  Spbio: 162409 102909
+
+ - final statistics:
+212 variables; iteration 225; function evaluation 276
+Function value   4.0959e+03; maximum gradient component mag   7.2547e-06
+Exit code = 1;  converg criter   1.0000e-05
+11 1494 -log(L): 4095.95  Spbio: 162409 102909
+ writing big output now 
+Wrote bigoutput and bodywt for last_phase in REPORT_SECTION and before hessian, no benchmark or forecast 
+11 1495 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 1 out of 212 for hessian
+11 1496 -log(L): 4095.95  Spbio: 162398 102900
+11 1497 -log(L): 4095.95  Spbio: 162419 102918
+11 1498 -log(L): 4095.95  Spbio: 162408 102908
+11 1499 -log(L): 4095.95  Spbio: 162410 102910
+Estimating row 2 out of 212 for hessian
+11 1500 -log(L): 4095.95  Spbio: 162410 102910
+11 1501 -log(L): 4095.95  Spbio: 162407 102908
+11 1502 -log(L): 4095.95  Spbio: 162409 102909
+11 1503 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 3 out of 212 for hessian
+11 1504 -log(L): 4095.95  Spbio: 162412 102912
+11 1505 -log(L): 4095.95  Spbio: 162405 102906
+11 1506 -log(L): 4095.95  Spbio: 162409 102909
+11 1507 -log(L): 4095.95  Spbio: 162408 102909
+Estimating row 4 out of 212 for hessian
+11 1508 -log(L): 4095.95  Spbio: 162422 102920
+11 1509 -log(L): 4095.95  Spbio: 162395 102898
+11 1510 -log(L): 4095.95  Spbio: 162410 102910
+11 1511 -log(L): 4095.95  Spbio: 162407 102908
+Estimating row 5 out of 212 for hessian
+11 1512 -log(L): 4095.95  Spbio: 162409 102909
+11 1513 -log(L): 4095.95  Spbio: 162409 102909
+11 1514 -log(L): 4095.95  Spbio: 162409 102909
+11 1515 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 6 out of 212 for hessian
+11 1516 -log(L): 4095.95  Spbio: 162409 102909
+11 1517 -log(L): 4095.95  Spbio: 162408 102908
+11 1518 -log(L): 4095.95  Spbio: 162409 102909
+11 1519 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 7 out of 212 for hessian
+11 1520 -log(L): 4095.95  Spbio: 162409 102906
+11 1521 -log(L): 4095.95  Spbio: 162409 102912
+11 1522 -log(L): 4095.95  Spbio: 162409 102909
+11 1523 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 8 out of 212 for hessian
+11 1524 -log(L): 4095.95  Spbio: 162409 102909
+11 1525 -log(L): 4095.95  Spbio: 162409 102909
+11 1526 -log(L): 4095.95  Spbio: 162409 102909
+11 1527 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 9 out of 212 for hessian
+11 1528 -log(L): 4095.95  Spbio: 162409 102909
+11 1529 -log(L): 4095.95  Spbio: 162409 102909
+11 1530 -log(L): 4095.95  Spbio: 162409 102909
+11 1531 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 10 out of 212 for hessian
+11 1532 -log(L): 4095.95  Spbio: 162420 102922
+11 1533 -log(L): 4095.95  Spbio: 162397 102896
+11 1534 -log(L): 4095.95  Spbio: 162410 102910
+11 1535 -log(L): 4095.95  Spbio: 162408 102908
+Estimating row 11 out of 212 for hessian
+11 1536 -log(L): 4095.95  Spbio: 162434 102909
+11 1537 -log(L): 4095.95  Spbio: 162383 102909
+11 1538 -log(L): 4095.95  Spbio: 162411 102909
+11 1539 -log(L): 4095.95  Spbio: 162406 102909
+Estimating row 12 out of 212 for hessian
+11 1540 -log(L): 4095.95  Spbio: 162410 102909
+11 1541 -log(L): 4095.95  Spbio: 162407 102909
+11 1542 -log(L): 4095.95  Spbio: 162409 102909
+11 1543 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 13 out of 212 for hessian
+11 1544 -log(L): 4095.95  Spbio: 162410 102909
+11 1545 -log(L): 4095.95  Spbio: 162408 102909
+11 1546 -log(L): 4095.95  Spbio: 162409 102909
+11 1547 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 14 out of 212 for hessian
+11 1548 -log(L): 4095.95  Spbio: 162410 102909
+11 1549 -log(L): 4095.95  Spbio: 162408 102909
+11 1550 -log(L): 4095.95  Spbio: 162409 102909
+11 1551 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 15 out of 212 for hessian
+11 1552 -log(L): 4095.95  Spbio: 162410 102909
+11 1553 -log(L): 4095.95  Spbio: 162407 102909
+11 1554 -log(L): 4095.95  Spbio: 162409 102909
+11 1555 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 16 out of 212 for hessian
+11 1556 -log(L): 4095.95  Spbio: 162411 102909
+11 1557 -log(L): 4095.95  Spbio: 162407 102909
+11 1558 -log(L): 4095.95  Spbio: 162409 102909
+11 1559 -log(L): 4095.95  Spbio: 162408 102909
+Estimating row 17 out of 212 for hessian
+11 1560 -log(L): 4095.95  Spbio: 162411 102909
+11 1561 -log(L): 4095.95  Spbio: 162406 102909
+11 1562 -log(L): 4095.95  Spbio: 162409 102909
+11 1563 -log(L): 4095.95  Spbio: 162408 102909
+Estimating row 18 out of 212 for hessian
+11 1564 -log(L): 4095.95  Spbio: 162411 102909
+11 1565 -log(L): 4095.95  Spbio: 162406 102909
+11 1566 -log(L): 4095.95  Spbio: 162409 102909
+11 1567 -log(L): 4095.95  Spbio: 162408 102909
+Estimating row 19 out of 212 for hessian
+11 1568 -log(L): 4095.95  Spbio: 162409 102909
+11 1569 -log(L): 4095.95  Spbio: 162408 102909
+11 1570 -log(L): 4095.95  Spbio: 162409 102909
+11 1571 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 20 out of 212 for hessian
+11 1572 -log(L): 4095.95  Spbio: 162409 102909
+11 1573 -log(L): 4095.95  Spbio: 162409 102909
+11 1574 -log(L): 4095.95  Spbio: 162409 102909
+11 1575 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 21 out of 212 for hessian
+11 1576 -log(L): 4095.95  Spbio: 162409 102909
+11 1577 -log(L): 4095.95  Spbio: 162409 102909
+11 1578 -log(L): 4095.95  Spbio: 162409 102909
+11 1579 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 22 out of 212 for hessian
+11 1580 -log(L): 4095.95  Spbio: 162409 102909
+11 1581 -log(L): 4095.95  Spbio: 162409 102909
+11 1582 -log(L): 4095.95  Spbio: 162409 102909
+11 1583 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 23 out of 212 for hessian
+11 1584 -log(L): 4095.95  Spbio: 162409 102909
+11 1585 -log(L): 4095.95  Spbio: 162409 102909
+11 1586 -log(L): 4095.95  Spbio: 162409 102909
+11 1587 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 24 out of 212 for hessian
+11 1588 -log(L): 4095.95  Spbio: 162409 102909
+11 1589 -log(L): 4095.95  Spbio: 162409 102909
+11 1590 -log(L): 4095.95  Spbio: 162409 102909
+11 1591 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 25 out of 212 for hessian
+11 1592 -log(L): 4095.95  Spbio: 162409 102909
+11 1593 -log(L): 4095.95  Spbio: 162409 102909
+11 1594 -log(L): 4095.95  Spbio: 162409 102909
+11 1595 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 26 out of 212 for hessian
+11 1596 -log(L): 4095.95  Spbio: 162409 102909
+11 1597 -log(L): 4095.95  Spbio: 162409 102909
+11 1598 -log(L): 4095.95  Spbio: 162409 102909
+11 1599 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 27 out of 212 for hessian
+11 1600 -log(L): 4095.95  Spbio: 162409 102909
+11 1601 -log(L): 4095.95  Spbio: 162409 102909
+11 1602 -log(L): 4095.95  Spbio: 162409 102909
+11 1603 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 28 out of 212 for hessian
+11 1604 -log(L): 4095.95  Spbio: 162409 102909
+11 1605 -log(L): 4095.95  Spbio: 162409 102909
+11 1606 -log(L): 4095.95  Spbio: 162409 102909
+11 1607 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 29 out of 212 for hessian
+11 1608 -log(L): 4095.95  Spbio: 162409 102909
+11 1609 -log(L): 4095.95  Spbio: 162409 102909
+11 1610 -log(L): 4095.95  Spbio: 162409 102909
+11 1611 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 30 out of 212 for hessian
+11 1612 -log(L): 4095.95  Spbio: 162409 102909
+11 1613 -log(L): 4095.95  Spbio: 162409 102909
+11 1614 -log(L): 4095.95  Spbio: 162409 102909
+11 1615 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 31 out of 212 for hessian
+11 1616 -log(L): 4095.95  Spbio: 162409 102909
+11 1617 -log(L): 4095.95  Spbio: 162409 102909
+11 1618 -log(L): 4095.95  Spbio: 162409 102909
+11 1619 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 32 out of 212 for hessian
+11 1620 -log(L): 4095.95  Spbio: 162409 102909
+11 1621 -log(L): 4095.95  Spbio: 162409 102909
+11 1622 -log(L): 4095.95  Spbio: 162409 102909
+11 1623 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 33 out of 212 for hessian
+11 1624 -log(L): 4095.95  Spbio: 162409 102909
+11 1625 -log(L): 4095.95  Spbio: 162409 102909
+11 1626 -log(L): 4095.95  Spbio: 162409 102909
+11 1627 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 34 out of 212 for hessian
+11 1628 -log(L): 4095.95  Spbio: 162409 102909
+11 1629 -log(L): 4095.95  Spbio: 162409 102909
+11 1630 -log(L): 4095.95  Spbio: 162409 102909
+11 1631 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 35 out of 212 for hessian
+11 1632 -log(L): 4095.95  Spbio: 162409 102909
+11 1633 -log(L): 4095.95  Spbio: 162409 102909
+11 1634 -log(L): 4095.95  Spbio: 162409 102909
+11 1635 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 36 out of 212 for hessian
+11 1636 -log(L): 4095.95  Spbio: 162409 102909
+11 1637 -log(L): 4095.95  Spbio: 162409 102909
+11 1638 -log(L): 4095.95  Spbio: 162409 102909
+11 1639 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 37 out of 212 for hessian
+11 1640 -log(L): 4095.95  Spbio: 162409 102909
+11 1641 -log(L): 4095.95  Spbio: 162409 102909
+11 1642 -log(L): 4095.95  Spbio: 162409 102909
+11 1643 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 38 out of 212 for hessian
+11 1644 -log(L): 4095.95  Spbio: 162409 102909
+11 1645 -log(L): 4095.95  Spbio: 162409 102909
+11 1646 -log(L): 4095.95  Spbio: 162409 102909
+11 1647 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 39 out of 212 for hessian
+11 1648 -log(L): 4095.95  Spbio: 162409 102909
+11 1649 -log(L): 4095.95  Spbio: 162409 102909
+11 1650 -log(L): 4095.95  Spbio: 162409 102909
+11 1651 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 40 out of 212 for hessian
+11 1652 -log(L): 4095.95  Spbio: 162409 102909
+11 1653 -log(L): 4095.95  Spbio: 162409 102909
+11 1654 -log(L): 4095.95  Spbio: 162409 102909
+11 1655 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 41 out of 212 for hessian
+11 1656 -log(L): 4095.95  Spbio: 162409 102909
+11 1657 -log(L): 4095.95  Spbio: 162409 102909
+11 1658 -log(L): 4095.95  Spbio: 162409 102909
+11 1659 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 42 out of 212 for hessian
+11 1660 -log(L): 4095.95  Spbio: 162409 102909
+11 1661 -log(L): 4095.95  Spbio: 162409 102909
+11 1662 -log(L): 4095.95  Spbio: 162409 102909
+11 1663 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 43 out of 212 for hessian
+11 1664 -log(L): 4095.95  Spbio: 162409 102909
+11 1665 -log(L): 4095.95  Spbio: 162409 102909
+11 1666 -log(L): 4095.95  Spbio: 162409 102909
+11 1667 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 44 out of 212 for hessian
+11 1668 -log(L): 4095.95  Spbio: 162409 102909
+11 1669 -log(L): 4095.95  Spbio: 162409 102909
+11 1670 -log(L): 4095.95  Spbio: 162409 102909
+11 1671 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 45 out of 212 for hessian
+11 1672 -log(L): 4095.95  Spbio: 162409 102909
+11 1673 -log(L): 4095.95  Spbio: 162409 102909
+11 1674 -log(L): 4095.95  Spbio: 162409 102909
+11 1675 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 46 out of 212 for hessian
+11 1676 -log(L): 4095.95  Spbio: 162409 102909
+11 1677 -log(L): 4095.95  Spbio: 162409 102909
+11 1678 -log(L): 4095.95  Spbio: 162409 102909
+11 1679 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 47 out of 212 for hessian
+11 1680 -log(L): 4095.95  Spbio: 162409 102909
+11 1681 -log(L): 4095.95  Spbio: 162409 102909
+11 1682 -log(L): 4095.95  Spbio: 162409 102909
+11 1683 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 48 out of 212 for hessian
+11 1684 -log(L): 4095.95  Spbio: 162409 102909
+11 1685 -log(L): 4095.95  Spbio: 162409 102909
+11 1686 -log(L): 4095.95  Spbio: 162409 102909
+11 1687 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 49 out of 212 for hessian
+11 1688 -log(L): 4095.95  Spbio: 162409 102909
+11 1689 -log(L): 4095.95  Spbio: 162409 102909
+11 1690 -log(L): 4095.95  Spbio: 162409 102909
+11 1691 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 50 out of 212 for hessian
+11 1692 -log(L): 4095.95  Spbio: 162409 102909
+11 1693 -log(L): 4095.95  Spbio: 162409 102909
+11 1694 -log(L): 4095.95  Spbio: 162409 102909
+11 1695 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 51 out of 212 for hessian
+11 1696 -log(L): 4095.95  Spbio: 162409 102909
+11 1697 -log(L): 4095.95  Spbio: 162409 102909
+11 1698 -log(L): 4095.95  Spbio: 162409 102909
+11 1699 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 52 out of 212 for hessian
+11 1700 -log(L): 4095.95  Spbio: 162409 102909
+11 1701 -log(L): 4095.95  Spbio: 162409 102909
+11 1702 -log(L): 4095.95  Spbio: 162409 102909
+11 1703 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 53 out of 212 for hessian
+11 1704 -log(L): 4095.95  Spbio: 162409 102909
+11 1705 -log(L): 4095.95  Spbio: 162409 102909
+11 1706 -log(L): 4095.95  Spbio: 162409 102909
+11 1707 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 54 out of 212 for hessian
+11 1708 -log(L): 4095.95  Spbio: 162409 102909
+11 1709 -log(L): 4095.95  Spbio: 162409 102909
+11 1710 -log(L): 4095.95  Spbio: 162409 102909
+11 1711 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 55 out of 212 for hessian
+11 1712 -log(L): 4095.95  Spbio: 162409 102909
+11 1713 -log(L): 4095.95  Spbio: 162409 102909
+11 1714 -log(L): 4095.95  Spbio: 162409 102909
+11 1715 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 56 out of 212 for hessian
+11 1716 -log(L): 4095.95  Spbio: 162409 102909
+11 1717 -log(L): 4095.95  Spbio: 162409 102908
+11 1718 -log(L): 4095.95  Spbio: 162409 102909
+11 1719 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 57 out of 212 for hessian
+11 1720 -log(L): 4095.95  Spbio: 162409 102910
+11 1721 -log(L): 4095.95  Spbio: 162409 102908
+11 1722 -log(L): 4095.95  Spbio: 162409 102909
+11 1723 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 58 out of 212 for hessian
+11 1724 -log(L): 4095.95  Spbio: 162409 102910
+11 1725 -log(L): 4095.95  Spbio: 162409 102908
+11 1726 -log(L): 4095.95  Spbio: 162409 102909
+11 1727 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 59 out of 212 for hessian
+11 1728 -log(L): 4095.95  Spbio: 162409 102909
+11 1729 -log(L): 4095.95  Spbio: 162409 102908
+11 1730 -log(L): 4095.95  Spbio: 162409 102909
+11 1731 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 60 out of 212 for hessian
+11 1732 -log(L): 4095.95  Spbio: 162409 102910
+11 1733 -log(L): 4095.95  Spbio: 162409 102908
+11 1734 -log(L): 4095.95  Spbio: 162409 102909
+11 1735 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 61 out of 212 for hessian
+11 1736 -log(L): 4095.95  Spbio: 162409 102911
+11 1737 -log(L): 4095.95  Spbio: 162409 102907
+11 1738 -log(L): 4095.95  Spbio: 162409 102909
+11 1739 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 62 out of 212 for hessian
+11 1740 -log(L): 4095.95  Spbio: 162409 102912
+11 1741 -log(L): 4095.95  Spbio: 162409 102906
+11 1742 -log(L): 4095.95  Spbio: 162409 102909
+11 1743 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 63 out of 212 for hessian
+11 1744 -log(L): 4095.95  Spbio: 162409 102911
+11 1745 -log(L): 4095.95  Spbio: 162409 102907
+11 1746 -log(L): 4095.95  Spbio: 162409 102909
+11 1747 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 64 out of 212 for hessian
+11 1748 -log(L): 4095.95  Spbio: 162409 102910
+11 1749 -log(L): 4095.95  Spbio: 162409 102908
+11 1750 -log(L): 4095.95  Spbio: 162409 102909
+11 1751 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 65 out of 212 for hessian
+11 1752 -log(L): 4095.95  Spbio: 162409 102909
+11 1753 -log(L): 4095.95  Spbio: 162409 102909
+11 1754 -log(L): 4095.95  Spbio: 162409 102909
+11 1755 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 66 out of 212 for hessian
+11 1756 -log(L): 4095.95  Spbio: 162409 102909
+11 1757 -log(L): 4095.95  Spbio: 162409 102909
+11 1758 -log(L): 4095.95  Spbio: 162409 102909
+11 1759 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 67 out of 212 for hessian
+11 1760 -log(L): 4095.95  Spbio: 162409 102909
+11 1761 -log(L): 4095.95  Spbio: 162409 102909
+11 1762 -log(L): 4095.95  Spbio: 162409 102909
+11 1763 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 68 out of 212 for hessian
+11 1764 -log(L): 4095.95  Spbio: 162409 102909
+11 1765 -log(L): 4095.95  Spbio: 162409 102909
+11 1766 -log(L): 4095.95  Spbio: 162409 102909
+11 1767 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 69 out of 212 for hessian
+11 1768 -log(L): 4095.95  Spbio: 162409 102909
+11 1769 -log(L): 4095.95  Spbio: 162409 102909
+11 1770 -log(L): 4095.95  Spbio: 162409 102909
+11 1771 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 70 out of 212 for hessian
+11 1772 -log(L): 4095.95  Spbio: 162409 102909
+11 1773 -log(L): 4095.95  Spbio: 162409 102909
+11 1774 -log(L): 4095.95  Spbio: 162409 102909
+11 1775 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 71 out of 212 for hessian
+11 1776 -log(L): 4095.95  Spbio: 162409 102909
+11 1777 -log(L): 4095.95  Spbio: 162409 102909
+11 1778 -log(L): 4095.95  Spbio: 162409 102909
+11 1779 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 72 out of 212 for hessian
+11 1780 -log(L): 4095.95  Spbio: 162409 102909
+11 1781 -log(L): 4095.95  Spbio: 162409 102909
+11 1782 -log(L): 4095.95  Spbio: 162409 102909
+11 1783 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 73 out of 212 for hessian
+11 1784 -log(L): 4095.95  Spbio: 162409 102909
+11 1785 -log(L): 4095.95  Spbio: 162409 102909
+11 1786 -log(L): 4095.95  Spbio: 162409 102909
+11 1787 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 74 out of 212 for hessian
+11 1788 -log(L): 4095.95  Spbio: 162409 102909
+11 1789 -log(L): 4095.95  Spbio: 162409 102909
+11 1790 -log(L): 4095.95  Spbio: 162409 102909
+11 1791 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 75 out of 212 for hessian
+11 1792 -log(L): 4095.95  Spbio: 162409 102909
+11 1793 -log(L): 4095.95  Spbio: 162409 102909
+11 1794 -log(L): 4095.95  Spbio: 162409 102909
+11 1795 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 76 out of 212 for hessian
+11 1796 -log(L): 4095.95  Spbio: 162409 102909
+11 1797 -log(L): 4095.95  Spbio: 162409 102909
+11 1798 -log(L): 4095.95  Spbio: 162409 102909
+11 1799 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 77 out of 212 for hessian
+11 1800 -log(L): 4095.95  Spbio: 162409 102909
+11 1801 -log(L): 4095.95  Spbio: 162409 102909
+11 1802 -log(L): 4095.95  Spbio: 162409 102909
+11 1803 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 78 out of 212 for hessian
+11 1804 -log(L): 4095.95  Spbio: 162409 102909
+11 1805 -log(L): 4095.95  Spbio: 162409 102909
+11 1806 -log(L): 4095.95  Spbio: 162409 102909
+11 1807 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 79 out of 212 for hessian
+11 1808 -log(L): 4095.95  Spbio: 162409 102909
+11 1809 -log(L): 4095.95  Spbio: 162409 102909
+11 1810 -log(L): 4095.95  Spbio: 162409 102909
+11 1811 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 80 out of 212 for hessian
+11 1812 -log(L): 4095.95  Spbio: 162409 102909
+11 1813 -log(L): 4095.95  Spbio: 162409 102909
+11 1814 -log(L): 4095.95  Spbio: 162409 102909
+11 1815 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 81 out of 212 for hessian
+11 1816 -log(L): 4095.95  Spbio: 162409 102909
+11 1817 -log(L): 4095.95  Spbio: 162409 102909
+11 1818 -log(L): 4095.95  Spbio: 162409 102909
+11 1819 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 82 out of 212 for hessian
+11 1820 -log(L): 4095.95  Spbio: 162409 102909
+11 1821 -log(L): 4095.95  Spbio: 162409 102909
+11 1822 -log(L): 4095.95  Spbio: 162409 102909
+11 1823 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 83 out of 212 for hessian
+11 1824 -log(L): 4095.95  Spbio: 162409 102909
+11 1825 -log(L): 4095.95  Spbio: 162409 102909
+11 1826 -log(L): 4095.95  Spbio: 162409 102909
+11 1827 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 84 out of 212 for hessian
+11 1828 -log(L): 4095.95  Spbio: 162409 102909
+11 1829 -log(L): 4095.95  Spbio: 162409 102909
+11 1830 -log(L): 4095.95  Spbio: 162409 102909
+11 1831 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 85 out of 212 for hessian
+11 1832 -log(L): 4095.95  Spbio: 162409 102909
+11 1833 -log(L): 4095.95  Spbio: 162409 102909
+11 1834 -log(L): 4095.95  Spbio: 162409 102909
+11 1835 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 86 out of 212 for hessian
+11 1836 -log(L): 4095.95  Spbio: 162409 102909
+11 1837 -log(L): 4095.95  Spbio: 162409 102909
+11 1838 -log(L): 4095.95  Spbio: 162409 102909
+11 1839 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 87 out of 212 for hessian
+11 1840 -log(L): 4095.95  Spbio: 162409 102909
+11 1841 -log(L): 4095.95  Spbio: 162409 102909
+11 1842 -log(L): 4095.95  Spbio: 162409 102909
+11 1843 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 88 out of 212 for hessian
+11 1844 -log(L): 4095.95  Spbio: 162409 102909
+11 1845 -log(L): 4095.95  Spbio: 162409 102909
+11 1846 -log(L): 4095.95  Spbio: 162409 102909
+11 1847 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 89 out of 212 for hessian
+11 1848 -log(L): 4095.95  Spbio: 162409 102909
+11 1849 -log(L): 4095.95  Spbio: 162409 102909
+11 1850 -log(L): 4095.95  Spbio: 162409 102909
+11 1851 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 90 out of 212 for hessian
+11 1852 -log(L): 4095.95  Spbio: 162409 102909
+11 1853 -log(L): 4095.95  Spbio: 162409 102909
+11 1854 -log(L): 4095.95  Spbio: 162409 102909
+11 1855 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 91 out of 212 for hessian
+11 1856 -log(L): 4095.95  Spbio: 162409 102909
+11 1857 -log(L): 4095.95  Spbio: 162409 102909
+11 1858 -log(L): 4095.95  Spbio: 162409 102909
+11 1859 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 92 out of 212 for hessian
+11 1860 -log(L): 4095.95  Spbio: 162409 102909
+11 1861 -log(L): 4095.95  Spbio: 162409 102909
+11 1862 -log(L): 4095.95  Spbio: 162409 102909
+11 1863 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 93 out of 212 for hessian
+11 1864 -log(L): 4095.95  Spbio: 162409 102909
+11 1865 -log(L): 4095.95  Spbio: 162409 102909
+11 1866 -log(L): 4095.95  Spbio: 162409 102909
+11 1867 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 94 out of 212 for hessian
+11 1868 -log(L): 4095.95  Spbio: 162409 102909
+11 1869 -log(L): 4095.95  Spbio: 162409 102909
+11 1870 -log(L): 4095.95  Spbio: 162409 102909
+11 1871 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 95 out of 212 for hessian
+11 1872 -log(L): 4095.95  Spbio: 162409 102909
+11 1873 -log(L): 4095.95  Spbio: 162409 102909
+11 1874 -log(L): 4095.95  Spbio: 162409 102909
+11 1875 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 96 out of 212 for hessian
+11 1876 -log(L): 4095.95  Spbio: 162409 102909
+11 1877 -log(L): 4095.95  Spbio: 162409 102909
+11 1878 -log(L): 4095.95  Spbio: 162409 102909
+11 1879 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 97 out of 212 for hessian
+11 1880 -log(L): 4095.95  Spbio: 162409 102909
+11 1881 -log(L): 4095.95  Spbio: 162409 102909
+11 1882 -log(L): 4095.95  Spbio: 162409 102909
+11 1883 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 98 out of 212 for hessian
+11 1884 -log(L): 4095.95  Spbio: 162409 102909
+11 1885 -log(L): 4095.95  Spbio: 162409 102909
+11 1886 -log(L): 4095.95  Spbio: 162409 102909
+11 1887 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 99 out of 212 for hessian
+11 1888 -log(L): 4095.95  Spbio: 162409 102909
+11 1889 -log(L): 4095.95  Spbio: 162409 102909
+11 1890 -log(L): 4095.95  Spbio: 162409 102909
+11 1891 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 100 out of 212 for hessian
+11 1892 -log(L): 4095.95  Spbio: 162409 102909
+11 1893 -log(L): 4095.95  Spbio: 162409 102909
+11 1894 -log(L): 4095.95  Spbio: 162409 102909
+11 1895 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 101 out of 212 for hessian
+11 1896 -log(L): 4095.95  Spbio: 162409 102909
+11 1897 -log(L): 4095.95  Spbio: 162409 102909
+11 1898 -log(L): 4095.95  Spbio: 162409 102909
+11 1899 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 102 out of 212 for hessian
+11 1900 -log(L): 4095.95  Spbio: 162409 102909
+11 1901 -log(L): 4095.95  Spbio: 162409 102909
+11 1902 -log(L): 4095.95  Spbio: 162409 102909
+11 1903 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 103 out of 212 for hessian
+11 1904 -log(L): 4095.95  Spbio: 162409 102909
+11 1905 -log(L): 4095.95  Spbio: 162409 102909
+11 1906 -log(L): 4095.95  Spbio: 162409 102909
+11 1907 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 104 out of 212 for hessian
+11 1908 -log(L): 4095.95  Spbio: 162409 102909
+11 1909 -log(L): 4095.95  Spbio: 162409 102909
+11 1910 -log(L): 4095.95  Spbio: 162409 102909
+11 1911 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 105 out of 212 for hessian
+11 1912 -log(L): 4095.95  Spbio: 162409 102909
+11 1913 -log(L): 4095.95  Spbio: 162409 102909
+11 1914 -log(L): 4095.95  Spbio: 162409 102909
+11 1915 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 106 out of 212 for hessian
+11 1916 -log(L): 4095.95  Spbio: 162409 102909
+11 1917 -log(L): 4095.95  Spbio: 162409 102909
+11 1918 -log(L): 4095.95  Spbio: 162409 102909
+11 1919 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 107 out of 212 for hessian
+11 1920 -log(L): 4095.95  Spbio: 162409 102909
+11 1921 -log(L): 4095.95  Spbio: 162409 102909
+11 1922 -log(L): 4095.95  Spbio: 162409 102909
+11 1923 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 108 out of 212 for hessian
+11 1924 -log(L): 4095.95  Spbio: 162409 102909
+11 1925 -log(L): 4095.95  Spbio: 162409 102909
+11 1926 -log(L): 4095.95  Spbio: 162409 102909
+11 1927 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 109 out of 212 for hessian
+11 1928 -log(L): 4095.95  Spbio: 162409 102909
+11 1929 -log(L): 4095.95  Spbio: 162409 102909
+11 1930 -log(L): 4095.95  Spbio: 162409 102909
+11 1931 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 110 out of 212 for hessian
+11 1932 -log(L): 4095.95  Spbio: 162409 102909
+11 1933 -log(L): 4095.95  Spbio: 162409 102909
+11 1934 -log(L): 4095.95  Spbio: 162409 102909
+11 1935 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 111 out of 212 for hessian
+11 1936 -log(L): 4095.95  Spbio: 162409 102909
+11 1937 -log(L): 4095.95  Spbio: 162409 102909
+11 1938 -log(L): 4095.95  Spbio: 162409 102909
+11 1939 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 112 out of 212 for hessian
+11 1940 -log(L): 4095.95  Spbio: 162409 102909
+11 1941 -log(L): 4095.95  Spbio: 162409 102909
+11 1942 -log(L): 4095.95  Spbio: 162409 102909
+11 1943 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 113 out of 212 for hessian
+11 1944 -log(L): 4095.95  Spbio: 162409 102909
+11 1945 -log(L): 4095.95  Spbio: 162409 102909
+11 1946 -log(L): 4095.95  Spbio: 162409 102909
+11 1947 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 114 out of 212 for hessian
+11 1948 -log(L): 4095.95  Spbio: 162409 102909
+11 1949 -log(L): 4095.95  Spbio: 162409 102909
+11 1950 -log(L): 4095.95  Spbio: 162409 102909
+11 1951 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 115 out of 212 for hessian
+11 1952 -log(L): 4095.95  Spbio: 162409 102909
+11 1953 -log(L): 4095.95  Spbio: 162409 102909
+11 1954 -log(L): 4095.95  Spbio: 162409 102909
+11 1955 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 116 out of 212 for hessian
+11 1956 -log(L): 4095.95  Spbio: 162409 102909
+11 1957 -log(L): 4095.95  Spbio: 162409 102909
+11 1958 -log(L): 4095.95  Spbio: 162409 102909
+11 1959 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 117 out of 212 for hessian
+11 1960 -log(L): 4095.95  Spbio: 162409 102909
+11 1961 -log(L): 4095.95  Spbio: 162409 102909
+11 1962 -log(L): 4095.95  Spbio: 162409 102909
+11 1963 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 118 out of 212 for hessian
+11 1964 -log(L): 4095.95  Spbio: 162409 102909
+11 1965 -log(L): 4095.95  Spbio: 162409 102909
+11 1966 -log(L): 4095.95  Spbio: 162409 102909
+11 1967 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 119 out of 212 for hessian
+11 1968 -log(L): 4095.95  Spbio: 162409 102909
+11 1969 -log(L): 4095.95  Spbio: 162409 102909
+11 1970 -log(L): 4095.95  Spbio: 162409 102909
+11 1971 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 120 out of 212 for hessian
+11 1972 -log(L): 4095.95  Spbio: 162409 102909
+11 1973 -log(L): 4095.95  Spbio: 162409 102909
+11 1974 -log(L): 4095.95  Spbio: 162409 102909
+11 1975 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 121 out of 212 for hessian
+11 1976 -log(L): 4095.95  Spbio: 162409 102909
+11 1977 -log(L): 4095.95  Spbio: 162409 102909
+11 1978 -log(L): 4095.95  Spbio: 162409 102909
+11 1979 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 122 out of 212 for hessian
+11 1980 -log(L): 4095.95  Spbio: 162409 102909
+11 1981 -log(L): 4095.95  Spbio: 162409 102909
+11 1982 -log(L): 4095.95  Spbio: 162409 102909
+11 1983 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 123 out of 212 for hessian
+11 1984 -log(L): 4095.95  Spbio: 162409 102909
+11 1985 -log(L): 4095.95  Spbio: 162409 102909
+11 1986 -log(L): 4095.95  Spbio: 162409 102909
+11 1987 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 124 out of 212 for hessian
+11 1988 -log(L): 4095.95  Spbio: 162409 102909
+11 1989 -log(L): 4095.95  Spbio: 162409 102909
+11 1990 -log(L): 4095.95  Spbio: 162409 102909
+11 1991 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 125 out of 212 for hessian
+11 1992 -log(L): 4095.95  Spbio: 162409 102909
+11 1993 -log(L): 4095.95  Spbio: 162409 102909
+11 1994 -log(L): 4095.95  Spbio: 162409 102909
+11 1995 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 126 out of 212 for hessian
+11 1996 -log(L): 4095.95  Spbio: 162409 102909
+11 1997 -log(L): 4095.95  Spbio: 162409 102909
+11 1998 -log(L): 4095.95  Spbio: 162409 102909
+11 1999 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 127 out of 212 for hessian
+11 2000 -log(L): 4095.95  Spbio: 162409 102909
+11 2001 -log(L): 4095.95  Spbio: 162409 102909
+11 2002 -log(L): 4095.95  Spbio: 162409 102909
+11 2003 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 128 out of 212 for hessian
+11 2004 -log(L): 4095.95  Spbio: 162409 102909
+11 2005 -log(L): 4095.95  Spbio: 162409 102909
+11 2006 -log(L): 4095.95  Spbio: 162409 102909
+11 2007 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 129 out of 212 for hessian
+11 2008 -log(L): 4095.95  Spbio: 162409 102909
+11 2009 -log(L): 4095.95  Spbio: 162409 102909
+11 2010 -log(L): 4095.95  Spbio: 162409 102909
+11 2011 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 130 out of 212 for hessian
+11 2012 -log(L): 4095.95  Spbio: 162409 102909
+11 2013 -log(L): 4095.95  Spbio: 162409 102909
+11 2014 -log(L): 4095.95  Spbio: 162409 102909
+11 2015 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 131 out of 212 for hessian
+11 2016 -log(L): 4095.95  Spbio: 162409 102909
+11 2017 -log(L): 4095.95  Spbio: 162409 102909
+11 2018 -log(L): 4095.95  Spbio: 162409 102909
+11 2019 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 132 out of 212 for hessian
+11 2020 -log(L): 4095.95  Spbio: 162409 102909
+11 2021 -log(L): 4095.95  Spbio: 162409 102909
+11 2022 -log(L): 4095.95  Spbio: 162409 102909
+11 2023 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 133 out of 212 for hessian
+11 2024 -log(L): 4095.95  Spbio: 162409 102909
+11 2025 -log(L): 4095.95  Spbio: 162409 102909
+11 2026 -log(L): 4095.95  Spbio: 162409 102909
+11 2027 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 134 out of 212 for hessian
+11 2028 -log(L): 4095.95  Spbio: 162409 102909
+11 2029 -log(L): 4095.95  Spbio: 162409 102909
+11 2030 -log(L): 4095.95  Spbio: 162409 102909
+11 2031 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 135 out of 212 for hessian
+11 2032 -log(L): 4095.95  Spbio: 162409 102909
+11 2033 -log(L): 4095.95  Spbio: 162409 102909
+11 2034 -log(L): 4095.95  Spbio: 162409 102909
+11 2035 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 136 out of 212 for hessian
+11 2036 -log(L): 4095.95  Spbio: 162409 102909
+11 2037 -log(L): 4095.95  Spbio: 162409 102909
+11 2038 -log(L): 4095.95  Spbio: 162409 102909
+11 2039 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 137 out of 212 for hessian
+11 2040 -log(L): 4095.95  Spbio: 162409 102909
+11 2041 -log(L): 4095.95  Spbio: 162409 102909
+11 2042 -log(L): 4095.95  Spbio: 162409 102909
+11 2043 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 138 out of 212 for hessian
+11 2044 -log(L): 4095.95  Spbio: 162409 102909
+11 2045 -log(L): 4095.95  Spbio: 162409 102909
+11 2046 -log(L): 4095.95  Spbio: 162409 102909
+11 2047 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 139 out of 212 for hessian
+11 2048 -log(L): 4095.95  Spbio: 162409 102909
+11 2049 -log(L): 4095.95  Spbio: 162409 102909
+11 2050 -log(L): 4095.95  Spbio: 162409 102909
+11 2051 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 140 out of 212 for hessian
+11 2052 -log(L): 4095.95  Spbio: 162409 102909
+11 2053 -log(L): 4095.95  Spbio: 162409 102909
+11 2054 -log(L): 4095.95  Spbio: 162409 102909
+11 2055 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 141 out of 212 for hessian
+11 2056 -log(L): 4095.95  Spbio: 162409 102909
+11 2057 -log(L): 4095.95  Spbio: 162409 102909
+11 2058 -log(L): 4095.95  Spbio: 162409 102909
+11 2059 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 142 out of 212 for hessian
+11 2060 -log(L): 4095.95  Spbio: 162409 102909
+11 2061 -log(L): 4095.95  Spbio: 162409 102909
+11 2062 -log(L): 4095.95  Spbio: 162409 102909
+11 2063 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 143 out of 212 for hessian
+11 2064 -log(L): 4095.95  Spbio: 162409 102909
+11 2065 -log(L): 4095.95  Spbio: 162409 102909
+11 2066 -log(L): 4095.95  Spbio: 162409 102909
+11 2067 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 144 out of 212 for hessian
+11 2068 -log(L): 4095.95  Spbio: 162409 102909
+11 2069 -log(L): 4095.95  Spbio: 162409 102909
+11 2070 -log(L): 4095.95  Spbio: 162409 102909
+11 2071 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 145 out of 212 for hessian
+11 2072 -log(L): 4095.95  Spbio: 162409 102909
+11 2073 -log(L): 4095.95  Spbio: 162409 102909
+11 2074 -log(L): 4095.95  Spbio: 162409 102909
+11 2075 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 146 out of 212 for hessian
+11 2076 -log(L): 4095.95  Spbio: 162409 102909
+11 2077 -log(L): 4095.95  Spbio: 162409 102909
+11 2078 -log(L): 4095.95  Spbio: 162409 102909
+11 2079 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 147 out of 212 for hessian
+11 2080 -log(L): 4095.95  Spbio: 162409 102909
+11 2081 -log(L): 4095.95  Spbio: 162409 102909
+11 2082 -log(L): 4095.95  Spbio: 162409 102909
+11 2083 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 148 out of 212 for hessian
+11 2084 -log(L): 4095.95  Spbio: 162409 102909
+11 2085 -log(L): 4095.95  Spbio: 162409 102909
+11 2086 -log(L): 4095.95  Spbio: 162409 102909
+11 2087 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 149 out of 212 for hessian
+11 2088 -log(L): 4095.95  Spbio: 162409 102909
+11 2089 -log(L): 4095.95  Spbio: 162409 102909
+11 2090 -log(L): 4095.95  Spbio: 162409 102909
+11 2091 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 150 out of 212 for hessian
+11 2092 -log(L): 4095.95  Spbio: 162409 102909
+11 2093 -log(L): 4095.95  Spbio: 162409 102909
+11 2094 -log(L): 4095.95  Spbio: 162409 102909
+11 2095 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 151 out of 212 for hessian
+11 2096 -log(L): 4095.95  Spbio: 162409 102909
+11 2097 -log(L): 4095.95  Spbio: 162409 102909
+11 2098 -log(L): 4095.95  Spbio: 162409 102909
+11 2099 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 152 out of 212 for hessian
+11 2100 -log(L): 4095.95  Spbio: 162409 102909
+11 2101 -log(L): 4095.95  Spbio: 162409 102909
+11 2102 -log(L): 4095.95  Spbio: 162409 102909
+11 2103 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 153 out of 212 for hessian
+11 2104 -log(L): 4095.95  Spbio: 162409 102909
+11 2105 -log(L): 4095.95  Spbio: 162409 102909
+11 2106 -log(L): 4095.95  Spbio: 162409 102909
+11 2107 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 154 out of 212 for hessian
+11 2108 -log(L): 4095.95  Spbio: 162409 102909
+11 2109 -log(L): 4095.95  Spbio: 162409 102909
+11 2110 -log(L): 4095.95  Spbio: 162409 102909
+11 2111 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 155 out of 212 for hessian
+11 2112 -log(L): 4095.95  Spbio: 162409 102909
+11 2113 -log(L): 4095.95  Spbio: 162409 102909
+11 2114 -log(L): 4095.95  Spbio: 162409 102909
+11 2115 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 156 out of 212 for hessian
+11 2116 -log(L): 4095.95  Spbio: 162409 102909
+11 2117 -log(L): 4095.95  Spbio: 162409 102909
+11 2118 -log(L): 4095.95  Spbio: 162409 102909
+11 2119 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 157 out of 212 for hessian
+11 2120 -log(L): 4095.95  Spbio: 162409 102909
+11 2121 -log(L): 4095.95  Spbio: 162409 102909
+11 2122 -log(L): 4095.95  Spbio: 162409 102909
+11 2123 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 158 out of 212 for hessian
+11 2124 -log(L): 4095.95  Spbio: 162409 102909
+11 2125 -log(L): 4095.95  Spbio: 162409 102909
+11 2126 -log(L): 4095.95  Spbio: 162409 102909
+11 2127 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 159 out of 212 for hessian
+11 2128 -log(L): 4095.95  Spbio: 162409 102909
+11 2129 -log(L): 4095.95  Spbio: 162409 102909
+11 2130 -log(L): 4095.95  Spbio: 162409 102909
+11 2131 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 160 out of 212 for hessian
+11 2132 -log(L): 4095.95  Spbio: 162409 102909
+11 2133 -log(L): 4095.95  Spbio: 162409 102909
+11 2134 -log(L): 4095.95  Spbio: 162409 102909
+11 2135 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 161 out of 212 for hessian
+11 2136 -log(L): 4095.95  Spbio: 162409 102909
+11 2137 -log(L): 4095.95  Spbio: 162409 102909
+11 2138 -log(L): 4095.95  Spbio: 162409 102909
+11 2139 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 162 out of 212 for hessian
+11 2140 -log(L): 4095.95  Spbio: 162409 102909
+11 2141 -log(L): 4095.95  Spbio: 162409 102909
+11 2142 -log(L): 4095.95  Spbio: 162409 102909
+11 2143 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 163 out of 212 for hessian
+11 2144 -log(L): 4095.95  Spbio: 162409 102909
+11 2145 -log(L): 4095.95  Spbio: 162409 102909
+11 2146 -log(L): 4095.95  Spbio: 162409 102909
+11 2147 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 164 out of 212 for hessian
+11 2148 -log(L): 4095.95  Spbio: 162409 102909
+11 2149 -log(L): 4095.95  Spbio: 162409 102909
+11 2150 -log(L): 4095.95  Spbio: 162409 102909
+11 2151 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 165 out of 212 for hessian
+11 2152 -log(L): 4095.95  Spbio: 162409 102909
+11 2153 -log(L): 4095.95  Spbio: 162409 102909
+11 2154 -log(L): 4095.95  Spbio: 162409 102909
+11 2155 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 166 out of 212 for hessian
+11 2156 -log(L): 4095.95  Spbio: 162409 102909
+11 2157 -log(L): 4095.95  Spbio: 162409 102909
+11 2158 -log(L): 4095.95  Spbio: 162409 102909
+11 2159 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 167 out of 212 for hessian
+11 2160 -log(L): 4095.95  Spbio: 162409 102909
+11 2161 -log(L): 4095.95  Spbio: 162409 102909
+11 2162 -log(L): 4095.95  Spbio: 162409 102909
+11 2163 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 168 out of 212 for hessian
+11 2164 -log(L): 4095.95  Spbio: 162409 102909
+11 2165 -log(L): 4095.95  Spbio: 162409 102909
+11 2166 -log(L): 4095.95  Spbio: 162409 102909
+11 2167 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 169 out of 212 for hessian
+11 2168 -log(L): 4095.95  Spbio: 162409 102909
+11 2169 -log(L): 4095.95  Spbio: 162409 102909
+11 2170 -log(L): 4095.95  Spbio: 162409 102909
+11 2171 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 170 out of 212 for hessian
+11 2172 -log(L): 4095.95  Spbio: 162409 102909
+11 2173 -log(L): 4095.95  Spbio: 162409 102909
+11 2174 -log(L): 4095.95  Spbio: 162409 102909
+11 2175 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 171 out of 212 for hessian
+11 2176 -log(L): 4095.95  Spbio: 162409 102909
+11 2177 -log(L): 4095.95  Spbio: 162409 102909
+11 2178 -log(L): 4095.95  Spbio: 162409 102909
+11 2179 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 172 out of 212 for hessian
+11 2180 -log(L): 4095.95  Spbio: 162409 102909
+11 2181 -log(L): 4095.95  Spbio: 162409 102909
+11 2182 -log(L): 4095.95  Spbio: 162409 102909
+11 2183 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 173 out of 212 for hessian
+11 2184 -log(L): 4095.95  Spbio: 162409 102909
+11 2185 -log(L): 4095.95  Spbio: 162409 102909
+11 2186 -log(L): 4095.95  Spbio: 162409 102909
+11 2187 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 174 out of 212 for hessian
+11 2188 -log(L): 4095.95  Spbio: 162409 102909
+11 2189 -log(L): 4095.95  Spbio: 162409 102909
+11 2190 -log(L): 4095.95  Spbio: 162409 102909
+11 2191 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 175 out of 212 for hessian
+11 2192 -log(L): 4095.95  Spbio: 162409 102909
+11 2193 -log(L): 4095.95  Spbio: 162409 102909
+11 2194 -log(L): 4095.95  Spbio: 162409 102909
+11 2195 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 176 out of 212 for hessian
+11 2196 -log(L): 4095.95  Spbio: 162409 102909
+11 2197 -log(L): 4095.95  Spbio: 162409 102909
+11 2198 -log(L): 4095.95  Spbio: 162409 102909
+11 2199 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 177 out of 212 for hessian
+11 2200 -log(L): 4095.95  Spbio: 162409 102909
+11 2201 -log(L): 4095.95  Spbio: 162409 102909
+11 2202 -log(L): 4095.95  Spbio: 162409 102909
+11 2203 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 178 out of 212 for hessian
+11 2204 -log(L): 4095.95  Spbio: 162409 102909
+11 2205 -log(L): 4095.95  Spbio: 162409 102909
+11 2206 -log(L): 4095.95  Spbio: 162409 102909
+11 2207 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 179 out of 212 for hessian
+11 2208 -log(L): 4095.95  Spbio: 162409 102909
+11 2209 -log(L): 4095.95  Spbio: 162409 102909
+11 2210 -log(L): 4095.95  Spbio: 162409 102909
+11 2211 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 180 out of 212 for hessian
+11 2212 -log(L): 4095.95  Spbio: 162409 102909
+11 2213 -log(L): 4095.95  Spbio: 162409 102909
+11 2214 -log(L): 4095.95  Spbio: 162409 102909
+11 2215 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 181 out of 212 for hessian
+11 2216 -log(L): 4095.95  Spbio: 162409 102909
+11 2217 -log(L): 4095.95  Spbio: 162409 102909
+11 2218 -log(L): 4095.95  Spbio: 162409 102909
+11 2219 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 182 out of 212 for hessian
+11 2220 -log(L): 4095.95  Spbio: 162409 102909
+11 2221 -log(L): 4095.95  Spbio: 162409 102909
+11 2222 -log(L): 4095.95  Spbio: 162409 102909
+11 2223 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 183 out of 212 for hessian
+11 2224 -log(L): 4095.95  Spbio: 162409 102909
+11 2225 -log(L): 4095.95  Spbio: 162409 102909
+11 2226 -log(L): 4095.95  Spbio: 162409 102909
+11 2227 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 184 out of 212 for hessian
+11 2228 -log(L): 4095.95  Spbio: 162409 102909
+11 2229 -log(L): 4095.95  Spbio: 162409 102909
+11 2230 -log(L): 4095.95  Spbio: 162409 102909
+11 2231 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 185 out of 212 for hessian
+11 2232 -log(L): 4095.95  Spbio: 162409 102909
+11 2233 -log(L): 4095.95  Spbio: 162409 102909
+11 2234 -log(L): 4095.95  Spbio: 162409 102909
+11 2235 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 186 out of 212 for hessian
+11 2236 -log(L): 4095.95  Spbio: 162409 102909
+11 2237 -log(L): 4095.95  Spbio: 162409 102909
+11 2238 -log(L): 4095.95  Spbio: 162409 102909
+11 2239 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 187 out of 212 for hessian
+11 2240 -log(L): 4095.95  Spbio: 162409 102909
+11 2241 -log(L): 4095.95  Spbio: 162409 102909
+11 2242 -log(L): 4095.95  Spbio: 162409 102909
+11 2243 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 188 out of 212 for hessian
+11 2244 -log(L): 4095.95  Spbio: 162409 102909
+11 2245 -log(L): 4095.95  Spbio: 162409 102909
+11 2246 -log(L): 4095.95  Spbio: 162409 102909
+11 2247 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 189 out of 212 for hessian
+11 2248 -log(L): 4095.95  Spbio: 162409 102909
+11 2249 -log(L): 4095.95  Spbio: 162409 102909
+11 2250 -log(L): 4095.95  Spbio: 162409 102909
+11 2251 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 190 out of 212 for hessian
+11 2252 -log(L): 4095.95  Spbio: 162409 102909
+11 2253 -log(L): 4095.95  Spbio: 162409 102909
+11 2254 -log(L): 4095.95  Spbio: 162409 102909
+11 2255 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 191 out of 212 for hessian
+11 2256 -log(L): 4095.95  Spbio: 162409 102909
+11 2257 -log(L): 4095.95  Spbio: 162409 102909
+11 2258 -log(L): 4095.95  Spbio: 162409 102909
+11 2259 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 192 out of 212 for hessian
+11 2260 -log(L): 4095.95  Spbio: 162409 102909
+11 2261 -log(L): 4095.95  Spbio: 162409 102909
+11 2262 -log(L): 4095.95  Spbio: 162409 102909
+11 2263 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 193 out of 212 for hessian
+11 2264 -log(L): 4095.95  Spbio: 162409 102909
+11 2265 -log(L): 4095.95  Spbio: 162409 102909
+11 2266 -log(L): 4095.95  Spbio: 162409 102909
+11 2267 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 194 out of 212 for hessian
+11 2268 -log(L): 4095.95  Spbio: 162409 102909
+11 2269 -log(L): 4095.95  Spbio: 162409 102909
+11 2270 -log(L): 4095.95  Spbio: 162409 102909
+11 2271 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 195 out of 212 for hessian
+11 2272 -log(L): 4095.95  Spbio: 162409 102909
+11 2273 -log(L): 4095.95  Spbio: 162409 102909
+11 2274 -log(L): 4095.95  Spbio: 162409 102909
+11 2275 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 196 out of 212 for hessian
+11 2276 -log(L): 4095.95  Spbio: 162409 102909
+11 2277 -log(L): 4095.95  Spbio: 162409 102909
+11 2278 -log(L): 4095.95  Spbio: 162409 102909
+11 2279 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 197 out of 212 for hessian
+11 2280 -log(L): 4095.95  Spbio: 162409 102909
+11 2281 -log(L): 4095.95  Spbio: 162409 102909
+11 2282 -log(L): 4095.95  Spbio: 162409 102909
+11 2283 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 198 out of 212 for hessian
+11 2284 -log(L): 4095.95  Spbio: 162409 102909
+11 2285 -log(L): 4095.95  Spbio: 162409 102909
+11 2286 -log(L): 4095.95  Spbio: 162409 102909
+11 2287 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 199 out of 212 for hessian
+11 2288 -log(L): 4095.95  Spbio: 162409 102909
+11 2289 -log(L): 4095.95  Spbio: 162409 102909
+11 2290 -log(L): 4095.95  Spbio: 162409 102909
+11 2291 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 200 out of 212 for hessian
+11 2292 -log(L): 4095.95  Spbio: 162409 102909
+11 2293 -log(L): 4095.95  Spbio: 162409 102909
+11 2294 -log(L): 4095.95  Spbio: 162409 102909
+11 2295 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 201 out of 212 for hessian
+11 2296 -log(L): 4095.95  Spbio: 162409 102909
+11 2297 -log(L): 4095.95  Spbio: 162409 102909
+11 2298 -log(L): 4095.95  Spbio: 162409 102909
+11 2299 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 202 out of 212 for hessian
+11 2300 -log(L): 4095.95  Spbio: 162409 102909
+11 2301 -log(L): 4095.95  Spbio: 162409 102909
+11 2302 -log(L): 4095.95  Spbio: 162409 102909
+11 2303 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 203 out of 212 for hessian
+11 2304 -log(L): 4095.95  Spbio: 162409 102909
+11 2305 -log(L): 4095.95  Spbio: 162409 102909
+11 2306 -log(L): 4095.95  Spbio: 162409 102909
+11 2307 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 204 out of 212 for hessian
+11 2308 -log(L): 4095.95  Spbio: 162409 102909
+11 2309 -log(L): 4095.95  Spbio: 162409 102909
+11 2310 -log(L): 4095.95  Spbio: 162409 102909
+11 2311 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 205 out of 212 for hessian
+11 2312 -log(L): 4095.95  Spbio: 162409 102909
+11 2313 -log(L): 4095.95  Spbio: 162409 102909
+11 2314 -log(L): 4095.95  Spbio: 162409 102909
+11 2315 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 206 out of 212 for hessian
+11 2316 -log(L): 4095.95  Spbio: 162409 102909
+11 2317 -log(L): 4095.95  Spbio: 162409 102909
+11 2318 -log(L): 4095.95  Spbio: 162409 102909
+11 2319 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 207 out of 212 for hessian
+11 2320 -log(L): 4095.95  Spbio: 162409 102909
+11 2321 -log(L): 4095.95  Spbio: 162409 102909
+11 2322 -log(L): 4095.95  Spbio: 162409 102909
+11 2323 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 208 out of 212 for hessian
+11 2324 -log(L): 4095.95  Spbio: 162409 102909
+11 2325 -log(L): 4095.95  Spbio: 162409 102909
+11 2326 -log(L): 4095.95  Spbio: 162409 102909
+11 2327 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 209 out of 212 for hessian
+11 2328 -log(L): 4095.95  Spbio: 162409 102909
+11 2329 -log(L): 4095.95  Spbio: 162409 102909
+11 2330 -log(L): 4095.95  Spbio: 162409 102909
+11 2331 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 210 out of 212 for hessian
+11 2332 -log(L): 4095.95  Spbio: 162409 102909
+11 2333 -log(L): 4095.95  Spbio: 162409 102909
+11 2334 -log(L): 4095.95  Spbio: 162409 102909
+11 2335 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 211 out of 212 for hessian
+11 2336 -log(L): 4095.95  Spbio: 162409 102909
+11 2337 -log(L): 4095.95  Spbio: 162409 102909
+11 2338 -log(L): 4095.95  Spbio: 162409 102909
+11 2339 -log(L): 4095.95  Spbio: 162409 102909
+Estimating row 212 out of 212 for hessian
+11 2340 -log(L): 4095.95  Spbio: 162409 102909
+11 2341 -log(L): 4095.95  Spbio: 162409 102909
+11 2342 -log(L): 4095.95  Spbio: 162409 102909
+11 2343 -log(L): 4095.95  Spbio: 162409 102909
+do benchmark and forecast if requested in sdphase
+ got Fspr 0.633226 0.4
+ got_Btgt 0.633226 0.4
+ got Fmsy 0.633226 65551.1
+finished benchmark, forecast, and sdreporting
+11 2344 -log(L): 4095.95  Spbio: 162409 102909
+
+In final section 
+Finish time: Mon Oct 02 11:57:35 2023
+Elapsed time: 0 hours, 4 minutes, 59 seconds.
+ Iterations: 2344 -log(L): 4095.95
+Final gradient: 7.25472e-06
+
+ finished COVAR.SSO
+ finished forecast
+ finished StdDev quantities
+ write mcmc headers 
+ finished posteriors
+ finished appending to cumreport.sso 
+ finished SS_summary.sso
+ finished SS_summary.sso 
+ writing big output now 
+ finished report.sso
+data.ss_new with N replicates: 1 finished
+ Write new starter file 
+ Write new forecast file 
+ Write new control file 
+dynamic Bzero:  finished 
+SPR_profile:  finished 
+Global_MSY:  finished 
+
+!!  Run has completed  !!            No warnings :)
