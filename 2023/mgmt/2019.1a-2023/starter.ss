@@ -9,9 +9,9 @@
 #C rerun model to get more complete formatting in starter.ss_new
 #C should work with SS version: SSv3.10b_or_later
 #C file write time: 2016-02-22 17:29:02
-GOAPcod2023Oct02.dat
+GOAPcod2023Oct16.dat
 Model19_1a.ctl
-1 # 0=use init values in control file; 1=use ss.par
+0 # 0=use init values in control file; 1=use ss.par
 1 # run display detail (0,1,2)
 1 # detailed output (0=minimal for data-limited, 1=high (w/ wtatage.ss_new), 2=brief, 3=custom) 
 # custom report options: -100 to start with minimal; -101 to start with all; -number to remove, +number to add, -999 to end
