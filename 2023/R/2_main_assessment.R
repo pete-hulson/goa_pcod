@@ -27,18 +27,18 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
 
 # Old model
-r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_old),
-                    skipfinished = FALSE,
-                    intern = TRUE)
+r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+          skipfinished = FALSE,
+          show_in_console = TRUE)
 
 model_run_old <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                                  verbose = TRUE,
                                  printstats = TRUE)
 
 # Recommended model
-r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new),
-                    skipfinished = FALSE,
-                    intern = TRUE)
+r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+          skipfinished = FALSE,
+          show_in_console = TRUE)
 
 model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                                  verbose = TRUE,
@@ -53,15 +53,6 @@ mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
                              FLEETS = c(1:3),
                              do_fig = TRUE,
                              SEXES = 1)
-
-Model_name = Model_name_old
-Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_old)
-CYR = new_SS_dat_year
-SYR = 1977
-FCASTY = 15
-FLEETS = c(1:3)
-do_fig = TRUE
-SEXES = 1
 
 mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
                          Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),

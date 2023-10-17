@@ -67,7 +67,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
   # Run model
   r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"),
             skipfinished = FALSE,
-            show_in_console = TRUE)
+            show_in_console = FALSE)
 
 ## Scenario 2: For GOA Pcod, Scenario 2 = Scenario 1 ----
   
@@ -102,7 +102,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Scenario 4: F is set equal to the F75%. ----
 
@@ -130,7 +130,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Scenario 5: F is 0 ----
 	
@@ -162,7 +162,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Scenario 6: F is set equal to FOFL ----
 	
@@ -191,7 +191,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Scenario 7: F = FABC for endyr + 1 & 2 and FOFL for all remaining years ----
 	
@@ -222,7 +222,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Scenario 8: for calculating OFL value for endyr + 2 ----
 
@@ -253,7 +253,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Run model
 	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"),
 	          skipfinished = FALSE,
-	          show_in_console = TRUE)
+	          show_in_console = FALSE)
 	
 ## Compile scenario output ----
 
