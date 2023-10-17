@@ -33,7 +33,7 @@ r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
 
 model_run_old <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                                  verbose = TRUE,
-                                 printstats = TRUE)
+                                 printstats = FALSE)
 
 # Recommended model
 r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
@@ -42,7 +42,7 @@ r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
 
 model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                                  verbose = TRUE,
-                                 printstats = TRUE)
+                                 printstats = FALSE)
 
 # Run management scenarios
 mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
@@ -51,7 +51,7 @@ mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
                              SYR = 1977,
                              FCASTY = 15,
                              FLEETS = c(1:3),
-                             do_fig = TRUE,
+                             do_fig = FALSE,
                              SEXES = 1)
 
 mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
@@ -90,8 +90,8 @@ write.csv(mscen_old$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_
 # Run retrospective analysis ----
 
 # Define how many retro years you want to go back
-# ret_yr <- 1 # For testing
-ret_yr <- 10 # For full
+ret_yr <- 1 # For testing
+# ret_yr <- 10 # For full
 
 # Run retrospective
 r4ss::SS_doRetro(masterdir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
