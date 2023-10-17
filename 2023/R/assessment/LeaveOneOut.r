@@ -25,8 +25,8 @@ SS_doLOO <- function (Model_name = NULL,
     r4ss::copy_SS_inputs(dir.old = here::here(CYR, "mgmt", Model_name), 
                          dir.new = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
                          overwrite = TRUE)
-    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss.exe"),
-                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss.exe"),
+    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss3.exe"),
+                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss3.exe"),
                     overwrite = TRUE)
     base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss.par"),
                     to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss.par"),
@@ -53,9 +53,9 @@ SS_doLOO <- function (Model_name = NULL,
                            overwrite = TRUE)
     
     # Run model
-    r4ss::run_SS_models(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
-                        skipfinished = FALSE,
-                        intern = TRUE)
+    r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
+              skipfinished = FALSE,
+              show_in_console = FALSE)
     
     
     
@@ -211,9 +211,9 @@ SS_doLOO_cyr <- function (Model_name = NULL,
   for (i in 1:length(subdirnames)) {
     
     # Run model
-    r4ss::run_SS_models(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2022', subdirnames[i]),
-                        skipfinished = FALSE,
-                        intern = TRUE)
+    r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2023', subdirnames[i]),
+              skipfinished = FALSE,
+              show_in_console = FALSE)
     
     # End loop
   }
