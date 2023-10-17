@@ -21,15 +21,16 @@ Model_name_new <- "2019.1b-2023"
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 
+# Run models and management scenarios ----
 
-# Run models ----
+# source management scenario code
+source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
 
 # Old model
 r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                     skipfinished = FALSE,
                     intern = TRUE)
 
-# read the model output and print diagnostic messages
 model_run_old <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                                  verbose = TRUE,
                                  printstats = TRUE)
@@ -39,10 +40,28 @@ r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new)
                     skipfinished = FALSE,
                     intern = TRUE)
 
-# read the model output and print diagnostic messages
 model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                                  verbose = TRUE,
                                  printstats = TRUE)
+
+# Run management scenarios
+mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
+                             Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                             CYR = new_SS_dat_year,
+                             SYR = 1977,
+                             FCASTY = 15,
+                             FLEETS = c(1:3),
+                             do_fig = TRUE,
+                             SEXES = 1)
+
+mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
+                         Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                         CYR = new_SS_dat_year,
+                         SYR = 1977,
+                         FCASTY = 15,
+                         FLEETS = c(1:3),
+                         do_fig = TRUE,
+                         SEXES = 1)
 
 # Get ssb and index fit for spreadsheets with figures
 model_run_new$timeseries$Yr %>% 
@@ -62,13 +81,17 @@ save(model_run_new, file = here::here(new_SS_dat_year, "output", "model_run.RDat
 write.csv(ssb_pred, here::here(new_SS_dat_year, "output", "ssb_pred.csv"))
 write.csv(tot_trwl_pred, here::here(new_SS_dat_year, "output", "tot_trwl_pred.csv"))
 
+save(mscen, file = here::here(new_SS_dat_year, "output", "mgmnt_scen.RData"))
+write.csv(mscen$Tables, here::here(new_SS_dat_year, "output", "mgmnt_scen_table.csv"))
+write.csv(mscen$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_summ.csv"))
+write.csv(mscen_old$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_summ_old.csv"))
 
 
 # Run retrospective analysis ----
 
 # Define how many retro years you want to go back
-ret_yr <- 1 # For testing
-# ret_yr <- 10 # For full
+# ret_yr <- 1 # For testing
+ret_yr <- 10 # For full
 
 # Run retrospective
 r4ss::SS_doRetro(masterdir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
@@ -116,34 +139,6 @@ write.csv(rho_output_ss3diags, here::here(new_SS_dat_year, "output", "retro_Rho_
 #write.csv(rho_output_r4ss, here::here("output", "retro_Rho_r4ss.csv"))
 
 
-
-# Run management scenarios ----
-
-source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
-
-
-r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new),
-                    skipfinished = FALSE,
-                    intern = TRUE)
-
-
-# Run management scenarios function
-mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
-                         Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
-                         CYR = new_SS_dat_year,
-                         SYR = 1977,
-                         FCASTY = 15,
-                         FLEETS = c(1:3),
-                         do_fig = TRUE,
-                         SEXES = 1)
-
-# Save output
-save(mscen, file = here::here(new_SS_dat_year, "output", "mgmnt_scen.RData"))
-write.csv(mscen$Tables, here::here(new_SS_dat_year, "output", "mgmnt_scen_table.csv"))
-write.csv(mscen$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_summ.csv"))
-
-
-
 # Run Leave-One-Out Analysis ----
 
 # Define how many LOO years you want to go back
@@ -164,14 +159,13 @@ LOO <- SS_doLOO(Model_name = Model_name_new,
 save(LOO, file = here::here(new_SS_dat_year, "output", "LOO.RData"))
 write.csv(LOO[[1]], here::here(new_SS_dat_year, "output", "LOO_table.csv"))
 
-# Run for newly added data
+# Run for newly added data - note that this is a hardwired function, where folders and data files must be manually changed to remove recent data
 LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
-                newsubdir = "LeaveOneOut",
-                CYR = new_SS_dat_year)
+                             newsubdir = "LeaveOneOut",
+                             CYR = new_SS_dat_year)
 
 # Save output
 save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RData"))
-
 
 
 # Run Jitter Test ----
@@ -198,7 +192,8 @@ base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.p
                 overwrite = TRUE)
 
 # run the jitters
-jitter_loglike <- r4ss::jitter(dir = jitter_dir,
+
+jitter_loglike <- r4ss::SS_RunJitter(mydir = jitter_dir,
                                Njitter = Njitter,
                                jitter_fraction = 0.05)
 
@@ -206,21 +201,12 @@ jitter_loglike <- r4ss::jitter(dir = jitter_dir,
 write.csv(jitter_loglike, here::here(new_SS_dat_year, "output", "jitter_table.csv"))
 
 
-
 # Run MCMC ----
-
-# Define burnin and length of chain
-starter$MCMCburn <- 100 # For testing
-chain <- 1000 # For testing
-save <- 2 # For testing
-# starter$MCMCburn <- 10000 # For full
-# chain <- 1000000 # For full
-# save <- 2000 # For full
 
 mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC")
 
 # Write SS files in MCMC subfolder
-r4ss::copy_SS_inputs(dir.old = model_dir_new, 
+r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
                      dir.new = mcmc_dir,
                      overwrite = TRUE)
 base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.exe"),
@@ -233,20 +219,28 @@ base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.p
 # Run MCMC
 starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "starter.ss"))
 
+# Define burnin and length of chain
+starter$MCMCburn <- 100 # For testing
+chain <- 1000 # For testing
+save <- 2 # For testing
+# starter$MCMCburn <- 10000 # For full
+# chain <- 1000000 # For full
+# save <- 2000 # For full
+
 r4ss::SS_writestarter(starter, 
                       dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"), 
                       file = "starter.ss",
                       overwrite = TRUE)
 
-r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"), 
-          extras = paste0("-mcmc ", chain," -mcsave ", save),
-          skipfinished = FALSE,
-          show_in_console = TRUE)
+r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+                    extras = paste0("-mcmc ", chain," -mcsave ", save),
+                    skipfinished = FALSE,
+                    intern = TRUE)
 
-r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"), 
-          extras = "-mceval",
-          skipfinished = FALSE,
-          show_in_console = TRUE)
+r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+                    extras = "-mceval",
+                    skipfinished = FALSE,
+                    intern = TRUE)
 
 # Read output
 mcmc <- r4ss::SSgetMCMC(here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"))

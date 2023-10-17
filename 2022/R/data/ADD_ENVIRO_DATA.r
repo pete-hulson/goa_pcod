@@ -25,13 +25,12 @@ Add_climate <- function(endyr, Old_datafile = NULL, New_datafile = NULL, dir1 = 
     return(index)
   }
 
-mean_june<-mean(TEMPHW[YR%in%1982:2012]$JUNE_TEMP)
-mean_feb<-mean(TEMPHW[YR%in%1982:2012]$FEB_TEMP)
-  
   tempHW <- data.table(YR = c(1977,1978),
-                       JUNE_TEMP = rep(mean_june,2),
-                       FEB_TEMP = rep(mean_feb,2),
+                       JUNE_TEMP = c(4.58, 4.58),
+                       FEB_TEMP = c(3.93, 3.93),
                        TEMP = c(0, 0),
+                       TEMP2 = c(0,0),
+                       TEMP3 = c(0, 0),
                        THW = c(0, 0),
                        WHW = c(0, 0),
                        SHW = c(0, 0),

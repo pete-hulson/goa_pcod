@@ -1,5 +1,5 @@
 # Function to perform Leave-One-Out analysis
-# Originally written by Steve Barbeaux, altered by Pete Hulson in 2022
+# Originally written by Steve Barbeaux, altered by Pete Hulson in 2022 and 2023
 
 
 
@@ -10,26 +10,26 @@ SS_doLOO <- function (Model_name = NULL,
                       CYR = NULL){
   
   # Set up LOO necessities
-  if (!file.exists(here::here("Stock_Synthesis_files", Model_name, newsubdir))) 
-    dir.create(here::here("Stock_Synthesis_files", Model_name, newsubdir))
+  if (!file.exists(here::here(CYR, "mgmt", Model_name, newsubdir))) 
+    dir.create(here::here(CYR, "mgmt", Model_name, newsubdir))
   
   subdirnames <- paste0("LOO", years)
   
-  datafile <- r4ss::SS_readdat(file = here::here("Stock_Synthesis_files", Model_name, datafilename))
+  datafile <- r4ss::SS_readdat(file = here::here(CYR, "mgmt", Model_name, datafilename))
 
   # Loop thru LOO years
   
   for (iyr in 1:length(years)) {
     
     # Write SS files
-    r4ss::copy_SS_inputs(dir.old = here::here("Stock_Synthesis_files", Model_name), 
-                         dir.new = here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames[iyr]),
+    r4ss::copy_SS_inputs(dir.old = here::here(CYR, "mgmt", Model_name), 
+                         dir.new = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
                          overwrite = TRUE)
-    base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.exe"),
-                    to = here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames[iyr], "ss.exe"),
+    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss.exe"),
+                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss.exe"),
                     overwrite = TRUE)
-    base::file.copy(from = here::here("Stock_Synthesis_files", Model_name, "ss.par"),
-                    to = here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames[iyr], "ss.par"),
+    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss.par"),
+                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss.par"),
                     overwrite = TRUE)
     
     # Change up data file for LOO
@@ -49,21 +49,22 @@ SS_doLOO <- function (Model_name = NULL,
     
     # Write out data script
     r4ss::SS_writedat_3.30(datafile2,
-                           here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames[iyr], datafilename),
+                           here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], datafilename),
                            overwrite = TRUE)
     
     # Run model
-    r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames[iyr]), 
-              extras = "-nox",
-              skipfinished = FALSE,
-              show_in_console = TRUE)
+    r4ss::run_SS_models(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
+                        skipfinished = FALSE,
+                        intern = TRUE)
+    
+    
     
     # End loop
   }
  
   
   ### Compile output
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here("Stock_Synthesis_files", Model_name, newsubdir, subdirnames))
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames))
   
   Nat_M <- array()
   Q <- array()
@@ -95,7 +96,7 @@ SS_doLOO <- function (Model_name = NULL,
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', CYR + 1)]$StdDev
   }
 
-  mods0 <- r4ss::SSgetoutput(dirvec = here::here("Stock_Synthesis_files", Model_name))
+  mods0 <- r4ss::SSgetoutput(dirvec = here::here(CYR, "mgmt", Model_name))
 
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)
@@ -166,13 +167,13 @@ SS_doLOO <- function (Model_name = NULL,
                   SSBfore = x$SSBfore,
                   ABCfore = x$ABCfore )
   x4 <- x3[1, ]
-  x4 <- data.table(Nat_M = rep(x4$Nat_M, 12),
-                   annF_Btgt = rep(x4$annF_Btgt, 12),
-                   Q = rep(x4$Q, 12),
-                   SSB_UN = rep(x4$SSB_UN, 12),
-                   SSBfore = rep(x4$SSBfore, 12),
-                   ABCfore = rep(x4$ABCfore, 12))
-  x4 <- x3[2:12, ] - x4[2:12, ]
+  x4 <- data.table(Nat_M = rep(x4$Nat_M, length(years) + 1),
+                   annF_Btgt = rep(x4$annF_Btgt, length(years) + 1),
+                   Q = rep(x4$Q, length(years) + 1),
+                   SSB_UN = rep(x4$SSB_UN, length(years) + 1),
+                   SSBfore = rep(x4$SSBfore, length(years) + 1),
+                   ABCfore = rep(x4$ABCfore, length(years) + 1))
+  x4 <- x3[2:(1 + length(years)), ] - x4[2:(1 + length(years)), ]
   x4$LOO <- c(1:length(years))
 
   x4 <- melt(x4, 'LOO')
@@ -188,32 +189,38 @@ SS_doLOO <- function (Model_name = NULL,
   
 }
 
-##############################################
 # L-O-O for most recent year of data
 SS_doLOO_cyr <- function (Model_name = NULL,
-                      newsubdir = "LeaveOneOut",
-                      CYR = NULL){
-  
+                          newsubdir = "LeaveOneOut",
+                          CYR = NULL){
   
   # Set up sub directory names for each individual data
-  subdirnames <- c('BTsurv_CAAL', 'Fish_CAAL_LL', 'Fish_CAAL_POT', 'Fish_CAAL_TWL', 'Fish_LC_LL', 'Fish_LC_POT', 'Fish_LC_TWL', 'LLsurv_Indx', 'LLsurv_LC')
+  subdirnames <- c('Fish_CAAL_LL', 
+                   'Fish_CAAL_POT',
+                   'Fish_CAAL_TWL', 
+                   'Fish_LC_LL', 
+                   'Fish_LC_POT',
+                   'Fish_LC_TWL',
+                   'LLsurv_Indx',
+                   'LLsurv_LC',
+                   'BTsurv_Indx',
+                   'BTsurv_LC')
 
   # Loop thru added data
   
   for (i in 1:length(subdirnames)) {
     
     # Run model
-    r4ss::run(dir = here::here("Stock_Synthesis_files", Model_name, newsubdir, 'LOO-2022', subdirnames[i]), 
-              extras = "-nox",
-              skipfinished = FALSE,
-              show_in_console = TRUE)
+    r4ss::run_SS_models(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2022', subdirnames[i]),
+                        skipfinished = FALSE,
+                        intern = TRUE)
     
     # End loop
   }
   
   
   ### Compile output
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here("Stock_Synthesis_files", Model_name, newsubdir, 'LOO-2022', subdirnames))
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2023', subdirnames))
   
   Nat_M <- array()
   Q <- array()
@@ -245,7 +252,7 @@ SS_doLOO_cyr <- function (Model_name = NULL,
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', CYR + 1)]$StdDev
   }
   
-  mods0 <- r4ss::SSgetoutput(dirvec = here::here("Stock_Synthesis_files", Model_name))
+  mods0 <- r4ss::SSgetoutput(dirvec = here::here(CYR, "mgmt", Model_name))
   
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)
