@@ -26,19 +26,47 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # source management scenario code
 source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
 
-# Old model
+# Run previous accepted model (first run with init vals, then set to par for subsequent runs)
+old_starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_old, 'starter.ss'))
+
+old_starter$init_values_src = 0
+
+r4ss::SS_writestarter(mylist = old_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                      overwrite = TRUE)
+
 r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
           skipfinished = FALSE,
           show_in_console = TRUE)
+
+old_starter$init_values_src = 1
+  
+r4ss::SS_writestarter(mylist = old_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                      overwrite = TRUE)
 
 model_run_old <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                                  verbose = TRUE,
                                  printstats = FALSE)
 
-# Recommended model
+# Run recommended model (first run with init vals, then set to par for subsequent runs)
+new_starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'starter.ss'))
+
+new_starter$init_values_src = 0
+
+r4ss::SS_writestarter(mylist = new_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                      overwrite = TRUE)
+
 r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
           skipfinished = FALSE,
           show_in_console = TRUE)
+
+new_starter$init_values_src = 1
+
+r4ss::SS_writestarter(mylist = new_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                      overwrite = TRUE)
 
 model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                                  verbose = TRUE,
@@ -94,16 +122,13 @@ ret_yr <- 1 # For testing
 # ret_yr <- 10 # For full
 
 # Run retrospective
-r4ss::SS_doRetro(masterdir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
-                 oldsubdir = "",
-                 newsubdir = "retrospectives",
-                 years = 0:-ret_yr)
+r4ss::retro(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+            years = 0:-ret_yr)
 
 # load the retrospective models
-retroModels <- r4ss::SSgetoutput(dirvec = file.path(
-  here::here(new_SS_dat_year, "mgmt", Model_name_new),
-  "retrospectives",
-  paste("retro", 0:-ret_yr, sep = "")))
+retroModels <- r4ss::SSgetoutput(dirvec = file.path(here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                                                    "retrospectives",
+                                                    paste("retro", 0:-ret_yr, sep = "")))
 
 # summarize the model results
 retroSummary <- r4ss::SSsummarize(retroModels)
