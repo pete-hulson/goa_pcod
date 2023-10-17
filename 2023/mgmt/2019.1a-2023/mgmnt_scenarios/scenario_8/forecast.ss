@@ -1,7 +1,7 @@
 #C forecast file written by R function SS_writeforecast
 #C rerun model to get more complete formatting in forecast.ss_new
 #C should work with SS version: 3.3
-#C file write time: 2023-10-16 11:32:34.840962
+#C file write time: 2023-10-17 10:33:02.954926
 #
 1 #_benchmarks
 1 #_MSY
@@ -24,7 +24,7 @@
 3 #_First_forecast_loop_with_stochastic_recruitment
 0 #_fcast_rec_option
 1 #_fcast_rec_val
-0 #_Forecast_loop_control_5
+0 #_Fcast_loop_control_5
 0 #_FirstYear_for_caps_and_allocations
 0 #_stddev_of_log_catch_ratio
 0 #_Do_West_Coast_gfish_rebuilder_output
@@ -44,9 +44,9 @@
     2023    1     1  5034.48 #sum_for_2023: 18231.58
     2023    1     2  6021.92                        
     2023    1     3  7175.18                        
-    2024    1     1  7903.71  #sum_for_2024: 32340.2
-    2024    1     2  6499.09                        
-    2024    1     3 17937.40                        
+    2024    1     1  7916.17 #sum_for_2024: 32453.15
+    2024    1     2  6518.18                        
+    2024    1     3 18018.80                        
 -9999 0 0 0
 #
 999 # verify end of input 

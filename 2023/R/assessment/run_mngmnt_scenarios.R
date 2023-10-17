@@ -40,8 +40,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
   # Read in base model forecast.ss file
   base_fore <- r4ss::SS_readforecast(file = paste0(Model_dir, "/forecast.ss"))
   
-###############################
-## Scenario 1: F is set equal to max FABC
+## Scenario 1: F is set equal to max FABC ----
   
   # Set up forecast.ss file
   scenario_1 <- base_fore
@@ -51,37 +50,33 @@ Do_AK_Scenarios<-function(Model_name = NULL,
   
   # Write SS files
   r4ss::copy_SS_inputs(dir.old = Model_dir, 
-                       dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
+                       dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"),
                        overwrite = TRUE)
-  base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-            to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1", "/ss.exe"),
+  base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+            to = paste0(Model_dir, "/mgmnt_scenarios/scenario_1/ss3.exe"),
             overwrite = TRUE)
   base::file.copy(from = paste0(Model_dir, "/ss.par"),
-            to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1", "/ss.par"),
+            to = paste0(Model_dir, "/mgmnt_scenarios/scenario_1/ss.par"),
             overwrite = TRUE)
   r4ss::SS_writeforecast(scenario_1, 
-                         dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"), 
+                         dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"), 
                          file = "forecast.ss", 
                          writeAll = TRUE, 
                          overwrite = TRUE)
     
   # Run model
-  r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
-                      skipfinished = FALSE,
-                      intern = TRUE)
-  
-  
-###############################
-## Scenario 2: For GOA Pcod, Scenario 2 = Scenario 1
+  r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+
+## Scenario 2: For GOA Pcod, Scenario 2 = Scenario 1 ----
   
   # Copy scenario 1 files
-	R.utils::copyDirectory(from = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"),
-	                       to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_2"),
+	R.utils::copyDirectory(from = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"),
+	                       to = paste0(Model_dir, "/mgmnt_scenarios/scenario_2"),
 	                       recursive = FALSE)
-  
 
-###############################	  
-## Scenario 3: Average f for previous 5 years
+## Scenario 3: Average f for previous 5 years ----
 	
 	# Set up forecast.ss file
 	scenario_3 <- base_fore
@@ -90,28 +85,26 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 		
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_3/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_3/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_3, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_3"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-	
-###############################	
-## Scenario 4: F is set equal to the F75%. 
+## Scenario 4: F is set equal to the F75%. ----
 
 	# Set up forecast.ss file
 	scenario_4 <- base_fore
@@ -120,27 +113,26 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_4/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_4/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_4, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_4"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-###############################	
-## Scenario 5: F is 0
+## Scenario 5: F is 0 ----
 	
 	# Set up forecast.ss file
 	scenario_5 <- base_fore
@@ -153,28 +145,26 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_5/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_5/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_5, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_5"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-
-###############################	
-## Scenario 6: F is set equal to FOFL
+## Scenario 6: F is set equal to FOFL ----
 	
 	# Set up forecast.ss file
 	scenario_6 <- base_fore
@@ -184,27 +174,26 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_6/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_6/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_6, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_6"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-###############################	
-## Scenario 7: F = FABC for endyr + 1 & 2 and FOFL for all remaining years
+## Scenario 7: F = FABC for endyr + 1 & 2 and FOFL for all remaining years ----
 	
 	# Set up forecast.ss file
 	scenario_7 <- base_fore
@@ -216,60 +205,57 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_7/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_7/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_7, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_7"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-###############################	
-## Scenario 8: for calculating OFL value for endyr + 2
+## Scenario 8: for calculating OFL value for endyr + 2 ----
 
 	# Set up forecast.ss file
 	scenario_8 <- base_fore
 	scenario_8$Btarget <- 0.35
 	scenario_8$SPRtarget <- 0.35
 	scenario_8$Flimitfraction <- 1.0
-	x <- r4ss::SS_output(dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_1"))
+	x <- r4ss::SS_output(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"))
 	scenario_8$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = CYR:(CYR + 1))
 	
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
-	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
+	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"),
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8", "/ss.exe"),
+	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_8/ss3.exe"),
 	                overwrite = TRUE)
 	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8", "/ss.par"),
+	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_8/ss.par"),
 	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_8, 
-	                       dir = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"), 
+	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
 	                       overwrite = TRUE)
 	
 	# Run model
-	r4ss::run_SS_models(dirvec = paste0(Model_dir, "/mgmnt_scenarios", "/scenario_8"),
-	                    skipfinished = FALSE,
-	                    intern = TRUE)
+	r4ss::run(dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"),
+	          skipfinished = FALSE,
+	          show_in_console = TRUE)
 	
-
-###############################	
-## Compile scenario output
+## Compile scenario output ----
 
 	scen <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8")
 	mods1 <- r4ss::SSgetoutput(dirvec =  paste0(Model_dir, "/mgmnt_scenarios/", scen[1:8]))
@@ -362,8 +348,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	output$Tables <- BC
 	
 	
-###############################	
-## Figure code
+## Figure code ----
 
 	if(do_fig){
 	  
@@ -419,7 +404,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	  Pcatch2$LCI <- Pcatch2$Catch - 1.96 * Pcatch2$Catch_std
 	  Pcatch2[LCI < 0]$LCI = 0
 
-##SSB_Figures
+	  # SSB_Figures
 	  SS_ALL <- ggplot(summ2[model %in% unique(summ2$model)[1:10]],
 	                   aes(x = Yr, y = SSB, size = model, color = model, linetype = model)) +
 	    geom_line() +
@@ -518,7 +503,7 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	  Figs_SSB <- list(SS_ALL, SS_1, SS_2, SS_3, SS_4, SS_5, SS_6)
 	  
 	  
-	  ## Catch Figures
+	  # Catch Figures
 	  C_ALL <- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[1:9]], 
 	                  aes(x = Yr, y = Catch, size = model, color = model, linetype = model)) +
 	    geom_line() +

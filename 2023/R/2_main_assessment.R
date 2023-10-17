@@ -54,6 +54,15 @@ mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
                              do_fig = TRUE,
                              SEXES = 1)
 
+Model_name = Model_name_old
+Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_old)
+CYR = new_SS_dat_year
+SYR = 1977
+FCASTY = 15
+FLEETS = c(1:3)
+do_fig = TRUE
+SEXES = 1
+
 mscen <- Do_AK_Scenarios(Model_name = Model_name_new,
                          Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
                          CYR = new_SS_dat_year,
