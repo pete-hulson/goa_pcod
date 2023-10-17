@@ -193,7 +193,11 @@ LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
 save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RData"))
 
 
-# Run Jitter Test ----
+# Run Jitter ----
+# note, in 2023 assessment couldn't get r4ss::jitter to run, but, could get the functions to run
+# so just sourcing functions and will come back to this
+
+source(here::here(new_SS_dat_year, "R", "assessment", "jitter.r"))
 
 # Define how many jitters you want to do
 Njitter <- 2 # For testing
@@ -208,19 +212,18 @@ jitter_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter")
 # copy over the stock synthesis model files to the new directory
 r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
                      dir.new = here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter"),
+                     copy_par = TRUE,
+                     copy_exe = TRUE,
                      overwrite = TRUE)
-base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.exe"),
-                to = here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter", "ss.exe"),
-                overwrite = TRUE)
-base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.par"),
-                to = here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter", "ss.par"),
-                overwrite = TRUE)
 
 # run the jitters
-
-jitter_loglike <- r4ss::SS_RunJitter(mydir = jitter_dir,
-                               Njitter = Njitter,
-                               jitter_fraction = 0.05)
+jitter_loglike <- jitter(dir = jitter_dir,
+                         Njitter = Njitter,
+                         jitter_fraction = 0.05,
+                         init_values_src = 1,
+                         exe = "ss3",
+                         printlikes = TRUE,
+                         verbose = FALSE)
 
 # Save output
 write.csv(jitter_loglike, here::here(new_SS_dat_year, "output", "jitter_table.csv"))

@@ -51,13 +51,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
   # Write SS files
   r4ss::copy_SS_inputs(dir.old = Model_dir, 
                        dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"),
+                       copy_par = TRUE,
+                       copy_exe = TRUE,
                        overwrite = TRUE)
-  base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-            to = paste0(Model_dir, "/mgmnt_scenarios/scenario_1/ss3.exe"),
-            overwrite = TRUE)
-  base::file.copy(from = paste0(Model_dir, "/ss.par"),
-            to = paste0(Model_dir, "/mgmnt_scenarios/scenario_1/ss.par"),
-            overwrite = TRUE)
   r4ss::SS_writeforecast(scenario_1, 
                          dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_1"), 
                          file = "forecast.ss", 
@@ -86,13 +82,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_3/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_3/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_3, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_3"), 
 	                       file = "forecast.ss", 
@@ -114,13 +106,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_4/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_4/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_4, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_4"), 
 	                       file = "forecast.ss", 
@@ -146,13 +134,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_5/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_5/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_5, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_5"), 
 	                       file = "forecast.ss", 
@@ -175,13 +159,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_6/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_6/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_6, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_6"), 
 	                       file = "forecast.ss", 
@@ -206,13 +186,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_7/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_7/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_7, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_7"), 
 	                       file = "forecast.ss", 
@@ -237,13 +213,9 @@ Do_AK_Scenarios<-function(Model_name = NULL,
 	# Write SS files
 	r4ss::copy_SS_inputs(dir.old = Model_dir, 
 	                     dir.new = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"),
+	                     copy_par = TRUE,
+	                     copy_exe = TRUE,
 	                     overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss3.exe"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_8/ss3.exe"),
-	                overwrite = TRUE)
-	base::file.copy(from = paste0(Model_dir, "/ss.par"),
-	                to = paste0(Model_dir, "/mgmnt_scenarios/scenario_8/ss.par"),
-	                overwrite = TRUE)
 	r4ss::SS_writeforecast(scenario_8, 
 	                       dir = paste0(Model_dir, "/mgmnt_scenarios/scenario_8"), 
 	                       file = "forecast.ss", 

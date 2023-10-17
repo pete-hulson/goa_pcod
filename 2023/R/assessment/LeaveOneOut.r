@@ -24,13 +24,9 @@ SS_doLOO <- function (Model_name = NULL,
     # Write SS files
     r4ss::copy_SS_inputs(dir.old = here::here(CYR, "mgmt", Model_name), 
                          dir.new = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
+                         copy_par = TRUE,
+                         copy_exe = TRUE,
                          overwrite = TRUE)
-    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss3.exe"),
-                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss3.exe"),
-                    overwrite = TRUE)
-    base::file.copy(from = here::here(CYR, "mgmt", Model_name, "ss.par"),
-                    to = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], "ss.par"),
-                    overwrite = TRUE)
     
     # Change up data file for LOO
     CPUE <- data.table(datafile$CPUE)
