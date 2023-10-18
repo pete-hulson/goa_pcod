@@ -236,44 +236,51 @@ mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC")
 # Write SS files in MCMC subfolder
 r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
                      dir.new = mcmc_dir,
+                     copy_par = TRUE,
+                     copy_exe = TRUE,
                      overwrite = TRUE)
-base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.exe"),
-                to = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "ss.exe"),
-                overwrite = TRUE)
-base::file.copy(from = here::here(new_SS_dat_year, "mgmt", Model_name_new, "ss.par"),
-                to = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "ss.par"),
-                overwrite = TRUE)
 
-# Run MCMC
-starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "starter.ss"))
 
-# Define burnin and length of chain
-starter$MCMCburn <- 100 # For testing
-chain <- 1000 # For testing
-save <- 2 # For testing
-# starter$MCMCburn <- 10000 # For full
-# chain <- 1000000 # For full
-# save <- 2000 # For full
+# Run MCMC with old way
+# starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "starter.ss"))
+# 
+# # Define burnin and length of chain
+# starter$MCMCburn <- 100 # For testing
+# chain <- 1000 # For testing
+# save <- 2 # For testing
+# # starter$MCMCburn <- 10000 # For full
+# # chain <- 1000000 # For full
+# # save <- 2000 # For full
+# 
+# r4ss::SS_writestarter(starter,
+#                       dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+#                       file = "starter.ss",
+#                       overwrite = TRUE)
+# 
+# r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+#           extras = paste0("-mcmc ", chain," -mcsave ", save),
+#           skipfinished = FALSE,
+#           show_in_console = TRUE)
+# 
+# r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+#           extras = "-mceval",
+#           skipfinished = FALSE,
+#           show_in_console = TRUE)
 
-r4ss::SS_writestarter(starter, 
-                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"), 
-                      file = "starter.ss",
-                      overwrite = TRUE)
+# run MCMC with ADNUTS
+iter <- 1000 # for testing
+# iter <- 1000000 # for full
 
-r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
-                    extras = paste0("-mcmc ", chain," -mcsave ", save),
-                    skipfinished = FALSE,
-                    intern = TRUE)
-
-r4ss::run_SS_models(dirvec = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
-                    extras = "-mceval",
-                    skipfinished = FALSE,
-                    intern = TRUE)
+mcmc_nut <- adnuts::sample_rwm(model = 'ss3',
+                               path = mcmc_dir,
+                               iter = iter,
+                               skip_optimization = FALSE,
+                               mceval = TRUE)
 
 # Read output
 mcmc <- r4ss::SSgetMCMC(here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"))
 
 # Save output
 save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
-
+save(mcmc_nut, file = here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
 
