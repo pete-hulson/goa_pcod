@@ -6,7 +6,8 @@ libs <- c("data.table",
           "dplyr",
           "ggplot2",
           "magrittr", 
-          "r4ss")
+          "r4ss",
+          "adnuts")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])}
@@ -118,8 +119,8 @@ write.csv(mscen_old$Two_year, here::here(new_SS_dat_year, "output", "mgmnt_exec_
 # Run retrospective analysis ----
 
 # Define how many retro years you want to go back
-ret_yr <- 1 # For testing
-# ret_yr <- 10 # For full
+# ret_yr <- 1 # For testing
+ret_yr <- 10 # For full
 
 # Run retrospective
 r4ss::retro(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
@@ -167,8 +168,8 @@ write.csv(rho_output_ss3diags, here::here(new_SS_dat_year, "output", "retro_Rho_
 # Run Leave-One-Out Analysis ----
 
 # Define how many LOO years you want to go back
-loo_yr <- 1 # For testing
-# loo_yr <- 10 # For full
+# loo_yr <- 1 # For testing
+loo_yr <- 10 # For full
 
 ss_datname <- list.files(here::here(new_SS_dat_year, "mgmt", Model_name_new), pattern = "GOAPcod")
 
@@ -200,8 +201,8 @@ save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RD
 source(here::here(new_SS_dat_year, "R", "assessment", "jitter.r"))
 
 # Define how many jitters you want to do
-Njitter <- 2 # For testing
-# Njitter <- 50 # For full
+# Njitter <- 2 # For testing
+Njitter <- 50 # For full
 
 # define a new directory
 if (!file.exists(here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter"))) 
@@ -271,11 +272,21 @@ r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_ne
 iter <- 1000 # for testing
 # iter <- 1000000 # for full
 
+# r4ss::run(dir = mcmc_dir,
+#           skipfinished = FALSE,
+#           show_in_console = TRUE)
+
+st_nut <- Sys.time()
+
 mcmc_nut <- adnuts::sample_rwm(model = 'ss3',
                                path = mcmc_dir,
                                iter = iter,
                                skip_optimization = FALSE,
                                mceval = TRUE)
+
+end_nut <- Sys.time()
+
+(end_nut - st_nut) * 1000 / 60
 
 # Read output
 mcmc <- r4ss::SSgetMCMC(here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"))
