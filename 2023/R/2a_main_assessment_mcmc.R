@@ -22,7 +22,7 @@ Model_name_new <- "2019.1b-2023"
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # Set which method of MCMC to use
-mcmc_meth <- 'base'
+# mcmc_meth <- 'base'
 mcmc_meth <- 'nuts'
 
 # Set whether testing or doing full run
@@ -48,7 +48,7 @@ if(mcmc_meth == 'base'){
     starter$MCMCburn <- 100
     chain <- 1000
     save <- 2
-    st <- Sys.time()
+    st_time <- Sys.time()
   }
   if(mcmc_run == 'full'){
     starter$MCMCburn <- 10000
@@ -79,26 +79,29 @@ if(mcmc_meth == 'base'){
   save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
   
   if(mcmc_run == 'test'){
-    end <- Sys.time()
-    (end - st) * 1000 / 60
+    end_time <- Sys.time()
+    (end_time - st_time) * 1000 / 60
   }
 }
 
 # Run adnuts MCMC ----
 if(mcmc_meth == 'nuts'){
 
-  # Write SS files in MCMC subfolder
+  # Write SS files in MCMC subfolder and run model
   mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC_nuts")
   r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
                        dir.new = mcmc_dir,
                        copy_par = TRUE,
                        copy_exe = TRUE,
                        overwrite = TRUE)
+  r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
   
   # Define number of iterations
   if(mcmc_run == 'test'){
     iter <- 1000
-    st <- Sys.time()
+    st_time <- Sys.time()
   }
   if(mcmc_run == 'full'){
     iter <- 1000000
@@ -115,8 +118,8 @@ if(mcmc_meth == 'nuts'){
   save(mcmc_nut, file = here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
   
   if(mcmc_run == 'test'){
-    end <- Sys.time()
-    (end - st) * 1000 / 60
+    end_time <- Sys.time()
+    (end_time - st_time) * 1000 / 60
   }
   
 }
