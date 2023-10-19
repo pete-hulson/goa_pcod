@@ -59,6 +59,7 @@ emailed data/
 retrospectives/
 LeaveOneOut/
 MCMC/
+MCMC_nuts/
 output/
 delta_glm_1-7-2.get
 ADFGsurvcatch.csv

@@ -58,22 +58,22 @@ if(mcmc_meth == 'base'){
 
   # Run MCMC 
   r4ss::SS_writestarter(starter,
-                        dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+                        dir = mcmc_dir,
                         file = "starter.ss",
                         overwrite = TRUE)
   
-  r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+  r4ss::run(dir = mcmc_dir,
             extras = paste0("-mcmc ", chain," -mcsave ", save),
             skipfinished = FALSE,
             show_in_console = TRUE)
   
-  r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+  r4ss::run(dir = mcmc_dir,
             extras = "-mceval",
             skipfinished = FALSE,
             show_in_console = TRUE)
   
   # Read output
-  mcmc <- r4ss::SSgetMCMC(here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"))
+  mcmc <- r4ss::SSgetMCMC(mcmc_dir)
   
   # Save output
   save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
@@ -94,7 +94,7 @@ if(mcmc_meth == 'nuts'){
                        copy_par = TRUE,
                        copy_exe = TRUE,
                        overwrite = TRUE)
-  r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC"),
+  r4ss::run(dir = mcmc_dir,
             skipfinished = FALSE,
             show_in_console = TRUE)
   
