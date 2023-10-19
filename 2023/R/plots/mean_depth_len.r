@@ -1,8 +1,9 @@
 ## Function to plot cumulative catch for species and subarea
 
 plot_mean_dl<-function(data_query = FALSE,
-                           species = "'PCOD'",
-                           FMP_AREA = "'GOA'"){
+                       species = 202,
+                       FMP_AREA = "'GOA'",
+                       CYR){
 
   
   if(data_query == TRUE){
@@ -71,8 +72,8 @@ plot_mean_dl<-function(data_query = FALSE,
                   "ON OBSINT.DEBRIEFED_HAUL.HAUL_JOIN = OBSINT.DEBRIEFED_LENGTH.HAUL_JOIN \n ",
                   "WHERE OBSINT.DEBRIEFED_HAUL.NMFS_AREA BETWEEN 600 AND 699 \n",
                   "AND OBSINT.DEBRIEFED_LENGTH.NMFS_AREA != 670 \n",
-                  "AND OBSINT.DEBRIEFED_SPCOMP.SPECIES  in  (",fsh_sp_str,")",
-                  "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str,")",sep="")
+                  "AND OBSINT.DEBRIEFED_SPCOMP.SPECIES  in  (",species,")",
+                  "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",species,")",sep="")
     
     lencomp <- data.table(sqlQuery(AFSC,test))
     
@@ -96,56 +97,60 @@ plot_mean_dl<-function(data_query = FALSE,
     obs_C <- data.table(sqlQuery(CHINA, test))
     
     # Save output
-    save(lencomp, file = here::here("output", "lencomp.RData"))
-    save(lencomp, file = here::here("output", "obs_C.RData"))}
+    save(lencomp, file = here::here(CYR, "output", "lencomp.RData"))
+    save(obs_C, file = here::here(CYR, "output", "obs_C.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "lencomp.RData"))
-    load(here::here("output", "obs_C.RData"))}
+    load(here::here(CYR, "output", "lencomp.RData"))
+    load(here::here(CYR, "output", "obs_C.RData"))}
   
   # compute and plot catch-weighted mean length
   lencomp %>% 
-    rename_all(tolower) %>% 
-    mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
-           area = trunc(area/10)*10,
-           gear = case_when(gear == 0 ~ "TRAWL",
-                            gear == 2 ~ "POT",
-                            gear == 3 ~ "LONGLINE")) %>% 
-    filter(area <= 630) %>% 
-    mutate(region = case_when(area == 610 ~ "WG",
-                              area %in% c(620, 630) ~ "CG")) %>% 
-    select(year, gear, region, haul1, length, freq, numb) %>% 
-    uncount(freq) %>% 
-    group_by(year, gear, region, haul1, numb) %>% 
-    summarise(mu_len = mean(length)) %>% 
-    group_by(year, gear, region) %>% 
-    summarise(tot_c = sum(numb)) -> tot_c
+    dplyr::rename_all(tolower) %>% 
+    tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                      area = trunc(area/10)*10,
+                      gear = case_when(gear == 0 ~ "TRAWL",
+                                       gear == 2 ~ "POT",
+                                       gear == 3 ~ "LONGLINE")) %>% 
+    tidytable::filter(area <= 630) %>% 
+    tidytable::mutate(region = case_when(area == 610 ~ "WG",
+                                         area %in% c(620, 630) ~ "CG")) %>% 
+    tidytable::select(year, gear, region, haul1, length, freq, numb) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::summarise(mu_len = mean(length), .by = c(year, gear, region, haul1, numb)) %>% 
+    tidytable::summarise(tot_c = sum(numb), .by = c(year, gear, region)) -> tot_c
   
   
   lencomp %>% 
-    rename_all(tolower) %>% 
-    mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
-           area = trunc(area/10)*10,
-           gear = case_when(gear == 0 ~ "TRAWL",
-                            gear == 2 ~ "POT",
-                            gear == 3 ~ "LONGLINE")) %>% 
-    filter(area <= 630) %>% 
-    mutate(region = case_when(area == 610 ~ "WG",
-                              area %in% c(620, 630) ~ "CG")) %>% 
-    select(year, gear, region, haul1, length, freq, numb) %>% 
-    uncount(freq) %>% 
-    group_by(year, gear, region, haul1, numb) %>% 
-    summarise(mu_len = mean(length),
-              n_len = length(length)) %>% 
-    mutate(ct_wt = numb * mu_len) %>% 
-    group_by(year, gear, region) %>% 
-    summarise(ct_wt = sum(ct_wt),
-              n_len = sum(n_len),
-              n_hl = length(haul1)) %>% 
-    left_join(tot_c) %>% 
-    mutate(mean_len = ct_wt / tot_c) %>% 
-    select(year, gear, region, mean_len, n_len, n_hl) %>% 
-    filter(year >= 2010) -> mean_len
+    dplyr::rename_all(tolower) %>% 
+    tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                      area = trunc(area/10)*10,
+                      gear = case_when(gear == 0 ~ "TRAWL",
+                                       gear == 2 ~ "POT",
+                                       gear == 3 ~ "LONGLINE")) %>% 
+    tidytable::filter(area <= 630) %>% 
+    tidytable::mutate(region = case_when(area == 610 ~ "WG",
+                                         area %in% c(620, 630) ~ "CG")) %>% 
+    tidytable::select(year, gear, region, haul1, length, freq, numb) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::summarise(mu_len = mean(length),
+                         uci_len = quantile(length, probs = 0.975),
+                         lci_len = quantile(length, probs = 0.025),
+                         n_len = length(length), .by = c(year, gear, region, haul1, numb)) %>% 
+    tidytable::mutate(ct_wt = numb * mu_len,
+                      ct_wt_uci = numb * uci_len,
+                      ct_wt_lci = numb * lci_len) %>% 
+    tidytable::summarise(ct_wt = sum(ct_wt),
+                         ct_wt_uci = sum(ct_wt_uci),
+                         ct_wt_lci = sum(ct_wt_lci),
+                         n_len = sum(n_len),
+                         n_hl = length(haul1), .by = c(year, gear, region)) %>% 
+    tidytable::left_join(tot_c) %>% 
+    tidytable::mutate(mean_len = ct_wt / tot_c,
+                      uci_len = ct_wt_uci / tot_c,
+                      lci_len = ct_wt_lci / tot_c) %>% 
+    tidytable::select(year, gear, region, mean_len, uci_len, lci_len, n_len, n_hl) %>% 
+    tidytable::filter(year >= 2010) -> mean_len
   
   data.table(expand.grid(
     year = sort(unique(mean_len$year)),
@@ -166,7 +171,8 @@ plot_mean_dl<-function(data_query = FALSE,
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.text.x = element_blank()) +
-    labs(y = "Catch Wtd Mean Length (cm)", x = NULL)
+    labs(y = "Catch Wtd Mean Length (cm)", x = NULL) + 
+    geom_ribbon(aes(ymin = lci_len, ymax = uci_len), alpha = 0.05)
   
   ss_len <- ggplot(data = mean_len, 
                aes(x = year, y = n_len / 1000, fill = factor(region))) + 
@@ -184,45 +190,43 @@ plot_mean_dl<-function(data_query = FALSE,
     
   # compute and plot catch-weighted mean depth
   obs_C %>% 
-    rename_all(tolower) %>% 
-    filter(gear %in% c(1, 2, 6, 8),
-           target == "Pacific Cod") %>% 
-    mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
-           area = trunc(area/10)*10,
-           gear = case_when(gear %in% c(1, 2) ~ "TRAWL",
-                            gear == 6 ~ "POT",
-                            gear == 8 ~ "LONGLINE")) %>% 
-    filter(area <= 630,
-           !is.na(depth)) %>% 
-    mutate(region = case_when(area == 610 ~ "WG",
-                              area %in% c(620, 630) ~ "CG")) %>% 
-    select(year, gear, region, haul1, depth, wt) %>% 
-    group_by(year, gear, region) %>% 
-    summarise(tot_wt = sum(wt)) -> tot_wt
+    dplyr::rename_all(tolower) %>% 
+    tidytable::filter(gear %in% c(1, 2, 6, 8),
+                      target == "Pacific Cod") %>% 
+    tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                      area = trunc(area/10)*10,
+                      gear = case_when(gear %in% c(1, 2) ~ "TRAWL",
+                                       gear == 6 ~ "POT",
+                                       gear == 8 ~ "LONGLINE")) %>% 
+    tidytable::filter(area <= 630,
+                      !is.na(depth)) %>% 
+    tidytable::mutate(region = case_when(area == 610 ~ "WG",
+                                         area %in% c(620, 630) ~ "CG")) %>% 
+    tidytable::select(year, gear, region, haul1, depth, wt) %>% 
+    tidytable::summarise(tot_wt = sum(wt), .by = c(year, gear, region)) -> tot_wt
   
   obs_C %>% 
-    rename_all(tolower) %>% 
-    filter(gear %in% c(1, 2, 6, 8),
-           target == "Pacific Cod") %>% 
-    mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
-           area = trunc(area/10)*10,
-           gear = case_when(gear %in% c(1, 2) ~ "TRAWL",
-                            gear == 6 ~ "POT",
-                            gear == 8 ~ "LONGLINE")) %>% 
-    filter(area <= 630,
-           !is.na(depth)) %>% 
-    mutate(region = case_when(area == 610 ~ "WG",
-                              area %in% c(620, 630) ~ "CG")) %>% 
-    select(year, gear, region, haul1, depth, wt) %>% 
-    mutate(d_wtd = depth * wt) %>% 
-    group_by(year, gear, region) %>% 
-    summarise(wtd_depth = -1 * sum(d_wtd),
-              n_hl = length(d_wtd)) %>% 
-    left_join(tot_wt) %>% 
-    mutate(wtd_depth = wtd_depth / tot_wt) %>% 
-    select(-tot_wt) %>% 
-    filter(!(year == 2020 & gear == "POT" ),
-           !(year %in% c(2018, 2019, 2020) & gear == "TRAWL" )) -> wtd_depth
+    dplyr::rename_all(tolower) %>% 
+    tidytable::filter(gear %in% c(1, 2, 6, 8),
+                      target == "Pacific Cod") %>% 
+    tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                      area = trunc(area/10)*10,
+                      gear = case_when(gear %in% c(1, 2) ~ "TRAWL",
+                                       gear == 6 ~ "POT",
+                                       gear == 8 ~ "LONGLINE")) %>% 
+    tidytable::filter(area <= 630,
+                      !is.na(depth)) %>% 
+    tidytable::mutate(region = case_when(area == 610 ~ "WG",
+                                         area %in% c(620, 630) ~ "CG")) %>% 
+    tidytable::select(year, gear, region, haul1, depth, wt) %>% 
+    tidytable::mutate(d_wtd = depth * wt) %>%  
+    tidytable::summarise(wtd_depth = -1 * sum(d_wtd),
+                         n_hl = length(d_wtd), .by = c(year, gear, region)) %>% 
+    tidytable::left_join(tot_wt) %>% 
+    tidytable::mutate(wtd_depth = wtd_depth / tot_wt) %>% 
+    tidytable::select(-tot_wt) %>% 
+    tidytable::filter(!(year == 2020 & gear == "POT" ),
+                      !(year %in% c(2018, 2019, 2020) & gear == "TRAWL" )) -> wtd_depth
     
   data.table(expand.grid(
     year = sort(unique(mean_len$year)),

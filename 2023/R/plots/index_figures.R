@@ -5,7 +5,7 @@ plot_indices <- function(styr,
                          ss_datname){
 
   # Get the SS data file indices
-  SS_DAT <- SS_readdat_3.30(here::here("output", ss_datname))
+  SS_DAT <- SS_readdat_3.30(here::here(endyr, "output", ss_datname))
   
   data.table(SS_DAT$CPUE) %>% 
     mutate(obs = as.numeric(obs),

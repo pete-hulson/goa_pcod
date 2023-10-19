@@ -179,7 +179,8 @@ LOO <- SS_doLOO(Model_name = Model_name_new,
                 newsubdir = "LeaveOneOut", 
                 years = 0:-loo_yr,
                 datafilename = ss_datname,
-                CYR = new_SS_dat_year)
+                CYR = new_SS_dat_year,
+                run_models = TRUE)
 
 # Save output
 save(LOO, file = here::here(new_SS_dat_year, "output", "LOO.RData"))
@@ -188,7 +189,8 @@ write.csv(LOO[[1]], here::here(new_SS_dat_year, "output", "LOO_table.csv"))
 # Run for newly added data - note that this is a hardwired function, where folders and data files must be manually changed to remove recent data
 LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
                              newsubdir = "LeaveOneOut",
-                             CYR = new_SS_dat_year)
+                             CYR = new_SS_dat_year,
+                             run_models = TRUE)
 
 # Save output
 save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RData"))
