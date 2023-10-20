@@ -22,8 +22,8 @@ Model_name_new <- "2019.1b-2023"
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # Set which method of MCMC to use
-# mcmc_meth <- 'base'
-mcmc_meth <- 'nuts'
+mcmc_meth <- 'base'
+# mcmc_meth <- 'nuts'
 
 # Set whether testing or doing full run
 mcmc_run <- 'test'
@@ -51,7 +51,7 @@ if(mcmc_meth == 'base'){
     st_time <- Sys.time()
   }
   if(mcmc_run == 'full'){
-    starter$MCMCburn <- 10000
+    starter$MCMCburn <- 100
     chain <- 1000000
     save <- 2000
   }
