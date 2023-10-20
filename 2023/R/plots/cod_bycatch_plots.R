@@ -1,6 +1,7 @@
 # Functions to plot PCod as bycatch in other fisheries
 
-pollock_bycatch <- function(data_query = FALSE){
+pollock_bycatch <- function(CYR,
+                            data_query = FALSE){
   
   if(data_query == TRUE){
     
@@ -39,10 +40,10 @@ pollock_bycatch <- function(data_query = FALSE){
     data_P <- data.table(sqlQuery(AFSC, test3, as.is = T))
     
     # Save output
-    save(data_P, file = here::here("output", "poll_plotdat.RData"))}
+    save(data_P, file = here::here(CYR, "output", "poll_plotdat.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "poll_plotdat.RData"))}
+    load(here::here(CYR, "output", "poll_plotdat.RData"))}
   
   data_P %>% 
     rename_all(tolower) %>% 
@@ -127,10 +128,10 @@ swf_bycatch <- function(CYR,
     data_ALL2 = merge(data_ALL,data_CATCH,by=c("CRUISE","HAUL_JOIN"))
     
     # Save output
-    save(data_ALL2, file = here::here("output", "swf_plotdat.RData"))}
+    save(data_ALL2, file = here::here(CYR, "output", "swf_plotdat.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "swf_plotdat.RData"))}
+    load(here::here(CYR, "output", "swf_plotdat.RData"))}
   
   data_ALL2 %>% 
     rename_all(tolower) %>% 

@@ -76,10 +76,10 @@ plot_fish_cond <- function(CYR = 2022,
     dataF <- data.table(sqlQuery(AFSC, test))
     
     # Save output
-    save(dataF, file = here::here("output", "fish_cond.RData"))}
+    save(dataF, file = here::here(CYR, "output", "fish_cond.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "fish_cond.RData"))}
+    load(here::here(CYR, "output", "fish_cond.RData"))}
   
   dataF %>% 
     rename_all(tolower) %>% 

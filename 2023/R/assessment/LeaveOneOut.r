@@ -7,7 +7,8 @@ SS_doLOO <- function (Model_name = NULL,
                       newsubdir = "LeaveOneOut", 
                       years = 0:-10,
                       datafilename = NULL,
-                      CYR = NULL){
+                      CYR = NULL,
+                      run_models = FALSE){
   
   # Set up LOO necessities
   if (!file.exists(here::here(CYR, "mgmt", Model_name, newsubdir))) 
@@ -18,47 +19,47 @@ SS_doLOO <- function (Model_name = NULL,
   datafile <- r4ss::SS_readdat(file = here::here(CYR, "mgmt", Model_name, datafilename))
 
   # Loop thru LOO years
-  
-  for (iyr in 1:length(years)) {
-    
-    # Write SS files
-    r4ss::copy_SS_inputs(dir.old = here::here(CYR, "mgmt", Model_name), 
-                         dir.new = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
-                         copy_par = TRUE,
-                         copy_exe = TRUE,
-                         overwrite = TRUE)
-    
-    # Change up data file for LOO
-    CPUE <- data.table(datafile$CPUE)
-    agecomp <- data.table(datafile$agecomp)
-    lencomp <- data.table(datafile$lencomp)
-    yr <- CYR + years[iyr]
-    
-    CPUE[year == yr & index > 0]$index <- CPUE[year == yr & index > 0]$index * -1
-    agecomp[Yr == yr & FltSvy > 0]$FltSvy <- agecomp[Yr == yr & FltSvy > 0]$FltSvy * -1
-    lencomp[Yr == yr & FltSvy > 0]$FltSvy <- lencomp[Yr == yr & FltSvy > 0]$FltSvy * -1
-    
-    datafile2 <- datafile
-    datafile2$CPUE <- data.frame(CPUE)
-    datafile2$agecomp <- data.frame(agecomp)
-    datafile2$lencomp <- data.frame(lencomp)
-    
-    # Write out data script
-    r4ss::SS_writedat_3.30(datafile2,
-                           here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], datafilename),
+  if(isTRUE(run_models)){
+    for (iyr in 1:length(years)) {
+      
+      # Write SS files
+      r4ss::copy_SS_inputs(dir.old = here::here(CYR, "mgmt", Model_name), 
+                           dir.new = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
+                           copy_par = TRUE,
+                           copy_exe = TRUE,
                            overwrite = TRUE)
-    
-    # Run model
-    r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
-              skipfinished = FALSE,
-              show_in_console = FALSE)
-    
-    
-    
-    # End loop
+      
+      # Change up data file for LOO
+      CPUE <- data.table(datafile$CPUE)
+      agecomp <- data.table(datafile$agecomp)
+      lencomp <- data.table(datafile$lencomp)
+      yr <- CYR + years[iyr]
+      
+      CPUE[year == yr & index > 0]$index <- CPUE[year == yr & index > 0]$index * -1
+      agecomp[Yr == yr & FltSvy > 0]$FltSvy <- agecomp[Yr == yr & FltSvy > 0]$FltSvy * -1
+      lencomp[Yr == yr & FltSvy > 0]$FltSvy <- lencomp[Yr == yr & FltSvy > 0]$FltSvy * -1
+      
+      datafile2 <- datafile
+      datafile2$CPUE <- data.frame(CPUE)
+      datafile2$agecomp <- data.frame(agecomp)
+      datafile2$lencomp <- data.frame(lencomp)
+      
+      # Write out data script
+      r4ss::SS_writedat_3.30(datafile2,
+                             here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr], datafilename),
+                             overwrite = TRUE)
+      
+      # Run model
+      r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames[iyr]),
+                skipfinished = FALSE,
+                show_in_console = FALSE)
+      
+      
+      
+      # End loop
+    }
   }
  
-  
   ### Compile output
   LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(CYR, "mgmt", Model_name, newsubdir, subdirnames))
   
@@ -142,7 +143,7 @@ SS_doLOO <- function (Model_name = NULL,
   x3 <- x2[!variable %like% "_SD"]
   x4 <- x2[variable %like% "_SD"]
   x3$SD <- x4$value
-  x3$Year <- CYR - x3$LOO
+  x3$Year <- CYR - x3$LOO + 1
   
   # Plot LOO analysis
   d <- ggplot(x3[LOO != 0],
@@ -150,10 +151,15 @@ SS_doLOO <- function (Model_name = NULL,
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
-               aes(yintercept = value), size = 1.25, linetype = 2, color = "red") +
+               aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
     theme_bw(base_size = 16) +
     labs(x = 'Leave one out year', y = 'Parameter value') +
-    facet_wrap( ~ variable, scales = "free_y", ncol = 2)
+    facet_wrap( ~ variable, 
+                scales = "free_y", 
+                ncol = 2) +
+    scale_x_continuous(limits = c(min(x3[LOO != 0]$Year) - 0.5, max(x3[LOO != 0]$Year) + 0.5), 
+                       breaks = seq(min(x3[LOO != 0]$Year), max(x3[LOO != 0]$Year), by = 1)) +
+    theme(axis.text.x = element_text(vjust = 0.5, angle = 90))
 
   # Table of LOO analysis
   x3 <- data.table(Nat_M = x$Nat_M,
@@ -188,7 +194,8 @@ SS_doLOO <- function (Model_name = NULL,
 # L-O-O for most recent year of data
 SS_doLOO_cyr <- function (Model_name = NULL,
                           newsubdir = "LeaveOneOut",
-                          CYR = NULL){
+                          CYR = NULL,
+                          run_models = FALSE){
   
   # Set up sub directory names for each individual data
   subdirnames <- c('Fish_CAAL_LL', 
@@ -203,15 +210,16 @@ SS_doLOO_cyr <- function (Model_name = NULL,
                    'BTsurv_LC')
 
   # Loop thru added data
-  
-  for (i in 1:length(subdirnames)) {
-    
-    # Run model
-    r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2023', subdirnames[i]),
-              skipfinished = FALSE,
-              show_in_console = FALSE)
-    
-    # End loop
+  if(isTRUE(run_models)){
+    for (i in 1:length(subdirnames)) {
+      
+      # Run model
+      r4ss::run(dir = here::here(CYR, "mgmt", Model_name, newsubdir, 'LOO-2023', subdirnames[i]),
+                skipfinished = FALSE,
+                show_in_console = FALSE)
+      
+      # End loop
+    }
   }
   
   

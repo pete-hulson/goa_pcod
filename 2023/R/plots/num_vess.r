@@ -25,10 +25,10 @@ num_fish_vess <- function(CYR,
     dataC <- data.table(sqlQuery(CHINA, test1))
     
     # Save output
-    save(dataC, file = here::here("output", "num_vess.RData"))}
+    save(dataC, file = here::here(CYR, "output", "num_vess.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "num_vess.RData"))}
+    load(here::here(CYR, "output", "num_vess.RData"))}
   
   dataC %>% 
     filter(MONTH %in% c(1:6) & TRIP_TARGET_CODE == "C") %>% 

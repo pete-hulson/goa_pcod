@@ -26,10 +26,10 @@ plot_cumulative<-function(data_query = FALSE,
     WED_C <- data.table(sqlQuery(CHINA, test))
     
     # Save output
-    save(WED_C, file = here::here("output", "cumul_c.RData"))}
+    save(WED_C, file = here::here(CYR, "output", "cumul_c.RData"))}
   
   if(data_query == FALSE){
-    load(here::here("output", "cumul_c.RData"))}
+    load(here::here(CYR, "output", "cumul_c.RData"))}
 
   # Get CG plot data together
   subarea <- 'CG'
