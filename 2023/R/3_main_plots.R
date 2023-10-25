@@ -389,6 +389,75 @@ dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "SSB_Rec.png
 dev.off()
 
 
+# plot key parameters
+
+parameters <- c('NatM_uniform_Fem_GP_1', 
+                'NatM_uniform_Fem_GP_1_BLK4repl_2014', 
+                'L_at_Amin_Fem_GP_1', 
+                'L_at_Amax_Fem_GP_1', 
+                'VonBert_K_Fem_GP_1',
+                "SR_LN(R0)",
+                "LnQ_base_Srv(4)",
+                'LnQ_base_LLSrv(5)',
+                'LnQ_base_LLSrv(5)_ENV_mult')
+
+mle_value <- model_run_new$estimated_non_dev_parameters$Value[rownames(model_run_new$estimated_non_dev_parameters) %in% parameters]
+
+data.frame(cbind(rownames(model_run_new$estimated_non_dev_parameters)[rownames(model_run_new$estimated_non_dev_parameters) %in% parameters],
+                 model_run_new$estimated_non_dev_parameters$Value[rownames(model_run_new$estimated_non_dev_parameters) %in% parameters])) %>% 
+  tidytable::rename(parameter = 'X1',
+                    mle_value = 'X2') %>% 
+  tidytable::mutate(mle_value = as.numeric(mle_value),
+                    parameter = case_when(parameter == 'NatM_uniform_Fem_GP_1' ~ 'M_base',
+                                          parameter == 'NatM_uniform_Fem_GP_1_BLK4repl_2014' ~ 'M_14_16',
+                                          parameter == 'L_at_Amin_Fem_GP_1' ~ 'Lmin',
+                                          parameter == 'L_at_Amax_Fem_GP_1' ~ 'Linf',
+                                          parameter == 'VonBert_K_Fem_GP_1' ~ 'k',
+                                          parameter == 'SR_LN(R0)' ~ 'R0',
+                                          parameter == 'LnQ_base_Srv(4)' ~ 'q_BTS',
+                                          parameter == 'LnQ_base_LLSrv(5)' ~ 'q_LL',
+                                          parameter == 'LnQ_base_LLSrv(5)_ENV_mult' ~ 'q_LL_env'),
+                    mle_value = case_when(parameter %in% c('q_BTS', 'q_LL') ~ exp(mle_value),
+                                          !(parameter %in% c('q_BTS', 'q_LL')) ~ mle_value)) -> mle
+
+mcmc %>% 
+  tidytable::select(NatM_uniform_Fem_GP_1, 
+                    NatM_uniform_Fem_GP_1_BLK4repl_2014, 
+                    L_at_Amin_Fem_GP_1, 
+                    L_at_Amax_Fem_GP_1, 
+                    VonBert_K_Fem_GP_1,
+                    `SR_LN(R0)`,
+                    `LnQ_base_Srv(4)`,
+                    `LnQ_base_LLSrv(5)`,
+                    `LnQ_base_LLSrv(5)_ENV_mult`) %>% 
+  tidytable::rename(M_base = 'NatM_uniform_Fem_GP_1',
+                    M_14_16 = 'NatM_uniform_Fem_GP_1_BLK4repl_2014',
+                    Lmin = 'L_at_Amin_Fem_GP_1',
+                    Linf = 'L_at_Amax_Fem_GP_1',
+                    k = 'VonBert_K_Fem_GP_1',
+                    R0 = `SR_LN(R0)`,
+                    q_BTS = `LnQ_base_Srv(4)`,
+                    q_LL = `LnQ_base_LLSrv(5)`,
+                    q_LL_env = `LnQ_base_LLSrv(5)_ENV_mult`) %>% 
+  tidytable::mutate(q_BTS = exp(q_BTS),
+                    q_LL = exp(q_LL)) %>% 
+  tidytable::pivot_longer(names_to = 'parameter') %>% 
+  tidytable::left_join(mle) -> mcmc_plot_dat
+
+ggplot(mcmc_plot_dat, aes(x = value, y = after_stat(density))) +
+  geom_histogram(bins = 15, position = "identity", alpha = 0.5, fill = "gold", color = "red") +
+  geom_vline(aes(xintercept = mle_value), color = "black", linewidth = 2) +
+  facet_wrap( ~ parameter,
+              scales = 'free') +
+  theme_bw() +
+  theme_bw(base_size = 24) +
+  labs(y = "Density", x = "Parameter value")
+
+# Save plot
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "param_mcmc.png"), width = 1024, height = 1000)
+dev.off()
+
+
 ## plot sampling rates diags ----
 
 load(here::here(new_SS_dat_year, "output", "lencomp.RData"))
