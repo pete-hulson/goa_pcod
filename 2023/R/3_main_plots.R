@@ -388,3 +388,71 @@ multiplot(mcmc_plots[[1]], mcmc_plots[[2]], cols = 1)
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "SSB_Rec.png"), width = 1024, height = 1000)
 dev.off()
 
+
+## plot sampling rates diags ----
+
+load(here::here(new_SS_dat_year, "output", "lencomp.RData"))
+
+vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
+  dplyr::rename_all(tolower) %>%
+  tidytable::select(year, gear, tons) %>% 
+  tidytable::filter(gear %in% c('HAL', 'POT', 'TRW')) %>% 
+  tidytable::mutate(gear = case_when(gear == 'TRW' ~ "TRAWL",
+                                     gear == 'POT' ~ "POT",
+                                     gear == 'HAL' ~ "LONGLINE")) %>% 
+  tidytable::summarise(catch = sum(tons), .by = c(year, gear)) -> catch
+
+
+lencomp %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                    area = trunc(area/10)*10,
+                    gear = case_when(gear == 0 ~ "TRAWL",
+                                     gear == 2 ~ "POT",
+                                     gear == 3 ~ "LONGLINE")) %>% 
+  tidytable::summarise(len_ss = sum(freq), .by = c(year, gear)) %>%  
+  tidytable::left_join(catch) %>% 
+  tidytable::filter(!is.na(catch)) %>% 
+  tidytable::mutate(len_tot = sum(len_ss),
+                    catch_tot = sum(catch), .by = c(year)) %>% 
+  tidytable::mutate(p_len = len_ss / len_tot,
+                    p_c = catch / catch_tot) %>% 
+  tidytable::select(year, gear, p_len, p_c) %>% 
+  tidytable::pivot_longer(cols = c(p_len, p_c), names_to = 'data', values_to = 'proportion') %>% 
+  tidytable::mutate(data = case_when(data == 'p_len' ~ "Length frequency",
+                                     data == 'p_c' ~ "Catch")) %>% 
+  tidytable::filter(year != 2020) -> plot_data
+
+
+ggplot(data = plot_data, 
+       aes(x = year, y = proportion, fill = gear)) + 
+  geom_bar(position="fill", stat="identity", width=0.5) + 
+  # scale_x_continuous(breaks = c(2010:CYR), limits = c(2009.5, CYR + 0.5)) +
+  scale_fill_nmfs("waves", name = "") +
+  facet_wrap( ~ data) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Proportion by gear type", x = "Year") +
+  coord_flip()
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "sampling_rates.png"), width = 1000, height = 1000)
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
