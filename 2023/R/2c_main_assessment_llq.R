@@ -15,116 +15,165 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 lapply(libs, library, character.only = TRUE)
 
 # Current model name
-Model_name_old <- "2019.1a-2023"
 Model_name_new <- "2019.1b-2023"
 
 # Current assessment year
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# Set which method of MCMC to use
-mcmc_meth <- 'base'
-# mcmc_meth <- 'nuts'
 
-# Set whether testing or doing full run
-mcmc_run <- 'test'
-# mcmc_run <- 'full'
+# Write SS files in llq subfolder
+llq_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "llq")
 
-# Run base MCMC ----
-if(mcmc_meth == 'base'){
-
-  # Write SS files in MCMC subfolder
-  mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC")
+if (!file.exists(here::here(new_SS_dat_year, "mgmt", Model_name_new, "llq"))) {
+  dir.create(here::here(new_SS_dat_year, "mgmt", Model_name_new, "llq"))
+  
   r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
-                       dir.new = mcmc_dir,
-                       copy_par = TRUE,
+                       dir.new = paste0(llq_dir, "/no_cov"),
                        copy_exe = TRUE,
                        overwrite = TRUE)
-  
-  # Read starter file
-  starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "starter.ss"))
-  
-  # Define burnin and length of chain
-  if(mcmc_run == 'test'){
-    starter$MCMCburn <- 100
-    chain <- 1000
-    save <- 2
-    st_time <- Sys.time()
-  }
-  if(mcmc_run == 'full'){
-    starter$MCMCburn <- 100
-    chain <- 1000000
-    save <- 2000
-  }
-
-  # Run MCMC 
-  r4ss::SS_writestarter(starter,
-                        dir = mcmc_dir,
-                        file = "starter.ss",
-                        overwrite = TRUE)
-  
-  r4ss::run(dir = mcmc_dir,
-            extras = paste0("-mcmc ", chain," -mcsave ", save),
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-  
-  r4ss::run(dir = mcmc_dir,
-            extras = "-mceval",
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-  
-  # Read output
-  mcmc <- r4ss::SSgetMCMC(mcmc_dir)
-  
-  # Save output
-  save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
-  
-  if(mcmc_run == 'test'){
-    end_time <- Sys.time()
-    (end_time - st_time) * 1000 / 60
-  }
-}
-
-# Run adnuts MCMC ----
-if(mcmc_meth == 'nuts'){
-
-  # Write SS files in MCMC subfolder and run model
-  mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC_nuts")
   r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
-                       dir.new = mcmc_dir,
-                       copy_par = TRUE,
+                       dir.new = paste0(llq_dir, "/rand_cov"),
                        copy_exe = TRUE,
                        overwrite = TRUE)
-  r4ss::run(dir = mcmc_dir,
+}
+
+# No llq covariate ----
+# note: have to manually turn off covariate in ctl
+
+# switch from reading par to 0 in starter file
+nocov_starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new,'llq', 'no_cov', 'starter.ss'))
+nocov_starter$init_values_src = 0
+r4ss::SS_writestarter(mylist = nocov_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'no_cov'),
+                      overwrite = TRUE)
+
+# run model
+r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'no_cov'),
+          skipfinished = FALSE,
+          show_in_console = TRUE)
+
+# get results
+res_run_nocov <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'no_cov'),
+                                   verbose = TRUE,
+                                   printstats = FALSE)
+
+
+# White noise llq covariate ----
+
+# switch from reading par to 0 in starter file
+randcov_starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new,'llq', 'rand_cov', 'starter.ss'))
+randcov_starter$init_values_src = 0
+r4ss::SS_writestarter(mylist = randcov_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'rand_cov'),
+                      overwrite = TRUE)
+
+
+# determine number of iterations
+iter <- 5 # for testing
+# iter <- 100 # for full
+
+# read in ss data
+dat <- r4ss::SS_readdat(here::here(new_SS_dat_year, "mgmt", Model_name_new, list.files(here::here(new_SS_dat_year, "mgmt", Model_name_new), pattern = '.dat')))
+
+res_base <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new))
+
+res_base$likelihoods_used %>% 
+  tidytable::mutate(like_compon = rownames(res_base$likelihoods_used)) %>% 
+  tidytable::select(like_compon, values) %>% 
+  tidytable::filter(like_compon == "TOTAL") %>% 
+  tidytable::bind_rows(res_base$likelihoods_by_fleet %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::select(label, llsrv) %>% 
+                         tidytable::filter(label %in% c("Surv_like", "Length_like")) %>% 
+                         tidytable::rename(like_compon = "label",
+                                           values = "llsrv")) %>% 
+  tidytable::mutate(model = "base") %>% 
+  tidytable::bind_rows(res_run_nocov$likelihoods_used %>% 
+                         tidytable::mutate(like_compon = rownames(res_run_nocov$likelihoods_used)) %>% 
+                         tidytable::select(like_compon, values) %>% 
+                         tidytable::filter(like_compon == "TOTAL") %>% 
+                         tidytable::bind_rows(res_run_nocov$likelihoods_by_fleet %>% 
+                                                dplyr::rename_all(tolower) %>% 
+                                                tidytable::select(label, llsrv) %>% 
+                                                tidytable::filter(label %in% c("Surv_like", "Length_like")) %>% 
+                                                tidytable::rename(like_compon = "label",
+                                                                  values = "llsrv")) %>% 
+                         tidytable::mutate(model = "no_cov")) -> likes
+
+res_base$cpue %>% 
+  tidytable::filter(Fleet == 5) %>% 
+  tidytable::select(Yr, Exp) %>% 
+  tidytable::rename(year = 'Yr',
+                    values = 'Exp') %>% 
+  tidytable::mutate(model = "base") %>% 
+  tidytable::bind_rows(res_run_nocov$cpue %>% 
+                         tidytable::filter(Fleet == 5) %>% 
+                         tidytable::select(Yr, Exp) %>% 
+                         tidytable::rename(year = 'Yr',
+                                           values = 'Exp') %>% 
+                         tidytable::mutate(model = "no_cov")) -> pred_ll
+
+# create output folder
+if (!file.exists(here::here(new_SS_dat_year, "mgmt", Model_name_new, "llq", "rand_cov", "output"))) 
+  dir.create(here::here(new_SS_dat_year, "mgmt", Model_name_new, "llq", "rand_cov", "output"))
+
+for(i in 1:iter){
+  
+  # generate white noise and write data file
+  dat$envdat$Value <- rnorm(length(dat$envdat$Value))
+  
+  r4ss::SS_writedat(datlist = dat, 
+                    outfile = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'rand_cov', list.files(here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'rand_cov'), pattern = '.dat')),
+                    overwrite = TRUE)
+  
+  # run model
+  r4ss::run(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'rand_cov'),
             skipfinished = FALSE,
             show_in_console = TRUE)
   
-  # Define number of iterations
-  if(mcmc_run == 'test'){
-    iter <- 1000
-    st_time <- Sys.time()
-  }
-  if(mcmc_run == 'full'){
-    iter <- 1000000
-  }
 
-  # Run MCMC
-  mcmc_nut <- adnuts::sample_rwm(model = 'ss3',
-                                 path = mcmc_dir,
-                                 iter = iter,
-                                 skip_optimization = FALSE,
-                                 mceval = TRUE)
+  # read the model output and save
   
-  # Save output
-  save(mcmc_nut, file = here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
+  res <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'llq', 'rand_cov'))
   
-  if(mcmc_run == 'test'){
-    end_time <- Sys.time()
-    (end_time - st_time) * 1000 / 60
-  }
+  res$likelihoods_used %>% 
+    tidytable::mutate(like_compon = rownames(res$likelihoods_used)) %>% 
+    tidytable::select(like_compon, values) %>% 
+    tidytable::filter(like_compon == "TOTAL") %>% 
+    tidytable::bind_rows(res$likelihoods_by_fleet %>% 
+                           dplyr::rename_all(tolower) %>% 
+                           tidytable::select(label, llsrv) %>% 
+                           tidytable::filter(label %in% c("Surv_like", "Length_like")) %>% 
+                           tidytable::rename(like_compon = "label",
+                                             values = "llsrv")) %>% 
+    tidytable::mutate(model = paste0("rand", i))
+  
+  likes %>% 
+    tidytable::bind_rows(res$likelihoods_used %>% 
+                           tidytable::mutate(like_compon = rownames(res$likelihoods_used)) %>% 
+                           tidytable::select(like_compon, values) %>% 
+                           tidytable::filter(like_compon == "TOTAL") %>% 
+                           tidytable::bind_rows(res$likelihoods_by_fleet %>% 
+                                                  dplyr::rename_all(tolower) %>% 
+                                                  tidytable::select(label, llsrv) %>% 
+                                                  tidytable::filter(label %in% c("Surv_like", "Length_like")) %>% 
+                                                  tidytable::rename(like_compon = "label",
+                                                                    values = "llsrv")) %>% 
+                           tidytable::mutate(model = paste0("rand", i))) -> likes
+
+  pred_ll %>% 
+    tidytable::bind_rows(res$cpue %>% 
+                           tidytable::filter(Fleet == 5) %>% 
+                           tidytable::select(Yr, Exp) %>% 
+                           tidytable::rename(year = 'Yr',
+                                             values = 'Exp') %>% 
+                           tidytable::mutate(model = paste0("rand", i))) -> pred_ll
+  
   
 }
 
-
-
+# write results
+vroom::vroom_write(likes, file = here::here(new_SS_dat_year, "mgmt", "output", "llq_cov_likes.csv"), delim = ",")
+vroom::vroom_write(pred_ll, file = here::here(new_SS_dat_year, "mgmt", "output", "llq_cov_pred_ll.csv"), delim = ",")
 
 

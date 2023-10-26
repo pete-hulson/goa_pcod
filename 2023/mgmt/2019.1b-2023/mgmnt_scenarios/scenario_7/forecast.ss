@@ -1,20 +1,20 @@
 #C forecast file written by R function SS_writeforecast
 #C rerun model to get more complete formatting in forecast.ss_new
 #C should work with SS version: 3.3
-#C file write time: 2023-10-17 18:24:30.226249
+#C file write time: 2023-10-26 14:20:16.170101
 #
 1 #_benchmarks
 1 #_MSY
 0.35 #_SPRtarget
 0.35 #_Btarget
 #_Bmark_years: beg_bio, end_bio, beg_selex, end_selex, beg_relF, end_relF,  beg_recr_dist, end_recr_dist, beg_SRparm, end_SRparm (enter actual year, or values of 0 or -integer to be rel. endyr)
-1977 2020 1977 2020 1977 2021 1977 2020 1977 2020
+1977 2021 1977 2021 1977 2022 1977 2021 1977 2021
 1 #_Bmark_relF_Basis
 1 #_Forecast
 15 #_Nforecastyrs
 0 #_F_scalar
 #_Fcast_years:  beg_selex, end_selex, beg_relF, end_relF, beg_recruits, end_recruits (enter actual year, or values of 0 or -integer to be rel. endyr)
-2000 2019 2016 2020 1977 2019
+2000 2021 2018 2022 1977 2021
 0 #_Fcast_selex
 2 #_ControlRuleMethod
 0.4 #_BforconstantF
@@ -44,12 +44,12 @@
     2023    1     1  5034.48 #sum_for_2023: 18231.58
     2023    1     2  6021.92                        
     2023    1     3  7175.18                        
-    2024    1     1  8137.08 #sum_for_2024: 31527.26
-    2024    1     2  6442.78                        
-    2024    1     3 16947.40                        
-    2025    1     1  7258.05 #sum_for_2025: 27760.62
-    2025    1     2  5676.77                        
-    2025    1     3 14825.80                        
+    2024    1     1  9923.12  #sum_for_2024: 32272.1
+    2024    1     2  8778.58                        
+    2024    1     3 13570.40                        
+    2025    1     1  8785.01 #sum_for_2025: 28184.33
+    2025    1     2  7662.42                        
+    2025    1     3 11736.90                        
 -9999 0 0 0
 #
 999 # verify end of input 

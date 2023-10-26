@@ -7,19 +7,17 @@ plot_env_ind<-function(env_data){
     rename('0-20 cm' = '0_20',
            '40-60 cm' = '40_60') %>% 
     select(-'20_40', -'60_80', -'80plus', -Month) %>% 
-    pivot_longer(c('0-20 cm', '40-60 cm'), names_to = 'size', values_to = 'Temp') -> plot_ind
+    pivot_longer(c('0-20 cm'), names_to = 'size', values_to = 'Temp') -> plot_ind
   
   mu_20 <- mean(subset(plot_ind$Temp, plot_ind$size == "0-20 cm"))
-  mu_40 <- mean(subset(plot_ind$Temp, plot_ind$size == "40-60 cm"))
 
   # Plot temperatures
   temps <- ggplot(data = plot_ind, 
          aes(x = Year, y = Temp, color = factor(size))) + 
-    geom_point(size = 3) + 
-    geom_path(aes(group = size)) +
-    geom_hline(yintercept = mu_20, linetype = "dashed", color = nmfs_palette("waves")(1)) +
-    geom_hline(yintercept = mu_40, linetype = "dashed", color = nmfs_palette("waves")(2)[2]) +
-    scale_color_nmfs("waves", name = "") +
+    geom_point(size = 3, color = "darkblue") + 
+    geom_path(aes(group = size), color = "darkblue") +
+    geom_hline(yintercept = mu_20, linetype = "dashed", color = "darkblue") +
+    # scale_color_nmfs("seagrass", name = "") +
     theme_bw(base_size = 21) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),

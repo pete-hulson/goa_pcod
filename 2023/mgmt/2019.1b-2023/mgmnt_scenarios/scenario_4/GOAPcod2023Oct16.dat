@@ -647,11 +647,11 @@
 -1	1e-04	0	0	0	0	0.001	#_FshLL   
 -1	1e-04	0	0	0	0	0.001	#_FshPot  
 -1	1e-04	0	0	0	0	0.001	#_Srv     
--1	1e-04	0	0	0	0	0.001	#_LLSrv   
--1	1e-04	0	0	0	0	0.001	#_IPHCLL  
--1	1e-04	0	0	0	0	0.001	#_ADFG    
--1	1e-04	0	0	0	0	0.001	#_SPAWN   
--1	1e-04	0	0	0	0	0.001	#_Seine   
+-1	1e-04	0	0	0	0	1	#_LLSrv   
+-1	1e-04	0	0	0	0	1	#_IPHCLL  
+-1	1e-04	0	0	0	0	1	#_ADFG    
+-1	1e-04	0	0	0	0	1	#_SPAWN   
+-1	1e-04	0	0	0	0	1	#_Seine   
 1 #_Lbin_method: 1=poplenbins; 2=datalenbins; 3=lengths
  #_combine males into females at or below this bin number
 #_YEAR	Seas	FltSvy	Gender	Part	Ageerr	Lgin_lo	Lgin_hi	Nsamp	F1	F2	F3	F4	F5	F6	F7	F8	F9	F10

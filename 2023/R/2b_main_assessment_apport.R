@@ -94,10 +94,10 @@ apport_out$proportion_biomass_by_strata %>%
                     diff_y2 = as.numeric(exec_summ %>% 
                                            tidytable::filter(Yr == new_SS_dat_year + 2) %>% 
                                            tidytable::select(C_ABC)) - sum(ABC_yr2)) %>%
-  tidytable::mutate(y1_corr = case_when(max(diff_y1) > 0 ~ case_when(Region == 'Western' ~ ABC_yr1 + diff_y1,
+  tidytable::mutate(y1_corr = case_when(max(diff_y1) != 0 ~ case_when(Region == 'Western' ~ ABC_yr1 + diff_y1,
                                                                      Region != 'Western' ~ ABC_yr1),
                                         max(diff_y1) == 0 ~ ABC_yr1),
-                    y2_corr = case_when(max(diff_y2) > 0 ~ case_when(Region == 'Western' ~ ABC_yr2 + diff_y2,
+                    y2_corr = case_when(max(diff_y2) != 0 ~ case_when(Region == 'Western' ~ ABC_yr2 + diff_y2,
                                                                      Region != 'Western' ~ ABC_yr2),
                                         max(diff_y2) == 0 ~ ABC_yr2)) %>%  # if rounding error happens, add to wgoa
   tidytable::select(-c(ABC_yr1, ABC_yr2, diff_y1, diff_y2)) %>% 

@@ -24,10 +24,25 @@ new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # Run models and management scenarios ----
 
-# source management scenario code
-source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
+# set up forecast file
+forecast <- r4ss::SS_readforecast(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, 'forecast.ss'))
+
+forecast$Bmark_years <- c(1977, new_SS_dat_year - 2, 1977, new_SS_dat_year - 2, 1977, new_SS_dat_year - 1, 1977, new_SS_dat_year - 2, 1977, new_SS_dat_year - 2)
+
+forecast$Fcast_years <- c(2000, new_SS_dat_year - 2, new_SS_dat_year - 5, new_SS_dat_year - 1, 1977, new_SS_dat_year - 2)
+
+r4ss::SS_writeforecast(mylist = forecast,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                      overwrite = TRUE)
+
+r4ss::SS_writeforecast(mylist = forecast,
+                       dir = here::here(new_SS_dat_year, "mgmt", Model_name_new),
+                       overwrite = TRUE)
+
 
 # Run previous accepted model (first run with init vals, then set to par for subsequent runs)
+
+# set up starter file
 old_starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_old, 'starter.ss'))
 
 old_starter$init_values_src = 0
@@ -74,6 +89,9 @@ model_run_new <- r4ss::SS_output(dir = here::here(new_SS_dat_year, "mgmt", Model
                                  printstats = FALSE)
 
 # Run management scenarios
+
+source(here::here(new_SS_dat_year, "R", "assessment", "run_mngmnt_scenarios.r"))
+
 mscen_old <- Do_AK_Scenarios(Model_name = Model_name_old,
                              Model_dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
                              CYR = new_SS_dat_year,

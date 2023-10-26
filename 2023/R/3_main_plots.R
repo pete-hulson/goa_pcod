@@ -196,7 +196,7 @@ dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "yc_retro.pn
 dev.off()
 
 
-## Plot fancy phase-plane ----
+## Plot phase-plane ----
 
 load(here::here(new_SS_dat_year, "output", "mgmnt_scen.RData"))
 load(here::here(new_SS_dat_year, "output", "model_run.RData"))
