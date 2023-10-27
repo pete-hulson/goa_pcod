@@ -221,8 +221,8 @@ save(LOO_add_data, file = here::here(new_SS_dat_year, "output", "LOO_add_data.RD
 source(here::here(new_SS_dat_year, "R", "assessment", "jitter.r"))
 
 # Define how many jitters you want to do
-# Njitter <- 2 # For testing
-Njitter <- 50 # For full
+Njitter <- 5 # For testing
+# Njitter <- 50 # For full
 
 # define a new directory
 if (!file.exists(here::here(new_SS_dat_year, "mgmt", Model_name_new, "jitter"))) 

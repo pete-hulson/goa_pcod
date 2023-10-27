@@ -70,7 +70,7 @@ r4ss::SS_writestarter(mylist = randcov_starter,
 
 # determine number of iterations
 iter <- 5 # for testing
-# iter <- 100 # for full
+# iter <- 50 # for full
 
 # read in ss data
 dat <- r4ss::SS_readdat(here::here(new_SS_dat_year, "mgmt", Model_name_new, list.files(here::here(new_SS_dat_year, "mgmt", Model_name_new), pattern = '.dat')))
@@ -173,7 +173,7 @@ for(i in 1:iter){
 }
 
 # write results
-vroom::vroom_write(likes, file = here::here(new_SS_dat_year, "mgmt", "output", "llq_cov_likes.csv"), delim = ",")
-vroom::vroom_write(pred_ll, file = here::here(new_SS_dat_year, "mgmt", "output", "llq_cov_pred_ll.csv"), delim = ",")
+vroom::vroom_write(likes, file = here::here(new_SS_dat_year, "output", "llq_cov_likes.csv"), delim = ",")
+vroom::vroom_write(pred_ll, file = here::here(new_SS_dat_year, "output", "llq_cov_pred_ll.csv"), delim = ",")
 
 
