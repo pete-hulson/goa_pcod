@@ -389,7 +389,7 @@ dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "SSB_Rec.png
 dev.off()
 
 
-# plot key parameters
+# plot mcmc for key parameters ----
 
 parameters <- c('NatM_uniform_Fem_GP_1', 
                 'NatM_uniform_Fem_GP_1_BLK4repl_2014', 
@@ -455,6 +455,32 @@ ggplot(mcmc_plot_dat, aes(x = value, y = after_stat(density))) +
 
 # Save plot
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "param_mcmc.png"), width = 1024, height = 1000)
+dev.off()
+
+# plot mcmc adnuts stuff ----
+
+load(here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
+
+par = c('MGparm[1]', 'MGparm[2]', 'MGparm[3]', 'MGparm[4]', 'MGparm[22]', 'SR_parm[1]', 'Q_parm[1]', 'Q_parm[2]', 'Q_parm[9]')
+
+adnuts::pairs_admb(mcmc_nut, pars = par)
+
+mcmc_nut2 <- mcmc_nut
+
+dimnames(mcmc_nut2$samples)[[3]][1] <- "M_base"
+dimnames(mcmc_nut2$samples)[[3]][2] <- "Lmin"
+dimnames(mcmc_nut2$samples)[[3]][3] <- "Linf"
+dimnames(mcmc_nut2$samples)[[3]][4] <- "k"
+dimnames(mcmc_nut2$samples)[[3]][7] <- "M_14_16"
+dimnames(mcmc_nut2$samples)[[3]][10] <- "R0"
+dimnames(mcmc_nut2$samples)[[3]][84] <- "ln(q_BTS)"
+dimnames(mcmc_nut2$samples)[[3]][85] <- "ln(q_LL)"
+dimnames(mcmc_nut2$samples)[[3]][86] <- "q_LL_env"
+
+par = c('M_base', 'Lmin', 'Linf', 'k', 'M_14_16', 'R0', 'ln(q_BTS)', 'ln(q_LL)', 'q_LL_env')
+
+adnuts::pairs_admb(mcmc_nut2, pars = par, label.cex = 1)
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "param_mcmc_nuts.png"), width = 1024, height = 1000)
 dev.off()
 
 
