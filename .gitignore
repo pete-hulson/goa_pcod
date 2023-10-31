@@ -62,8 +62,12 @@ LeaveOneOut/
 MCMC/
 MCMC_nuts/
 output/
+jitter/
+llq/
+mgmnt_scenarios/
 delta_glm_1-7-2.get
 ADFGsurvcatch.csv
 ADFGsurv_length.csv
 em_data_pcod.csv
 IPHCsurv_length.csv
+console.output.txt
