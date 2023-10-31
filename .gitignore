@@ -56,6 +56,7 @@ Hist_trawl_fit.xlsx
 COMPREHENSIVE_OBS_EM.csv
 data/
 emailed data/
+emailed_data/
 retrospectives/
 LeaveOneOut/
 MCMC/
