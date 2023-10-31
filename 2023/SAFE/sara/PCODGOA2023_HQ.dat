@@ -14,7 +14,7 @@
 #ASMT_TYPE - Classification of the effort and products of the stock assessment process (options: Research, Operational, Research and Operational, Stock Monitoring Updates; NOTE: NPFMC Full assessment = Operational, Partial = Stock Monitoring Updates)
 "Operational"
 #ASMT_YEAR - Year when assessment completes its final technical review by NPFMC (options: 1983 to current year), part of unique identifier key
-2022
+2023
 #ASMT_MONTH - Month when assessment completes its final technical review by NPFMC (options: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec)
 "Dec"
 #TIER - Assessment tier for the stock (options: 1a, 1b, 2a, 2b, 3a, 3b, 4, 5, 6; NOTE: no stock assessment should be conducted for Tiers 4, 5, or 6, on off-cycle years)  
@@ -30,13 +30,13 @@
 #COMPLEX - Is this a stock complex? (options: "Yes", "NA") 
 "NA"
 #LAST_DATA_YEAR - Last year of input data included in the assessment
-2022
+2023
 #ASMT_MODEL_CATEGORY - Category of stock assessment model accepted for use in management, as described in Appendix A of the 2018 Next Gen SAIP document, see lookup table (options: 1 - Data-Limited, 2 - Index-Based, 3 - Aggregate Biomass Dynamics, 4 - Virtual Population Dynamics, 5 - Statistical Catch-at-length, 6 - Statistical Catch-at-Age, "NA" - Tier 6)
 "6 - Statistical Catch-at-Age"
 #ASMT_MODEL - Data model accepted by the scientific review process and used to complete the stock assessment, see lookup table (options dependent on ASMT_MODEL_CATEGORY choice: if select 1, then options = Catch Only, DB-SRA: Depletion-Based Stock Reduction Analysis, DCAC: Depletion Corrected Average Catch, Mean Length, or write-in; if select 2, then options = AIM: An Index Method, Catch Only, Index Method, Survey Abudance; if select 3, then options = ASPIC: A Stock Production Model Incorporating Covariates, BSP: Bayesian Surplus Production Model, BSP-PIFSC; PIFSC Bayesian Surplus Production Model, CSA(Collie Sissenwine): Catch-Survey Analysis, KLAMZ, Schaefer, or write-in; if select 4, then options = ADAPT: Adaptive Framework VPA, VPA-2BOX, Dual Zone Virtual Population Analysis, VPA Shrimp: Shrimp Virtual Population Analysis, or write-in; if select 5, then options = A-SCALA: Age-Structured Statistical Catch-at-Length, BAM-Length: Beaufort Statistical Catch-at-Length Model, CASA: Catch-at-Size Analysis, Custom SCAL: Custom Statistical Catch-at-Length Model, GMACS: General Model for Alaska Crab Stocks, Multifan-CL, SCALE: Statistical Catch-At-LEngth, SS: Stock Synthesis, or write-in; if select 6, then options = AMAK: Assessment Model for Alaska, ASAP: Age-Structured Assessment Program, ASMP: Age-Structured Production Model, BAM: Beaufort Assessment Model, CASAL: C++ Algorithmic Stock Assessment Library, Coleraine, Custom SCAA: Custom Statistical Catch-at-Age Model, Multifan-CL, PSC Chinook Model, SS: Stock Synthesis, if "NA", then "None - historical catch" or write-in)
 "SS"
 #MODEL_VERSION - Version of the assessment model accepted by the scientific review process and used to complete the stock assessment
-"19.1a"
+"19.1b"
 #ENSEMBLE - Does the final assessment configuration utilize multimodel inferencing, either in the form of some type of model averaging, or ensemble modeling methods? (options: Yes, NA) Please provide additional details in the comments section. 
 "NA"
 #LEAD_LAB - NMFS Laboratory or outside agency with lead responsibility for the stock assessment
@@ -57,57 +57,57 @@
 4
 #FISHING_MORTALITY_ESTIMATES ----------------------------------------------------------------------------------------
 #F_YEAR - Year of fishing mortality rates (NOTE: report the most recent full year of fishing, should be current year-1, regardless of ASMT_TYPE)  
-2021
+2022
 #F_BASIS - Basis for fishing mortality estimates, F rate or total catch estimates, see lookup table (options: Max F @ Age, F for Fully-Selected Fish, Catch / Biomass, Catch / Exploitable Biomass, Catch, Fishing Intensity, True F, or write-in)
 "Max F Rate at Age"
 #F_UNIT - The unit of the "F" related data fields, see lookup table (options: Apical F, Fully-selected F, Exploitation Rate, Relative F, Metric Tons, 1 - SPR, F = Z - M, or write-in)
 "Apical F"
 #BEST_F_ESTIMATE - Best available point estimate of fishing mortality rate or total catch used to determine the rate of fishing. This field is used when a point estimate is available. NOTE: for Tiers 1-3, this is the estimate of total fishing mortality from the most recent full year of fishing; for Tiers 4-5 this is exploitation rate (catch divided by total abundance from the random effects model) for the most recent full year of fishing; for Tier 6 this is total catch.  
-0.262739
+0.313795
 #F_LIMIT - Fishing mortality rate or total catch threshold, above which the stock is considered to be overfishing. NOTE: For Tiers 1-3 during a full or operational assessment this is the reverse engineered F from this year_s accepted model that would have produced a catch for last year equal to last year_s OFL. For Tiers 1-3 during a partial assessment this is FMSY. For Tiers 4-5, single stock assessment, this is the estimate of M. For Tiers 4-5 stock complex assessments or Tier 6, this is sum of the OFL in tons for the stock or stocks in the complex.
-0.388
+0.44
 #F_LIMIT_BASIS - Basis for the Flimit estimate, see lookup table. F rate (F35%, etc.) or total catch estimate (options: Fmsy, Frebuild, M, F30% as proxy, F35% as proxy, F40% as proxy, or write-in)
 "F from 2022 asmt corresponding to specified 2021 OFL"
 #F_MSY - Fishing mortality rate that, on average, would produce the maximum sustainable yield from a stock that has a size of BMSY(e.g. F35%, or FOFL). NOTE: For Tiers 1b, 2b, or 3b this should be the unadjusted estimate of FOFL. 
-0.51
+0.52
 #F_MSY_BASIS - Basis for the Fmsy estimate, see lookup table (options: F40% as proxy, F35% as proxy, F30% as proxy, Direct estimate, F = M, or write-in)
 "F35% as proxy"
 #BIOMASS_ESTIMATES --------------------------------------------------------------------------------------------------
 #B_YEAR - Year of biomass estimate (NOTE: if ASMT_TYPE = Operational, then B_YEAR usually equals ASMT_YEAR unless the full assessment is a Tier 4-5 and conducted in an off-survey year with no random effects model, then B_YEAR is the last survey year, if ASMT_TYPE equals Stock Monitoring Update than this is the year of the last operational or full assessment, "NA" for Tier 6). 
-2022
+2023
 #B_BASIS - Basis for the biomass estimate, see lookup table (options: Spawning Stock Biomass, Total Stock Biomass, Survey-Estimated Biomass, Escapement, Stock Reproductive Output, Survey Index, Total Stock Abundance, or write-in, "NA" for Tier 6)
 "Spawning stock biomass"
 #B_UNIT - The unit of the "B" related data fields, see lookup table (options: Metric Tons, Thousand Metric Tons, Number of eggs, kg/tow, Number of Fish, or write-in, "NA" for Tier 6)
 "Metric Tons"
 #BEST_B_ESTIMATE - Best available point estimate of stock size in terms of biomass from the stock assessment model (NOTE: for Tiers 1-3 this is the spawning biomass estimate in B_YEAR, for Tiers 4-5 single stock assessments this is the random effects biomass estimate in B_YEAR, for Tiers 4-5 complex stock assessments this is the combined biomass estimate from the random effects model for the stock complex in B_YEAR, "NA" for Tier 6)
-51734
+51621
 #LOWER_B_ESTIMATE - Minimum plausible value of B as estimated by the model given the specified confidence interval for spawning biomass in B_YEAR (Tiers 1-3 only, "NA" for Tiers 4-6)
-43817
+43292
 #UPPER_B_ESTIMATE - Maximum plausible value of B as estimated by the model given the specified confidence interval for spawning biomass in B_YEAR (Tiers 1-3 only, "NA" for Tiers 4-6)
-59650
+59949
 #ESTIMATE_METHOD - Specify statistical approach used to determine confidence intervals if provide (options Tiers 1-3 only: Asymptotic, Credible, Bootstrapped, "NA" for Tiers 4-6)
 "Credible"
 #INTERVAL_SIZE - Specify size of confidence interval (options Tiers 1-3 only: 50 to 99, "NA" for Tiers 4-6)
 95
 #B_MSY - Stock size that, on average, would produce MSY when it is fished at a level that is equal to F_MSY (Tiers 1-3 only, "NA" for Tiers 4-6)
-58595
+61315
 #B_MSY_BASIS - Basis for B_MSY estimate, see lookup table (options Tiers 1-3 only: Direct estimate, S_MSY escapement, Average Survey CPUE, B40%, B35%, B30%, "NA" for Tiers 4-6)
 "B35%"
 #TIME_SERIES_ESTIMATES ----------------------------------------------------------------------------------------------
 #FISHERYYEAR - For Tiers 1-3 list years used in the age-structured model, for Tiers 4-6 list longest time series of years in the assessment 
-1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 
+1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023
 #AGE - list of ages used in the model where applicable, "NA" if no ages used
 1 2 3 4 5 6 7 8 9 10 
 #RECRUITMENT - Number of recruits by year (Tiers 1-3 only, "NA" for Tiers 4-6) 
-988753	502098	395560	490572	770779	759254	700529	623620	891186	610227	609262	642996	645914	830079	548209	483545	345462	369884	523515	335220	352878	268422	370193	446082	308742	205332	248784	293021	438027	675307	497317	662797	473570	511134	629026	1.25E+06	844389	300489	271685	280966	211258	165176	80070.7	218124	256579	455770
+817760	445298	334144	408053	654266	632535	611709	538884	792013	542608	538552	570529	571712	739906	493832	433583	312146	326717	476634	299473	322314	242134	332905	406201	283397	187306	225619	266161	394059	617065	448977	603466	426055	461108	561377	1.12E+06	776595	286400	257657	277683	217651	177378	93673.3	167954	196530	257899	403976
 #SPAWNBIOMASS - Spawning biomass by year in metric tons (Tiers 1-3 only, "NA" for Tiers 4-6)
-92966.5	104326	102381	100289.5	119195.5	143623	153763	156225.5	174891	204307.5	227282	236673	246814	248159	230387.5	213000.5	200365	205996	210226.5	192334.5	166601.5	138252.5	122006.5	104987.5	92439	84865.5	79759	81894.5	79790	73028.5	64425	59571.5	64239	84633.5	96908.5	104694.5	110162	114924	82364.5	66547	49557.3	42244.75	42175.45	43895.85	51289	51733.5
+81918.5	92643	91191	89097	105088	127101	137011	139360.5	156727	184156.5	206268	216791.5	228630	232038.5	216373.5	200520.5	188884	195069.5	200268.5	183918	159745.5	132469	116858	100246.5	88217.5	81142	76276.5	78507	76707	70453.5	62247.5	57444.5	61698	81476	93141.5	100480.5	105561	110008	78866	63825.5	47901.3	41169.05	42023.65	45077.7	54339.5	56865	51620.5	49434.1	46012.55	51073	62465.5	72201.5	77394.5	79803.5	80802	81218	81419.5	81488.5	81512.5	81521.5	81524.5	81525.5
 #TOTALBIOMASS - Total biomass by year in metric tons ("NA" for Tier 6)
-297981	313729	360747	423438	457450	481650	523406	570766	629649	688282	737809	758800	761416	746639	713259	691923	666335	646758	612981	548208	493721	438935	392705	340710	311860	307981	300900	285813	260949	248789	256856	290058	333418	386732	407856	414540	441572	518159	400775	272627	166160	143409	152663	158779	165795	163954
+272441	289235	330096	386068	418191	443790	485373	530505	587423	647087	698761	724226	733137	724593	694233	673111	647461	630312	601250	541257	489569	436698	391753	340653	311814	307313	300217	286487	263066	251563	258308	288235	329541	382329	404507	411061	433983	500671	394061	277065	177128	156630	168218	176942	186120	180883	173300	184242
 #TOTFSHRYMORT - Fishing mortality rate by year (Tiers 1-3 only, "NA" for Tiers 4-6)
-0.0107852	0.0519021	0.0682357	0.163861	0.105627	0.0812178	0.102899	0.0668658	0.0593917	0.0857406	0.0624662	0.0616888	0.0775225	0.188938	0.216769	0.247855	0.180569	0.147743	0.217023	0.235788	0.316559	0.363408	0.489753	0.450367	0.381407	0.444349	0.453	0.481756	0.576143	0.608898	0.571605	0.682184	0.528411	0.6158	0.595025	0.493781	0.407143	0.5853	0.775863	0.785343	0.892754	0.26937	0.264406	0.0955121	0.262739	0.478982
+0.0121675	0.0583161	0.0764432	0.183899	0.119967	0.0914058	0.115249	0.0745537	0.0648449	0.0929384	0.0686187	0.0670343	0.0832886	0.2002	0.228934	0.261197	0.189659	0.154326	0.225812	0.244548	0.328214	0.377221	0.509104	0.469239	0.396758	0.461876	0.470007	0.498321	0.586838	0.619773	0.587351	0.700704	0.542254	0.631064	0.612656	0.508895	0.420396	0.605197	0.800954	0.80685	0.834065	0.254213	0.248418	0.0907017	0.234851	0.313795	0.232771
 #TOTALCATCH - Total catch by year in metric tons 
-2268	12190	14904	35345	36131	29465	36540	23898	14428	25012	32939	33802	43293	72517	76300.5	80747.1	56487.5	47484.64	68985.2	68279.9	77170.3	72624.7	82542.6	66551.4	51530.4	54637.4	52581.5	56623.6	47584.35	47897.1	52261	59014	53196.3	78593	85366.7	77930.4	68575.9	84945.1	79480.5	64054.5	48726.93	15150.42	15715.8	6841.03	19175.92	32811	0	1615	8927	11114	25494	25646	22785	27028	15092	9552	18161	10452	6657	5655	13327	18199	25984.9	18678	16037.94	27110.2	22289.4	28764.4	31055.1	45367.9	41094.5	27144.2	34827.2	33696	39111	33035.15	34765.3	37485.6	38720.6	39220.1	56557.8	68910.4	57846.3	46869.9	58028.4	57212.4	48837.1	35685.83	11332.44	11181.27	3413.88	13186.7	21843	0	0	0	0	0	0	0	0	0	0	0	643	1421	375	5661	10464.1	10154.4	9707.62	9160.54	16054.9	12040.1	16433.2	19693.8	31424.6	27750.2	14999.6	18271.2	20708	25568.3	24401.6	23686.3	24950.4	24667.2	21869.9	34720	45907.5	37177.9	31166.5	38402.4	40372.1	37857.7	26436.5	7672.92	7552.92	1809.34	7657.11	13381	0
+2268	12190	14904	35345	36131	29465	36540	23898	14428	25012	32939	33802	43293	72517	76300.5	80747.1	56487.5	47484.6	68985.2	68279.9	77170.3	72624.7	82542.6	66551.4	51530.4	54637.4	52581.5	56623.6	47584.3	47897.1	52261	59014	53196.3	78593	85366.7	77930.4	68575.9	84945.1	79480.5	64054.5	48726.9	15150.4	15715.8	6841.03	19175.9	25925.4	18231.6
 #SURVEYDESC - List primary surveys used in the assessment, use semicolon and space to separate, see lookup table ("NA" for Tier 6)
 "Gulf of Alaska Shelf and Slope Groundfish Bottom Trawl"; "GOA/EBS/AI Longline Survey"
 #STOCKNOTES - statement on stock status
@@ -115,6 +115,6 @@
 #SURVEY_ESTIMATES [OPTIONAL] ------------------------------------------------------------------------------------------
 #Note the names for the surveys should match the name of survey description listed in TIME_SERIES_ESTIMATES, time series should be length of FISHERYYEAR and fill in missing years from FISHERYYEAR with NA
 "Gulf of Alaska Shelf and Slope Groundfish Bottom Trawl"
-NA	NA	NA	NA	NA	NA	NA	320525	NA	NA	247020	NA	NA	212132	NA	NA	225480	NA	NA	319068	NA	NA	166584	NA	158424	NA	159749	NA	139895	NA	192306	NA	573469	NA	348035	NA	337992	NA	196555	NA	56199.1	NA	127118	NA	90913.7	NA
+NA	NA	NA	NA	NA	NA	NA	320525	NA	NA	247020	NA	NA	212132	NA	NA	225480	NA	NA	319068	NA	NA	166584	NA	158424	NA	159749	NA	139895	NA	192306	NA	573469	NA	348035	NA	337992	NA	196555	NA	56199.1	NA	127118	NA	90913.7	NA 138683
 "GOA/EBS/AI Longline Survey"
-NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	116434	110061	136383	153950	96563	120710	84534.7	104647	125877	91480.2	54316	33841	51903	59951.7	53109.4	29863.6	34316.2	34994	26880.5	68394.6	86724.8	93743.3	63767.9	48552.9	69665.2	88482.3	83887.3	39575.2	23856.8	14932.7	19458.7	30829.8	23392.7
+NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	116434	110061	136383	153950	96563	120710	84534.7	104647	125877	91480.2	54316	33841	51903	59951.7	53109.4	29863.6	34316.2	34994	26880.5	68394.6	86724.8	93743.3	63767.9	48552.9	69665.2	88482.3	83887.3	39575.2	23856.8	14932.7	19458.7	30829.8	23392.7 30801.9
