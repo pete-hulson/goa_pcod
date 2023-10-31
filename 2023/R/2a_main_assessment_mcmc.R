@@ -22,8 +22,8 @@ Model_name_new <- "2019.1b-2023"
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # Set which method of MCMC to use
-mcmc_meth <- 'base'
-# mcmc_meth <- 'nuts'
+# mcmc_meth <- 'base'
+mcmc_meth <- 'nuts'
 
 # Set whether testing or doing full run
 mcmc_run <- 'test'
@@ -88,31 +88,35 @@ if(mcmc_meth == 'base'){
 if(mcmc_meth == 'nuts'){
 
   # Write SS files in MCMC subfolder and run model
-  mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC_nuts")
-  r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
-                       dir.new = mcmc_dir,
-                       copy_par = TRUE,
-                       copy_exe = TRUE,
-                       overwrite = TRUE)
-  r4ss::run(dir = mcmc_dir,
-            skipfinished = FALSE,
-            show_in_console = TRUE)
+  # mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC_nuts")
+  # r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
+  #                      dir.new = mcmc_dir,
+  #                      copy_par = TRUE,
+  #                      copy_exe = TRUE,
+  #                      overwrite = TRUE)
+  # r4ss::run(dir = mcmc_dir,
+  #           skipfinished = FALSE,
+  #           show_in_console = TRUE)
   
   # Define number of iterations
   if(mcmc_run == 'test'){
-    iter <- 1000
+    iter <-5000
+    thin <- 2
     st_time <- Sys.time()
   }
   if(mcmc_run == 'full'){
-    iter <- 1000000
+    iter <- 5000000
+    thin <- 2000
   }
 
   # Run MCMC
   mcmc_nut <- adnuts::sample_rwm(model = 'ss3',
                                  path = mcmc_dir,
                                  iter = iter,
-                                 skip_optimization = FALSE,
-                                 mceval = TRUE)
+                                 thin = thin,
+                                 skip_optimization = TRUE,
+                                 mceval = TRUE,
+                                 chains = 7)
   
   # Save output
   save(mcmc_nut, file = here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
