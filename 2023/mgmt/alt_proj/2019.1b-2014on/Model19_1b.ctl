@@ -134,7 +134,7 @@
 1 # (0/1) to read 13 advanced options
  1967 #_recdev_early_start (0=none; neg value makes relative to recdev_start)
  2 #_recdev_early_phase
- 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
+ -1 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
  1 #_lambda for Fcast_recr_like occurring before endyr+1
  1964.4 #_last_yr_nobias_adj_in_MPD; begin of ramp
  1979.7 #_first_yr_fullbias_adj_in_MPD; begin of plateau

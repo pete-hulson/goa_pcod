@@ -22,7 +22,7 @@
 1 #_Flimitfraction
 3 #_N_forecast_loops
 3 #_First_forecast_loop_with_stochastic_recruitment
-0 #_fcast_rec_option
+3 #_fcast_rec_option
 1 #_fcast_rec_val
 0 #_Fcast_loop_control_5
 0 #_FirstYear_for_caps_and_allocations
