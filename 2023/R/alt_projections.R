@@ -17,6 +17,7 @@ lapply(libs, library, character.only = TRUE)
 Model_name_14 <- "2019.1b-2014on"
 Model_name_sigr <- "2019.1b-est_sigr"
 Model_name_m <- "2019.1b-M17on"
+Model_name_age <- "2019.1b-fit_age"
 
 # Current assessment year
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
@@ -67,6 +68,17 @@ model_run_sigr <- r4ss::SS_output(dir = model_dir_sigr,
 r4ss::SS_plots(model_run_sigr,
                printfolder = "",
                dir = paste0(model_dir_sigr, "/plots"))
+
+# fit age
+model_dir_age <- here::here(new_SS_dat_year, "mgmt", "alt_proj", Model_name_age)
+
+model_run_age <- r4ss::SS_output(dir = model_dir_age,
+                                  verbose = TRUE,
+                                  printstats = TRUE)
+
+r4ss::SS_plots(model_run_age,
+               printfolder = "",
+               dir = paste0(model_dir_age, "/plots"))
 
 
 
