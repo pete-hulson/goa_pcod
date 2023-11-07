@@ -26,6 +26,7 @@ if("nmfspalette" %in% installed.packages() == FALSE){
 lapply(libs, library, character.only = TRUE)
 
 # Current model name
+Model_name_prev <- "2019.1a-2022"
 Model_name_old <- "2019.1a-2023"
 Model_name_new <- "2019.1b-2023"
 
@@ -82,22 +83,39 @@ multiplot <- function(..., plotlist = NULL, cols) {
 ## Model comparisons (for appendix) ----
 
 # read model outputs
+#previous accepted model with new data
 model_dir_old <- here::here(new_SS_dat_year, "mgmt", Model_name_old)
 model_run_old <- r4ss::SS_output(dir = model_dir_old,
                                  verbose = TRUE,
                                  printstats = TRUE)
 
+# recommended model
 model_dir_new <- here::here(new_SS_dat_year, "mgmt", Model_name_new)
 model_run_new <- r4ss::SS_output(dir = model_dir_new,
                                  verbose = TRUE,
                                  printstats = TRUE)
 
-model_comp <- r4ss::SSsummarize(list(model_run_old, model_run_new))
+#previous accepted model
+model_dir_prev <- here::here(new_SS_dat_year, "mgmt", Model_name_prev)
+model_run_prev <- r4ss::SS_output(dir = model_dir_prev,
+                                  verbose = TRUE,
+                                  printstats = TRUE)
 
+# plot comparisons
+#prev accepted with new data vs recommended model
+model_comp <- r4ss::SSsummarize(list(model_run_old, model_run_new))
 r4ss::SSplotComparisons(model_comp,
                         legendlabels = c(Model_name_old, Model_name_new),
                         print = TRUE,
                         plotdir = here::here(new_SS_dat_year, "plots", "comp_apndx") )
+
+#prev accepted vs recommended model
+model_comp_prev <- r4ss::SSsummarize(list(model_run_prev, model_run_new))
+r4ss::SSplotComparisons(model_comp_prev,
+                        legendlabels = c(Model_name_prev, Model_name_new),
+                        print = TRUE,
+                        plotdir = here::here(new_SS_dat_year, "plots", "comp_prev") )
+
 
 
 ## Plot base model ----
