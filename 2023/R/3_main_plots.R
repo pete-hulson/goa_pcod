@@ -502,19 +502,9 @@ dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "param_mcmc_
 dev.off()
 
 
-## plot sampling rates diags ----
+## plot length sampling rates diags ----
 
 load(here::here(new_SS_dat_year, "output", "lencomp.RData"))
-
-vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
-  dplyr::rename_all(tolower) %>%
-  tidytable::select(year, gear, tons) %>% 
-  tidytable::filter(gear %in% c('HAL', 'POT', 'TRW')) %>% 
-  tidytable::mutate(gear = case_when(gear == 'TRW' ~ "TRAWL",
-                                     gear == 'POT' ~ "POT",
-                                     gear == 'HAL' ~ "LONGLINE")) %>% 
-  tidytable::summarise(catch = sum(tons), .by = c(year, gear)) -> catch
-
 
 lencomp %>% 
   dplyr::rename_all(tolower) %>% 
@@ -524,7 +514,14 @@ lencomp %>%
                                      gear == 2 ~ "POT",
                                      gear == 3 ~ "LONGLINE")) %>% 
   tidytable::summarise(len_ss = sum(freq), .by = c(year, gear)) %>%  
-  tidytable::left_join(catch) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::select(year, gear, tons) %>% 
+                         tidytable::filter(gear %in% c('HAL', 'POT', 'TRW')) %>% 
+                         tidytable::mutate(gear = case_when(gear == 'TRW' ~ "TRAWL",
+                                                            gear == 'POT' ~ "POT",
+                                                            gear == 'HAL' ~ "LONGLINE")) %>% 
+                         tidytable::summarise(catch = sum(tons), .by = c(year, gear))) %>% 
   tidytable::filter(!is.na(catch)) %>% 
   tidytable::mutate(len_tot = sum(len_ss),
                     catch_tot = sum(catch), .by = c(year)) %>% 
@@ -553,6 +550,232 @@ ggplot(data = plot_data,
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "sampling_rates.png"), width = 1000, height = 1000)
 dev.off()
 
+## plot subregion length sampling rates diags ----
+
+load(here::here(new_SS_dat_year, "output", "lencomp.RData"))
+
+lencomp %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::mutate(haul1 = as.character(paste(cruise, permit, haul, sep = "_")),
+                    area = trunc(area/10)*10,
+                    gear = case_when(gear == 0 ~ "TRAWL",
+                                     gear == 2 ~ "POT",
+                                     gear == 3 ~ "LONGLINE")) %>% 
+  tidytable::select(year, gear, area, length, freq) %>% 
+  tidytable::mutate(subarea = case_when(area %in% c(640, 650) ~ "SE",
+                                        area %in% c(620, 630) ~ "CG",
+                                        area == 610 ~ "WG")) %>% 
+  tidytable::select(year, gear, subarea, length, freq) %>% 
+  tidytable::summarise(len_ss = sum(freq), .by = c(year, gear, subarea)) %>% 
+  tidytable::filter(year >= 2015) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::select(year, gear, tons, zone) %>% 
+                         tidytable::filter(gear %in% c('HAL', 'POT', 'TRW')) %>% 
+                         tidytable::mutate(gear = case_when(gear == 'TRW' ~ "TRAWL",
+                                                            gear == 'POT' ~ "POT",
+                                                            gear == 'HAL' ~ "LONGLINE"),
+                                           subarea = case_when(zone %in% c("SE", "WY", "SEI") ~ "SE",
+                                                               zone %in% c("CG", "PWSI") ~ "CG",
+                                                               zone == "WG" ~ "WG")) %>% 
+                         tidytable::summarise(catch = sum(tons), .by = c(year, gear, subarea)) %>% 
+                         tidytable::filter(year >= 2015)) %>% 
+  tidytable::mutate(len_tot = sum(len_ss),
+                    catch_tot = sum(catch), .by = c(year)) %>% 
+  tidytable::mutate(p_len = len_ss / len_tot,
+                    p_c = catch / catch_tot) %>% 
+  tidytable::select(year, gear, subarea, p_len, p_c) %>% 
+  tidytable::pivot_longer(cols = c(p_len, p_c), names_to = 'data', values_to = 'proportion') %>% 
+  tidytable::mutate(data = case_when(data == 'p_len' ~ "Length frequency",
+                                     data == 'p_c' ~ "Catch")) %>% 
+  tidytable::filter(year != 2020,
+                    subarea != "SE") -> plot_data
+
+ggplot(data = plot_data, 
+       aes(x = year, y = proportion, fill = gear)) + 
+  geom_bar(position="fill", stat="identity", width=0.5) + 
+  # scale_x_continuous(breaks = c(2010:CYR), limits = c(2009.5, CYR + 0.5)) +
+  scale_fill_nmfs("waves", name = "") +
+  facet_grid(subarea ~ data) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Proportion by gear type", x = "Year") +
+  coord_flip()
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "sampling_rates_subarea.png"), width = 1000, height = 1000)
+dev.off()
+
+
+
+
+
+## plot observer sampling effort ----
+
+vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_obscatch.csv')) %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::select(year, `gear description`, `extrapolated weight (kg)`)  %>% 
+  tidytable::rename(gear = `gear description`,
+                    obs_catch = `extrapolated weight (kg)`) %>% 
+  tidytable::filter(gear != "JIG") %>% 
+  tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                     gear == "POT OR TRAP" ~ "Pot",
+                                     gear == "LONGLINER" ~ "Longline")) %>%
+  tidytable::summarise(obs_catch = sum(obs_catch) * 0.001, .by = c(year, gear)) %>% 
+  tidytable::filter(!is.na(gear)) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::select(year, gear, tons) %>% 
+                         tidytable::filter(gear %in% c('HAL', 'POT', 'TRW')) %>% 
+                         tidytable::mutate(gear = case_when(gear == 'TRW' ~ "Trawl",
+                                                            gear == 'POT' ~ "Pot",
+                                                            gear == 'HAL' ~ "Longline")) %>% 
+                         tidytable::summarise(catch = sum(tons), .by = c(year, gear))) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_length.csv')) %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::select(year, `gear description`, `haul join`, frequency)  %>% 
+                         tidytable::rename(gear = `gear description`,
+                                           haul_join = `haul join`) %>% 
+                         tidytable::filter(gear != "JIG") %>% 
+                         tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                                            gear == "POT OR TRAP" ~ "Pot",
+                                                            gear == "LONGLINER" ~ "Longline")) %>% 
+                         tidytable::summarise(len_ss = sum(frequency), .by = c(year, gear, haul_join)) %>% 
+                         tidytable::filter(!is.na(haul_join),
+                                           !is.na(gear)) %>% 
+                         tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_obscatch.csv')) %>% 
+                                                dplyr::rename_all(tolower) %>% 
+                                                tidytable::select(year, `gear description`, `haul join`, `extrapolated weight (kg)`)  %>% 
+                                                tidytable::rename(gear = `gear description`,
+                                                                  obs_catch = `extrapolated weight (kg)`,
+                                                                  haul_join = `haul join`) %>% 
+                                                tidytable::filter(gear != "JIG") %>% 
+                                                tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                                                                   gear == "POT OR TRAP" ~ "Pot",
+                                                                                   gear == "LONGLINER" ~ "Longline"))) %>% 
+                         tidytable::summarise(len_ss = sum(len_ss),
+                                              obs_c_len = sum(obs_catch, na.rm = TRUE) * 0.001, .by = c(year, gear))) %>% 
+  tidytable::mutate(samp_eff = obs_catch / catch,
+                    samp_eff_len = obs_c_len / catch) %>% 
+  tidytable::mutate(samp_eff_tot = sum(samp_eff),
+                    samp_eff_len_tot = sum(samp_eff_len),
+                    catch_tot = sum(catch), .by = c(year)) %>% 
+  tidytable::mutate(rel_samp_eff = samp_eff / samp_eff_tot,
+                    rel_samp_eff_len = samp_eff_len / samp_eff_len_tot,
+                    rel_catch = catch / catch_tot) %>% 
+  tidytable::select(year, gear, rel_samp_eff, rel_samp_eff_len, rel_catch) %>% 
+  tidytable::pivot_longer(cols = c(rel_samp_eff, rel_samp_eff_len, rel_catch), names_to = 'data', values_to = 'proportion') %>% 
+  tidytable::mutate(data = case_when(data == 'rel_samp_eff' ~ "Observed Catch",
+                                     data == 'rel_samp_eff_len' ~ "Observed Catch Sampled for Length Frequency",
+                                     data == 'rel_catch' ~ "Catch")) %>% 
+  tidytable::filter(year != 2020) -> plot_data
+
+ggplot(data = plot_data, 
+       aes(x = year, y = proportion, fill = gear)) + 
+  geom_bar(position="fill", stat="identity", width=0.5) + 
+  # scale_x_continuous(breaks = c(2010:CYR), limits = c(2009.5, CYR + 0.5)) +
+  scale_fill_nmfs("waves", name = "") +
+  facet_wrap( ~ data,
+              labeller = label_wrap_gen(width = 21)) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Relative proportion by gear type", x = "Year") +
+  coord_flip()
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "sampling_rates_all.png"), width = 1000, height = 1000)
+dev.off()
+
+
+
+
+## plot regional observer sampling effort ----
+
+vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_obscatch.csv')) %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::select(year, `gear description`, `extrapolated weight (kg)`,`fmp subarea`)  %>% 
+  tidytable::rename(gear = `gear description`,
+                    obs_catch = `extrapolated weight (kg)`,
+                    subregion = `fmp subarea`) %>% 
+  tidytable::filter(gear != "JIG",
+                    subregion %in% c("CG", "WG")) %>% 
+  tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                     gear == "POT OR TRAP" ~ "Pot",
+                                     gear == "LONGLINER" ~ "Longline")) %>%
+  tidytable::summarise(obs_catch = sum(obs_catch) * 0.001, .by = c(year, gear, subregion)) %>% 
+  tidytable::filter(!is.na(gear)) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'catch.csv')) %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::select(year, gear, tons, zone) %>% 
+                         tidytable::rename(subregion = zone) %>% 
+                         tidytable::filter(gear %in% c('HAL', 'POT', 'TRW'),
+                                           subregion %in% c("CG", "WG")) %>% 
+                         tidytable::mutate(gear = case_when(gear == 'TRW' ~ "Trawl",
+                                                            gear == 'POT' ~ "Pot",
+                                                            gear == 'HAL' ~ "Longline")) %>% 
+                         tidytable::summarise(catch = sum(tons), .by = c(year, gear, subregion))) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_length.csv')) %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::select(year, `gear description`, `haul join`, frequency, `fmp subarea`)  %>% 
+                         tidytable::rename(gear = `gear description`,
+                                           haul_join = `haul join`,
+                                           subregion = `fmp subarea`) %>% 
+                         tidytable::filter(gear != "JIG",
+                                           subregion %in% c("CG", "WG")) %>% 
+                         tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                                            gear == "POT OR TRAP" ~ "Pot",
+                                                            gear == "LONGLINER" ~ "Longline")) %>% 
+                         tidytable::summarise(len_ss = sum(frequency), .by = c(year, gear, haul_join, subregion)) %>% 
+                         tidytable::filter(!is.na(haul_join),
+                                           !is.na(gear)) %>% 
+                         tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_obscatch.csv')) %>% 
+                                                dplyr::rename_all(tolower) %>% 
+                                                tidytable::select(year, `gear description`, `haul join`, `extrapolated weight (kg)`,`fmp subarea`)  %>% 
+                                                tidytable::rename(gear = `gear description`,
+                                                                  obs_catch = `extrapolated weight (kg)`,
+                                                                  haul_join = `haul join`,
+                                                                  subregion = `fmp subarea`) %>% 
+                                                tidytable::filter(gear != "JIG",
+                                                                  subregion %in% c("CG", "WG")) %>% 
+                                                tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                                                                   gear == "POT OR TRAP" ~ "Pot",
+                                                                                   gear == "LONGLINER" ~ "Longline"))) %>% 
+                         tidytable::summarise(len_ss = sum(len_ss),
+                                              obs_c_len = sum(obs_catch, na.rm = TRUE) * 0.001, .by = c(year, gear, subregion))) %>% 
+  tidytable::mutate(samp_eff = obs_catch / catch,
+                    samp_eff_len = obs_c_len / catch) %>% 
+  tidytable::mutate(samp_eff_tot = sum(samp_eff),
+                    samp_eff_len_tot = sum(samp_eff_len),
+                    catch_tot = sum(catch), .by = c(year, subregion)) %>% 
+  tidytable::mutate(rel_samp_eff = samp_eff / samp_eff_tot,
+                    rel_samp_eff_len = samp_eff_len / samp_eff_len_tot,
+                    rel_catch = catch / catch_tot) %>% 
+  tidytable::select(year, gear, subregion, rel_samp_eff, rel_samp_eff_len, rel_catch) %>% 
+  tidytable::pivot_longer(cols = c(rel_samp_eff, rel_samp_eff_len, rel_catch), names_to = 'data', values_to = 'proportion') %>% 
+  tidytable::mutate(data = case_when(data == 'rel_samp_eff' ~ "Observed Catch",
+                                     data == 'rel_samp_eff_len' ~ "Observed Catch Sampled for Length Frequency",
+                                     data == 'rel_catch' ~ "Catch")) %>% 
+  tidytable::filter(year != 2020,
+                    year >= 2015) -> plot_data
+
+ggplot(data = plot_data, 
+       aes(x = year, y = proportion, fill = gear)) + 
+  geom_bar(position="fill", stat="identity", width=0.5) + 
+  # scale_x_continuous(breaks = c(2010:CYR), limits = c(2009.5, CYR + 0.5)) +
+  scale_fill_nmfs("waves", name = "") +
+  facet_grid(subregion ~ data,
+              labeller = label_wrap_gen(width = 21)) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  labs(y = "Relative proportion by gear type", x = "Year") +
+  coord_flip()
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "sampling_rates_subregion.png"), width = 1000, height = 1000)
+dev.off()
 
 
 
