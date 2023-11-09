@@ -779,6 +779,22 @@ dev.off()
 
 
 
+# plot cumulative length freq sampling ----
+
+vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_length.csv')) %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::select(year, month, `gear description`, frequency) %>% 
+  tidytable::rename(gear = `gear description`) %>% 
+  tidytable::filter(gear != "JIG") %>% 
+  tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
+                                     gear == "POT OR TRAP" ~ "Pot",
+                                     gear == "LONGLINER" ~ "Longline")) %>% 
+  tidytable::filter(year >= 2019) %>% 
+  tidytable::summarize(freq = sum(frequency), .by = c(year, gear, month)) %>% 
+  tidytable::mutate(total_len = sum(freq), .by = c(year, gear)) %>% 
+  tidytable::filter(month > 10) %>% 
+  tidytable::mutate(p_len = freq / total_len)
+  
 
 
 
