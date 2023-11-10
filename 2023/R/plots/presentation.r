@@ -7,8 +7,8 @@ library(ggplot2)
 library(nmfspalette)
 
 # Define schtuff
-Model_name_new <- "Model19.1a (22) - wADFG"
-Model_name_old <- "Model19.1 (21)"
+Model_name_new <- "2019.1b-2023"
+Model_name_old <- "2019.1a-2022"
 new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # Read IPHC.ADF&G data
@@ -175,13 +175,13 @@ dev.off()
 
 # plot M comparisons
 
-model_dir_old <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_old)
+model_dir_old <- here::here(new_SS_dat_year, "mgmt", Model_name_old)
 
 model_run_old <- r4ss::SS_output(dir = model_dir_old,
                                  verbose = TRUE,
                                  printstats = TRUE)
 
-model_dir_new <- here::here(new_SS_dat_year, "Stock_Synthesis_files", Model_name_new)
+model_dir_new <- here::here(new_SS_dat_year, "mgmt", Model_name_new)
 
 model_run_new <- r4ss::SS_output(dir = model_dir_new,
                                  verbose = TRUE,
@@ -189,19 +189,21 @@ model_run_new <- r4ss::SS_output(dir = model_dir_new,
 
 
 model_run_old$M_at_age %>% 
-  select(Yr, '0') %>% 
-  rename('year' = Yr,
-         'M_2021' = '0') %>% 
-  filter(year <= 2021) -> m_21
+  tidytable::select(Yr, '0') %>% 
+  tidytable::rename('year' = Yr,
+                    'M_prev' = '0') %>% 
+  tidytable::mutate(year = as.numeric(year),
+                    M_prev = as.numeric(M_prev))
+  tidytable::filter(year <= new_SS_dat_year - 1) -> m_prev
 
 
 model_run_new$M_at_age %>% 
-  select(Yr, '0') %>% 
-  rename('year' = Yr,
-         'M_2022' = '0') %>% 
-  filter(year <= 2022) %>% 
-  left_join(m_21) %>% 
-  pivot_longer(c(M_2021, M_2022)) -> m_dat
+  tidytable::select(Yr, '0') %>% 
+  tidytable::rename('year' = Yr,
+                    'M_curr' = '0') %>% 
+  tidytable::filter(year <= new_SS_dat_year) %>% 
+  tidytable::left_join(m_prev) %>% 
+  tidytable::pivot_longer(c(M_prev, M_curr)) -> m_dat
 
 ggplot(data = m_dat, 
        aes(x = year, y = value, color = factor(name))) + 
