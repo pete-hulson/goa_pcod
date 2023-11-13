@@ -79,8 +79,8 @@
  0 10 3.82037 0 0 0 10 0 0 0 0 0 0 0 # SD_young_Fem_GP_1
  0 20 7.42895 0 0 0 10 0 0 0 0 0 0 0 # SD_old_Fem_GP_1
 # Sex: 1  BioPattern: 1  WtLen
- -99 99 5.63096e-06 0 0 0 -3 0 0 0 0 0 0 0 # Wtlen_1_Fem_GP_1
- -99 99 3.1306 0 0 0 -3 0 0 0 0 0 0 0 # Wtlen_2_Fem_GP_1
+ -99 99 3.37845E-06 0 0 0 -3 0 0 0 0 0 0 0 # Wtlen_1_Fem_GP_1
+ -99 99 3.2804959 0 0 0 -3 0 0 0 0 0 0 0 # Wtlen_2_Fem_GP_1
 # Sex: 1  BioPattern: 1  Maturity&Fecundity
  -99 99 53.7 0 0 0 -1 0 0 0 0 0 0 0 # Mat50%_Fem_GP_1
  -99 99 -0.273657 0 0 0 -1 0 0 0 0 0 0 0 # Mat_slope_Fem_GP_1

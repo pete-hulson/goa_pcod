@@ -779,30 +779,76 @@ dev.off()
 
 
 
-# plot cumulative length freq sampling ----
+# plot length-weight relationship ----
 
-vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'akfin_raw_length.csv')) %>% 
+vroom::vroom(here::here(new_SS_dat_year, 'data', 'raw', 'afsc_meanage.csv')) %>% 
   dplyr::rename_all(tolower) %>% 
-  tidytable::select(year, month, `gear description`, frequency) %>% 
-  tidytable::rename(gear = `gear description`) %>% 
-  tidytable::filter(gear != "JIG") %>% 
-  tidytable::mutate(gear = case_when(gear %in% c("PELAGIC", "NON PELAGIC") ~ "Trawl",
-                                     gear == "POT OR TRAP" ~ "Pot",
-                                     gear == "LONGLINER" ~ "Longline")) %>% 
-  tidytable::filter(year >= 2019) %>% 
-  tidytable::summarize(freq = sum(frequency), .by = c(year, gear, month)) %>% 
-  tidytable::mutate(total_len = sum(freq), .by = c(year, gear)) %>% 
-  tidytable::filter(month > 10) %>% 
-  tidytable::mutate(p_len = freq / total_len)
+  tidytable::select(year, length, weight) %>% 
+  tidytable::filter(!is.na(weight)) %>% 
+  tidytable::filter(!is.na(length)) %>% 
+  tidytable::mutate(length = length / 10,
+                    weight = weight / 1000) -> lw_dat
+
+
+lw_fit <- function(par, data){
+  sum((data$weight - par[1] * data$length ^ par[2]) ^ 2)
+}
+
+
+direct_fit <- optim(c(1E-05, 3), lw_fit, data = lw_dat)
+
+lw_fit(c(3.37845E-06, 3.2804959), lw_dat)
+
+lin_fit <- lm(log(weight) ~ log(length), data = lw_dat)
+
+lw_dat %>% 
+  tidytable::filter(year <= 2015) %>% 
+  tidytable::summarise(weight = mean(weight), .by = c(length)) %>% 
+  tidytable::mutate(range = "pre-2015") %>% 
+  tidytable::bind_rows(lw_dat %>% 
+                         tidytable::filter(year > 2015) %>% 
+                         tidytable::summarise(weight = mean(weight), .by = c(length)) %>% 
+                         tidytable::mutate(range = "post-2015")) -> plot_dat_mu
+
+
+ggplot(data = plot_dat_mu, 
+       aes(x = length, y = weight, color = range)) + 
+  geom_point(size = 2) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "length_weight.png"), width = 700, height = 500)
+dev.off()
+
+
+
+
+
+
+ggplot(data = plot_dat, 
+       aes(x = length, y = weight, color = range)) + 
+  geom_point() +
+  geom_line(aes(x = length, y = pred_old), color = "red", linewidth = 1.5) + 
+  geom_line(aes(x = length, y = pred_new), color = "navyblue", linewidth = 1.5)
   
+ggplot(data = plot_dat, 
+       aes(x = log(length), y = log(weight), color = year)) + 
+  geom_point() +
+  geom_line(aes(x = log(length), y = log(5.63096e-06) + 3.1306 * log(length)), color = "red") + 
+  geom_line(aes(x = log(length), y = fit$coefficients[1] + fit$coefficients[2] * log(length)))
+
+exp(fit$coefficients[1])
 
 
+# plot osa residuals ----
 
+remotes::install_github("fishfollower/compResidual/compResidual", force = TRUE)
+library(compResidual)
 
-
-
-
-
+model_run_new <- r4ss::SS_output(dir = model_dir_new,
+                                 verbose = TRUE,
+                                 printstats = TRUE)
 
 
 
