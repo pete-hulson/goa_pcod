@@ -852,5 +852,55 @@ model_run_new <- r4ss::SS_output(dir = model_dir_new,
 
 
 
+# plot ll survey sensitivities ----
 
+
+dat <- r4ss::SS_readdat_3.30(here::here(new_SS_dat_year, "output", "GOAPcod2023Oct16.dat"), verbose = TRUE)
+
+dat$CPUE %>% 
+  tidytable::filter(index == 5) %>% 
+  tidytable::mutate(uci_obs = obs + 1.96 * se_log * obs,
+                    lci_obs = obs - 1.96 * se_log * obs) %>% 
+  tidytable::select(year, obs, uci, lci) -> ll_obs
+
+
+vroom::vroom(here::here(new_SS_dat_year, 'output', 'llq_cov_pred_ll.csv')) %>% 
+  tidytable::filter(model %in% c('base', 'no_cov')) %>% 
+  tidytable::pivot_wider(names_from = model, values_from = values) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'output', 'llq_cov_pred_ll.csv')) %>% 
+                         tidytable::filter(!(model %in% c('base', 'no_cov'))) %>% 
+                         tidytable::summarise(mean_rand = mean(values),
+                                              uci_rand = max(values),
+                                              lci_rand = min(values), .by = year)) %>% 
+  tidytable::left_join(dat$CPUE %>% 
+                         tidytable::filter(index == 5) %>% 
+                         tidytable::mutate(uci_obs = obs + 1.96 * se_log * obs,
+                                           lci_obs = obs - 1.96 * se_log * obs) %>% 
+                         tidytable::select(year, obs, uci_obs, lci_obs)) %>% 
+  tidytable::left_join(vroom::vroom(here::here(new_SS_dat_year, 'output', 'llq_cov_pred_ll.csv')) %>% 
+                         tidytable::filter(model %in% c('rand37', 'rand21')) %>% 
+                         tidytable::pivot_wider(names_from = model, values_from = values)) -> plot_dat
+
+
+colors <- c("No covariate" = "orange", "2019.1b" = "blue", "Random" = "darkgrey")
+
+
+ggplot(plot_dat, aes(x = year, y = obs, ymin = lci_obs, ymax = uci_obs)) +
+  geom_ribbon(aes(ymin = lci_rand, ymax = uci_rand), fill = "grey", alpha = 0.2) +
+  geom_line(aes(x = year, y = rand21, color = "Random"), linewidth = 1) +
+  geom_line(aes(x = year, y = rand37, color = "Random"), linewidth = 1) + 
+  geom_point() +
+  geom_linerange() +
+  geom_line(aes(x = year, y = no_cov, color = "No covariate"), linewidth = 1) + 
+  geom_line(aes(x = year, y = base, color = "2019.1b"), linewidth = 1) +
+  theme_bw(base_size = 24) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = "right") +
+  labs(x = "Year",
+       y = "LL Survey RPN",
+       color = "Catchability") +
+  scale_color_manual(values = colors)
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "ll_srv_fits.png"), width = 1000, height = 500)
 
