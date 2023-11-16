@@ -904,3 +904,57 @@ ggplot(plot_dat, aes(x = year, y = obs, ymin = lci_obs, ymax = uci_obs)) +
 
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "ll_srv_fits.png"), width = 1000, height = 500)
 
+
+# plot apportionment ----
+
+load(file = here::here(new_SS_dat_year, 'output', 'rema_output.rdata'))
+
+cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+apport_out$biomass_by_strata %>% 
+  tidytable::select(strata, year, pred, pred_lci, pred_uci, obs, obs_cv) %>% 
+  tidytable::mutate(Region = case_when(strata == 'CENTRAL GOA' ~ "CGOA",
+                                       strata == 'WESTERN GOA' ~ "WGOA",
+                                       strata == 'EASTERN GOA' ~ "EGOA"),
+                    Region = factor(Region, levels = c("WGOA", "CGOA", "EGOA")),
+                    species = "Pacific cod") -> plot_dat1
+
+apport_out$proportion_biomass_by_strata %>% 
+  tidytable::pivot_longer(cols = c(`CENTRAL GOA`, `EASTERN GOA`, `WESTERN GOA`)) %>% 
+  tidytable::rename(strata = "name",
+                    Apportionment = "value") %>% 
+  tidytable::select(year, strata, Apportionment) %>% 
+  tidytable::mutate(Region = case_when(strata == 'CENTRAL GOA' ~ "CGOA",
+                                       strata == 'WESTERN GOA' ~ "WGOA",
+                                       strata == 'EASTERN GOA' ~ "EGOA"),
+                    Region = factor(Region, levels = c("WGOA", "CGOA", "EGOA")),
+                    species = "Pacific cod") -> plot_dat2
+
+
+ggplot(plot_dat1, aes(x = year, y = pred)) +
+  scale_fill_manual(values = cbp1) +
+  scale_color_manual(values = cbp1) +
+  geom_line(aes(color = Region), linewidth = 1) +
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci, fill = Region), alpha = 0.2) +
+  geom_point(aes(x = year, y = obs, color = Region)) +
+  geom_linerange(aes(ymin = obs - 1.96 * obs_cv * obs, ymax = obs + 1.96 * obs_cv * obs, color = Region)) +
+  theme_bw(base_size = 21) +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank()) +
+  labs(y = "Biomass (t)") -> p1
+
+
+ggplot(data = plot_dat2, 
+       aes(x = year, y = Apportionment, fill = Region)) + 
+  geom_bar(position="fill", stat="identity", width=0.5) +
+  scale_fill_manual(values = cbp1) +
+  theme_bw(base_size = 21) +
+  labs(x = "Year") -> p2
+
+
+ggarrange(p1, p2,
+          ncol = 1, nrow = 2)
+
+dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "new_apportionment.png"), width = 1000, height = 1000)
