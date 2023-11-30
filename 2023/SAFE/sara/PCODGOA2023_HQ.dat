@@ -80,11 +80,11 @@
 #B_UNIT - The unit of the "B" related data fields, see lookup table (options: Metric Tons, Thousand Metric Tons, Number of eggs, kg/tow, Number of Fish, or write-in, "NA" for Tier 6)
 "Metric Tons"
 #BEST_B_ESTIMATE - Best available point estimate of stock size in terms of biomass from the stock assessment model (NOTE: for Tiers 1-3 this is the spawning biomass estimate in B_YEAR, for Tiers 4-5 single stock assessments this is the random effects biomass estimate in B_YEAR, for Tiers 4-5 complex stock assessments this is the combined biomass estimate from the random effects model for the stock complex in B_YEAR, "NA" for Tier 6)
-51621
+63076
 #LOWER_B_ESTIMATE - Minimum plausible value of B as estimated by the model given the specified confidence interval for spawning biomass in B_YEAR (Tiers 1-3 only, "NA" for Tiers 4-6)
-43292
+47263
 #UPPER_B_ESTIMATE - Maximum plausible value of B as estimated by the model given the specified confidence interval for spawning biomass in B_YEAR (Tiers 1-3 only, "NA" for Tiers 4-6)
-59949
+55170
 #ESTIMATE_METHOD - Specify statistical approach used to determine confidence intervals if provide (options Tiers 1-3 only: Asymptotic, Credible, Bootstrapped, "NA" for Tiers 4-6)
 "Credible"
 #INTERVAL_SIZE - Specify size of confidence interval (options Tiers 1-3 only: 50 to 99, "NA" for Tiers 4-6)
@@ -99,7 +99,7 @@
 #AGE - list of ages used in the model where applicable, "NA" if no ages used
 1 2 3 4 5 6 7 8 9 10 
 #RECRUITMENT - Number of recruits by year (Tiers 1-3 only, "NA" for Tiers 4-6) 
-817760	445298	334144	408053	654266	632535	611709	538884	792013	542608	538552	570529	571712	739906	493832	433583	312146	326717	476634	299473	322314	242134	332905	406201	283397	187306	225619	266161	394059	617065	448977	603466	426055	461108	561377	1.12E+06	776595	286400	257657	277683	217651	177378	93673.3	167954	196530	257899	403976
+792115	398301	335433	420292	624811	628317	5.57E+05	542148	732673	517898	512268	549513	538824	698720	453912	405942	292187	328621	441351	294187	299454	235270	326186	383786	266928	182107	218389	260951	389085	577297	454781	568249	430961	4.22E+05	543649	1.05E+06	691773	265705	255341	259158	200144	160157	90012.7	150536	181379	236017	383696
 #SPAWNBIOMASS - Spawning biomass by year in metric tons (Tiers 1-3 only, "NA" for Tiers 4-6)
 86688.5	98379.5	97763.5	96006.5	111789	134329.5	145537.5	149802	168636	197792.5	220913.5	231754.5	243438.5	246919	230939	214700	201963.5	207131.5	211697	194439	169657	142072	125720.5	108573	95796	88197.5	82954.5	84857	82850	76512	68076	63091.5	67152.5	86781.5	99472	107730.5	114120.5	118695	86061.5	70065.5	53898	47454	48468.15	51108	59590	61227.5	55169.5
 #TOTALBIOMASS - Total biomass by year in metric tons ("NA" for Tier 6)
