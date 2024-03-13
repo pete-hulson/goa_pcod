@@ -3,16 +3,19 @@
 ## ZTA, 2021-10-07, R version 4.05.01 64 bit
 ## GOA Pacific cod
 ## Altered in 2022 by Pete Hulson
+## Re-developed in 2024 by Pete Hulson
 ## Sections denoted with ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< need to be updated at the start of each assessment cycle
 
 # Load libraries
 libs <- c("r4ss",
           "RODBC",
+          "DBI",
           "dplyr",
           "data.table",
           "FSA",
           "lubridate",
-          "tidyr")
+          "tidyr",
+          "afscdata")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
@@ -38,7 +41,7 @@ update_adfg_iphc <- FALSE
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # Current assessment year
-new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # is this a new SS DAT file
 is_new_SS_DAT_file <- FALSE
