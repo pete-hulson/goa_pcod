@@ -17,6 +17,7 @@ get_catch_goa_pcod <- function(new_year = 9999,
                                fsh_sp_area = c("CG","PWSI","SE","SEI","WG","WY"),
                                query = FALSE){
   
+  # query data ----
   if(isTRUE(query)){
     
     ## Open up data base connections
@@ -35,15 +36,21 @@ get_catch_goa_pcod <- function(new_year = 9999,
                       species = fsh_sp_label,
                       area = fsh_sp_area,
                       db = conn)
+    
+    # query ADF&G data from 1997-2002
+    adfg = readLines(here::here(new_year, 'inst', 'sql', 'adfg_fsh_catch.sql'))
+    
+    sql_run(conn, adfg) %>% 
+      dplyr::rename_all(tolower) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
+
   }
   
+  # current catch ----
 
-  # read in raw catch data
-  catch <- vroom::vroom(here::here(new_year, "data", "raw", "fsh_catch_data.csv"))
-  
   # summarize catch data to year, subarea, gear, type (retained/discarded), and month
   # add gear description and summarize months to season
-  catch %>% 
+  vroom::vroom(here::here(new_year, "data", "raw", "fsh_catch_data.csv")) %>% 
     tidytable::select(year, 
                       zone = fmp_subarea,
                       species_group = species_group_code, 
@@ -66,11 +73,46 @@ get_catch_goa_pcod <- function(new_year = 9999,
   
   # get total catch by year and gear
   catch_summ %>% 
-    tidytable::summarise(tons = sum(tons), .by = c(year, gear_desc)) -> tot_catch
+    tidytable::summarise(tons = sum(tons), .by = c(year, gear_desc)) %>% 
+    tidytable::rename(gear = gear_desc) -> curr_catch
+
+  # old catch ----
+  
+  # read in fixed old catch and add gear descriptions
+  vroom::vroom(here::here(new_year, 'data', 'old_catch.csv')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    tidytable::mutate(gear_desc = case_when(gear %in% c("TRAWL") ~ "trawl",
+                                            gear %in% c("LONGLINE", "OTHER") ~ "longline",
+                                            gear == "POT" ~ "pot")) %>% 
+    tidytable::summarise(tons = sum(tons), .by = c(year, gear_desc)) %>% 
+    tidytable::rename(gear = gear_desc) -> old_catch
+    
+  
+  # adf&g catch ----
+  
+  # read in adf&g catch and add gear descriptions
+  vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv')) %>% 
+    tidytable::rename(year = akfin_year) %>% 
+    tidytable::mutate(gear = case_when(fmp_gear %in% c("JIG", "HAL") ~ "longline",
+                                       fmp_gear == "POT" ~ "pot")) %>% 
+    tidytable::summarise(adfg_tons = sum(catch_mt), .by = c(year, gear)) -> adfg_catch
+
+  # total catch ----
+  
+  # bind old and current catch and get total catch by year and gear
+  curr_catch %>% 
+    tidytable::left_join(adfg_catch) %>% 
+    tidytable::mutate(adfg_tons = replace_na(adfg_tons, 0)) %>% 
+    tidytable::mutate(tot_tons = tons + adfg_tons) %>% 
+    tidytable::select(year, gear, tot_tons) %>% 
+    tidytable::rename(tons = tot_tons) %>% 
+    tidytable::bind_rows(old_catch) %>% 
+    tidytable::arrange(gear, year) -> tot_catch
 
   
   
   
+
   
   # old code
   test <- paste("SELECT SUM(COUNCIL.COMPREHENSIVE_BLEND_CA.WEIGHT_POSTED)AS TONS,\n ",
@@ -338,45 +380,5 @@ get_catch_goa_pcod <- function(new_year = 9999,
   
   
   
-    incl_str <- ""
-    if(sp_area=="'AI'")
-    {
-        region<-"539 and 544"
-    }
-    if(sp_area=="'GOA'")
-    {
-        region<-"600 and 699"
-        incl_str <- "AND OBSINT.DEBRIEFED_AGE.NMFS_AREA != 670\n "
-    }
-    if(sp_area=="'BS'")
-    {
-        region<-"500 and 539"
-    }
 
-    test <- paste("SELECT OBSINT.DEBRIEFED_AGE.YEAR,\n ",
-                  "OBSINT.DEBRIEFED_AGE.NMFS_AREA,\n ",
-                  "OBSINT.DEBRIEFED_AGE.SPECIES,\n ",
-                  "OBSINT.DEBRIEFED_AGE.HAUL_OFFLOAD,\n ",
-                  "OBSINT.DEBRIEFED_AGE.SEX,\n ",
-                  "OBSINT.DEBRIEFED_AGE.LENGTH,\n ",
-                  "OBSINT.DEBRIEFED_AGE.AGE,\n ",
-                  "OBSINT.DEBRIEFED_AGE.WEIGHT,\n ",
-                  "OBSINT.DEBRIEFED_AGE.LATDD_END,\n ",
-                  "OBSINT.DEBRIEFED_AGE.LONDD_END,\n ",
-                  "CONCAT('P',TO_CHAR(OBSINT.DEBRIEFED_AGE.PORT_JOIN)) AS PORT_JOIN,\n ",
-                  "CONCAT('H',TO_CHAR(OBSINT.DEBRIEFED_AGE.HAUL_JOIN)) AS HAUL_JOIN,\n ",
-                  "OBSINT.DEBRIEFED_AGE.GEAR\n ",
-                  "FROM OBSINT.DEBRIEFED_AGE\n ",
-                  "WHERE OBSINT.DEBRIEFED_AGE.NMFS_AREA BETWEEN ",region,"\n ",
-                  incl_str,
-                  "AND OBSINT.DEBRIEFED_AGE.SPECIES in (",fsh_sp_str,")\n ",
-                  "ORDER BY OBSINT.DEBRIEFED_AGE.YEAR",sep="")
-
-    Dage=sqlQuery(AFSC,test)
-    vroom::vroom_write(Dage, here::here(new_year, 'data', 'raw', 'fish_agelen.csv'), delim = ",")
-
-    Dage$AGE1<-Dage$AGE
-    Dage$AGE1[Dage$AGE >= max_age]=max_age
-
-    Dage
 }
