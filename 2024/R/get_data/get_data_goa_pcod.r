@@ -67,31 +67,6 @@ get_data_goa_pcod <- function(new_data = new_data,
                                      query = TRUE,
                                      indx = 'num')
   
-  
-  ## ----- Get trawl survey pop'n estimates -----
-  
-  GOA_BIOM <- GET_GOA_BIOM(srv_sp_str, new_year)
-  GOA_BIOM$index <- 4
-  
-  BIOM <- rbind(GOA_BIOM)
-  
-  BIOM$CV <- sqrt(BIOM$POPVAR) / BIOM$POP
-  BIOM$se_log <- sqrt(log(1.0 + (BIOM$CV^2)))
-  
-  CPUE <- data.frame(year = BIOM$YEAR, 
-                     seas = 7, 
-                     index = BIOM$index, 
-                     obs = BIOM$POP / 1000, 
-                     se_log = BIOM$se_log)
-  
-  gridc <- expand.grid(year = min(CPUE$year):max(CPUE$year))
-  CPUE <- merge(CPUE, gridc, by = "year", all = T)
-  CPUE$seas <- 7
-  CPUE$index <- 4
-  CPUE[is.na(CPUE)] <- 1
-  CPUE$index[CPUE$year < 1990] <- -4
-  CPUE$index[CPUE$obs == 1] <- -4
-  
   ## ----- Get LL survey RPN estimates -----
   
   LLsrv_start_yr <- 1990
