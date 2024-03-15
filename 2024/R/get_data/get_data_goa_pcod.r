@@ -58,9 +58,14 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$catch <- ss3_catch
 
   
+  # get survey indices ----
   
-  
-  
+  # bottom trawl survey
+  ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
+                                     twl_srvy = 47,
+                                     species = 21720,
+                                     query = TRUE,
+                                     indx = 'num')
   
   
   ## ----- Get trawl survey pop'n estimates -----
