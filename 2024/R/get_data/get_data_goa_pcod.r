@@ -60,25 +60,20 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   # get survey indices ----
   
-  # bottom trawl survey
+  # afsc bottom trawl survey
   ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
                                      twl_srvy = 47,
                                      species = 21720,
                                      query = TRUE,
                                      indx = 'num')
   
-  ## ----- Get LL survey RPN estimates -----
-  
-  LLsrv_start_yr <- 1990
-  LL_RPN <- GET_GOA_LL_RPN(species = srv_sp_str, FYR = LLsrv_start_yr, new_year)
-  LL_RPN <- LL_RPN[year >= LLsrv_start_yr]
-  LL_CPUE <- data.frame(year = LL_RPN$year,
-                        seas = 7,
-                        index = 5,
-                        obs = LL_RPN$rpn,
-                        se_log = LL_RPN$se / LL_RPN$rpn)
-  CPUE <- rbind(CPUE, LL_CPUE)
-  
+  # afsc longline survey
+  ss3_ll_indx <- get_ll_srvy_index(new_year = new_dat_year,
+                                   area = 'goa',
+                                   species = 21720,
+                                   query = TRUE,
+                                   indx = 'num')
+
   ## ----- Get other survey index estimates -----
   
   ## ADF&G and IPHC survey files included here

@@ -6,6 +6,10 @@
 ## Re-developed in 2024 by Pete Hulson
 ## Sections denoted with ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< need to be updated at the start of each assessment cycle
 
+# load afscdata package
+devtools::install_github("afsc-assessments/afscdata", force = TRUE)
+
+
 # Load libraries
 libs <- c("r4ss",
           "RODBC",
@@ -15,7 +19,12 @@ libs <- c("r4ss",
           "FSA",
           "lubridate",
           "tidyr",
-          "afscdata")
+          "afscdata",
+          "purrr",
+          "tidyverse",
+          "tidytable",
+          "vroom",
+          "here")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
@@ -47,16 +56,16 @@ new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 is_new_SS_DAT_file <- FALSE
 
 # the FMP area for this stock
-sp_area <- "'GOA'"
+sp_area = "GOA"
 
 # the GOA FMP sub-areas in the COUNCIL.COMPREHENSIVE_BLEND_CA database table
-fsh_sp_area <- "'CG','PWSI','SE','SEI','WG','WY'"
+fsh_sp_area = c("CG","PWSI","SE","SEI","WG","WY")
 
 # species label for AKFIN
-fsh_sp_label <- "'PCOD'"
+fsh_sp_label = "PCOD"
 
 # the fishery species code(s) for this stock/these stocks
-fsh_sp_str <- "202"
+fsh_sp_str = "202"
 
 # year in which to start the fishery data
 fsh_start_yr <- 1977
@@ -100,6 +109,15 @@ if (file.exists(here::here(new_SS_dat_year, "output")) & length(list.files(here:
 }
 
 ## Get all the functions for pulling GOA Pcod data
+
+
+# source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
+# purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
+source(here::here(new_dat_year, "R", "utils.R"))
+source(here::here(new_dat_year, "R", "get_data", "get_catch_goa_pcod.r"))
+source(here::here(new_dat_year, "R", "get_data", "get_srvy_indices_goa_pcod.r"))
+
+
 source(here::here(new_SS_dat_year, "R", "data", "BIN_LEN_DATA.r"))
 source(here::here(new_SS_dat_year, "R", "data", "cond_length_age_corFISH.r"))
 source(here::here(new_SS_dat_year, "R", "data", "conditional_Length_AGE_cor.r"))
@@ -108,7 +126,7 @@ source(here::here(new_SS_dat_year, "R", "data", "FISH_AGE_COMP.r"))
 source(here::here(new_SS_dat_year, "R", "data", "FORMAT_AGE_MEANS1.r"))
 source(here::here(new_SS_dat_year, "R", "data", "GET_DOM_AGE.r"))
 source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_ACOMP1.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_BIOM.r"))
+source(here::here(new_dat_year, "R", "get_data", "GET_GOA_BIOM.r"))
 source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LCOMP1.r"))
 source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LENCOM2.r"))
 source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LL_RPN.r"))

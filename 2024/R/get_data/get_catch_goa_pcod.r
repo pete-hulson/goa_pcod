@@ -32,7 +32,6 @@ get_catch_goa_pcod <- function(new_year = 9999,
                           PWD = akfin_pass)
     
     # query catch data and write raw data to folder 
-    # (pending issue in afscdata to be able to change from add_fields = "*" to "akr_state_fishery_flag")
     afscdata::q_catch(year = new_dat_year,
                       species = fsh_sp_label,
                       area = fsh_sp_area,
