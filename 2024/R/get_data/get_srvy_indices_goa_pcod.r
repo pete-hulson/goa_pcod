@@ -174,7 +174,7 @@ get_ll_srvy_index <- function(new_year = 9999,
 }
 
 
-# Function to pull ipphc longline survey abundance index
+# Function to pull iphc longline survey abundance index
 # adapted/generalized from Steve Barbeaux' files for generating SS files
 # Re-developed in 2024 by p. hulson
 #' @param new_year current assessment year
@@ -188,7 +188,7 @@ get_ll_srvy_index <- function(new_year = 9999,
 
 get_iphc_srvy_index <- function(new_year = 9999,
                                 query = FALSE){
-
+  
   # query data ----
   if(isTRUE(query)){
     
@@ -205,13 +205,13 @@ get_iphc_srvy_index <- function(new_year = 9999,
     
     # query iphc longline survey index and write raw data to folder 
     q_iphc_srvy = readLines(here::here(new_year, 'inst', 'sql', 'iphc_srvy_index.sql'))
-
+    
     sql_run(conn, q_iphc_srvy) %>% 
       dplyr::rename_all(tolower) %>%
       tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
       tidytable::select(year = survey_year, fmp_sub_area, species, strata = rpn_strata, strata_rpn, boot_sd, boot_bias, n_stations, n_pos_catch) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
-
+    
   }
   
   # format for ss3 ----
@@ -219,16 +219,73 @@ get_iphc_srvy_index <- function(new_year = 9999,
   # read in iphc longline survey data
   iphc_indx <- vroom::vroom(here::here(new_year, "data", "raw", "iphc_srvy_index.csv"))
   
-  # get rpn index
+  # get iphc rpn index
   # note: can not reproduce original cvs as obtained from s. barbeaux in 2021 by bootstrap
   iphc_indx %>% 
     dplyr::rename_all(tolower) %>%
     tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>%
     tidytable::summarise(obs = sum(strata_rpn),
-                         se_log = sqrt(log(1 + sqrt(sum(boot_sd^2)) / sum(strata_rpn)) ^ 2),
+                         se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
                          .by = c(year)) %>%
     tidytable::mutate(seas = 7, index = -6) %>%
     tidytable::select(year, seas, index, obs, se_log)
-
+  
 }
 
+
+# Function to get adf&g trawl survey abundance index
+# adapted/generalized from Steve Barbeaux' files for generating SS files
+# Re-developed in 2024 by p. hulson
+#' @param new_year current assessment year
+#' @param run_glm switch for whether to run delta glm model (default = FALSE)
+#' 
+#' @return
+#' @export get_adfg_srvy_index
+#' 
+#' @examples
+#' 
+
+get_adfg_srvy_index <- function(new_year = 9999,
+                                run_glm = FALSE){
+
+  
+  # run delta glm model ----
+  if(isTRUE(run_glm)){
+    # get model
+    dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
+    
+    # get model data together
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_srvy_index.csv')) %>% 
+      tidytable::filter(district %in% c(1,2,6),
+                        !is.na(avg_depth_fm),
+                        !is.na(start_longitude)) %>% 
+      tidytable::mutate(depth = case_when(avg_depth_fm <= 30 ~ 1,
+                                          avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
+                                          avg_depth_fm > 70 ~ 3),
+                        density = total_weight_kg / area_km2) %>% 
+      tidytable::select(density, year, district, depth) -> mydata
+    
+    # run model
+    codout = dglm(mydata, dist = "lognormal", write = F, J = T)
+    
+    # write model results
+    codout$deltaGLM.index %>% 
+      mutate(year = as.numeric(rownames(.))) %>% 
+      as_tibble(.) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_srvy_glm.csv'), delim = ",")
+  }
+  
+  # format for ss3 ----
+      
+  # read in adf&g glm model results
+  adfg_indx <- vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"))
+  
+  # get adf&g index
+  adfg_indx %>% 
+    tidytable::rename(obs = index) %>% 
+    tidytable::mutate(se_log = sqrt(log(1 + jack.se / obs) ^ 2),
+                      seas = 7, 
+                      index = -7) %>% 
+    tidytable::select(year, seas, index, obs, se_log)
+
+}

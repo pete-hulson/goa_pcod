@@ -62,21 +62,38 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   # afsc bottom trawl survey
   ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
-                                     twl_srvy = 47,
-                                     species = 21720,
+                                     twl_srvy = twl_srvy,
+                                     species = srv_sp_str,
                                      query = query,
-                                     indx = 'num')
+                                     indx = indx)
   
   # afsc longline survey
   ss3_ll_indx <- get_ll_srvy_index(new_year = new_dat_year,
-                                   area = 'goa',
-                                   species = 21720,
+                                   area = sp_area,
+                                   species = srv_sp_str,
                                    query = query,
-                                   indx = 'num')
+                                   indx = indx)
 
   # iphc longline survey
   ss3_iphc_indx <- get_iphc_srvy_index(new_year = new_dat_year,
                                        query = query)
+  
+  # adf&g trawl survey
+  ss3_adfg_indx <- get_adfg_srvy_index(new_year = new_dat_year,
+                                       run_glm = run_glm)
+  
+  # put indices in to ss3 data file
+  
+  cpue <- ss3_twl_indx %>% 
+    tidytable::bind_rows(ss3_ll_indx) %>% 
+    tidytable::bind_rows(ss3_iphc_indx) %>% 
+    tidytable::bind_rows(ss3_adfg_indx)
+  
+  
+  new_data$N_cpue <- nrow(cpue)
+  new_data$CPUE <- cpue
+  
+  
   
   ## ----- Get other survey index estimates -----
   
