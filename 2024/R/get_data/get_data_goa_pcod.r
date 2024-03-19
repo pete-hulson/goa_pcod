@@ -51,7 +51,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_catch <- get_catch_goa_pcod(new_year = new_dat_year,
                                   fsh_sp_label = fsh_sp_label,
                                   fsh_sp_area = fsh_sp_area,
-                                  query = FALSE)
+                                  query = query)
   
   # put into ss3 data file
   new_data$N_catch <- nrow(ss3_catch)
@@ -64,16 +64,20 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
                                      twl_srvy = 47,
                                      species = 21720,
-                                     query = TRUE,
+                                     query = query,
                                      indx = 'num')
   
   # afsc longline survey
   ss3_ll_indx <- get_ll_srvy_index(new_year = new_dat_year,
                                    area = 'goa',
                                    species = 21720,
-                                   query = TRUE,
+                                   query = query,
                                    indx = 'num')
 
+  # iphc longline survey
+  ss3_iphc_indx <- get_iphc_srvy_index(new_year = new_dat_year,
+                                       query = query)
+  
   ## ----- Get other survey index estimates -----
   
   ## ADF&G and IPHC survey files included here
@@ -83,28 +87,7 @@ get_data_goa_pcod <- function(new_data = new_data,
     # If update to ADF%G and IPHC surveys desired
     if(update_adfg_iphc == TRUE){
       
-      # Update IPHC
-      IPHC <- sqlQuery(CHINA, query = ("
-                select    *
-                from      afsc_host.fiss_rpn
-                where     species in ('Pacific cod')")) %>% 
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_ll.csv'), delim = ",")
-      
-      IPHC %>%
-        rename_all(tolower) %>%
-        filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>%
-        group_by(survey_year) %>%
-        summarise(rpn2 = sum(strata_rpn),
-                  cv = sqrt(sum(boot_sd^2)) / sum(strata_rpn)) %>%
-        rename(year = survey_year) %>%
-        mutate(seas = 7, index = -6) %>%
-        select(year, seas, index, rpn2, cv) %>% 
-        left_join(filter(ADFG_IPHC, index == -6)) %>% 
-        filter(year != 2020) %>% 
-        mutate(se_log = replace_na(se_log,mean(se_log, na.rm = TRUE))) %>% # for now new year cv is mean of historical cv's
-        select(-obs, -cv) %>% 
-        rename(obs = rpn2) -> iphc
-      
+
       # Update ADF&G (model and raw catches not included in github)
       dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
       coddata <- vroom::vroom(here::here(new_year, 'data', 'ADFGsurvcatch.csv'))

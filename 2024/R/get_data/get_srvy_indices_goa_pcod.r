@@ -34,7 +34,6 @@ get_twl_srvy_index <- function(new_year = 9999,
                           PWD = akfin_pass)
     
     # query bottom trawl survey index data
-
     q_twl_srvy = readLines(here::here(new_year, 'inst', 'sql', 'twl_srvy_index.sql'))
     q_twl_srvy = sql_filter(sql_precode = "IN", x = twl_srvy, sql_code = q_twl_srvy, flag = '-- insert survey')
     q_twl_srvy = sql_filter(sql_precode = "IN", x = species, sql_code = q_twl_srvy, flag = '-- insert species')
@@ -54,7 +53,7 @@ get_twl_srvy_index <- function(new_year = 9999,
   # format for ss3 ----
   ts_indx <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_index.csv'))
   
-  # get index by type (either numbers or biomass)
+  # get pop'n numbers index
   if(indx == 'num'){
     ts_indx %>% 
       tidytable::expand(year = min(ts_indx$year):max(ts_indx$year)) %>% 
@@ -69,7 +68,8 @@ get_twl_srvy_index <- function(new_year = 9999,
       tidytable::mutate(index = case_when(obs == 1 ~ -4,
                                           obs > 1 ~ 4)) %>% 
       tidytable::select(year, seas, index, obs, se_log)
-  } else{
+  } else{.
+    # get biomass index
     ts_indx %>% 
       tidytable::expand(year = min(ts_indx$year):max(ts_indx$year)) %>% 
       tidytable::left_join(ts_indx %>% 
@@ -137,6 +137,7 @@ get_ll_srvy_index <- function(new_year = 9999,
     lls_indx <- vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_geoarea_data.csv")) %>% 
       tidytable::filter(year >= 1990)
   
+    # get rpn index
     if(indx == 'num'){
       lls_indx %>% 
         tidytable::expand(year = min(lls_indx$year):max(lls_indx$year)) %>% 
@@ -153,6 +154,7 @@ get_ll_srvy_index <- function(new_year = 9999,
                                             obs > 1 ~ 5)) %>% 
         tidytable::select(year, seas, index, obs, se_log)
     } else{
+      # get rpw index
       lls_indx %>% 
         tidytable::expand(year = min(lls_indx$year):max(lls_indx$year)) %>% 
         tidytable::left_join(lls_indx %>% 
@@ -172,5 +174,61 @@ get_ll_srvy_index <- function(new_year = 9999,
 }
 
 
+# Function to pull ipphc longline survey abundance index
+# adapted/generalized from Steve Barbeaux' files for generating SS files
+# Re-developed in 2024 by p. hulson
+#' @param new_year current assessment year
+#' @param query switch for whether to run sql query for data (default = FALSE)
+#' 
+#' @return
+#' @export get_iphc_srvy_index
+#' 
+#' @examples
+#' 
 
+get_iphc_srvy_index <- function(new_year = 9999,
+                                query = FALSE){
+
+  # query data ----
+  if(isTRUE(query)){
+    
+    ## Open up data base connections
+    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
+    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
+    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
+    database = 'akfin'
+    
+    conn = DBI::dbConnect(odbc::odbc(),
+                          database,
+                          UID = akfin_user,
+                          PWD = akfin_pass)
+    
+    # query iphc longline survey index and write raw data to folder 
+    q_iphc_srvy = readLines(here::here(new_year, 'inst', 'sql', 'iphc_srvy_index.sql'))
+
+    sql_run(conn, q_iphc_srvy) %>% 
+      dplyr::rename_all(tolower) %>%
+      tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
+      tidytable::select(year = survey_year, fmp_sub_area, species, strata = rpn_strata, strata_rpn, boot_sd, boot_bias, n_stations, n_pos_catch) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
+
+  }
+  
+  # format for ss3 ----
+  
+  # read in iphc longline survey data
+  iphc_indx <- vroom::vroom(here::here(new_year, "data", "raw", "iphc_srvy_index.csv"))
+  
+  # get rpn index
+  # note: can not reproduce original cvs as obtained from s. barbeaux in 2021 by bootstrap
+  iphc_indx %>% 
+    dplyr::rename_all(tolower) %>%
+    tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>%
+    tidytable::summarise(obs = sum(strata_rpn),
+                         se_log = sqrt(log(1 + sqrt(sum(boot_sd^2)) / sum(strata_rpn)) ^ 2),
+                         .by = c(year)) %>%
+    tidytable::mutate(seas = 7, index = -6) %>%
+    tidytable::select(year, seas, index, obs, se_log)
+
+}
 
