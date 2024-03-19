@@ -82,81 +82,22 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_adfg_indx <- get_adfg_srvy_index(new_year = new_dat_year,
                                        run_glm = run_glm)
   
+  # larval indices
+  # note: for time-being, these are entered by hand from emailed data
+  ss3_larval_indx <- vroom::vroom(here::here(new_dat_year, 'data', 'raw', 'larval_indices.csv'))
+  
   # put indices in to ss3 data file
   
   cpue <- ss3_twl_indx %>% 
     tidytable::bind_rows(ss3_ll_indx) %>% 
     tidytable::bind_rows(ss3_iphc_indx) %>% 
-    tidytable::bind_rows(ss3_adfg_indx)
-  
+    tidytable::bind_rows(ss3_adfg_indx) %>% 
+    tidytable::bind_rows(ss3_larval_indx)
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
   
-  
-  
-  ## ----- Get other survey index estimates -----
-  
-  ## ADF&G and IPHC survey files included here
 
-  if(exists("ADFG_IPHC")){ 
-    
-    # If update to ADF%G and IPHC surveys desired
-    if(update_adfg_iphc == TRUE){
-      
-
-      # Update ADF&G (model and raw catches not included in github)
-      dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
-      coddata <- vroom::vroom(here::here(new_year, 'data', 'ADFGsurvcatch.csv'))
-      
-      coddata %>% 
-        filter(district %in% c(1,2,6),
-               !is.na(avg_depth_fm),
-               !is.na(start_longitude)) %>% 
-        mutate(depth = case_when(avg_depth_fm <= 30 ~ 1,
-                                 avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
-                                 avg_depth_fm > 70 ~ 3),
-               density = total_weight_kg / area_km2) %>% 
-        select(density, year, district, depth) -> mydata
-      
-      codout = dglm(mydata, dist = "lognormal", write = F, J = T)
-      
-      codout$deltaGLM.index %>% 
-        mutate(year = as.numeric(rownames(.))) %>% 
-        as_tibble(.)  %>% 
-        rename(obs = index,
-               mean = jack.mean,
-               se = jack.se,
-               se_log = jack.cv) %>% 
-        mutate(seas = 7, index = -7) %>%
-        dplyr::select(year, seas, index, obs, se_log) -> adfg
-      
-      # Update both indices in SS file and data folder
-      iphc %>% 
-        bind_rows(adfg) -> adfg_iphc 
-      vroom::vroom_write(adfg_iphc, here::here(new_year, 'data', 'ADFG_IPHC_updated.csv'), delim = ",")
-      names(adfg_iphc) <- names(CPUE)
-      CPUE <- rbind(CPUE, iphc, adfg)
-    }
-    
-    # If update to ADF%G and IPHC surveys desired
-    if(update_adfg_iphc == FALSE){
-      names(ADFG_IPHC) <- names(CPUE)
-      CPUE <- rbind(CPUE, ADFG_IPHC)
-    }
-    
-  }else {print("Warning:  no ADFG_IPHC file appears to exist here")}
-  
-  ## Larval survey indices included here
-  if(exists("Larval_indices")){ 
-    names(Larval_indices) <- names(CPUE)
-    CPUE <- rbind(CPUE, Larval_indices)
-  }else {print("Warning:  no larval indices file appears to exist here")}
-
-  ## write to new data file
-  new_data$N_cpue<-nrow(CPUE)
-  new_data$CPUE<-CPUE
-  
   ## ----- Get trawl survey size composition data -----
   
   SRV_LCOMP_SS <- data.frame(GET_GOA_LCOMP1(species = srv_sp_str,
