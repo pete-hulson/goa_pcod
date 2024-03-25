@@ -37,10 +37,10 @@ lapply(libs, library, character.only = TRUE)
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # previous SS DAT filename, if it exists
-old_SS_dat_filename <- "GOAPcod2022Oct25_wADFG.dat"
+old_dat_filename <- "GOAPcod2022Oct25_wADFG.dat"
 
 # SS DAT filename
-new_SS_dat_filename <- paste0("GOAPcod", 
+new_dat_filename <- paste0("GOAPcod", 
                               format(Sys.Date(), format = "%Y%b%d"),
                               ".dat")
 
@@ -71,7 +71,7 @@ fsh_sp_str = "202"
 fsh_start_yr <- 1977
 
 # the survey species code(s) for this stock/these stocks
-srv_sp_str <- "21720"
+srv_sp_str <- 21720
 
 # year in which to start the bottom trawl survey data
 srv_start_yr <- 1984
@@ -116,6 +116,7 @@ if (file.exists(here::here(new_SS_dat_year, "output")) & length(list.files(here:
 source(here::here(new_dat_year, "R", "utils.R"))
 source(here::here(new_dat_year, "R", "get_data", "get_catch_goa_pcod.r"))
 source(here::here(new_dat_year, "R", "get_data", "get_srvy_indices_goa_pcod.r"))
+source(here::here(new_dat_year, "R", "get_data", "get_srvy_len_goa_pcod.r"))
 
 
 source(here::here(new_SS_dat_year, "R", "data", "BIN_LEN_DATA.r"))

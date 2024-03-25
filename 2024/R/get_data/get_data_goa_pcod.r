@@ -98,19 +98,17 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$CPUE <- cpue
   
 
-  ## ----- Get trawl survey size composition data -----
+  # survey length composition data ----
   
-  SRV_LCOMP_SS <- data.frame(GET_GOA_LCOMP1(species = srv_sp_str,
-                                            bins = len_bins,
-                                            bin = TRUE,
-                                            SS = TRUE,
-                                            seas = 7,
-                                            flt = 4,
-                                            gender = 0,
-                                            part = 0,
-                                            Nsamp = 100,
-                                            new_year))
-  names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
+  ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year = new_dat_year,
+                                      twl_srvy = twl_srvy,
+                                      species = srv_sp_str,
+                                      query = query,
+                                      bins = len_bins,
+                                      iss = FALSE,
+                                      nsamp = 100)
+
+  # names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
   
   
   ## ----- Get fishery size composition data -----
