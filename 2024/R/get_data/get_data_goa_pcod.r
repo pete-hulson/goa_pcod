@@ -56,6 +56,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   # put into ss3 data file
   new_data$N_catch <- nrow(ss3_catch)
   new_data$catch <- ss3_catch
+  print("catch done")
 
   
   # get survey indices ----
@@ -96,10 +97,16 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
-  
+  print("indices done")
 
-  # survey length composition data ----
+  # get length composition data ----
   
+  
+  
+  
+  
+  
+  # afsc bottom trawl survey
   ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year = new_dat_year,
                                       twl_srvy = twl_srvy,
                                       species = srv_sp_str,
@@ -109,6 +116,28 @@ get_data_goa_pcod <- function(new_data = new_data,
                                       nsamp = 100)
 
   # names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
+  
+  # afsc longline survey
+  ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year = new_dat_year,
+                                    area = sp_area,
+                                    species = srv_sp_str, 
+                                    query = query,
+                                    bins = len_bins,
+                                    iss = FALSE,
+                                    nsamp = 100)
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   ## ----- Get fishery size composition data -----
@@ -162,32 +191,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   print("Fisheries LCOMP2 done")
   
   
-  ## ----- Get LL survey size composition data -----
-  
-  LL_length <- GET_GOA_LL_LENGTH(species = srv_sp_str,
-                                 FYR = LLsrv_start_yr,
-                                 new_year)
-  
-  names(LL_length) <- c("year", "length", "FREQ")
-  
-  LL_LENGTHY <- LL_length[ ,list(TOT = sum(FREQ)), by = "year"]
-  LL_LENGTH <- merge(LL_length, LL_LENGTHY, by = "year")
-  LL_LENGTH$PROP <- LL_LENGTH$FREQ / LL_LENGTH$TOT
-  
-  grid <- expand.grid(year = sort(unique(LL_LENGTH$year)), length = seq(0, 116, by = 1))
-  LL_LENGTHG <- merge(LL_LENGTH, grid, by = c("year", "length"), all = T)
-  LL_LENGTHG$PROP[is.na(LL_LENGTHG$PROP)] <- 0
-  
-  SS3_LLL <- reshape2::dcast(LL_LENGTHG, formula = year ~ length, value.var = "PROP")
-  LL_LENGTH <- data.frame(Year = SS3_LLL$year,
-                          Seas = 1,
-                          FltSrv = 5,
-                          Gender = 0,
-                          part = 0,
-                          Nsamp = 100)
-  LL_LENGTH <- cbind(LL_LENGTH, SS3_LLL[2:ncol(SS3_LLL)])
-  names(LL_LENGTH) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
-  
+
   ## combine all the length comp data
   LCOMP <- rbind(FISHLCOMP, SRV_LCOMP_SS, LL_LENGTH)
   LCOMP[7:ncol(LCOMP), ] <- round(LCOMP[7:ncol(LCOMP), ], 5)
