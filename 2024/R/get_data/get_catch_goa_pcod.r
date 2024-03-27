@@ -2,8 +2,8 @@
 # Originally adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
 # Catch function developed in 2024 by Pete Hulson to develop link to afscdata package
 #' @param new_year current assessment year
-#' @param fsh_sp_label species label for observer/catch data (default = 'PCOD')
-#' @param fsh_sp_area NPFMC subareas (default to goa subareas)
+#' @param fsh_sp species label for observer/catch data (default = 'PCOD')
+#' @param fsh_subarea NPFMC subareas (default to goa subareas)
 #' @param query switch for whether to run sql query for data (default = FALSE)
 #' 
 #' @return
@@ -13,15 +13,15 @@
 #' 
 
 get_catch_goa_pcod <- function(new_year = 9999,
-                               fsh_sp_label = "PCOD",
-                               fsh_sp_area = c("CG","PWSI","SE","SEI","WG","WY"),
+                               fsh_sp = "PCOD",
+                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"),
                                query = FALSE){
   
   # query data ----
   if(isTRUE(query)){
     
     ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_dat_year, "database_specs.csv"))
+    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
     akfin_user = db_specs$username[db_specs$database == "AKFIN"]
     akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
     database = 'akfin'
@@ -32,9 +32,9 @@ get_catch_goa_pcod <- function(new_year = 9999,
                           PWD = akfin_pass)
     
     # query catch data and write raw data to folder 
-    afscdata::q_catch(year = new_dat_year,
-                      species = fsh_sp_label,
-                      area = fsh_sp_area,
+    afscdata::q_catch(year = new_year,
+                      species = fsh_sp,
+                      area = fsh_subarea,
                       db = conn,
                       add_fields = "akr_state_fishery_flag")
     

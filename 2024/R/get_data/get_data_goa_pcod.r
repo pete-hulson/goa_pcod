@@ -126,7 +126,8 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     iss = FALSE,
                                     nsamp = 100)
   
-
+  # names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
+  
   
   
   

@@ -56,16 +56,16 @@ new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 is_new_SS_DAT_file <- FALSE
 
 # the FMP area for this stock
-sp_area = "GOA"
+fsh_area = 'GOA'
 
 # the GOA FMP sub-areas in the COUNCIL.COMPREHENSIVE_BLEND_CA database table
-fsh_sp_area = c("CG","PWSI","SE","SEI","WG","WY")
+fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY")
 
 # species label for AKFIN
-fsh_sp_label = "PCOD"
+fsh_sp_label = 'PCOD'
 
 # the fishery species code(s) for this stock/these stocks
-fsh_sp_str = "202"
+fsh_sp_code = '202'
 
 # year in which to start the fishery data
 fsh_start_yr <- 1977
