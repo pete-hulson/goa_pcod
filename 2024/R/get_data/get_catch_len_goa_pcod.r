@@ -44,7 +44,7 @@ get_catch_len <- function(new_year = 9999,
                                                month >= 9 ~ 3),
                           gear = case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                            gear == 6 ~ 2,
-                                           month %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
+                                           gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
         tidytable::filter(year <= new_year) %>%
         vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
     }
@@ -83,7 +83,7 @@ get_catch_len <- function(new_year = 9999,
                                              month >= 9 ~ 3),
                         gear = case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                          gear == 6 ~ 2,
-                                         month %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>% 
+                                         gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>% 
       tidytable::filter(year <= new_year) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
     }
@@ -104,22 +104,11 @@ get_catch_len <- function(new_year = 9999,
 }
 
 
-fsh_len <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_length_data.txt'))
+fsh_len <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'))
 
-fsh_len_old <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv'))
 
-fsh_len %>% 
-  tidytable::summarise(freq_new = sum(frequency), .by = year) %>% 
-  tidytable::left_join(fsh_len_old %>% 
-                         dplyr::rename_all(tolower) %>% 
-                         tidytable::summarise(freq_old = sum(freq), .by = year))
 
-fsh_len_old %>% 
-  dplyr::rename_all(tolower) %>% 
-  tidytable::distinct(area)
 
-fsh_len %>% 
-  tidytable::distinct(fmp_subarea)
 
 
 
