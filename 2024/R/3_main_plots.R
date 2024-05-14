@@ -15,7 +15,8 @@ libs <- c("r4ss",
           "dplyr",
           "tidyr",
           "magrittr",
-          "nmfspalette")
+          "nmfspalette",
+          "afscdata")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])}
@@ -292,16 +293,11 @@ dev.off()
 
 source(here::here(new_SS_dat_year, "R", "plots", "cumulative_catch_plots.r"))
 
-# Current week
-curr_wk <- as.numeric(format(Sys.Date(), format = "%W"))
-
 # Get cumulative catch plots
 cumul_plots <- plot_cumulative(data_query = data_query,
-                               species = "'PCOD'",
-                               FMP_AREA = "'GOA'",
-                               syear = new_SS_dat_year - 5,
-                               CYR = new_SS_dat_year,
-                               curr_wk = curr_wk)
+                               species = "PCOD",
+                               fmp_area = "GOA",
+                               cyr = new_SS_dat_year)
 
 cumul_plots[[1]]
 dev.print(png, file = here::here(new_SS_dat_year, "plots", "other", "cummC_CG.png"), width = 700, height = 400)
