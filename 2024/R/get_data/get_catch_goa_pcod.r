@@ -20,16 +20,9 @@ get_catch_goa_pcod <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
     # query catch data and write raw data to folder 
     afscdata::q_catch(year = new_year,
@@ -38,13 +31,25 @@ get_catch_goa_pcod <- function(new_year = 9999,
                       db = conn,
                       add_fields = "akr_state_fishery_flag")
     
-    # query ADF&G data from 1997-2002
-    adfg = readLines(here::here(new_year, 'inst', 'sql', 'adfg_fsh_catch.sql'))
-    
-    sql_run(conn, adfg) %>% 
+    # query ADF&G data from 1997-2002 and write raw data to folder 
+    dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
       dplyr::rename_all(tolower) %>% 
+      dplyr::select(akfin_year,
+                    fmp_area,
+                    adfg_i_species_code,
+                    adfg_i_harvest_code,
+                    fmp_gear,
+                    cfec_whole_pounds) %>% 
+      dplyr::filter(akfin_year >= 1997,
+                    akfin_year <= 2002,
+                    adfg_i_species_code == 110,
+                    adfg_i_harvest_code == 80,
+                    fmp_area == 'GOA') %>% 
+      dplyr::summarise(catch_mt = sum(cfec_whole_pounds) / 2204.622, 
+                       .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) %>% 
+      dplyr::collect() %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
-    
+
   }
   
   # read in data files ----
