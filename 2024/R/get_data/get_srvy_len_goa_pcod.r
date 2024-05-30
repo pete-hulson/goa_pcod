@@ -26,27 +26,37 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
-    
-    # query bottom trawl survey index data
-    q_twl_srvy = readLines(here::here(new_year, 'inst', 'sql', 'twl_srvy_lpop.sql'))
-    q_twl_srvy = sql_filter(sql_precode = "IN", x = twl_srvy, sql_code = q_twl_srvy, flag = '-- insert survey')
-    q_twl_srvy = sql_filter(sql_precode = "IN", x = species, sql_code = q_twl_srvy, flag = '-- insert species')
-    
-    sql_run(conn, q_twl_srvy) %>% 
+    # query bottom trawl survey length pop'n data
+    dplyr::tbl(conn, dplyr::sql('gap_products.akfin_sizecomp')) %>% 
       dplyr::rename_all(tolower) %>% 
-      tidytable::filter(year <= new_year) %>% 
-      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'), delim = ",")
+      dplyr::select(year,
+                    survey_definition_id,
+                    area_id,
+                    species_code,
+                    length_mm,
+                    sex,
+                    population_count) %>% 
+      dplyr::filter(year <= new_year,
+                    survey_definition_id == twl_srvy,
+                    species_code == species,
+                    area_id %in% c(99903)) %>% 
+      dplyr::select(year,
+                    survey = survey_definition_id, 
+                    strata = area_id, 
+                    species_code,
+                    length = length_mm, 
+                    sex,
+                    num = population_count) -> twl_q
     
+    dplyr::collect(twl_q) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'), delim = ",")
+    capture.output(dplyr::show_query(twl_q), 
+                   file = here::here(new_year, "data", "sql", "twl_srvy_lpop_sql.txt"))
+
   }
   
   # format for ss3 ----

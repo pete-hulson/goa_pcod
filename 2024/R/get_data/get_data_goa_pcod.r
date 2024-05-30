@@ -61,34 +61,33 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   # get survey indices ----
   
-  # afsc bottom trawl survey
+  ## afsc bottom trawl survey ----
   ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
                                      twl_srvy = twl_srvy,
                                      species = srv_sp_str,
                                      query = query,
                                      indx = indx)
   
-  # afsc longline survey
+  ## afsc longline survey ----
   ss3_ll_indx <- get_ll_srvy_index(new_year = new_dat_year,
                                    area = sp_area,
                                    species = srv_sp_str,
                                    query = query,
                                    indx = indx)
 
-  # iphc longline survey
+  ## iphc longline survey ----
   ss3_iphc_indx <- get_iphc_srvy_index(new_year = new_dat_year,
                                        query = query)
   
-  # adf&g trawl survey
+  ## adf&g trawl survey ----
   ss3_adfg_indx <- get_adfg_srvy_index(new_year = new_dat_year,
                                        run_glm = run_glm)
   
-  # larval indices
+  ## larval indices ----
   # note: for time-being, these are entered by hand from emailed data
   ss3_larval_indx <- vroom::vroom(here::here(new_dat_year, 'data', 'raw', 'larval_indices.csv'))
   
-  # put indices in to ss3 data file
-  
+  ## format for ss3 data file ----
   cpue <- ss3_twl_indx %>% 
     tidytable::bind_rows(ss3_ll_indx) %>% 
     tidytable::bind_rows(ss3_iphc_indx) %>% 
@@ -102,11 +101,11 @@ get_data_goa_pcod <- function(new_data = new_data,
   # get length composition data ----
   
   
+
   
   
   
-  
-  # afsc bottom trawl survey
+  ## afsc bottom trawl survey ----
   ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year = new_dat_year,
                                       twl_srvy = twl_srvy,
                                       species = srv_sp_str,
