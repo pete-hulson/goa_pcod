@@ -114,9 +114,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                       iss = FALSE,
                                       nsamp = 100)
 
-  # names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
-  
-  # afsc longline survey
+  ## afsc longline survey ----
   ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year = new_dat_year,
                                     area = sp_area,
                                     species = srv_sp_str, 
@@ -125,8 +123,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     iss = FALSE,
                                     nsamp = 100)
   
-  # names(SRV_LCOMP_SS) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
-  
+
   
   
   

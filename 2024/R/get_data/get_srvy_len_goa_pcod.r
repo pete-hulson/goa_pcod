@@ -1,6 +1,7 @@
-# Function to pull bottom trawl survey pop'n numbers for length composition
-# adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
-# Re-developed in 2024 by p. hulson to link to gap_products tables
+#' Function to pull bottom trawl survey pop'n numbers for length composition
+#' adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
+#' Re-developed in 2024 by p. hulson to link to gap_products tables with dplyr::tbl()
+#' 
 #' @param new_year current assessment year
 #' @param twl_srvy gap survey id number (default = 47 for goa)
 #' @param species gap species code (default = 21720)
@@ -99,9 +100,10 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
 }
 
 
-# Function to pull longline survey length composition
-# adapted/generalized from Steve Barbeaux' files for generating SS files
-# Re-developed in 2024 by p. hulson to link to afscdata package
+#' Function to pull longline survey length composition
+#' adapted/generalized from Steve Barbeaux' files for generating SS files
+#' Re-developed in 2024 by p. hulson to link to afscdata package
+#' 
 #' @param new_year current assessment year
 #' @param area survey area (default = 'goa')
 #' @param species gap species code (default = 21720)
@@ -127,16 +129,9 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
     # query longline survey data and write raw data to folder 
     afscdata::q_lls_rpn_length(year = new_year,
