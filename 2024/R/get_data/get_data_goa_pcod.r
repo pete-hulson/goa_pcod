@@ -1,6 +1,6 @@
-# Originally adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
-# Modified in 2022 and 2023 by Pete Hulson
-# Re-developed in 2024 by Pete Hulson
+#' Originally adapted/generalized from Steve Barbeaux's files for generating SS files for EBS/AI Greenland Turbot
+#' Modified in 2022 and 2023, and then completely re-developed in 2024 by Pete Hulson
+#'  
 #' @param new_data new data file for current assessment year
 #' @param new_file new data file name
 #' @param new_year current assessment year

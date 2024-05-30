@@ -46,9 +46,12 @@ get_catch_goa_pcod <- function(new_year = 9999,
                     adfg_i_harvest_code == 80,
                     fmp_area == 'GOA') %>% 
       dplyr::summarise(catch_mt = sum(cfec_whole_pounds) / 2204.622, 
-                       .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) %>% 
-      dplyr::collect() %>% 
+                       .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) -> adfg_q
+    
+      dplyr::collect(adfg_q) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
+      capture.output(dplyr::show_query(adfg_q), 
+                     file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
 
   }
   

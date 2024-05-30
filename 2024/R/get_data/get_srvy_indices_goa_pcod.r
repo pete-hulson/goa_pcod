@@ -22,32 +22,43 @@ get_twl_srvy_index <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
     # query bottom trawl survey index data
-    q_twl_srvy = readLines(here::here(new_year, 'inst', 'sql', 'twl_srvy_index.sql'))
-    q_twl_srvy = sql_filter(sql_precode = "IN", x = twl_srvy, sql_code = q_twl_srvy, flag = '-- insert survey')
-    q_twl_srvy = sql_filter(sql_precode = "IN", x = species, sql_code = q_twl_srvy, flag = '-- insert species')
-
-    sql_run(conn, q_twl_srvy) %>% 
+    dplyr::tbl(conn, dplyr::sql('gap_products.akfin_biomass')) %>% 
       dplyr::rename_all(tolower) %>% 
-      tidytable::filter(year <= new_year) %>% 
-      tidytable::mutate(area = case_when(strata == 803 ~ 'central',
-                                         strata == 804 ~ 'eastern',
-                                         strata == 805 ~ 'western',
-                                         strata == 99903 ~ 'goa')) %>% 
-      tidytable::select(year, area, biom, biom_var, num, num_var) %>% 
-      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_index.csv'), delim = ",")
+      dplyr::select(year,
+                    survey_definition_id,
+                    area_id,
+                    species_code,
+                    biomass_mt,
+                    biomass_var,
+                    population_count,
+                    population_var) %>% 
+      dplyr::filter(year <= new_year,
+                    survey_definition_id == twl_srvy,
+                    species_code == species,
+                    area_id %in% c(803, 804, 805, 99903)) %>% 
+      dplyr::select(year,
+                    survey = survey_definition_id, 
+                    strata = area_id, 
+                    species_code,
+                    biom = biomass_mt, 
+                    biom_var = biomass_var,
+                    num = population_count,
+                    num_var = population_var) %>%  
+      dplyr::mutate(area = case_when(strata == 803 ~ 'central',
+                                     strata == 804 ~ 'eastern',
+                                     strata == 805 ~ 'western',
+                                     strata == 99903 ~ 'goa')) -> twl_q
     
+    dplyr::collect(twl_q) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_index.csv'), delim = ",")
+    capture.output(dplyr::show_query(twl_q), 
+                   file = here::here(new_year, "data", "sql", "twl_srvy_index_sql.txt"))
+
   }
   
   # format for ss3 ----
