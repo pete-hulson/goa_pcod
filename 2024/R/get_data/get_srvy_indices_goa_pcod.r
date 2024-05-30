@@ -122,16 +122,9 @@ get_ll_srvy_index <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
     # query longline survey data and write raw data to folder 
     afscdata::q_lls_rpn(year = new_year,
@@ -203,26 +196,31 @@ get_iphc_srvy_index <- function(new_year = 9999,
   # query data ----
   if(isTRUE(query)){
     
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    database = 'akfin'
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+    # get connected to akfin
+    db = 'akfin'
+    conn = afscdata::connect(db)
     
     # query iphc longline survey index and write raw data to folder 
-    q_iphc_srvy = readLines(here::here(new_year, 'inst', 'sql', 'iphc_srvy_index.sql'))
     
-    sql_run(conn, q_iphc_srvy) %>% 
-      dplyr::rename_all(tolower) %>%
-      tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
-      tidytable::select(year = survey_year, fmp_sub_area, species, strata = rpn_strata, strata_rpn, boot_sd, boot_bias, n_stations, n_pos_catch) %>% 
+    dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
+      dplyr::rename_all(tolower) %>% 
+      dplyr::filter(species %in% c('Pacific cod'),
+                    fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
+      dplyr::select(year = survey_year, 
+                    fmp_sub_area, 
+                    species, 
+                    strata = rpn_strata, 
+                    strata_rpn, 
+                    boot_sd, 
+                    boot_bias,
+                    n_stations,
+                    n_pos_catch) -> iphc_q
+    
+    dplyr::collect(iphc_q) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
-    
+    capture.output(dplyr::show_query(iphc_q), 
+                   file = here::here(new_year, "data", "sql", "iphc_srvy_index_sql.txt"))
+
   }
   
   # format for ss3 ----
@@ -233,8 +231,6 @@ get_iphc_srvy_index <- function(new_year = 9999,
   # get iphc rpn index
   # note: can not reproduce original cvs as obtained from s. barbeaux in 2021 by bootstrap
   iphc_indx %>% 
-    dplyr::rename_all(tolower) %>%
-    tidytable::filter(fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>%
     tidytable::summarise(obs = sum(strata_rpn),
                          se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
                          .by = c(year)) %>%
