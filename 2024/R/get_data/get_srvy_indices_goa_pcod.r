@@ -1,16 +1,12 @@
-# Function to pull bottom trawl survey adbundance indices (either numbers or biomass)
-# adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
-# Re-developed in 2024 by p. hulson to link to gap_products tables
+#' Function to pull bottom trawl survey adbundance indices (either numbers or biomass)
+#' adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
+#' Re-developed in 2024 by p. hulson to link to gap_products tables
+#' 
 #' @param new_year current assessment year
 #' @param twl_srvy gap survey id number (default = 47 for goa)
 #' @param species gap species code (default = 21720)
 #' @param query switch for whether to run sql query for data (default = FALSE)
 #' @param indx get index for either numbers 'num', or biomass 'biom' (default = NULL)
-#' 
-#' @return
-#' @export get_twl_srvy_index
-#' 
-#' @examples
 #' 
 
 get_twl_srvy_index <- function(new_year = 9999,
@@ -98,19 +94,15 @@ get_twl_srvy_index <- function(new_year = 9999,
 
 }
 
-# Function to pull longline survey abundance indices (either by number, rpn, or by weight, rpw)
-# adapted/generalized from Steve Barbeaux' files for generating SS files
-# Re-developed in 2024 by p. hulson to link to afscdata package
+#' Function to pull longline survey abundance indices (either by number, rpn, or by weight, rpw)
+#' adapted/generalized from Steve Barbeaux' files for generating SS files
+#' Re-developed in 2024 by p. hulson to link to afscdata package
+#' 
 #' @param new_year current assessment year
 #' @param area survey area (default = 'goa')
 #' @param species gap species code (default = 21720)
 #' @param query switch for whether to run sql query for data (default = FALSE)
 #' @param indx get index for either numbers 'num', or weight 'wt' (default = NULL)
-#' 
-#' @return
-#' @export get_ll_srvy_index
-#' 
-#' @examples
 #' 
 
 get_ll_srvy_index <- function(new_year = 9999,
@@ -178,16 +170,12 @@ get_ll_srvy_index <- function(new_year = 9999,
 }
 
 
-# Function to pull iphc longline survey abundance index
-# adapted/generalized from Steve Barbeaux' files for generating SS files
-# Re-developed in 2024 by p. hulson
+#' Function to pull iphc longline survey abundance index
+#' adapted/generalized from Steve Barbeaux' files for generating SS files
+#' Re-developed in 2024 by p. hulson
+#' 
 #' @param new_year current assessment year
 #' @param query switch for whether to run sql query for data (default = FALSE)
-#' 
-#' @return
-#' @export get_iphc_srvy_index
-#' 
-#' @examples
 #' 
 
 get_iphc_srvy_index <- function(new_year = 9999,
@@ -240,16 +228,12 @@ get_iphc_srvy_index <- function(new_year = 9999,
 }
 
 
-# Function to get adf&g trawl survey abundance index
-# adapted/generalized from Steve Barbeaux' files for generating SS files
-# Re-developed in 2024 by p. hulson
+#' Function to get adf&g trawl survey abundance index
+#' adapted/generalized from Steve Barbeaux' files for generating SS files
+#' Re-developed in 2024 by p. hulson
+#' 
 #' @param new_year current assessment year
 #' @param run_glm switch for whether to run delta glm model (default = FALSE)
-#' 
-#' @return
-#' @export get_adfg_srvy_index
-#' 
-#' @examples
 #' 
 
 get_adfg_srvy_index <- function(new_year = 9999,

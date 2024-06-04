@@ -1,15 +1,11 @@
-# Get fishery catch for goa pcod
-# Originally adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
-# Catch function developed in 2024 by Pete Hulson to develop link to afscdata package
+#' Get fishery catch for goa pcod
+#' Originally adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
+#' Re-developed in 2024 by p. hulson to develop link to afscdata package
+#' 
 #' @param new_year current assessment year
 #' @param fsh_sp species label for observer/catch data (default = 'PCOD')
 #' @param fsh_subarea NPFMC subareas (default to goa subareas)
 #' @param query switch for whether to run sql query for data (default = FALSE)
-#' 
-#' @return
-#' @export get_catch_goa_pcod
-#' 
-#' @examples
 #' 
 
 get_catch_goa_pcod <- function(new_year = 9999,

@@ -1,91 +1,138 @@
-
-
-
-
+#' Get fishery catch length composition for goa pcod
+#' Originally adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot
+#' Re-developed in 2024 by p. hulson (too many changes for short note)
+#' 
+#' @param new_year current assessment year
+#' @param fsh_sp_code species code for observer/catch data (default = 202)
+#' @param query switch for whether to run sql query for data (default = FALSE)
+#' @param database switch for which database to pull data from (default = 'akfin')
+#' 
 
 get_catch_len <- function(new_year = 9999,
-                          fsh_sp_code = '202',
-                          fsh_area = 'GOA',
+                          fsh_sp_code = 202,
+                          query = FALSE,
                           database = 'akfin'){
   
   # query data ----
   if(isTRUE(query)){
     
     if(database == 'afsc'){
-      ## Open up data base connections
-      db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-      afsc_user = db_specs$username[db_specs$database == "AFSC"]
-      afsc_pass = db_specs$password[db_specs$database == "AFSC"]
-      
-      conn = DBI::dbConnect(odbc::odbc(),
-                            database,
-                            UID = afsc_user,
-                            PWD = afsc_pass)
-      
+      # get connected to afsc
+      db = 'afsc'
+      conn = afscdata::connect(db)
+
       # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-      q_fsh_len = readLines(here::here(new_year, 'inst', 'sql', 'fsh_lfreq_afsc.sql'))
-      q_fsh_len = sql_filter(sql_precode = "IN", x = fsh_sp_code, sql_code = q_fsh_len, flag = '-- insert species')
-      
-      sql_run(conn, q_fsh_len) %>% 
+      dplyr::tbl(conn, dplyr::sql('obsint.debriefed_haul')) %>% 
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')),
+                          by = c('HAUL_JOIN')) %>% 
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')),
+                          by = c('HAUL_JOIN')) %>% 
         dplyr::rename_all(tolower) %>% 
-        tidytable::mutate(year = year(haul_date),
-                          month = month(haul_date),
-                          season = case_when(month <= 2 ~ 1,
-                                             month %in% c(3, 4) ~ 2,
-                                             month %in% c(5, 6, 7, 8) ~ 3,
-                                             month %in% c(9, 10) ~ 4,
-                                             month >= 11 ~ 5),
-                          quarter = case_when(month <= 3 ~ 1,
-                                              month %in% c(4, 5, 6) ~ 2,
-                                              month %in% c(7, 8, 9) ~ 3,
-                                              month >= 10 ~ 4),
-                          semester = case_when(month <= 4 ~ 1,
-                                               month %in% c(5, 6, 7, 8) ~ 2,
-                                               month >= 9 ~ 3),
-                          gear = case_when(gear %in% c(1, 2, 3, 4) ~ 1,
-                                           gear == 6 ~ 2,
-                                           gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
-        tidytable::filter(year <= new_year) %>%
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
+        dplyr::select(species = species.x,
+                      gear,
+                      cruise = cruise.x,
+                      permit = permit.x,
+                      haul = haul.x,
+                      haul_join,
+                      lon = londd_end.x,
+                      lat = latdd_end.x,
+                      haul_date = haul_date.x,
+                      area = nmfs_area.x,
+                      numb = extrapolated_number,
+                      extrapolated_weight,
+                      length,
+                      frequency) %>% 
+        dplyr::filter(nmfs_area >= 600,
+                      nmfs_area <= 699,
+                      nmfs_area != 670,
+                      species == fsh_sp_code) %>% 
+        dplyr::mutate(haul_join = paste0('H', haul_join),
+                      weight = extrapolated_weight / 1000,
+                      year = lubridate::year(haul_date),
+                      month = lubridate::month(haul_date),
+                      season = dplyr::case_when(month <= 2 ~ 1,
+                                                month %in% c(3, 4) ~ 2,
+                                                month %in% c(5, 6, 7, 8) ~ 3,
+                                                month %in% c(9, 10) ~ 4,
+                                                month >= 11 ~ 5),
+                      quarter = dplyr::case_when(month <= 3 ~ 1,
+                                                 month %in% c(4, 5, 6) ~ 2,
+                                                 month %in% c(7, 8, 9) ~ 3,
+                                                 month >= 10 ~ 4),
+                      semester = dplyr::case_when(month <= 4 ~ 1,
+                                                  month %in% c(5, 6, 7, 8) ~ 2,
+                                                  month >= 9 ~ 3),
+                      gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
+                                              gear == 6 ~ 2,
+                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
+        dplyr::filter(year <= new_year) %>% 
+        dplyr::select(-extrapolated_weight) -> afsc_len
+
+      dplyr::collect(afsc_len) %>% 
+        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_afsc.csv'), delim = ",")
+      capture.output(dplyr::show_query(adfg_q), 
+                     file = here::here(new_year, "data", "sql", "fsh_lfreq_afsc_sql.txt"))
+
     }
     
     if(database == 'akfin'){
 
-    ## Open up data base connections
-    db_specs <- vroom::vroom(here::here(new_year, "database_specs.csv"))
-    akfin_user = db_specs$username[db_specs$database == "AKFIN"]
-    akfin_pass = db_specs$password[db_specs$database == "AKFIN"]
-    
-    conn = DBI::dbConnect(odbc::odbc(),
-                          database,
-                          UID = akfin_user,
-                          PWD = akfin_pass)
+      # get connected to akfin
+      db = 'akfin'
+      conn = afscdata::connect(db)
     
     # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-    q_fsh_len = readLines(here::here(new_year, 'inst', 'sql', 'fsh_lfreq_akfin.sql'))
-    q_fsh_len = sql_filter(sql_precode = "IN", x = fsh_sp_code, sql_code = q_fsh_len, flag = '-- insert species')
-    
-    sql_run(conn, q_fsh_len) %>% 
-      dplyr::rename_all(tolower) %>% 
-      tidytable::mutate(year = year(haul_date),
-                        month = month(haul_date),
-                        season = case_when(month <= 2 ~ 1,
-                                           month %in% c(3, 4) ~ 2,
-                                           month %in% c(5, 6, 7, 8) ~ 3,
-                                           month %in% c(9, 10) ~ 4,
-                                           month >= 11 ~ 5),
-                        quarter = case_when(month <= 3 ~ 1,
-                                            month %in% c(4, 5, 6) ~ 2,
-                                            month %in% c(7, 8, 9) ~ 3,
-                                            month >= 10 ~ 4),
-                        semester = case_when(month <= 4 ~ 1,
-                                             month %in% c(5, 6, 7, 8) ~ 2,
-                                             month >= 9 ~ 3),
-                        gear = case_when(gear %in% c(1, 2, 3, 4) ~ 1,
-                                         gear == 6 ~ 2,
-                                         gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>% 
-      tidytable::filter(year <= new_year) %>% 
-      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
+      dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_HAUL_MV')) %>% 
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_SPCOMP_MV')),
+                          by = c('HAUL_JOIN')) %>% 
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_LENGTH_MV')),
+                          by = c('HAUL_JOIN')) %>% 
+        dplyr::rename_all(tolower) %>% 
+        dplyr::select(species = species.x,
+                      gear,
+                      cruise = cruise.x,
+                      permit = permit.x,
+                      haul = haul.x,
+                      haul_join,
+                      lon = londd_end.x,
+                      lat = latdd_end.x,
+                      haul_date = haul_date.x,
+                      area = nmfs_area.x,
+                      numb = extrapolated_number,
+                      extrapolated_weight,
+                      length,
+                      frequency) %>% 
+        dplyr::filter(nmfs_area >= 600,
+                      nmfs_area <= 699,
+                      nmfs_area != 670,
+                      species == fsh_sp_code) %>% 
+        dplyr::mutate(haul_join = paste0('H', haul_join),
+                      weight = extrapolated_weight / 1000,
+                      year = lubridate::year(haul_date),
+                      month = lubridate::month(haul_date),
+                      season = dplyr::case_when(month <= 2 ~ 1,
+                                                month %in% c(3, 4) ~ 2,
+                                                month %in% c(5, 6, 7, 8) ~ 3,
+                                                month %in% c(9, 10) ~ 4,
+                                                month >= 11 ~ 5),
+                      quarter = dplyr::case_when(month <= 3 ~ 1,
+                                                 month %in% c(4, 5, 6) ~ 2,
+                                                 month %in% c(7, 8, 9) ~ 3,
+                                                 month >= 10 ~ 4),
+                      semester = dplyr::case_when(month <= 4 ~ 1,
+                                                  month %in% c(5, 6, 7, 8) ~ 2,
+                                                  month >= 9 ~ 3),
+                      gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
+                                              gear == 6 ~ 2,
+                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
+        dplyr::filter(year <= new_year) %>% 
+        dplyr::select(-extrapolated_weight) -> akfin_len
+      
+      dplyr::collect(akfin_len) %>% 
+        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_akfin.csv'), delim = ",")
+      capture.output(dplyr::show_query(adfg_q), 
+                     file = here::here(new_year, "data", "sql", "fsh_lfreq_akfin_sql.txt"))
+
     }
   }
   

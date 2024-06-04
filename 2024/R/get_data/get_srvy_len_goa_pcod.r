@@ -10,11 +10,6 @@
 #' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
 #' @param nsamp value or vector for input sample size (default = 100)
 #' 
-#' @return
-#' @export get_twl_srvy_lcomp
-#' 
-#' @examples
-#' 
 
 get_twl_srvy_lcomp <- function(new_year = 9999,
                                twl_srvy = 47,
@@ -111,11 +106,6 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
 #' @param bins user defined length bins (min/max for the length bin, default = NULL)
 #' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
 #' @param nsamp value or vector for input sample size (default = 100)
-#' 
-#' @return
-#' @export get_ll_srvy_lcomp
-#' 
-#' @examples
 #' 
 
 get_ll_srvy_lcomp <- function(new_year = 9999,
