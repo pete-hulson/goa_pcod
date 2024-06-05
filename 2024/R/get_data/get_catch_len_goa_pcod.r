@@ -23,33 +23,33 @@ get_catch_len <- function(new_year = 9999,
 
       # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
       dplyr::tbl(conn, dplyr::sql('obsint.debriefed_haul')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')),
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')) %>% 
+                            dplyr::filter(SPECIES == fsh_sp_code),
                           by = c('HAUL_JOIN')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')),
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')) %>% 
+                            dplyr::filter(SPECIES == fsh_sp_code),
                           by = c('HAUL_JOIN')) %>% 
         dplyr::rename_all(tolower) %>% 
-        dplyr::select(species = species.x,
-                      gear,
+        dplyr::select(gear,
+                      haul_join,
+                      numb = extrapolated_number,
                       cruise = cruise.x,
                       permit = permit.x,
                       haul = haul.x,
-                      haul_join,
+                      weight = extrapolated_weight,
+                      length,
+                      freq = frequency,
                       lon = londd_end.x,
                       lat = latdd_end.x,
-                      haul_date = haul_date.x,
-                      area = nmfs_area.x,
-                      numb = extrapolated_number,
-                      extrapolated_weight,
-                      length,
-                      frequency) %>% 
-        dplyr::filter(nmfs_area >= 600,
-                      nmfs_area <= 699,
-                      nmfs_area != 670,
-                      species == fsh_sp_code) %>% 
+                      hday = haul_date.x,
+                      area = nmfs_area.x) %>% 
+        dplyr::filter(area >= 600,
+                      area <= 699,
+                      area != 670) %>% 
         dplyr::mutate(haul_join = paste0('H', haul_join),
-                      weight = extrapolated_weight / 1000,
-                      year = lubridate::year(haul_date),
-                      month = lubridate::month(haul_date),
+                      weight = weight / 1000,
+                      year = lubridate::year(hday),
+                      month = lubridate::month(hday),
                       season = dplyr::case_when(month <= 2 ~ 1,
                                                 month %in% c(3, 4) ~ 2,
                                                 month %in% c(5, 6, 7, 8) ~ 3,
@@ -64,12 +64,10 @@ get_catch_len <- function(new_year = 9999,
                                                   month >= 9 ~ 3),
                       gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                               gear == 6 ~ 2,
-                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
-        dplyr::filter(year <= new_year) %>% 
-        dplyr::select(-extrapolated_weight) -> afsc_len
+                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) -> afsc_len
 
       dplyr::collect(afsc_len) %>% 
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_afsc.csv'), delim = ",")
+        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
       capture.output(dplyr::show_query(adfg_q), 
                      file = here::here(new_year, "data", "sql", "fsh_lfreq_afsc_sql.txt"))
 
@@ -82,34 +80,34 @@ get_catch_len <- function(new_year = 9999,
       conn = afscdata::connect(db)
     
     # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-      dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_HAUL_MV')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_SPCOMP_MV')),
+      dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
+                            dplyr::filter(SPECIES == fsh_sp_code),
                           by = c('HAUL_JOIN')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('NORPAC.DEBRIEFED_LENGTH_MV')),
+        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_length_mv')) %>% 
+                            dplyr::filter(SPECIES == fsh_sp_code),
                           by = c('HAUL_JOIN')) %>% 
         dplyr::rename_all(tolower) %>% 
-        dplyr::select(species = species.x,
-                      gear,
+        dplyr::select(gear,
+                      haul_join,
+                      numb = extrapolated_number,
                       cruise = cruise.x,
                       permit = permit.x,
                       haul = haul.x,
-                      haul_join,
+                      weight = extrapolated_weight,
+                      length,
+                      freq = frequency,
                       lon = londd_end.x,
                       lat = latdd_end.x,
-                      haul_date = haul_date.x,
-                      area = nmfs_area.x,
-                      numb = extrapolated_number,
-                      extrapolated_weight,
-                      length,
-                      frequency) %>% 
-        dplyr::filter(nmfs_area >= 600,
-                      nmfs_area <= 699,
-                      nmfs_area != 670,
-                      species == fsh_sp_code) %>% 
+                      hday = haul_date.x,
+                      area = nmfs_area.x) %>% 
+        dplyr::filter(area >= 600,
+                      area <= 699,
+                      area != 670) %>% 
         dplyr::mutate(haul_join = paste0('H', haul_join),
-                      weight = extrapolated_weight / 1000,
-                      year = lubridate::year(haul_date),
-                      month = lubridate::month(haul_date),
+                      weight = weight / 1000,
+                      year = lubridate::year(hday),
+                      month = lubridate::month(hday),
                       season = dplyr::case_when(month <= 2 ~ 1,
                                                 month %in% c(3, 4) ~ 2,
                                                 month %in% c(5, 6, 7, 8) ~ 3,
@@ -125,11 +123,10 @@ get_catch_len <- function(new_year = 9999,
                       gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                               gear == 6 ~ 2,
                                               gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
-        dplyr::filter(year <= new_year) %>% 
-        dplyr::select(-extrapolated_weight) -> akfin_len
+        dplyr::filter(year <= new_year) -> akfin_len
       
       dplyr::collect(akfin_len) %>% 
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_akfin.csv'), delim = ",")
+        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
       capture.output(dplyr::show_query(adfg_q), 
                      file = here::here(new_year, "data", "sql", "fsh_lfreq_akfin_sql.txt"))
 
