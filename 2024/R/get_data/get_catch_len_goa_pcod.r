@@ -42,12 +42,15 @@ get_catch_len <- function(new_year = 9999,
                       freq = frequency,
                       lon = londd_end.x,
                       lat = latdd_end.x,
-                      hday = haul_date.x,
+                      hday = haul_date.y,
                       area = nmfs_area.x) %>% 
         dplyr::filter(area >= 600,
                       area <= 699,
                       area != 670) %>% 
-        dplyr::mutate(haul_join = paste0('H', haul_join),
+        dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
+
+      dplyr::collect(afsc_len) %>% 
+        dplyr::mutate(hday = hday + lubridate::hours('8'),
                       weight = weight / 1000,
                       year = lubridate::year(hday),
                       month = lubridate::month(hday),
@@ -65,10 +68,9 @@ get_catch_len <- function(new_year = 9999,
                                                    month >= 9 ~ 3),
                       gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                               gear == 6 ~ 2,
-                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) -> afsc_len
-
-      dplyr::collect(afsc_len) %>% 
+                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>% 
         vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
+      
       capture.output(dplyr::show_query(afsc_len), 
                      file = here::here(new_year, "data", "sql", "fsh_lfreq_afsc_sql.txt"))
 
@@ -103,8 +105,11 @@ get_catch_len <- function(new_year = 9999,
                       area = nmfs_area.x) %>% 
         dplyr::filter(area >= 600,
                       area <= 699,
-                      area != 670) %>% 
+                      area != 670) -> akfin_len 
+      
+      dplyr::collect(akfin_len) %>% 
         dplyr::mutate(haul_join = paste0('H', haul_join),
+                      hday = hday + lubridate::hours('8'),
                       weight = weight / 1000,
                       year = lubridate::year(hday),
                       month = lubridate::month(hday),
@@ -123,10 +128,9 @@ get_catch_len <- function(new_year = 9999,
                       gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 1,
                                               gear == 6 ~ 2,
                                               gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) %>%  
-        dplyr::filter(year <= new_year) -> akfin_len
-      
-      dplyr::collect(akfin_len) %>% 
+        dplyr::filter(year <= new_year) %>% 
         vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
+      
       capture.output(dplyr::show_query(akfin_len), 
                      file = here::here(new_year, "data", "sql", "fsh_lfreq_akfin_sql.txt"))
     }
@@ -174,12 +178,36 @@ get_catch_len <- function(new_year = 9999,
   
   # compute length comps ----
   
+  # for comparison with old code 
+  fsh_len %>% 
+    tidytable::filter(year <= 2022) -> fsh_len
+  
+  
+  Dspcomp <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv')) %>% 
+    tidytable::filter(YEAR <= 2022)
+  
+  Dspcomp<- data.table(Dspcomp)
+  
+  
+  
+  
+  
   # get gear and haul description
   fsh_len %>% 
     tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
                                                    gear == 2 ~ "pot",
                                                    gear == 3 ~ "longline"),
                       haul1 = paste(cruise, permit, haul, sep = "_")) -> .fsh_len
+  
+  
+  Dspcomp$GEAR1<-"TRAWL"
+  Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
+  Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
+  Dspcomp$GEAR<-Dspcomp$GEAR1
+  Dspcomp$HAUL1<-as.character(paste(Dspcomp$CRUISE,Dspcomp$PERMIT,Dspcomp$HAUL,sep="_"))
+  
+  
+  
   
   # number of hauls by year and gear
   .fsh_len %>% 
@@ -191,12 +219,20 @@ get_catch_len <- function(new_year = 9999,
                          .by = c(year, gear_desc, area, trimester)) -> hja
   
   
+  
+  HJ <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR"]
+  HJA <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR,AREA,TRIMESTER"]
+  
+  
+  
+  
+  
   .fsh_len %>% 
     # get correct week end date
     tidytable::mutate(weekday = weekdays(hday),
                       wed = lubridate::ceiling_date(hday, "week"),
-                      plus = dplyr::case_when(weekday == "Sunday" ~ 6,
-                                              weekday != "Sunday" ~ -1),
+                      plus = dplyr::case_when(weekdays(hday) == "Sunday" ~ 6,
+                                              weekdays(hday) != "Sunday" ~ -1),
                       yr = lubridate::year(hday),
                       next_saturday = dplyr::case_when(yr >= 1993 ~ date(wed) + plus,
                                                        yr < 1993 ~ date(wed)),
@@ -204,40 +240,12 @@ get_catch_len <- function(new_year = 9999,
                       wed2 = dplyr::case_when(yr != yr2 ~ date(paste0(yr, '-12-31')),
                                               yr == yr2 ~ next_saturday)) %>% 
     tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
-    tidytable::rename(wed = wed2) -> t 
-    # get 
-  
-  
-  t %>% 
-    tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-    filter(n_hl < 10) %>% 
-    summarise(test1 = length(n_hl), .by = year) %>% 
-    left_join(t %>% 
-                tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-                summarise(nhls = length(n_hl), .by = year)) %>% 
-    mutate(prop = test1 / nhls) %>% 
-    data.table
-  
-  
+    tidytable::rename(wed = wed2) %>% 
+    # truncate area to nearest 10
+    tidytable::mutate(area = trunc(area / 10) * 10) -> .fsh_len_full
 
   
-  
-  Dspcomp <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv'))
-  
-  Dspcomp<- data.table(Dspcomp)
-  
-  Dspcomp$GEAR1<-"TRAWL"
-  Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
-  Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
-  Dspcomp$GEAR<-Dspcomp$GEAR1
-  
-  
-  HJ <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR"]
-  HJA <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR,AREA,TRIMESTER"]
-  
-  Dspcomp$HAUL1<-as.character(paste(Dspcomp$CRUISE,Dspcomp$PERMIT,Dspcomp$HAUL,sep="_"))
-  
-  
+
   WED<-function(x=Dspcomp$HDAY[1])
   { y<-data.table(
     weekday=weekdays(x),
@@ -254,6 +262,28 @@ get_catch_len <- function(new_year = 9999,
   
   Dspcomp$WED<-WED(Dspcomp$HDAY)
   
+  Dspcomp$AREA<-trunc(Dspcomp$AREA/10)*10
+  
+  
+
+  
+  # code to filter hauls with less than 10 samples (save for later)
+  # .fsh_len_full %>% 
+  #   tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
+  #   filter(n_hl < 10) %>% 
+  #   summarise(test1 = length(n_hl), .by = year) %>% 
+  #   left_join(t %>% 
+  #               tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
+  #               summarise(nhls = length(n_hl), .by = year)) %>% 
+  #   mutate(prop = test1 / nhls) %>% 
+  #   data.table
+  
+  .fsh_len_full %>% 
+    tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
+    tidytable::filter(n_hl >= 10) %>% 
+    tidytable::select(-n_hl) -> .fsh_len_full
+
+  
   t5<-Dspcomp[,list(T2FREQ=sum(FREQ)),by=c('HAUL_JOIN','NUMB')]
   t5$KEEP=1
   t5[T2FREQ<10]$KEEP<-0
@@ -261,8 +291,40 @@ get_catch_len <- function(new_year = 9999,
   
   Dspcomp<-merge(t6,Dspcomp,all.x=T)
   
-  Dspcomp$AREA<-trunc(Dspcomp$AREA/10)*10
+
   
+  
+  
+
+  # number of fish by year, week, area, haul, gear and length
+  .fsh_len_full %>% 
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
+    # get individual haul extrapolated numbers of fish
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc))) %>% 
+    # get total observed numbers of fish per year, week, area, and gear
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                tfreq = sum(hfreq),
+                                                .by = c(year, wed, trimester, area, gear, gear_desc))) %>% 
+    # for each length bin, haul, gear and year  calculated the proportion of fish 
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>% 
+    tidytable::filter(year >= 1991) %>% 
+    tidytable::arrange(gear_desc, year, length) %>% 
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp
+  
+  
+
+  
+  
+
   x<-Dspcomp[,list(N1=min(NUMB), HFREQ=sum(FREQ)),by=c("YEAR,WED,TRIMESTER,AREA,HAUL1,GEAR")] ## get individual haul extrapolated numbers of fish
   y<-x[,list(N2=sum(N1),TFREQ=sum(HFREQ)),by=c("YEAR,WED,AREA,TRIMESTER,GEAR")]  ## get total observed numbers of fish per year, area,state,  and gear
   z<-Dspcomp[,list(FREQ=sum(FREQ)),by=c("YEAR,WED,TRIMESTER,AREA,HAUL1,LENGTH,GEAR")] ## number of fish by length bin, haul, gear and year
@@ -274,17 +336,47 @@ get_catch_len <- function(new_year = 9999,
   z4<-z4[order(GEAR,YEAR,LENGTH),]
   D_SPCOMP<-z4[,list(PROP=sum(PROP)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR,LENGTH")]
   
+
+  
+  
+  
+  
+  
+  
+  
+  fsh_comp %>% 
+    tidytable::summarise(p1 = sum(prop),
+                         .by = c(year, gear, gear_desc, area, trimester, length)) %>% 
+    tidytable::mutate(tot = sum(p1),
+                      .by = c(year, gear, gear_desc, area, trimester)) %>% 
+    tidytable::mutate(prop = p1/ tot) %>% 
+    arrange(year, gear_desc, length) -> fsh_comp_161
+  
+  
+  tidytable::expand_grid(year = sort(unique(fsh_comp_161$year)),
+                         gear = unique(fsh_comp_161$gear_desc),
+                         area = unique(fsh_comp_161$area),
+                         trimester = c(1:3),
+                         length = seq(1,117,1)) -> .grid
+  
+  
+  
+  
+  
   D_SPCOMP_161<-D_SPCOMP[,list(P1=sum(PROP)),by=c("YEAR,GEAR,AREA,TRIMESTER,LENGTH")]
   D_SPCOMP_161x<-D_SPCOMP[,list(tot=sum(PROP)),by=c("YEAR,GEAR,AREA,TRIMESTER")]
   D_SPCOMP_161<-merge(D_SPCOMP_161,D_SPCOMP_161x,all=T)
   D_SPCOMP_161$PROP<-D_SPCOMP_161$P1/D_SPCOMP_161$tot
   
-  grid<-data.table(expand.grid(YEAR=sort(unique(D_SPCOMP_161$YEAR)),GEAR=unique(D_SPCOMP_161$GEAR),AREA=unique(D_SPCOMP_161$AREA),TRIMESTER=c(1:3),LENGTH=seq(1,117,1)))
+  grid<-data.table(expand.grid(YEAR=sort(unique(D_SPCOMP_161$YEAR)),
+                               GEAR=unique(D_SPCOMP_161$GEAR),
+                               AREA=unique(D_SPCOMP_161$AREA),
+                               TRIMESTER=c(1:3),
+                               LENGTH=seq(1,117,1)))
   
   
   
-  
-  
+
   
   
   
@@ -376,8 +468,21 @@ LENGTH_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=new_yea
                 "AND OBSINT.DEBRIEFED_SPCOMP.SPECIES  in  (",fsh_sp_str,")",
                 "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str,")",sep="")
   
+  Dspcomp=sqlQuery(AFSC,test)
+  Dspcomp2=data.table(Dspcomp)
+  
+  Dspcomp %>% 
+    dplyr::glimpse()
+  head(Dspcomp)
+  
+  Dspcomp2 %>% 
+    dplyr::glimpse()
+  head(Dspcomp2)
+  
+  Dspcomp2$HDAY
+  
   Dspcomp=data.table(sqlQuery(AFSC,test))
-  vroom::vroom_write(Dspcomp, here::here(ly, 'data', 'raw', 'fish_lencomp_wstate.csv'), delim = ",")
+  vroom::vroom_write(Dspcomp, here::here(ly, 'data', 'raw', 'fish_lencomp_wstate2.csv'), delim = ",")
   
   Dspcomp$GEAR1<-"TRAWL"
   Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
