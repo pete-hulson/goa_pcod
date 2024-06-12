@@ -136,9 +136,170 @@ get_catch_len <- function(new_year = 9999,
     }
   }
 
+  
+  
+  
+  
+  
+  # get connected to afsc
+  db = 'afsc'
+  conn = afscdata::connect(db)
+  
+  # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
+  dplyr::tbl(conn, dplyr::sql('obsint.debriefed_haul')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')) %>% 
+                        dplyr::filter(SPECIES == fsh_sp_code),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')) %>% 
+                        dplyr::filter(SPECIES == fsh_sp_code),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(gear,
+                  haul_join,
+                  numb = extrapolated_number,
+                  cruise = cruise.x,
+                  permit = permit.x,
+                  haul = haul.x,
+                  weight = extrapolated_weight,
+                  length,
+                  freq = frequency,
+                  lon = londd_end.x,
+                  lat = latdd_end.x,
+                  hday = haul_date.y,
+                  area = nmfs_area.x) %>% 
+    dplyr::filter(area >= 600,
+                  area <= 699,
+                  area != 670) %>% 
+    dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
+  
+  dplyr::collect(afsc_len) %>% 
+    dplyr::mutate(weight = weight / 1000,
+                  year = lubridate::year(hday),
+                  month = lubridate::month(hday),
+                  season = dplyr::case_when(month <= 2 ~ 1,
+                                            month %in% c(3, 4) ~ 2,
+                                            month %in% c(5, 6, 7, 8) ~ 3,
+                                            month %in% c(9, 10) ~ 4,
+                                            month >= 11 ~ 5),
+                  quarter = dplyr::case_when(month <= 3 ~ 1,
+                                             month %in% c(4, 5, 6) ~ 2,
+                                             month %in% c(7, 8, 9) ~ 3,
+                                             month >= 10 ~ 4),
+                  trimester = dplyr::case_when(month <= 4 ~ 1,
+                                               month %in% c(5, 6, 7, 8) ~ 2,
+                                               month >= 9 ~ 3),
+                  gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 0,
+                                          gear == 6 ~ 2,
+                                          gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) -> fsh_lfreq1
+  
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_afsc.csv'), delim = ",")
+  
+
+  
+  AFSC = odbcConnect("AFSC", 
+                     'hulsonp', 
+                     'Bri3+Fin2+Liam1', 
+                     believeNRows=FALSE)
+  
+  test <- paste("SELECT \n ",
+                "CASE \n ",
+                "  WHEN OBSINT.DEBRIEFED_LENGTH.GEAR in (1,2,3,4) \n ",
+                "  THEN 0\n ",
+                "  WHEN OBSINT.DEBRIEFED_LENGTH.GEAR in 6 \n ",
+                "  THEN 2 \n ",
+                "  WHEN OBSINT.DEBRIEFED_LENGTH.GEAR in (5,7,9,10,11,68,8) \n ",
+                "  THEN 3 \n ",
+                "END                                              AS GEAR, \n ",
+                "CONCAT('H',TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_JOIN))       AS HAUL_JOIN, \n ",
+                "TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') AS MONTH, \n ",
+                "CASE \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') <= 2 \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') > 2 \n ",
+                "  AND TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') <= 4 \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') > 4 \n ",
+                "  AND TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') <= 8 \n ",
+                "  THEN 3 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') > 8 \n ",
+                "  AND TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') <= 10 \n ",
+                "  THEN 4 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') > 10 \n ",
+                "  THEN 5 \n ",
+                "END                                                AS SEASON, \n ",
+                "CASE \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (1,2,3) \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (4,5,6) \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (7,8,9) \n ",
+                "  THEN 3 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (10,11,12) \n ",
+                "  THEN 4 \n ",
+                "END                                                AS QUARTER, \n ",
+                "CASE \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (1,2,3,4) \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (5,6,7,8) \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'MM') in (9,10,11,12) \n ",
+                "  THEN 3 \n ",
+                "END                                                AS TRIMESTER, \n ",
+                "TO_CHAR(OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE, 'YYYY') AS YEAR, \n ",
+                "OBSINT.DEBRIEFED_SPCOMP.EXTRAPOLATED_NUMBER        AS NUMB, \n ",
+                "OBSINT.DEBRIEFED_SPCOMP.CRUISE        AS CRUISE, \n ",
+                "OBSINT.DEBRIEFED_SPCOMP.PERMIT        AS PERMIT, \n ",
+                "OBSINT.DEBRIEFED_SPCOMP.HAUL        AS HAUL, \n ",
+                "OBSINT.DEBRIEFED_SPCOMP.EXTRAPOLATED_WEIGHT / 1000 AS WEIGHT, \n ",
+                "OBSINT.DEBRIEFED_LENGTH.LENGTH                     AS LENGTH, \n ",
+                "OBSINT.DEBRIEFED_LENGTH.FREQUENCY                  AS FREQ, \n ",
+                "OBSINT.DEBRIEFED_HAUL.LONDD_END AS LON, \n",
+                "OBSINT.DEBRIEFED_HAUL.LATDD_END AS LAT, \n",
+                "OBSINT.DEBRIEFED_SPCOMP.HAUL_DATE AS HDAY, \n",
+                "OBSINT.DEBRIEFED_HAUL.NMFS_AREA AS AREA \n",
+                "FROM OBSINT.DEBRIEFED_HAUL \n ",
+                "INNER JOIN OBSINT.DEBRIEFED_SPCOMP \n ",
+                "ON OBSINT.DEBRIEFED_HAUL.HAUL_JOIN = OBSINT.DEBRIEFED_SPCOMP.HAUL_JOIN \n ",
+                "INNER JOIN OBSINT.DEBRIEFED_LENGTH \n ",
+                "ON OBSINT.DEBRIEFED_HAUL.HAUL_JOIN = OBSINT.DEBRIEFED_LENGTH.HAUL_JOIN \n ",
+                "WHERE OBSINT.DEBRIEFED_HAUL.NMFS_AREA BETWEEN 600 AND 699 \n",
+                "AND OBSINT.DEBRIEFED_LENGTH.NMFS_AREA != 670 \n",
+                "AND OBSINT.DEBRIEFED_SPCOMP.SPECIES  in  (",fsh_sp_str,")",
+                "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str,")",sep="")
+  
+  Dspcomp=data.table(sqlQuery(AFSC,test))
+  vroom::vroom_write(Dspcomp, here::here(ly, 'data', 'raw', 'fish_lencomp_wstate2.csv'), delim = ",")
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # read data ----
+  
+  ## length freq data ----
   fsh_len <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'))
 
+  ## catch data ----
   vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>% 
     tidytable::mutate(month = lubridate::month(week_end_date),
                       season = dplyr::case_when(month <= 2 ~ 1,
@@ -178,56 +339,15 @@ get_catch_len <- function(new_year = 9999,
   
   # compute length comps ----
   
-  # for comparison with old code 
+  ## without filtering to >10 lengths per haul ----
   fsh_len %>% 
-    tidytable::filter(year <= 2022) -> fsh_len
-  
-  
-  Dspcomp <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv')) %>% 
-    tidytable::filter(YEAR <= 2022)
-  
-  Dspcomp<- data.table(Dspcomp)
-  
-  
-  
-  
-  
-  # get gear and haul description
-  fsh_len %>% 
+    # filter to years post-1991
+    tidytable::filter(year >= 1991) %>%
+    # gear and unique cruise-permit-haul description
     tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
                                                    gear == 2 ~ "pot",
                                                    gear == 3 ~ "longline"),
-                      haul1 = paste(cruise, permit, haul, sep = "_")) -> .fsh_len
-  
-  
-  Dspcomp$GEAR1<-"TRAWL"
-  Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
-  Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
-  Dspcomp$GEAR<-Dspcomp$GEAR1
-  Dspcomp$HAUL1<-as.character(paste(Dspcomp$CRUISE,Dspcomp$PERMIT,Dspcomp$HAUL,sep="_"))
-  
-  
-  
-  
-  # number of hauls by year and gear
-  .fsh_len %>% 
-    tidytable::summarise(nsamp = length(unique(haul_join)),
-                         .by = c(year, gear_desc)) -> hj
-  # number of hauls by year, gear, area, and trimester
-  .fsh_len %>% 
-    tidytable::summarise(nsamp = length(unique(haul_join)),
-                         .by = c(year, gear_desc, area, trimester)) -> hja
-  
-  
-  
-  HJ <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR"]
-  HJA <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR,AREA,TRIMESTER"]
-  
-  
-  
-  
-  
-  .fsh_len %>% 
+                      haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
     # get correct week end date
     tidytable::mutate(weekday = weekdays(hday),
                       wed = lubridate::ceiling_date(hday, "week"),
@@ -241,11 +361,180 @@ get_catch_len <- function(new_year = 9999,
                                               yr == yr2 ~ next_saturday)) %>% 
     tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
     tidytable::rename(wed = wed2) %>% 
-    # truncate area to nearest 10
-    tidytable::mutate(area = trunc(area / 10) * 10) -> .fsh_len_full
-
+    # truncate area to nearest 10 (e.g., 649 becomes 640)
+    tidytable::mutate(area = trunc(area / 10) * 10) %>% 
+    # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
+    # join number of fish by year, week, area, haul, and gear (so, number of total fish sampled per haul)
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc))) %>% 
+    # join number of fish by year, week, area, and gear
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                tfreq = sum(hfreq),
+                                                .by = c(year, wed, trimester, area, gear, gear_desc))) %>% 
+    # proportion of haul catch-at-length by gear-area-week observed catch
+    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>% 
+    # summarise to length composition by week-area-gear
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wofltr
+  
   
 
+  ## with filtering to >10 lengths per haul ----
+  fsh_len %>% 
+    # gear and unique cruise-permit-haul description
+    tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
+                                                   gear == 2 ~ "pot",
+                                                   gear == 3 ~ "longline"),
+                      haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
+    # get correct week end date
+    tidytable::mutate(weekday = weekdays(hday),
+                      wed = lubridate::ceiling_date(hday, "week"),
+                      plus = dplyr::case_when(weekdays(hday) == "Sunday" ~ 6,
+                                              weekdays(hday) != "Sunday" ~ -1),
+                      yr = lubridate::year(hday),
+                      next_saturday = dplyr::case_when(yr >= 1993 ~ date(wed) + plus,
+                                                       yr < 1993 ~ date(wed)),
+                      yr2 = lubridate::year(next_saturday),
+                      wed2 = dplyr::case_when(yr != yr2 ~ date(paste0(yr, '-12-31')),
+                                              yr == yr2 ~ next_saturday)) %>% 
+    tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
+    tidytable::rename(wed = wed2) %>% 
+    # truncate area to nearest 10 (e.g., 649 becomes 640)
+    tidytable::mutate(area = trunc(area / 10) * 10) %>% 
+    # filter hauls w/ >10 lengths observed
+    tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
+    tidytable::filter(n_hl >= 10) %>% 
+    tidytable::select(-n_hl) %>% 
+    # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
+    # join number of fish by year, week, area, haul, and gear (so, number of total fish sampled per haul)
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc))) %>% 
+    # join number of fish by year, week, area, and gear
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                tfreq = sum(hfreq),
+                                                .by = c(year, wed, trimester, area, gear, gear_desc))) %>% 
+    # proportion of haul catch-at-length by gear-area-week observed catch
+    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>% 
+    # filter to years post-1991
+    tidytable::filter(year >= 1991) %>%
+    # summarise to length composition by week-area-gear
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wfltr
+  
+  
+  
+  
+  
+  # summarise number of hauls by year and gear
+  fsh_len %>%
+    tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
+                                                   gear == 2 ~ "pot",
+                                                   gear == 3 ~ "longline")) %>% 
+    tidytable::summarise(nsamp = length(unique(haul_join)),
+                         .by = c(year, gear, gear_desc)) -> hj
+  
+  # summarise number of hauls by year, gear, area, and trimester
+  fsh_len %>%
+    tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
+                                                   gear == 2 ~ "pot",
+                                                   gear == 3 ~ "longline")) %>% 
+    tidytable::summarise(nsamp = length(unique(haul_join)),
+                         .by = c(year, gear_desc, area, trimester)) -> hja
+  
+  
+  
+  
+  
+  
+  # for comparison with old code ----
+  
+  ## filter years ----
+  fsh_len %>% 
+    tidytable::filter(year <= 2022) -> fsh_len
+  
+  
+  Dspcomp <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv')) %>% 
+    tidytable::filter(YEAR <= 2022)
+  
+  Dspcomp<- data.table(Dspcomp)
+
+  ## tidy way ----
+  fsh_len %>% 
+    # gear and unique cruise-permit-haul description
+    tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
+                                                   gear == 2 ~ "pot",
+                                                   gear == 3 ~ "longline"),
+                      haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
+    # get correct week end date
+    tidytable::mutate(weekday = weekdays(hday),
+                      wed = lubridate::ceiling_date(hday, "week"),
+                      plus = dplyr::case_when(weekdays(hday) == "Sunday" ~ 6,
+                                              weekdays(hday) != "Sunday" ~ -1),
+                      yr = lubridate::year(hday),
+                      next_saturday = dplyr::case_when(yr >= 1993 ~ date(wed) + plus,
+                                                       yr < 1993 ~ date(wed)),
+                      yr2 = lubridate::year(next_saturday),
+                      wed2 = dplyr::case_when(yr != yr2 ~ date(paste0(yr, '-12-31')),
+                                              yr == yr2 ~ next_saturday)) %>% 
+    tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
+    tidytable::rename(wed = wed2) %>% 
+    # truncate area to nearest 10 (e.g., 649 becomes 640)
+    tidytable::mutate(area = trunc(area / 10) * 10) %>% 
+    # filter hauls w/ >10 lengths observed
+    tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
+    tidytable::filter(n_hl >= 10) %>% 
+    tidytable::select(-n_hl) %>% 
+    # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
+    # join number of fish by year, week, area, haul, and gear (so, number of total fish sampled per haul)
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc))) %>% 
+    # join number of fish by year, week, area, and gear
+    tidytable::left_join(.fsh_len_full %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                tfreq = sum(hfreq),
+                                                .by = c(year, wed, trimester, area, gear, gear_desc))) %>% 
+    # proportion of haul catch-at-length by gear-area-week observed catch
+    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>% 
+    # filter to years post-1991
+    tidytable::filter(year >= 1991) %>%
+    # summarise to length composition by week-area-gear
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wfltr
+  
+
+  ## old way ----
+  Dspcomp$GEAR1<-"TRAWL"
+  Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
+  Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
+  Dspcomp$GEAR<-Dspcomp$GEAR1
+  Dspcomp$HAUL1<-as.character(paste(Dspcomp$CRUISE,Dspcomp$PERMIT,Dspcomp$HAUL,sep="_"))
+  
   WED<-function(x=Dspcomp$HDAY[1])
   { y<-data.table(
     weekday=weekdays(x),
@@ -259,31 +548,10 @@ get_catch_len <- function(new_year = 9999,
   return(y$next_saturday)
   }
   
-  
   Dspcomp$WED<-WED(Dspcomp$HDAY)
   
   Dspcomp$AREA<-trunc(Dspcomp$AREA/10)*10
-  
-  
 
-  
-  # code to filter hauls with less than 10 samples (save for later)
-  # .fsh_len_full %>% 
-  #   tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-  #   filter(n_hl < 10) %>% 
-  #   summarise(test1 = length(n_hl), .by = year) %>% 
-  #   left_join(t %>% 
-  #               tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-  #               summarise(nhls = length(n_hl), .by = year)) %>% 
-  #   mutate(prop = test1 / nhls) %>% 
-  #   data.table
-  
-  .fsh_len_full %>% 
-    tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-    tidytable::filter(n_hl >= 10) %>% 
-    tidytable::select(-n_hl) -> .fsh_len_full
-
-  
   t5<-Dspcomp[,list(T2FREQ=sum(FREQ)),by=c('HAUL_JOIN','NUMB')]
   t5$KEEP=1
   t5[T2FREQ<10]$KEEP<-0
@@ -291,40 +559,6 @@ get_catch_len <- function(new_year = 9999,
   
   Dspcomp<-merge(t6,Dspcomp,all.x=T)
   
-
-  
-  
-  
-
-  # number of fish by year, week, area, haul, gear and length
-  .fsh_len_full %>% 
-    tidytable::summarise(freq = sum(freq),
-                         .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
-    # get individual haul extrapolated numbers of fish
-    tidytable::left_join(.fsh_len_full %>% 
-                           tidytable::summarise(n1 = min(numb),
-                                                hfreq = sum(freq),
-                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc))) %>% 
-    # get total observed numbers of fish per year, week, area, and gear
-    tidytable::left_join(.fsh_len_full %>% 
-                           tidytable::summarise(n1 = min(numb),
-                                                hfreq = sum(freq),
-                                                .by = c(year, wed, trimester, area, haul1, gear, gear_desc)) %>% 
-                           tidytable::summarise(n2 = sum(n1),
-                                                tfreq = sum(hfreq),
-                                                .by = c(year, wed, trimester, area, gear, gear_desc))) %>% 
-    # for each length bin, haul, gear and year  calculated the proportion of fish 
-    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>% 
-    tidytable::filter(year >= 1991) %>% 
-    tidytable::arrange(gear_desc, year, length) %>% 
-    tidytable::summarise(prop = sum(prop),
-                         .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp
-  
-  
-
-  
-  
-
   x<-Dspcomp[,list(N1=min(NUMB), HFREQ=sum(FREQ)),by=c("YEAR,WED,TRIMESTER,AREA,HAUL1,GEAR")] ## get individual haul extrapolated numbers of fish
   y<-x[,list(N2=sum(N1),TFREQ=sum(HFREQ)),by=c("YEAR,WED,AREA,TRIMESTER,GEAR")]  ## get total observed numbers of fish per year, area,state,  and gear
   z<-Dspcomp[,list(FREQ=sum(FREQ)),by=c("YEAR,WED,TRIMESTER,AREA,HAUL1,LENGTH,GEAR")] ## number of fish by length bin, haul, gear and year
@@ -337,12 +571,22 @@ get_catch_len <- function(new_year = 9999,
   D_SPCOMP<-z4[,list(PROP=sum(PROP)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR,LENGTH")]
   
 
+  ## compare ----
+  D_SPCOMP %>% 
+    arrange(WED, AREA) %>% 
+    data.table
+
+  fsh_comp_wfltr %>% 
+    tidytable::filter(year <= 2022) %>% 
+    data.table()
   
   
   
   
   
   
+  
+  ## don't think this stuff needed
   
   fsh_comp %>% 
     tidytable::summarise(p1 = sum(prop),
@@ -467,19 +711,6 @@ LENGTH_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=new_yea
                 "AND OBSINT.DEBRIEFED_LENGTH.NMFS_AREA != 670 \n",
                 "AND OBSINT.DEBRIEFED_SPCOMP.SPECIES  in  (",fsh_sp_str,")",
                 "AND OBSINT.DEBRIEFED_LENGTH.SPECIES    in  (",fsh_sp_str,")",sep="")
-  
-  Dspcomp=sqlQuery(AFSC,test)
-  Dspcomp2=data.table(Dspcomp)
-  
-  Dspcomp %>% 
-    dplyr::glimpse()
-  head(Dspcomp)
-  
-  Dspcomp2 %>% 
-    dplyr::glimpse()
-  head(Dspcomp2)
-  
-  Dspcomp2$HDAY
   
   Dspcomp=data.table(sqlQuery(AFSC,test))
   vroom::vroom_write(Dspcomp, here::here(ly, 'data', 'raw', 'fish_lencomp_wstate2.csv'), delim = ",")
