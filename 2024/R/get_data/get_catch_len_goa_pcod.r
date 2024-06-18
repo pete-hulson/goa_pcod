@@ -539,6 +539,13 @@ get_catch_len <- function(new_year = 9999,
   
   Dspcomp<- data.table(Dspcomp)
 
+  
+  CATCH <- vroom::vroom(here::here(new_year, 'data', 'raw', 'catch4fish_lencomp_wstate.csv')) %>% 
+    tidytable::filter(YEAR <= 2022)
+  
+  CATCH<- data.table(CATCH)
+  
+  
   ## tidy way ----
   fsh_len %>% 
     # gear and unique cruise-permit-haul description
@@ -591,9 +598,7 @@ get_catch_len <- function(new_year = 9999,
     # summarise to length composition by week-area-gear
     tidytable::summarise(prop = sum(prop),
                          .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wfltr
-  
-  
-  
+
   # format catch data ----
   
   catch %>% 
@@ -612,93 +617,53 @@ get_catch_len <- function(new_year = 9999,
                       area = trunc(area / 10) * 10) %>% 
     tidytable::select(-gear) -> .catch
   
+  # compute proportion of catch by week, area, and gear
   .catch %>% 
     tidytable::summarise(total = sum(tons), .by = year) %>% 
     tidytable::left_join(.catch %>% 
                            tidytable::summarise(tons = sum(tons), .by = c(year, wed, trimester, area, gear_desc))) %>% 
     tidytable::mutate(catch_prop = tons / total) -> catch_p
 
+  # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
   fsh_comp_wfltr %>% 
     tidytable::left_join(catch_p) %>% 
     tidytable::mutate(length = case_when(length > 116 ~ 117,
                                          length <= 116 ~ length),
                       prop1 = prop * catch_prop) %>% 
     tidytable::drop_na() %>% 
-    tidytable::summarise(prop1 = sum(prop1), .by = c(year, trimester, area, gear, length)) -> dlength
+    tidytable::summarise(prop1 = sum(prop1), .by = c(year, trimester, area, gear, length)) -> wtd_fsh_comp
   
-  
-  tidytable::expand_grid(year = sort(unique(dlength$year)),
-                         gear = unique(dlength$gear),
-                         area = unique(dlength$area),
+  # compute annual length comp by gear ----
+  # get grid of all possible combos of year-gear-area-trimester-length
+  tidytable::expand_grid(year = sort(unique(wtd_fsh_comp$year)),
+                         gear = unique(wtd_fsh_comp$gear),
+                         area = unique(wtd_fsh_comp$area),
                          trimester = c(1:3),
-                         length = seq(1,117,1)) -> .grid
-  
-  .grid %>% 
-    tidytable::left_join(dlength) %>% 
+                         length = seq(1,117,1)) %>% 
+    # join weighted fish length comp
+    tidytable::left_join(wtd_fsh_comp) %>% 
     tidytable::mutate(prop1 = case_when(is.na(prop1) ~ 0,
                                         !is.na(prop1) ~ prop1)) %>% 
+    # sum to year, gear, and length bin
     tidytable::summarise(prop = sum(prop1), .by = c(year, gear, length)) %>% 
+    # format to ss3 data
     tidytable::pivot_wider(names_from = length, values_from = prop) %>% 
-    tidytable::arrange(gear) %>% 
-    tidytable::left_join(hj) %>% 
-    data.table()
+    # join number of hauls by year and gear
+    tidytable::left_join(fsh_len %>%
+                           tidytable::mutate(gear_desc = dplyr::case_when(gear == 1 ~ "trawl",
+                                                                          gear == 2 ~ "pot",
+                                                                          gear == 3 ~ "longline")) %>% 
+                           tidytable::summarise(nsamp = length(unique(haul_join)),
+                                                .by = c(year, gear, gear_desc))) -> ss3_lencomp
   
-  
-  
-  CATCH$WED<-date(CATCH$WED)
-  CATCH$STATE[is.na(CATCH$STATE)]<-"F"
-  CATCH$GEAR1<-"TRAWL"
-  CATCH$GEAR1[CATCH$GEAR=="POT"]<-"POT"
-  CATCH$GEAR1[CATCH$GEAR=="HAL"]<-"LONGLINE"
-  CATCH$GEAR1[CATCH$GEAR=="JIG"]<-"LONGLINE"
-  CATCH$GEAR<-CATCH$GEAR1
-  
-  CATCH$AREA<-trunc(CATCH$AREA/10)*10
-  y2 <- CATCH[,list(TOTAL=sum(TONS)),by="YEAR"]                                                 ## get total observed numbers of fish per year and gear
-  
-  z2 <- CATCH[,list(TONS=sum(TONS)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR")] ## get total number of measured fish by haul, gear, and year
-  x2 <- merge(y2,z2,all=T)
-  x2$CATCH_PROP<-x2$TONS/x2$TOTAL
-  
-  t1<-Dspcomp[,list(TFREQ=sum(FREQ)),by=c('TRIMESTER','YEAR','AREA','GEAR1')]
-  names(t1)[4]<-'GEAR'
-  
-  D_LENGTH<-merge(D_SPCOMP,x2,all=T, by=c("YEAR","WED","TRIMESTER","AREA","GEAR"))
-  D_LENGTH$LENGTH[D_LENGTH$LENGTH>116]<-117
-  D_LENGTH$PROP1<- D_LENGTH$PROP*D_LENGTH$CATCH_PROP
-  DLENGTH<-D_LENGTH[!is.na(PROP1)]
-  
-  DLENGTH<-DLENGTH[,list(PROP1=sum(PROP1)),by=c("YEAR,TRIMESTER,AREA,GEAR,LENGTH")]
 
-  grid<-data.table(expand.grid(YEAR=sort(unique(DLENGTH$YEAR)),TRIMESTER=c(1:3),AREA=unique(DLENGTH$AREA),GEAR=unique(DLENGTH$GEAR),LENGTH=seq(1,117,1)))
-  DLENGTH1<-merge(grid,DLENGTH,all.x=T,by=c("YEAR","TRIMESTER","AREA","GEAR","LENGTH"))
-  DLENGTH1[is.na(PROP1)]$PROP1<-0
-  
-  DLENGTH_NS<-DLENGTH1[,list(PROP=sum(PROP1)),by=c("YEAR,GEAR,LENGTH")]
-  SS3_DLENGTH_NS <- reshape2::dcast(DLENGTH_NS,formula=GEAR+YEAR~LENGTH,value.var="PROP")
-  SS3_DLENGTH_NS <-merge(SS3_DLENGTH_NS,HJ,by=c("YEAR","GEAR"),all.x=T)
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
   ## old way ----
   Dspcomp$GEAR1<-"TRAWL"
   Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
   Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
   Dspcomp$GEAR<-Dspcomp$GEAR1
+  HJ <- Dspcomp[,list(Nsamp=length(unique(HAUL_JOIN))),by="YEAR,GEAR"]
   Dspcomp$HAUL1<-as.character(paste(Dspcomp$CRUISE,Dspcomp$PERMIT,Dspcomp$HAUL,sep="_"))
   
   WED<-function(x=Dspcomp$HDAY[1])
@@ -779,22 +744,6 @@ get_catch_len <- function(new_year = 9999,
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
   ## compare ----
   D_SPCOMP %>% 
@@ -806,9 +755,10 @@ get_catch_len <- function(new_year = 9999,
     data.table()
   
   
+  ss3_lencomp %>% 
+    data.table()
   
-  
-  
+  SS3_DLENGTH_NS
   
   
   ## don't think this stuff needed
