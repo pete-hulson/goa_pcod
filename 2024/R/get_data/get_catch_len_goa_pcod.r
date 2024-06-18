@@ -270,8 +270,67 @@ get_catch_len <- function(new_year = 9999,
   Dspcomp=data.table(sqlQuery(AFSC,test))
   vroom::vroom_write(Dspcomp, here::here(ly, 'data', 'raw', 'fish_lencomp_wstate2.csv'), delim = ",")
   
+  CHINA = odbcConnect("AKFIN", 
+                      'phulson', 
+                      '$blwins1', 
+                      believeNRows=FALSE)
+  
+  test <- paste("SELECT SUM(COUNCIL.COMPREHENSIVE_BLEND_CA.WEIGHT_POSTED)AS TONS, \n ",
+                "to_char(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE,'MM') AS MONTH, \n",
+                "CASE \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') <= 2 \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') > 2 \n ",
+                "  AND TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') <= 4 \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') > 4 \n ",
+                "  AND TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') <= 8 \n ",
+                "  THEN 3 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') > 8 \n ",
+                "  AND TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') <= 10 \n ",
+                "  THEN 4 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') > 10 \n ",
+                "  THEN 5 \n ",
+                "END                                                AS SEASON, \n ",
+                "CASE \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (1,2,3) \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (4,5,6) \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (7,8,9) \n ",
+                "  THEN 3 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (10,11,12) \n ",
+                "  THEN 4 \n ",
+                "END                                                AS QUARTER, \n ", 
+                "CASE \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (1,2,3,4) \n ",
+                "  THEN 1 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (5,6,7,8) \n ",
+                "  THEN 2 \n ",
+                "  WHEN TO_CHAR(COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, 'MM') in (9,10,11,12) \n ",
+                "  THEN 3 \n ",
+                "END                                                AS TRIMESTER, \n ",       
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.FMP_GEAR AS GEAR, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.YEAR AS YEAR, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.REPORTING_AREA_CODE AS AREA, \n",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE AS WED,  \n",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.AKR_STATE_FEDERAL_WATERS_CODE AS STATE \n ",
+                "FROM COUNCIL.COMPREHENSIVE_BLEND_CA \n ",
+                "WHERE COUNCIL.COMPREHENSIVE_BLEND_CA.FMP_SUBAREA in ('CG','PWSI','SE','SEI','WG','WY') \n ",
+                "AND COUNCIL.COMPREHENSIVE_BLEND_CA.YEAR <= ",ly," \n ",
+                "AND COUNCIL.COMPREHENSIVE_BLEND_CA.SPECIES_GROUP_CODE in (",fsh_sp_label,")\n ",
+                "GROUP BY COUNCIL.COMPREHENSIVE_BLEND_CA.SPECIES_GROUP_CODE, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.FMP_SUBAREA, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.FMP_GEAR, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.RETAINED_OR_DISCARDED, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.REPORTING_AREA_CODE, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.WEEK_END_DATE, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.AKR_STATE_FEDERAL_WATERS_CODE, \n ",
+                "COUNCIL.COMPREHENSIVE_BLEND_CA.YEAR \n ", sep="")
   
   
+  CATCH<-data.table(sqlQuery(CHINA,test))
+  vroom::vroom_write(CATCH, here::here(ly, 'data', 'raw', 'catch4fish_lencomp_wstate.csv'), delim = ",")
   
   
   
@@ -362,7 +421,9 @@ get_catch_len <- function(new_year = 9999,
     tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
     tidytable::rename(wed = wed2) %>% 
     # truncate area to nearest 10 (e.g., 649 becomes 640)
-    tidytable::mutate(area = trunc(area / 10) * 10) %>% 
+    tidytable::mutate(area = trunc(area / 10) * 10) -> .fsh_len_full
+  
+  .fsh_len_full %>% 
     # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
     tidytable::summarise(freq = sum(freq),
                          .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
@@ -413,7 +474,9 @@ get_catch_len <- function(new_year = 9999,
     # filter hauls w/ >10 lengths observed
     tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
     tidytable::filter(n_hl >= 10) %>% 
-    tidytable::select(-n_hl) %>% 
+    tidytable::select(-n_hl) -> .fsh_len_full
+  
+  .fsh_len_full %>% 
     # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
     tidytable::summarise(freq = sum(freq),
                          .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
@@ -501,7 +564,9 @@ get_catch_len <- function(new_year = 9999,
     # filter hauls w/ >10 lengths observed
     tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
     tidytable::filter(n_hl >= 10) %>% 
-    tidytable::select(-n_hl) %>% 
+    tidytable::select(-n_hl) -> .fsh_len_full
+  
+  .fsh_len_full %>% 
     # number of fish by year, week, area, haul, gear and length (so, haul-level length frequency by haul)
     tidytable::summarise(freq = sum(freq),
                          .by = c(year, wed, trimester, area, haul1, gear, gear_desc, length)) %>% 
@@ -526,6 +591,107 @@ get_catch_len <- function(new_year = 9999,
     # summarise to length composition by week-area-gear
     tidytable::summarise(prop = sum(prop),
                          .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wfltr
+  
+  
+  
+  # format catch data ----
+  
+  catch %>% 
+    filter(year <= 1993) %>% 
+    summarise(count = .N, .by = c(year, gear)) %>% 
+    data.table()
+  
+  catch %>% 
+    # define NAs in state flag, gear type, and truncate area to nearest 10
+    tidytable::mutate(wed = date(wed),
+                      state = case_when(is.na(state) ~ 'F',
+                                        !is.na(state) ~ state),
+                      gear_desc = case_when(gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
+                                            gear == 'POT' ~ 'pot',
+                                            gear %in% c('HAL', 'JIG') ~ 'longline'),
+                      area = trunc(area / 10) * 10) %>% 
+    tidytable::select(-gear) -> .catch
+  
+  .catch %>% 
+    tidytable::summarise(total = sum(tons), .by = year) %>% 
+    tidytable::left_join(.catch %>% 
+                           tidytable::summarise(tons = sum(tons), .by = c(year, wed, trimester, area, gear_desc))) %>% 
+    tidytable::mutate(catch_prop = tons / total) -> catch_p
+
+  fsh_comp_wfltr %>% 
+    tidytable::left_join(catch_p) %>% 
+    tidytable::mutate(length = case_when(length > 116 ~ 117,
+                                         length <= 116 ~ length),
+                      prop1 = prop * catch_prop) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::summarise(prop1 = sum(prop1), .by = c(year, trimester, area, gear, length)) -> dlength
+  
+  
+  tidytable::expand_grid(year = sort(unique(dlength$year)),
+                         gear = unique(dlength$gear),
+                         area = unique(dlength$area),
+                         trimester = c(1:3),
+                         length = seq(1,117,1)) -> .grid
+  
+  .grid %>% 
+    tidytable::left_join(dlength) %>% 
+    tidytable::mutate(prop1 = case_when(is.na(prop1) ~ 0,
+                                        !is.na(prop1) ~ prop1)) %>% 
+    tidytable::summarise(prop = sum(prop1), .by = c(year, gear, length)) %>% 
+    tidytable::pivot_wider(names_from = length, values_from = prop) %>% 
+    tidytable::arrange(gear) %>% 
+    tidytable::left_join(hj) %>% 
+    data.table()
+  
+  
+  
+  CATCH$WED<-date(CATCH$WED)
+  CATCH$STATE[is.na(CATCH$STATE)]<-"F"
+  CATCH$GEAR1<-"TRAWL"
+  CATCH$GEAR1[CATCH$GEAR=="POT"]<-"POT"
+  CATCH$GEAR1[CATCH$GEAR=="HAL"]<-"LONGLINE"
+  CATCH$GEAR1[CATCH$GEAR=="JIG"]<-"LONGLINE"
+  CATCH$GEAR<-CATCH$GEAR1
+  
+  CATCH$AREA<-trunc(CATCH$AREA/10)*10
+  y2 <- CATCH[,list(TOTAL=sum(TONS)),by="YEAR"]                                                 ## get total observed numbers of fish per year and gear
+  
+  z2 <- CATCH[,list(TONS=sum(TONS)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR")] ## get total number of measured fish by haul, gear, and year
+  x2 <- merge(y2,z2,all=T)
+  x2$CATCH_PROP<-x2$TONS/x2$TOTAL
+  
+  t1<-Dspcomp[,list(TFREQ=sum(FREQ)),by=c('TRIMESTER','YEAR','AREA','GEAR1')]
+  names(t1)[4]<-'GEAR'
+  
+  D_LENGTH<-merge(D_SPCOMP,x2,all=T, by=c("YEAR","WED","TRIMESTER","AREA","GEAR"))
+  D_LENGTH$LENGTH[D_LENGTH$LENGTH>116]<-117
+  D_LENGTH$PROP1<- D_LENGTH$PROP*D_LENGTH$CATCH_PROP
+  DLENGTH<-D_LENGTH[!is.na(PROP1)]
+  
+  DLENGTH<-DLENGTH[,list(PROP1=sum(PROP1)),by=c("YEAR,TRIMESTER,AREA,GEAR,LENGTH")]
+
+  grid<-data.table(expand.grid(YEAR=sort(unique(DLENGTH$YEAR)),TRIMESTER=c(1:3),AREA=unique(DLENGTH$AREA),GEAR=unique(DLENGTH$GEAR),LENGTH=seq(1,117,1)))
+  DLENGTH1<-merge(grid,DLENGTH,all.x=T,by=c("YEAR","TRIMESTER","AREA","GEAR","LENGTH"))
+  DLENGTH1[is.na(PROP1)]$PROP1<-0
+  
+  DLENGTH_NS<-DLENGTH1[,list(PROP=sum(PROP1)),by=c("YEAR,GEAR,LENGTH")]
+  SS3_DLENGTH_NS <- reshape2::dcast(DLENGTH_NS,formula=GEAR+YEAR~LENGTH,value.var="PROP")
+  SS3_DLENGTH_NS <-merge(SS3_DLENGTH_NS,HJ,by=c("YEAR","GEAR"),all.x=T)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
 
   ## old way ----
@@ -569,6 +735,65 @@ get_catch_len <- function(new_year = 9999,
   z4<-z3[YEAR>=1991]
   z4<-z4[order(GEAR,YEAR,LENGTH),]
   D_SPCOMP<-z4[,list(PROP=sum(PROP)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR,LENGTH")]
+  
+  
+  
+  CATCH$WED<-date(CATCH$WED)
+  CATCH$STATE[is.na(CATCH$STATE)]<-"F"
+  CATCH$GEAR1<-"TRAWL"
+  CATCH$GEAR1[CATCH$GEAR=="POT"]<-"POT"
+  CATCH$GEAR1[CATCH$GEAR=="HAL"]<-"LONGLINE"
+  CATCH$GEAR1[CATCH$GEAR=="JIG"]<-"LONGLINE"
+  CATCH$GEAR<-CATCH$GEAR1
+  
+  CATCH$AREA<-trunc(CATCH$AREA/10)*10
+  y2 <- CATCH[,list(TOTAL=sum(TONS)),by="YEAR"]                                                 ## get total observed numbers of fish per year and gear
+  
+  z2 <- CATCH[,list(TONS=sum(TONS)),by=c("YEAR,WED,TRIMESTER,AREA,GEAR")] ## get total number of measured fish by haul, gear, and year
+  x2 <- merge(y2,z2,all=T)
+  x2$CATCH_PROP<-x2$TONS/x2$TOTAL
+  
+  t1<-Dspcomp[,list(TFREQ=sum(FREQ)),by=c('TRIMESTER','YEAR','AREA','GEAR1')]
+  names(t1)[4]<-'GEAR'
+  
+  D_LENGTH<-merge(D_SPCOMP,x2,all=T, by=c("YEAR","WED","TRIMESTER","AREA","GEAR"))
+  D_LENGTH$LENGTH[D_LENGTH$LENGTH>116]<-117
+  D_LENGTH$PROP1<- D_LENGTH$PROP*D_LENGTH$CATCH_PROP
+  DLENGTH<-D_LENGTH[!is.na(PROP1)]
+  
+  DLENGTH<-DLENGTH[,list(PROP1=sum(PROP1)),by=c("YEAR,TRIMESTER,AREA,GEAR,LENGTH")]
+  t2<-merge(DLENGTH,t1)
+  t3<-t2[TFREQ>=30]
+  t3[,'TFREQ':=NULL]
+  
+  grid<-data.table(expand.grid(YEAR=sort(unique(t3$YEAR)),TRIMESTER=c(1:3),AREA=unique(t3$AREA),GEAR=unique(t3$GEAR),LENGTH=seq(1,117,1)))
+  DLENGTH1<-merge(grid,t3,all=T,by=c("YEAR","TRIMESTER","AREA","GEAR","LENGTH"))
+  
+  grid<-data.table(expand.grid(YEAR=sort(unique(DLENGTH$YEAR)),TRIMESTER=c(1:3),AREA=unique(DLENGTH$AREA),GEAR=unique(DLENGTH$GEAR),LENGTH=seq(1,117,1)))
+  DLENGTH1<-merge(grid,DLENGTH,all.x=T,by=c("YEAR","TRIMESTER","AREA","GEAR","LENGTH"))
+  DLENGTH1[is.na(PROP1)]$PROP1<-0
+  
+  DLENGTH_NS<-DLENGTH1[,list(PROP=sum(PROP1)),by=c("YEAR,GEAR,LENGTH")]
+  SS3_DLENGTH_NS <- reshape2::dcast(DLENGTH_NS,formula=GEAR+YEAR~LENGTH,value.var="PROP")
+  SS3_DLENGTH_NS <-merge(SS3_DLENGTH_NS,HJ,by=c("YEAR","GEAR"),all.x=T)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
 
   ## compare ----
