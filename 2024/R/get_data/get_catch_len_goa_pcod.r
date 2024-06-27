@@ -141,61 +141,7 @@ get_catch_len <- function(new_year = 9999,
   
   
   
-  # get connected to afsc
-  db = 'afsc'
-  conn = afscdata::connect(db)
-  
-  # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-  dplyr::tbl(conn, dplyr::sql('obsint.debriefed_haul')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')) %>% 
-                        dplyr::filter(SPECIES == fsh_sp_code),
-                      by = c('HAUL_JOIN')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')) %>% 
-                        dplyr::filter(SPECIES == fsh_sp_code),
-                      by = c('HAUL_JOIN')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    dplyr::select(gear,
-                  haul_join,
-                  numb = extrapolated_number,
-                  cruise = cruise.x,
-                  permit = permit.x,
-                  haul = haul.x,
-                  weight = extrapolated_weight,
-                  length,
-                  freq = frequency,
-                  lon = londd_end.x,
-                  lat = latdd_end.x,
-                  hday = haul_date.y,
-                  area = nmfs_area.x) %>% 
-    dplyr::filter(area >= 600,
-                  area <= 699,
-                  area != 670) %>% 
-    dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
-  
-  dplyr::collect(afsc_len) %>% 
-    dplyr::mutate(weight = weight / 1000,
-                  year = lubridate::year(hday),
-                  month = lubridate::month(hday),
-                  season = dplyr::case_when(month <= 2 ~ 1,
-                                            month %in% c(3, 4) ~ 2,
-                                            month %in% c(5, 6, 7, 8) ~ 3,
-                                            month %in% c(9, 10) ~ 4,
-                                            month >= 11 ~ 5),
-                  quarter = dplyr::case_when(month <= 3 ~ 1,
-                                             month %in% c(4, 5, 6) ~ 2,
-                                             month %in% c(7, 8, 9) ~ 3,
-                                             month >= 10 ~ 4),
-                  trimester = dplyr::case_when(month <= 4 ~ 1,
-                                               month %in% c(5, 6, 7, 8) ~ 2,
-                                               month >= 9 ~ 3),
-                  gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 0,
-                                          gear == 6 ~ 2,
-                                          gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 3)) -> fsh_lfreq1
-  
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_afsc.csv'), delim = ",")
-  
-
-  
+# query for testing with old code ----
   AFSC = odbcConnect("AFSC", 
                      'hulsonp', 
                      'Bri3+Fin2+Liam1', 
@@ -356,8 +302,12 @@ get_catch_len <- function(new_year = 9999,
   # read data ----
   
   ## length freq data ----
+  ### federal ----
   fsh_len <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'))
 
+  ### state ----
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'ALL_STATE_LENGTHS.csv'))
+  
   ## catch data ----
   vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>% 
     tidytable::mutate(month = lubridate::month(week_end_date),
@@ -533,6 +483,9 @@ get_catch_len <- function(new_year = 9999,
   fsh_len %>% 
     tidytable::filter(year <= 2022) -> fsh_len
   
+  catch %>% 
+    tidytable::filter(year <= 2022) -> catch
+  
   
   Dspcomp <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lencomp_wstate.csv')) %>% 
     tidytable::filter(YEAR <= 2022)
@@ -600,12 +553,7 @@ get_catch_len <- function(new_year = 9999,
                          .by = c(year, wed, trimester, area, gear, gear_desc, length)) -> fsh_comp_wfltr
 
   # format catch data ----
-  
-  catch %>% 
-    filter(year <= 1993) %>% 
-    summarise(count = .N, .by = c(year, gear)) %>% 
-    data.table()
-  
+
   catch %>% 
     # define NAs in state flag, gear type, and truncate area to nearest 10
     tidytable::mutate(wed = date(wed),
@@ -617,13 +565,13 @@ get_catch_len <- function(new_year = 9999,
                       area = trunc(area / 10) * 10) %>% 
     tidytable::select(-gear) -> .catch
   
-  # compute proportion of catch by week, area, and gear
   .catch %>% 
+    # compute proportion of catch by week, area, and gear
     tidytable::summarise(total = sum(tons), .by = year) %>% 
     tidytable::left_join(.catch %>% 
                            tidytable::summarise(tons = sum(tons), .by = c(year, wed, trimester, area, gear_desc))) %>% 
     tidytable::mutate(catch_prop = tons / total) -> catch_p
-
+  
   # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
   fsh_comp_wfltr %>% 
     tidytable::left_join(catch_p) %>% 
@@ -657,6 +605,69 @@ get_catch_len <- function(new_year = 9999,
                                                 .by = c(year, gear, gear_desc))) -> ss3_lencomp
   
 
+  # format state data ----
+  fsh_len_s %>% 
+    dplyr::rename_all(tolower) %>% 
+    #filter to positive lengths
+    tidytable::filter(length > 0) %>% 
+    # define area, gear, plus length, trimester
+    tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
+                      gear1 = 'trawl',
+                      gear1 = case_when(gear == 91 ~ 'pot',
+                                       gear %in% c(5, 26, 61) ~ 'longline',
+                                       gear1 == 'trawl' ~ 'trawl'),
+                      length = case_when(length > 116 ~ 117,
+                                         length <= 116 ~ length),
+                      trimester = case_when(month <= 4 ~ 1,
+                                            month %in% seq(5, 8) ~ 2,
+                                            month >= 9 ~ 3)) %>% 
+    tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq) -> .fsh_len_s
+  
+  .fsh_len_s %>% 
+    tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+    tidytable::drop_na() -> s1
+  
+  .fsh_len_s %>% 
+    tidytable::summarise(tot = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::mutate(nsamp = round(tot / 50)) %>% 
+    tidytable::select(-tot) -> shja
+  
+  .fsh_len_s %>% 
+    tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, length)) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+    # compute state length comp by trimester, area, and gear
+    tidytable::mutate(prop = freq / total) %>% 
+    tidytable::select(-total, -freq) %>% 
+    tidytable::left_join(.fsh_len_s %>% 
+                           tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+                           tidytable::drop_na()) %>% 
+    # filter to >30 lengths per trimester, area, and gear
+    tidytable::filter(sfreq >= 30) %>% 
+    tidytable::select(-sfreq) -> fsh_len_s_wfltr
+
+  # get grid of all possible combos of state year-gear-area-trimester-length
+  tidytable::expand_grid(year = sort(unique(.fsh_len_s$year)),
+                         gear = unique(.fsh_len_s$gear),
+                         area = unique(.fsh_len_s$area),
+                         trimester = c(1:3),
+                         length = seq(1,117,1)) %>% 
+    tidytable::left_join(fsh_len_s_wfltr) %>% 
+    tidytable::left_join(catch_p %>% 
+                           tidytable::summarise(catch_prop = sum(catch_prop), .by = c(year, trimester, area, gear_desc)) %>% 
+                           tidytable::rename(gear = gear_desc)) %>% 
+    tidytable::mutate(prop = tidytable::replace_na(prop, 0),
+                      catch_prop = tidytable::replace_na(catch_prop, 0),
+                      prop1 = prop * catch_prop) %>% 
+    tidytable::summarise(prop = sum(prop1), .by = c(year, trimester, area, gear, length)) ->slength1
+  
+  
+
+  
+  
+  
+  
 
   ## old way ----
   Dspcomp$GEAR1<-"TRAWL"
@@ -741,6 +752,81 @@ get_catch_len <- function(new_year = 9999,
   DLENGTH_NS<-DLENGTH1[,list(PROP=sum(PROP1)),by=c("YEAR,GEAR,LENGTH")]
   SS3_DLENGTH_NS <- reshape2::dcast(DLENGTH_NS,formula=GEAR+YEAR~LENGTH,value.var="PROP")
   SS3_DLENGTH_NS <-merge(SS3_DLENGTH_NS,HJ,by=c("YEAR","GEAR"),all.x=T)
+  
+  ## pulling state data from file.
+  SLENGTH <- vroom::vroom(here::here(new_year, 'data', 'ALL_STATE_LENGTHS.csv'))
+  
+  SLENGTH<-data.table(SLENGTH[,1:9])
+  SLENGTH<-SLENGTH[LENGTH>0]
+  SLENGTH$AREA<-trunc(SLENGTH$AREA/10)*10
+  
+  SLENGTH$GEAR1<-"TRAWL"
+  SLENGTH$GEAR1[SLENGTH$GEAR==91]<-"POT"
+  SLENGTH$GEAR1[SLENGTH$GEAR %in% c(5,26,61)]<-"LONGLINE"
+  SLENGTH$GEAR<-SLENGTH$GEAR1
+  
+  SLENGTH$LENGTH[SLENGTH$LENGTH>116]<-117
+  
+  SLENGTH$TRIMESTER<-1
+  SLENGTH$TRIMESTER[SLENGTH$MONTH>4&SLENGTH$MONTH<=8]<-2
+  SLENGTH$TRIMESTER[SLENGTH$MONTH>8]<-3
+  
+  S1<-SLENGTH[,list(SFREQ=sum(FREQ)),by=c('TRIMESTER','YEAR','AREA','GEAR1')]
+  names(S1)[4]<-'GEAR'
+  
+  SHJA <- SLENGTH[,list(TOT=sum(FREQ)),by="YEAR,GEAR,TRIMESTER,AREA"]
+  SHJA <- SHJA[order(GEAR,AREA,YEAR),]
+  SHJA$Nsamp <- round(SHJA$TOT/50)
+  SHJA[, TOT:=NULL]
+  
+  Sx<-SLENGTH[,list(FREQ=sum(FREQ)),by="YEAR,TRIMESTER,AREA,GEAR,LENGTH"]
+  Sy<-SLENGTH[,list(TOTAL=sum(FREQ)),by="YEAR,TRIMESTER,AREA,GEAR"]
+  
+  Sz<-merge(Sx,Sy,by=c("YEAR","TRIMESTER","AREA","GEAR"))
+  Sz$PROP<-Sz$FREQ/Sz$TOTAL
+  Sz<-subset(Sz,select=-c(TOTAL,FREQ))
+  
+  S2<-merge(Sz,S1)
+  S3<-S2[SFREQ>=30]
+  S3[,'SFREQ':=NULL]
+  
+  grid<-data.table(expand.grid(YEAR=sort(unique(SLENGTH$YEAR)),TRIMESTER=c(1:3),AREA=unique(SLENGTH$AREA),GEAR=unique(SLENGTH$GEAR),LENGTH=seq(1,117,1)))
+  
+  Sz<-merge(grid,S3,all=T,by=c("YEAR","TRIMESTER","AREA","GEAR","LENGTH"))
+  
+  SCATCH<-x2[,list(CATCH_PROP=sum(CATCH_PROP)),by=c("YEAR,TRIMESTER,AREA,GEAR")]
+  
+  S_LENGTH<-merge(Sz,SCATCH,all=T, by=c("YEAR","TRIMESTER","AREA","GEAR"))
+  S_LENGTH<-S_LENGTH[!is.na(LENGTH)]
+  S_LENGTH[is.na(S_LENGTH)]<-0
+  
+  S_LENGTH$PROP1<- S_LENGTH$PROP*S_LENGTH$CATCH_PROP
+  
+  SLENGTH1<-S_LENGTH[,list(PROP1=sum(PROP1)),by="YEAR,TRIMESTER,AREA,GEAR,LENGTH"]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
