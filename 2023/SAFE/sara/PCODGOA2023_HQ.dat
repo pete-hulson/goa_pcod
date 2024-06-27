@@ -63,7 +63,7 @@
 #F_UNIT - The unit of the "F" related data fields, see lookup table (options: Apical F, Fully-selected F, Exploitation Rate, Relative F, Metric Tons, 1 - SPR, F = Z - M, or write-in)
 "Apical F"
 #BEST_F_ESTIMATE - Best available point estimate of fishing mortality rate or total catch used to determine the rate of fishing. This field is used when a point estimate is available. NOTE: for Tiers 1-3, this is the estimate of total fishing mortality from the most recent full year of fishing; for Tiers 4-5 this is exploitation rate (catch divided by total abundance from the random effects model) for the most recent full year of fishing; for Tier 6 this is total catch.  
-0.313795
+0.270818
 #F_LIMIT - Fishing mortality rate or total catch threshold, above which the stock is considered to be overfishing. NOTE: For Tiers 1-3 during a full or operational assessment this is the reverse engineered F from this year_s accepted model that would have produced a catch for last year equal to last year_s OFL. For Tiers 1-3 during a partial assessment this is FMSY. For Tiers 4-5, single stock assessment, this is the estimate of M. For Tiers 4-5 stock complex assessments or Tier 6, this is sum of the OFL in tons for the stock or stocks in the complex.
 0.44
 #F_LIMIT_BASIS - Basis for the Flimit estimate, see lookup table. F rate (F35%, etc.) or total catch estimate (options: Fmsy, Frebuild, M, F30% as proxy, F35% as proxy, F40% as proxy, or write-in)
@@ -105,7 +105,7 @@
 #TOTALBIOMASS - Total biomass by year in metric tons ("NA" for Tier 6)
 272441	289235	330096	386068	418191	443790	485373	530505	587423	647087	698761	724226	733137	724593	694233	673111	647461	630312	601250	541257	489569	436698	391753	340653	311814	307313	300217	286487	263066	251563	258308	288235	329541	382329	404507	411061	433983	500671	394061	277065	177128	156630	168218	176942	186120	180883	173300
 #TOTFSHRYMORT - Fishing mortality rate by year (Tiers 1-3 only, "NA" for Tiers 4-6)
-0.0121675	0.0583161	0.0764432	0.183899	0.119967	0.0914058	0.115249	0.0745537	0.0648449	0.0929384	0.0686187	0.0670343	0.0832886	0.2002	0.228934	0.261197	0.189659	0.154326	0.225812	0.244548	0.328214	0.377221	0.509104	0.469239	0.396758	0.461876	0.470007	0.498321	0.586838	0.619773	0.587351	0.700704	0.542254	0.631064	0.612656	0.508895	0.420396	0.605197	0.800954	0.80685	0.834065	0.254213	0.248418	0.0907017	0.234851	0.313795	0.232771
+0.0114067	0.0545785	0.0707203	0.167399	0.11328	0.0865783	0.10799	0.0687764	0.0595587	0.0847394	0.064045	0.062762	0.0781034	0.182574	0.208664	0.237308	0.172957	0.14172	0.208649	0.225483	0.301505	0.343855	0.462698	0.42405	0.35567	0.414025	0.421702	0.449977	0.500927	0.5299	0.52234	0.618393	0.485315	0.573353	0.556487	0.459127	0.377076	0.539269	0.70658	0.706141	0.653412	0.200385	0.198622	0.0758104	0.198545	0.270818	0.204279
 #TOTALCATCH - Total catch by year in metric tons 
 2268	12190	14904	35345	36131	29465	36540	23898	14428	25012	32939	33802	43293	72517	76300.5	80747.1	56487.5	47484.6	68985.2	68279.9	77170.3	72624.7	82542.6	66551.4	51530.4	54637.4	52581.5	56623.6	47584.3	47897.1	52261	59014	53196.3	78593	85366.7	77930.4	68575.9	84945.1	79480.5	64054.5	48726.9	15150.4	15715.8	6841.03	19175.9	25925.4	18231.6
 #SURVEYDESC - List primary surveys used in the assessment, use semicolon and space to separate, see lookup table ("NA" for Tier 6)
