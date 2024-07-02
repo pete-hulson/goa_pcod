@@ -182,7 +182,7 @@ LENGTH_BY_CATCH_GOA<-function(fsh_sp_str=202 ,fsh_sp_label = "'PCOD'",ly=new_yea
                   "COUNCIL.COMPREHENSIVE_BLEND_CA.YEAR \n ", sep="")
 
 
-    CATCH<-data.table(sqlQuery(CHINA,test))
+    CATCH<-data.table(sqlQuery(AKFIN,test))
     vroom::vroom_write(CATCH, here::here(ly, 'data', 'raw', 'catch4fish_lencomp_wstate.csv'), delim = ",")
     
     CATCH$WED<-date(CATCH$WED)

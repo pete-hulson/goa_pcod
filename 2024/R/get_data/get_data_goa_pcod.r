@@ -126,10 +126,60 @@ get_data_goa_pcod <- function(new_data = new_data,
 
   
   
+  # test fishery fcns
+  AFSC = odbcConnect("AFSC", 
+                     'hulsonp', 
+                     'Bri3+Fin2+Liam1', 
+                     believeNRows=FALSE)
+  AKFIN = odbcConnect("AKFIN", 
+                     'phulson', 
+                     '$blwins1', 
+                     believeNRows=FALSE)
+  auxFLCOMP <- LENGTH_BY_CATCH_GOA(fsh_sp_str = 202,
+                                   fsh_sp_label = "'PCOD'",
+                                   ly = 2024)
+  auxFLCOMP <- auxFLCOMP[[3]]
   
+  new_fsh_comp <- get_catch_len(new_year = 2024,
+                                fsh_sp_code = 202,
+                                query = TRUE,
+                                database = 'afsc',
+                                fltr = TRUE,
+                                fill_st = TRUE)
   
+  new_fsh_comp %>% 
+    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop') %>% 
+    mutate(prop_t = sum(prop), .by = c(year, gear)) %>% 
+    mutate(prop_new = prop / prop_t) %>% 
+    select(year, gear, length, nsamp_new = nsamp, prop_new) %>% 
+    left_join(auxFLCOMP %>% 
+                dplyr::rename_all(tolower) %>% 
+                mutate(gear = tolower(gear)) %>% 
+                pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop') %>% 
+                mutate(prop_t = sum(prop), .by = c(year, gear)) %>% 
+                mutate(prop_old = prop / prop_t) %>% 
+                select(year, gear, length, nsamp_old = nsamp, prop_old)) %>% 
+    mutate(diff_p = prop_new - prop_old,
+           diff_n = nsamp_new - nsamp_old) %>% 
+    # filter(diff_p != 0) %>% 
+    # summarise(test1 = sum(diff_p),
+    #           test2 = sum(diff_n)) %>% 
+    # summarise(test = max(diff_p)) %>% 
+    data.table()
   
+  auxFLCOMP %>% 
+    dplyr::rename_all(tolower) %>% 
+    mutate(gear = tolower(gear)) %>% 
+    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop_old') %>% 
+    rename(nsamp_old = nsamp) %>% 
+    summarise(test = sum(prop_old), .by = c(year, gear)) %>% 
+    data.table()
   
+  new_fsh_comp %>% 
+    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop_new') %>% 
+    rename(nsamp_new = nsamp) %>% 
+    summarise(test = sum(prop_new), .by = c(year, gear)) %>% 
+    data.table()
   
   
   

@@ -117,6 +117,9 @@ source(here::here(new_dat_year, "R", "utils.R"))
 source(here::here(new_dat_year, "R", "get_data", "get_catch_goa_pcod.r"))
 source(here::here(new_dat_year, "R", "get_data", "get_srvy_indices_goa_pcod.r"))
 source(here::here(new_dat_year, "R", "get_data", "get_srvy_len_goa_pcod.r"))
+source(here::here(new_dat_year, "R", "get_data", "get_catch_len_goa_pcod.r"))
+
+source(here::here(new_SS_dat_year, "R", "get_data", "GET_LENGTH_BY_CATCH_GOA.R"))
 
 
 source(here::here(new_SS_dat_year, "R", "data", "BIN_LEN_DATA.r"))
