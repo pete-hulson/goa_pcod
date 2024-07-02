@@ -6,12 +6,16 @@
 #' @param fsh_sp_code species code for observer/catch data (default = 202)
 #' @param query switch for whether to run sql query for data (default = FALSE)
 #' @param database switch for which database to pull data from (default = 'akfin')
+#' @param fltr switch for whether to filter data to >30 lengths per haul (default = TRUE)
+#' @param fill_st switch for whether to fill holes in fed data with state data (default = TRUE)
 #' 
 
 get_catch_len <- function(new_year = 9999,
                           fsh_sp_code = 202,
                           query = FALSE,
-                          database = 'akfin'){
+                          database = 'akfin',
+                          fltr = TRUE,
+                          fill_st = TRUE){
   
   # query length freq data ----
   # note that catch data is queried in 'get_catch_goa_pcod' fcn
