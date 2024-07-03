@@ -135,6 +135,78 @@ get_data_goa_pcod <- function(new_data = new_data,
                      'phulson', 
                      '$blwins1', 
                      believeNRows=FALSE)
+  fsh_sp_str = 202
+  fsh_sp_label = "'PCOD'"
+  ly = 2024
+  new_year = 2024
+  fsh_sp_code = 202
+  query = TRUE
+  database = 'afsc'
+
+  
+  
+  fsh_len_comp_f %>% 
+    data.table()
+  
+  fsh_len_full_f %>% 
+    # haul-level length frequency
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, length)) %>% 
+    # join number of total fish sampled per haul
+    tidytable::left_join(fsh_len_full_f %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear))) %>% 
+    # join number of fish by year, week, area, and gear
+    tidytable::left_join(fsh_len_full_f %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                tfreq = sum(hfreq),
+                                                .by = c(year, wed, trimester, area, gear))) %>% 
+    # proportion of haul catch-at-length by gear-area-week observed catch
+    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>%
+    # summarise to length composition by week-area-gear
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, length)) %>% 
+    full_join(D_SPCOMP %>% 
+                dplyr::rename_all(tolower) %>% 
+                mutate(gear = tolower(gear)) %>% 
+                rename(prop_old = prop)) %>% 
+    drop_na() %>% 
+    mutate(diff = prop - prop_old) %>% 
+    filter(diff > 0) %>% 
+    data.table()
+  
+  catch_p %>% 
+    # summarise(test_new = sum(catch_prop), .by = year) %>%
+    data.table()
+  
+  x2 %>% 
+    dplyr::rename_all(tolower) %>% 
+    data.table()
+  
+  x2 %>% 
+    dplyr::rename_all(tolower) %>% 
+    mutate(gear = tolower(gear)) %>% 
+    full_join(catch_p %>% 
+                rename(catch_prop_new = catch_prop)) %>% 
+    # summarise(test = sum(catch_prop), .by = year) %>% 
+    data.table()
+  
+  
+  DLENGTH_NS %>% 
+    dplyr::rename_all(tolower) %>% 
+    summarise(test = sum(prop), .by = year) %>% 
+  left_join(fsh_len_comp_f %>% 
+    summarise(test_new = sum(prop), .by = year)) %>% 
+    mutate(diff = test - test_new) %>% 
+    data.table()
+  
+  
+  
   auxFLCOMP <- LENGTH_BY_CATCH_GOA(fsh_sp_str = 202,
                                    fsh_sp_label = "'PCOD'",
                                    ly = 2024)
@@ -167,24 +239,38 @@ get_data_goa_pcod <- function(new_data = new_data,
     # summarise(test = max(diff_p)) %>% 
     data.table()
   
-  auxFLCOMP %>% 
-    dplyr::rename_all(tolower) %>% 
-    mutate(gear = tolower(gear)) %>% 
-    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop_old') %>% 
-    rename(nsamp_old = nsamp) %>% 
-    summarise(test = sum(prop_old), .by = c(year, gear)) %>% 
-    data.table()
   
+
   new_fsh_comp %>% 
-    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop_new') %>% 
-    rename(nsamp_new = nsamp) %>% 
-    summarise(test = sum(prop_new), .by = c(year, gear)) %>% 
-    data.table()
+    pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop') %>% 
+    mutate(prop_t = sum(prop), .by = c(year, gear)) %>% 
+    mutate(prop_new = prop / prop_t) %>% 
+    select(year, gear, length, nsamp_new = nsamp, prop_new) %>% 
+    left_join(auxFLCOMP %>% 
+                dplyr::rename_all(tolower) %>% 
+                mutate(gear = tolower(gear)) %>% 
+                pivot_longer(cols = as.character(seq(1, 117)), names_to = 'length', values_to = 'prop') %>% 
+                mutate(prop_t = sum(prop), .by = c(year, gear)) %>% 
+                mutate(prop_old = prop / prop_t) %>% 
+                select(year, gear, length, nsamp_old = nsamp, prop_old)) -> dat
+  
+  ggplot(data = dat %>% filter(year == 2023), aes(x = length, y = prop_old)) +
+    geom_bar(stat = "identity") +
+    facet_wrap(~year)
+  
+  ggplot(data = dat %>% filter(year == 2023), aes(x = length, y = prop_new)) +
+    geom_bar(stat = "identity") +
+    facet_wrap(~year)
   
   
+  dat %>% 
+    pivot_longer(cols = c(prop_new, prop_old)) %>% 
+    filter(year == 2022) -> dat1
   
+  ggplot(data = dat1, aes(x = length, y = value, fill = name)) +
+    geom_bar(stat = "identity", position = position_dodge()) 
   
-  
+    geom_bar(aes(x = length, y = prop_new))
   
   
   ## ----- Get fishery size composition data -----

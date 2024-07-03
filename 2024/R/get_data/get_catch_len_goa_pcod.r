@@ -238,10 +238,14 @@ get_catch_len <- function(new_year = 9999,
   if(isTRUE(fltr)){
     ## filtering data to hauls with greater than 10 (federal) and 30 (state) lengths (old way) ----
     fsh_len_f %>% 
-      # filter hauls w/ >10 lengths observed
+      # filter hauls w/ less than 10 lengths observed
       tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
       tidytable::filter(n_hl >= 10) %>% 
-      tidytable::select(-n_hl) -> fsh_len_full_f
+      tidytable::select(-n_hl) %>% 
+      # filter timester-area-gear w/ less than 30 lengths observered
+      tidytable::mutate(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+      tidytable::filter(tfreq >= 30) %>% 
+      tidytable::select(-tfreq) -> fsh_len_full_f
     
     fsh_len_s %>% 
       # length freq at trimester-area-gear
@@ -301,7 +305,8 @@ get_catch_len <- function(new_year = 9999,
                              tidytable::left_join(catch_p) %>% 
                              tidytable::mutate(prop1 = prop * catch_prop) %>% 
                              tidytable::drop_na() %>% 
-                             tidytable::summarise(prop1 = sum(prop1), .by = c(year, trimester, area, gear, length))) %>% 
+                             tidytable::summarise(prop1 = sum(prop1), 
+                                                  .by = c(year, trimester, area, gear, length))) %>% 
       tidytable::mutate(prop = case_when(is.na(prop1) ~ 0,
                                          !is.na(prop1) ~ prop1)) %>% 
       tidytable::select(-prop1) -> fsh_len_comp_f
@@ -370,6 +375,7 @@ get_catch_len <- function(new_year = 9999,
                            .by = c(year, gear, length)) %>% 
       # format to ss3 data
       tidytable::pivot_wider(names_from = length, values_from = prop) -> fsh_len_comp
+    
   } else{
     # append state data ----
     # get grid of all possible combos of federal year-gear-area-trimester-length
