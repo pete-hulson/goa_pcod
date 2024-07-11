@@ -19,7 +19,8 @@ get_bin <- function(data, bins){
                            tidytable::bind_cols(bin) %>% 
                            tidytable::rename(bin = '...4') %>% 
                            tidytable::select(-length)) %>% 
-    tidytable::mutate(popn = replace_na(popn, 0))
+    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
+    tidytable::summarise(popn = sum(popn), .by = c(year, length))
 }
 
 ss3_len_com <- function(data, ss3_args, iss, nsamp){

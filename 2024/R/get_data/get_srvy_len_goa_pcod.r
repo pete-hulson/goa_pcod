@@ -51,6 +51,8 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
                     num = population_count) -> twl_q
     
     dplyr::collect(twl_q) %>% 
+      tidytable::filter(length > 0) %>% 
+      tidytable::mutate(length = length / 10) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'), delim = ",")
     capture.output(dplyr::show_query(twl_q), 
                    file = here::here(new_year, "data", "sql", "twl_srvy_lpop_sql.txt"))
@@ -62,10 +64,8 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
   
   # bin length comps to desired bin width
   ts_lpop %>% 
-    tidytable::filter(length > 0) %>% 
     tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
-    get_bin(., bins) %>% 
-    tidytable::select(-bin) -> ts_lpop_bin  
+    get_bin(., bins) -> ts_lpop_bin  
 
   # compute comps
   ts_lpop_bin %>% 
@@ -132,13 +132,11 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
   lls_lpop <- vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_length_data.csv")) %>% 
     tidytable::filter(year >= 1990)
   
-  
   # bin length comps to desired bin width
   lls_lpop %>% 
     tidytable::filter(length > 0) %>% 
     tidytable::summarise(popn = sum(rpn), .by = c(year, length)) %>% 
-    get_bin(., bins) %>% 
-    tidytable::select(-bin) -> lls_lpop_bin
+    get_bin(., bins) -> lls_lpop_bin
   
   # compute comps
   lls_lpop_bin %>% 
