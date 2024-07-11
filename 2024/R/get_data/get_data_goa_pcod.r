@@ -110,6 +110,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                       species = srv_sp_str,
                                       query = query,
                                       bins = len_bins,
+                                      ss3_frmt = TRUE,
                                       iss = FALSE,
                                       nsamp = 100)
   cat(crayon::blue("trawl survey length"), crayon::green$underline$bold("DONE"), "\n")
@@ -120,6 +121,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     species = srv_sp_str, 
                                     query = query,
                                     bins = len_bins,
+                                    ss3_frmt = TRUE,
                                     iss = FALSE,
                                     nsamp = 100)
   cat(crayon::blue("longline survey length"), crayon::green$underline$bold("DONE"), "\n")
