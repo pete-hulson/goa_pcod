@@ -124,61 +124,14 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     nsamp = 100)
   
 
-  
-  
-  # test fishery fcns
-  libs <- c("r4ss",
-            "RODBC",
-            "DBI",
-            "dplyr",
-            "data.table",
-            "FSA",
-            "lubridate",
-            "tidyr",
-            "afscdata",
-            "purrr",
-            "tidyverse",
-            "tidytable",
-            "vroom",
-            "here")
-  
-  if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
-    install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
-  }
-  
-  lapply(libs, library, character.only = TRUE)
-  
-  ALL_STATE_LENGTHS <- vroom::vroom(here::here(2024, 'data', 'ALL_STATE_LENGTHS.csv'))
-  
-  source(here::here(2024, "R", "get_data", "get_catch_len_goa_pcod.r"))
-  
-  source(here::here(2024, "R", "get_data", "GET_LENGTH_BY_CATCH_GOA.R"))
-  
-  
-  
-  AFSC = odbcConnect("AFSC", 
-                     'hulsonp', 
-                     'Liam1#Fin2$Bri3', 
-                     believeNRows=FALSE)
-  AKFIN = odbcConnect("AKFIN", 
-                     'phulson', 
-                     '$blwins1', 
-                     believeNRows=FALSE)
-
-  auxFLCOMP <- LENGTH_BY_CATCH_GOA(fsh_sp_str = 202,
-                                   fsh_sp_label = "'PCOD'",
-                                   ly = 2024)
-  auxFLCOMP <- auxFLCOMP[[3]]
-  
+  ## fishery ----
   new_fsh_comp <- get_catch_len(new_year = 2024,
                                 fsh_sp_code = 202,
                                 query = TRUE,
                                 database = 'afsc',
-                                fltr = TRUE,
-                                fill_st = TRUE)
-  
+                                fltr = TRUE)
 
-  
+
   
   
   ## ----- Get fishery size composition data -----
