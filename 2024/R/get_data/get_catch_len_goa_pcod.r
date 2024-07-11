@@ -39,7 +39,7 @@ get_catch_len <- function(new_year = 9999,
                       haul_join,
                       numb = extrapolated_number,
                       cruise = cruise.x,
-                      permit = permit.x,
+                      permit = permit.y,
                       haul = haul.x,
                       weight = extrapolated_weight,
                       length,
@@ -54,8 +54,7 @@ get_catch_len <- function(new_year = 9999,
         dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
 
       dplyr::collect(afsc_len) %>% 
-        dplyr::mutate(hday = hday + lubridate::hours('8'),
-                      weight = weight / 1000,
+        dplyr::mutate(weight = weight / 1000,
                       year = lubridate::year(hday),
                       month = lubridate::month(hday),
                       season = dplyr::case_when(month <= 2 ~ 1,
@@ -162,10 +161,8 @@ get_catch_len <- function(new_year = 9999,
                                               yr == yr2 ~ next_saturday)) %>% 
     tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
     tidytable::rename(wed = wed2) %>% 
-    # truncate area to nearest 10 (e.g., 649 becomes 640), set plus length group
-    tidytable::mutate(area = trunc(area / 10) * 10,
-                      length = case_when(length > 116 ~ 117,
-                                         length <= 116 ~ length))
+    # truncate area to nearest 10 (e.g., 649 becomes 640)
+    tidytable::mutate(area = trunc(area / 10) * 10)
 
   ### state ----
   fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'ALL_STATE_LENGTHS.csv')) %>% 
@@ -241,11 +238,7 @@ get_catch_len <- function(new_year = 9999,
       # filter hauls w/ less than 10 lengths observed
       tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
       tidytable::filter(n_hl >= 10) %>% 
-      tidytable::select(-n_hl) %>% 
-      # filter timester-area-gear w/ less than 30 lengths observered
-      tidytable::mutate(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-      tidytable::filter(tfreq >= 30) %>% 
-      tidytable::select(-tfreq) -> fsh_len_full_f
+      tidytable::select(-n_hl) -> fsh_len_full_f
     
     fsh_len_s %>% 
       # length freq at trimester-area-gear
@@ -303,6 +296,10 @@ get_catch_len <- function(new_year = 9999,
                                                   .by = c(year, wed, trimester, area, gear, length)) %>% 
                              # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
                              tidytable::left_join(catch_p) %>% 
+                             # set plus length group to 117 cm
+                             tidytable::mutate(length = case_when(length > 116 ~ 117,
+                                                                  length <= 116 ~ length)) %>% 
+                             # weight length comp by proportion of catch
                              tidytable::mutate(prop1 = prop * catch_prop) %>% 
                              tidytable::drop_na() %>% 
                              tidytable::summarise(prop1 = sum(prop1), 
@@ -336,7 +333,7 @@ get_catch_len <- function(new_year = 9999,
     
     ## merge state and federal length frequencies ----
     # test which trimester-area-gear length freqs have more state than fed data
-    fsh_len_f %>% 
+    fsh_len_full_f %>% 
       # get federal number of length obs by trimester-area-gear
       tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
       # get state number of length obs by trimester-area-gear
@@ -356,7 +353,7 @@ get_catch_len <- function(new_year = 9999,
     fsh_len_comp_f %>% 
       tidytable::left_join(state_test) %>% 
       tidytable::filter(is.na(state)) %>% 
-      tidytable::left_join(fsh_len_f %>%
+      tidytable::left_join(fsh_len_full_f %>%
                              tidytable::summarise(nsamp = length(unique(haul_join)),
                                                   .by = c(year, trimester, area, gear))) %>% 
       tidytable::mutate(state = tidytable::replace_na(state, 0),
@@ -365,7 +362,7 @@ get_catch_len <- function(new_year = 9999,
       tidytable::bind_rows(fsh_len_comp_s %>% 
                              tidytable::left_join(state_test) %>% 
                              tidytable::filter(!is.na(state)) %>% 
-                             tidytable::left_join(fsh_len_s %>% 
+                             tidytable::left_join(fsh_len_full_s %>% 
                                                     tidytable::summarise(tot = sum(freq), .by = c(year, trimester, area, gear)) %>% 
                                                     tidytable::drop_na() %>% 
                                                     tidytable::mutate(nsamp = round(tot / 50)) %>% 
@@ -412,10 +409,10 @@ get_catch_len <- function(new_year = 9999,
                              tidytable::select(year, gear, length, prop = len_comp)) %>% 
       tidytable::mutate(prop = case_when(is.na(prop) ~ 0,
                                          !is.na(prop) ~ prop)) %>% 
-      tidytable::left_join(fsh_len_f %>%
+      tidytable::left_join(fsh_len_full_f %>%
                              tidytable::summarise(nsamp_f = length(unique(haul_join)),
                                                   .by = c(year, gear)) %>% 
-                             tidytable::full_join(fsh_len_s %>% 
+                             tidytable::full_join(fsh_len_full_s %>% 
                                                     tidytable::summarise(tot = sum(freq), .by = c(year, gear)) %>% 
                                                     tidytable::drop_na() %>% 
                                                     tidytable::mutate(nsamp_s = round(tot / 50)) %>% 
