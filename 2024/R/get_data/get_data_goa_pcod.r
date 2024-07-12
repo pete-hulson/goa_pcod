@@ -57,7 +57,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                    srv_sp,
                    srv_area,
                    database)
-    cat(crayon::blue("data query"), crayon::green$underline$bold("DONE"), "\n")
+    cat(crayon::green$bold("\u2713"), crayon::blue("data query"), crayon::green$underline$bold("DONE"), "\n")
   }
   
   # get catch ----
@@ -68,28 +68,28 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$N_catch <- nrow(ss3_catch)
   new_data$catch <- ss3_catch
 
-  cat(crayon::blue("catch data"), crayon::green$underline$bold("DONE"), "\n")
-  
+  cat(crayon::green$bold("\u2713"), crayon::blue("catch data"), crayon::green$underline$bold("DONE"), "\n")
+
   # get survey indices ----
   
   ## afsc bottom trawl survey ----
   ss3_twl_indx <- get_twl_srvy_index(new_year,
                                      indx = indx)
-  cat(crayon::blue("trawl survey index data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## afsc longline survey ----
   ss3_ll_indx <- get_ll_srvy_index(new_year,
                                    indx)
-  cat(crayon::blue("longline survey index data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index data"), crayon::green$underline$bold("DONE"), "\n")
 
   ## iphc longline survey ----
   ss3_iphc_indx <- get_iphc_srvy_index(new_year)
-  cat(crayon::blue("iphc survey index data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## adf&g trawl survey ----
   ss3_adfg_indx <- get_adfg_srvy_index(new_year,
                                        run_glm)
-  cat(crayon::blue("adf&g survey index data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("adf&g survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## larval indices ----
   # note: for time-being, these are entered by hand from emailed data
@@ -104,7 +104,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
-  cat(crayon::blue("survey index data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("survey index data"), crayon::green$underline$bold("DONE"), "\n")
 
   # get length composition data ----
 
@@ -114,7 +114,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                       ss3_frmt,
                                       iss = FALSE,
                                       nsamp = 100)
-  cat(crayon::blue("trawl survey length data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## afsc longline survey ----
   ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year,
@@ -122,12 +122,12 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     ss3_frmt,
                                     iss = FALSE,
                                     nsamp = 100)
-  cat(crayon::blue("longline survey length data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## fishery ----
   new_fsh_comp <- get_catch_len(new_year,
                                 fltr = TRUE)
-  cat(crayon::blue("fishery length data"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("fishery length data"), crayon::green$underline$bold("DONE"), "\n")
   
 
   

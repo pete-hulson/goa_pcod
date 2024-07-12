@@ -53,7 +53,7 @@ query_goa_pcod <- function(new_year = 9999,
   capture.output(dplyr::show_query(adfg_q), 
                  file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
   
-  cat(crayon::blue("catch query"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("catch query"), crayon::green$underline$bold("DONE"), "\n")
   
   
   # trawl survey index data ----
@@ -89,7 +89,7 @@ query_goa_pcod <- function(new_year = 9999,
   capture.output(dplyr::show_query(twl_q), 
                  file = here::here(new_year, "data", "sql", "twl_srvy_index_sql.txt"))
   
-  cat(crayon::blue("trawl survey index query"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey index query"), crayon::green$underline$bold("DONE"), "\n")
   
   # longline survey index data ----
   afscdata::q_lls_rpn(year = new_year,
@@ -99,7 +99,7 @@ query_goa_pcod <- function(new_year = 9999,
                       use_historical = FALSE,
                       db = conn)
   
-  cat(crayon::blue("longline survey index query"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold("DONE"), "\n")
   
   # iphc survey index data ----
     dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
@@ -121,7 +121,7 @@ query_goa_pcod <- function(new_year = 9999,
     capture.output(dplyr::show_query(iphc_q), 
                    file = here::here(new_year, "data", "sql", "iphc_srvy_index_sql.txt"))
     
-    cat(crayon::blue("iphc survey index query"), crayon::green$underline$bold("DONE"), "\n")
+    cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold("DONE"), "\n")
     
     # trawl survey length data ----
     dplyr::tbl(conn, dplyr::sql('gap_products.akfin_sizecomp')) %>% 
@@ -152,7 +152,7 @@ query_goa_pcod <- function(new_year = 9999,
     capture.output(dplyr::show_query(twl_q), 
                    file = here::here(new_year, "data", "sql", "twl_srvy_lpop_sql.txt"))
     
-    cat(crayon::blue("trawl survey length query"), crayon::green$underline$bold("DONE"), "\n")
+    cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length query"), crayon::green$underline$bold("DONE"), "\n")
     
     # longline survey length data ----
     afscdata::q_lls_rpn_length(year = new_year,
@@ -160,7 +160,7 @@ query_goa_pcod <- function(new_year = 9999,
                                area = srv_area,
                                db = conn)
 
-    cat(crayon::blue("longline survey length query"), crayon::green$underline$bold("DONE"), "\n")
+    cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length query"), crayon::green$underline$bold("DONE"), "\n")
     
     # fishery length data ----
     ## afsc ----
@@ -280,6 +280,6 @@ query_goa_pcod <- function(new_year = 9999,
                      file = here::here(new_year, "data", "sql", "fsh_lfreq_akfin_sql.txt"))
     }
   
-    cat(crayon::blue("fishery length query"), crayon::green$underline$bold("DONE"), "\n")
+    cat(crayon::green$bold("\u2713"), crayon::blue("fishery length query"), crayon::green$underline$bold("DONE"), "\n")
     
 }
