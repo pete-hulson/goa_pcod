@@ -80,7 +80,7 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
 
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
-    # hard-wired in season, etc for ss3 in ss3_args
+    # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part)
     ss3_args = c(7, 4, 0, 0)
     ts_lcomp <- ss3_len_com(ts_lcomp,
                             ss3_args,
@@ -157,7 +157,7 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
   
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
-    # hard-wired in season, etc for ss3 in ss3_args
+    # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part)
     ss3_args = c(7, 5, 0, 0)
     lls_lcomp <- ss3_len_com(lls_lcomp,
                              ss3_args,

@@ -1,5 +1,5 @@
 #' utility fcns
-
+#' function to bin length data to custom length bins 
 get_bin <- function(data, bins){
   
   test_lens = seq(min(data), max(data))
@@ -19,7 +19,7 @@ get_bin <- function(data, bins){
     tidytable::rename(length = '...1',
                       bin = '...2')
 }
-
+#' function to format survey length comp data for ss3 data file
 ss3_len_com <- function(data, ss3_args, iss, nsamp){
   
   data %>% 
@@ -38,6 +38,23 @@ ss3_len_com <- function(data, ss3_args, iss, nsamp){
       tidytable::mutate(nsamp = nsamp) %>% 
       tidytable::pivot_wider(names_from = length, values_from = lencomp) -> ss3_lcomp
   }
+  
+  ss3_lcomp
+}
+#' function to format fishery length comp data for ss3 data file
+ss3_len_com_fsh <- function(data, ss3_args, nsamp){
+  
+  data %>% 
+    tidytable::mutate(seas = ss3_args[1],
+                      fltsrv = case_when(gear == 'trawl' ~ 1,
+                                         gear == 'longline' ~ 2,
+                                         gear == 'pot' ~ 3),
+                      gender = ss3_args[2],
+                      part = ss3_args[3]) %>% 
+    tidytable::left_join(nsamp) %>% 
+    tidytable::select(-gear) %>% 
+    tidytable::pivot_wider(names_from = length, values_from = lencomp) %>% 
+    tidytable::arrange(fltsrv) -> ss3_lcomp
   
   ss3_lcomp
 }

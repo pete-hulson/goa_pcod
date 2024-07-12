@@ -7,13 +7,15 @@
 #' @param query switch for whether to run sql query for data (default = FALSE)
 #' @param database switch for which database to pull data from (default = 'akfin')
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
+#' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' 
 
 get_catch_len <- function(new_year = 9999,
                           fsh_sp_code = 202,
                           query = FALSE,
                           database = 'akfin',
-                          fltr = TRUE){
+                          fltr = TRUE,
+                          ss3_frmt = TRUE){
   
   # query length freq data ----
   # note that catch data is queried in 'get_catch_goa_pcod' fcn
@@ -375,12 +377,25 @@ get_catch_len <- function(new_year = 9999,
     tidytable::left_join(fsh_len_comp %>% 
                            tidytable::left_join(get_bin(.$length, bins)) %>% 
                            tidytable::summarise(prop = sum(prop), .by = c(year, gear, bin))) %>% 
-    tidytable::select(-bin) -> fsh_lcomp
+    tidytable::select(-bin) %>% 
+    # standardize length comps
+    tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
+    tidytable::mutate(lencomp = prop / prop_tot) %>% 
+    tidytable::select(-prop, -prop_tot) -> fsh_lcomp
   
-
   
-    # format to ss3 data
-    tidytable::pivot_wider(names_from = length, values_from = prop) -> fsh_len_comp
+  # format for ss3 if desired ----
+  if(isTRUE(ss3_frmt)){
+    # hard-wired in season, etc for ss3 in ss3_args c(seas, gender, part)
+    ss3_args = c(1, 0, 0)
+    # get input sample size as number of hauls or 200, whichever is smaller
+    nsamp <- fsh_len_comp %>% 
+      tidytable::summarise(nsamp = mean(nsamp), .by = c(year, gear)) %>% 
+      tidytable::mutate(nsamp = case_when(nsamp > 200 ~ 200,
+                                          nsamp <= 200 ~ nsamp))
+    # format data
+    fsh_lcomp <- ss3_len_com_fsh(fsh_lcomp, ss3_args, nsamp)
+  }
   
   fsh_len_comp
 }
