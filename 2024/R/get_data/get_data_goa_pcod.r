@@ -1,23 +1,23 @@
 #' Originally adapted/generalized from Steve Barbeaux's files for generating SS files for EBS/AI Greenland Turbot
 #' Modified in 2022 and 2023, and then completely re-developed in 2024 by Pete Hulson
 #'  
-#' @param new_data new data file for current assessment year
-#' @param new_file new data file name
+#' @param new_data ss3 data file for current assessment year to be filled in with updated data
+#' @param new_file new ss3 data file name
 #' @param new_year current assessment year
-#' @param sp_area assessment region (default = 'GOA')
-#' @param fsh_sp_label species label for observer/catch data (default = 'PCOD')
-#' @param fsh_sp_area NPFMC subareas (default to goa subareas)
-#' @param fsh_sp_str species code for observer/catch data (default = '202')
+#' @param query switch for whether to run sql query and update data (default = TRUE)
+#' @param fsh_sp species label for observer/catch data (default = "PCOD")
+#' @param fsh_sp_code species code for observer/catch data (default = 202)
+#' @param fsh_subarea NPFMC subareas (default to goa subareas c("CG","PWSI","SE","SEI","WG","WY"))
 #' @param fsh_start_yr beginning year for fishery (default = 1977)
-#' @param srv_sp_str species code for AFSC surveys (default = 21720)
-#' @param twl_srv_st_yr start year for trawl survey (default = 1990)
-#' @param ll_srv_st_yr start year for longline survey (default = 1990)
+#' @param database switch for which database to pull fishery length data from (default = 'akfin')
+#' @param twl_srvy gap survey id number (default = 47 for goa)
+#' @param srv_sp gap species code (default = 21720)
+#' @param srv_area survey area (default = 'goa')
+#' @param indx get survey indices for either numbers 'num', or biomass 'biom' (default = 'num')
+#' @param run_glm switch for whether to run delta glm model for adf&g index (default = FALSE)
 #' @param len_bins length bins for length comps (default = NULL)
+#' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param max_age maximum age for age comps (default = 10)
-#' @param is_new_datafile switch whether data file is new (default = TRUE)
-#' @param update_adfg_iphc switch for whether adf&g and iphc data should be updated (involves running models, default = FALSE)
-#' @param catch_table switch to get catch tables for SAFE (move somewhere else)
-#' @param aux_fsh_comp switch for whether to include auxiliary state fishery length comp data (default = 3)
 #' 
 #' @return
 #' @export get_data_goa_pcod
@@ -28,68 +28,72 @@
 get_data_goa_pcod <- function(new_data = new_data,
                               new_file = "blarYYYY.dat",
                               new_year = 9999,
-                              sp_area = "'GOA'",
-                              fsh_sp_label = "PCOD",
-                              fsh_sp_area = c("CG","PWSI","SE","SEI","WG","WY"),
-                              fsh_sp_str = "202",
+                              query = TRUE,
+                              fsh_sp = "PCOD",
+                              fsh_sp_code = 202,
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"),
                               fsh_start_yr = 1977,
-                              srv_sp_str = "21720",
-                              twl_srv_start_yr = 1990,
-                              ll_srv_start_year = 1990,
+                              database = 'akfin',
+                              twl_srvy = 47,
+                              srv_sp = 21720,
+                              srv_area = 'goa',
+                              indx = 'num',
+                              run_glm = FALSE,
                               len_bins = NULL,
-                              max_age = 10,
-                              is_new_datafile = TRUE,
-                              update_adfg_iphc = FALSE,
-                              catch_table = FALSE,
-                              aux_fsh_comp = 3) {
+                              ss3_frmt = TRUE,
+                              max_age = 10) {
   
   new_data$sourcefile <- new_file
   new_data$endyr <- new_year
   
+  # query data ----
+  
+  if(isTRUE(query)){
+    query_goa_pcod(new_year,
+                   fsh_sp,
+                   fsh_sp_code,
+                   fsh_subarea,
+                   twl_srvy,
+                   srv_sp,
+                   srv_area,
+                   database)
+    cat(crayon::blue("data query"), crayon::green$underline$bold("DONE"), "\n")
+  }
+  
   # get catch ----
   
-  ss3_catch <- get_catch_goa_pcod(new_year = new_dat_year,
-                                  fsh_sp_label = fsh_sp_label,
-                                  fsh_sp_area = fsh_sp_area,
-                                  query = query)
+  ss3_catch <- get_catch_goa_pcod(new_year)
   
   # put into ss3 data file
   new_data$N_catch <- nrow(ss3_catch)
   new_data$catch <- ss3_catch
 
-  cat(crayon::blue("catch"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("catch data"), crayon::green$underline$bold("DONE"), "\n")
   
   # get survey indices ----
   
   ## afsc bottom trawl survey ----
-  ss3_twl_indx <- get_twl_srvy_index(new_year = new_dat_year,
-                                     twl_srvy = twl_srvy,
-                                     species = srv_sp_str,
-                                     query = query,
+  ss3_twl_indx <- get_twl_srvy_index(new_year,
                                      indx = indx)
-  cat(crayon::blue("trawl survey index"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("trawl survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## afsc longline survey ----
-  ss3_ll_indx <- get_ll_srvy_index(new_year = new_dat_year,
-                                   area = sp_area,
-                                   species = srv_sp_str,
-                                   query = query,
-                                   indx = indx)
-  cat(crayon::blue("longline survey index"), crayon::green$underline$bold("DONE"), "\n")
+  ss3_ll_indx <- get_ll_srvy_index(new_year,
+                                   indx)
+  cat(crayon::blue("longline survey index data"), crayon::green$underline$bold("DONE"), "\n")
 
   ## iphc longline survey ----
-  ss3_iphc_indx <- get_iphc_srvy_index(new_year = new_dat_year,
-                                       query = query)
-  cat(crayon::blue("iphc survey index"), crayon::green$underline$bold("DONE"), "\n")
+  ss3_iphc_indx <- get_iphc_srvy_index(new_year)
+  cat(crayon::blue("iphc survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## adf&g trawl survey ----
-  ss3_adfg_indx <- get_adfg_srvy_index(new_year = new_dat_year,
-                                       run_glm = run_glm)
-  cat(crayon::blue("adf&g survey index"), crayon::green$underline$bold("DONE"), "\n")
+  ss3_adfg_indx <- get_adfg_srvy_index(new_year,
+                                       run_glm)
+  cat(crayon::blue("adf&g survey index data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## larval indices ----
   # note: for time-being, these are entered by hand from emailed data
-  ss3_larval_indx <- vroom::vroom(here::here(new_dat_year, 'data', 'raw', 'larval_indices.csv'))
+  ss3_larval_indx <- vroom::vroom(here::here(new_year, 'data', 'raw', 'larval_indices.csv'))
   
   ## format for ss3 data file ----
   cpue <- ss3_twl_indx %>% 
@@ -100,39 +104,30 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
-  cat(crayon::blue("survey indices"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("survey index data"), crayon::green$underline$bold("DONE"), "\n")
 
   # get length composition data ----
 
   ## afsc bottom trawl survey ----
-  ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year = new_dat_year,
-                                      twl_srvy = twl_srvy,
-                                      species = srv_sp_str,
-                                      query = query,
-                                      bins = len_bins,
-                                      ss3_frmt = TRUE,
+  ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year,
+                                      len_bins,
+                                      ss3_frmt,
                                       iss = FALSE,
                                       nsamp = 100)
-  cat(crayon::blue("trawl survey length"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("trawl survey length data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## afsc longline survey ----
-  ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year = new_dat_year,
-                                    area = sp_area,
-                                    species = srv_sp_str, 
-                                    query = query,
-                                    bins = len_bins,
-                                    ss3_frmt = TRUE,
+  ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year,
+                                    len_bins,
+                                    ss3_frmt,
                                     iss = FALSE,
                                     nsamp = 100)
-  cat(crayon::blue("longline survey length"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("longline survey length data"), crayon::green$underline$bold("DONE"), "\n")
   
   ## fishery ----
-  new_fsh_comp <- get_catch_len(new_year = 2024,
-                                fsh_sp_code = 202,
-                                query = TRUE,
-                                database = 'afsc',
+  new_fsh_comp <- get_catch_len(new_year,
                                 fltr = TRUE)
-  cat(crayon::blue("fishery length"), crayon::green$underline$bold("DONE"), "\n")
+  cat(crayon::blue("fishery length data"), crayon::green$underline$bold("DONE"), "\n")
   
 
   
