@@ -365,7 +365,20 @@ get_catch_len <- function(new_year = 9999,
                                                   tidytable::select(-tot))) %>% 
     tidytable::summarise(prop = sum(prop),
                          nsamp = sum(nsamp),
-                         .by = c(year, gear, length)) %>% 
+                         .by = c(year, gear, length)) -> fsh_len_comp
+  
+  # bin length comps to desired bin width ----
+  tidytable::expand_grid(year = sort(unique(fsh_len_comp$year)),
+                         gear = sort(unique(fsh_len_comp$gear)),
+                         length = bins) %>% 
+    tidytable::bind_cols(bin = rep(rep(seq(1, length(bins)), length(unique(fsh_len_comp$year))), length(unique(fsh_len_comp$gear)))) %>% 
+    tidytable::left_join(fsh_len_comp %>% 
+                           tidytable::left_join(get_bin(.$length, bins)) %>% 
+                           tidytable::summarise(prop = sum(prop), .by = c(year, gear, bin))) %>% 
+    tidytable::select(-bin) -> fsh_lcomp
+  
+
+  
     # format to ss3 data
     tidytable::pivot_wider(names_from = length, values_from = prop) -> fsh_len_comp
   
