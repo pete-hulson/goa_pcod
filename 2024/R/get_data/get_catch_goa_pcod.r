@@ -3,54 +3,10 @@
 #' Re-developed in 2024 by p. hulson to develop link to afscdata package
 #' 
 #' @param new_year current assessment year
-#' @param fsh_sp species label for observer/catch data (default = 'PCOD')
-#' @param fsh_subarea NPFMC subareas (default to goa subareas)
-#' @param query switch for whether to run sql query for data (default = FALSE)
 #' 
 
-get_catch_goa_pcod <- function(new_year = 9999,
-                               fsh_sp = "PCOD",
-                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"),
-                               query = FALSE){
-  
-  # query data ----
-  if(isTRUE(query)){
-    
-    # get connected to akfin
-    db = 'akfin'
-    conn = afscdata::connect(db)
-    
-    # query catch data and write raw data to folder 
-    afscdata::q_catch(year = new_year,
-                      species = fsh_sp,
-                      area = fsh_subarea,
-                      db = conn,
-                      add_fields = "akr_state_fishery_flag")
-    
-    # query ADF&G data from 1997-2002 and write raw data to folder 
-    dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
-      dplyr::rename_all(tolower) %>% 
-      dplyr::select(akfin_year,
-                    fmp_area,
-                    adfg_i_species_code,
-                    adfg_i_harvest_code,
-                    fmp_gear,
-                    cfec_whole_pounds) %>% 
-      dplyr::filter(akfin_year >= 1997,
-                    akfin_year <= 2002,
-                    adfg_i_species_code == 110,
-                    adfg_i_harvest_code == 80,
-                    fmp_area == 'GOA') %>% 
-      dplyr::summarise(catch_mt = sum(cfec_whole_pounds) / 2204.622, 
-                       .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) -> adfg_q
-    
-      dplyr::collect(adfg_q) %>% 
-      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
-      capture.output(dplyr::show_query(adfg_q), 
-                     file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
+get_catch_goa_pcod <- function(new_year = 9999){
 
-  }
-  
   # read in data files ----
   
   fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fsh_catch_data.csv"))

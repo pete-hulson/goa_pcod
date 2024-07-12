@@ -3,141 +3,14 @@
 #' Re-developed in 2024 by p. hulson (too many changes for short note)
 #' 
 #' @param new_year current assessment year
-#' @param fsh_sp_code species code for observer/catch data (default = 202)
-#' @param query switch for whether to run sql query for data (default = FALSE)
-#' @param database switch for which database to pull data from (default = 'akfin')
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' 
 
 get_catch_len <- function(new_year = 9999,
-                          fsh_sp_code = 202,
-                          query = FALSE,
-                          database = 'akfin',
                           fltr = TRUE,
                           ss3_frmt = TRUE){
-  
-  # query length freq data ----
-  # note that catch data is queried in 'get_catch_goa_pcod' fcn
-  if(isTRUE(query)){
-    
-    if(database == 'afsc'){
-      # get connected to afsc
-      db = 'afsc'
-      conn = afscdata::connect(db)
-      
-      # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-      dplyr::tbl(conn, dplyr::sql('obsint.debriefed_haul')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_spcomp')) %>% 
-                            dplyr::filter(SPECIES == fsh_sp_code),
-                          by = c('HAUL_JOIN')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.debriefed_length')) %>% 
-                            dplyr::filter(SPECIES == fsh_sp_code),
-                          by = c('HAUL_JOIN')) %>% 
-        dplyr::rename_all(tolower) %>% 
-        dplyr::select(gear,
-                      haul_join,
-                      numb = extrapolated_number,
-                      cruise = cruise.x,
-                      permit = permit.y,
-                      haul = haul.x,
-                      weight = extrapolated_weight,
-                      length,
-                      freq = frequency,
-                      lon = londd_end.x,
-                      lat = latdd_end.x,
-                      hday = haul_date.y,
-                      area = nmfs_area.x) %>% 
-        dplyr::filter(area >= 600,
-                      area <= 699,
-                      area != 670) %>% 
-        dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
-      
-      dplyr::collect(afsc_len) %>% 
-        dplyr::mutate(weight = weight / 1000,
-                      year = lubridate::year(hday),
-                      month = lubridate::month(hday),
-                      season = dplyr::case_when(month <= 2 ~ 1,
-                                                month %in% c(3, 4) ~ 2,
-                                                month %in% c(5, 6, 7, 8) ~ 3,
-                                                month %in% c(9, 10) ~ 4,
-                                                month >= 11 ~ 5),
-                      quarter = dplyr::case_when(month <= 3 ~ 1,
-                                                 month %in% c(4, 5, 6) ~ 2,
-                                                 month %in% c(7, 8, 9) ~ 3,
-                                                 month >= 10 ~ 4),
-                      trimester = dplyr::case_when(month <= 4 ~ 1,
-                                                   month %in% c(5, 6, 7, 8) ~ 2,
-                                                   month >= 9 ~ 3),
-                      gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
-                                              gear == 6 ~ 'pot',
-                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>% 
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
-      
-      capture.output(dplyr::show_query(afsc_len), 
-                     file = here::here(new_year, "data", "sql", "fsh_lfreq_afsc_sql.txt"))
-      
-    }
-    
-    if(database == 'akfin'){
-      # get connected to akfin
-      db = 'akfin'
-      conn = afscdata::connect(db)
-      
-      # query fishery length data (note to self: not yet in afscdata - see if this query can get added to that package)
-      dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
-                            dplyr::filter(SPECIES == fsh_sp_code),
-                          by = c('HAUL_JOIN')) %>% 
-        dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_length_mv')) %>% 
-                            dplyr::filter(SPECIES == fsh_sp_code),
-                          by = c('HAUL_JOIN')) %>% 
-        dplyr::rename_all(tolower) %>% 
-        dplyr::select(gear,
-                      haul_join,
-                      numb = extrapolated_number,
-                      cruise = cruise.x,
-                      permit = permit.y,
-                      haul = haul.x,
-                      weight = extrapolated_weight,
-                      length,
-                      freq = frequency,
-                      lon = londd_end.x,
-                      lat = latdd_end.x,
-                      hday = haul_date.x,
-                      area = nmfs_area.x) %>% 
-        dplyr::filter(area >= 600,
-                      area <= 699,
-                      area != 670) -> akfin_len 
-      
-      dplyr::collect(akfin_len) %>% 
-        dplyr::mutate(haul_join = paste0('H', haul_join),
-                      weight = weight / 1000,
-                      year = lubridate::year(hday),
-                      month = lubridate::month(hday),
-                      season = dplyr::case_when(month <= 2 ~ 1,
-                                                month %in% c(3, 4) ~ 2,
-                                                month %in% c(5, 6, 7, 8) ~ 3,
-                                                month %in% c(9, 10) ~ 4,
-                                                month >= 11 ~ 5),
-                      quarter = dplyr::case_when(month <= 3 ~ 1,
-                                                 month %in% c(4, 5, 6) ~ 2,
-                                                 month %in% c(7, 8, 9) ~ 3,
-                                                 month >= 10 ~ 4),
-                      trimester = dplyr::case_when(month <= 4 ~ 1,
-                                                   month %in% c(5, 6, 7, 8) ~ 2,
-                                                   month >= 9 ~ 3),
-                      gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
-                                              gear == 6 ~ 'pot',
-                                              gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>%  
-        dplyr::filter(year <= new_year) %>% 
-        vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq.csv'), delim = ",")
-      
-      capture.output(dplyr::show_query(akfin_len), 
-                     file = here::here(new_year, "data", "sql", "fsh_lfreq_akfin_sql.txt"))
-    }
-  }
-  
+
   # read and prep data ----
   
   ## length freq data ----
