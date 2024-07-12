@@ -1,26 +1,23 @@
 #' utility fcns
 
 get_bin <- function(data, bins){
+  
+  test_lens = seq(min(data), max(data))
+  
   bins %>% 
     tidytable::bind_cols(less = c(bins[2:length(bins)], 1000),
                          bin = seq(1, length(bins))) %>% 
     tidytable::rename(more = '...1') -> bin_test
-  bin = vector(length = length(data$length))
+  bin = vector(length = length(test_lens))
   
-  for(i in 1:length(data$length)){
-    bin[i] = which(data$length[i] > bin_test$more & data$length[i] < bin_test$less)
+  for(i in 1:length(test_lens)){
+    bin[i] = which(test_lens[i] > bin_test$more & test_lens[i] < bin_test$less)
   }
   
-  tidytable::expand_grid(year = sort(unique(data$year)),
-                         length = bins) %>% 
-    tidytable::bind_cols(rep(seq(1, length(bins)), length(unique(data$year)))) %>% 
-    tidytable::rename(bin = '...3') %>% 
-    tidytable::left_join(data %>% 
-                           tidytable::bind_cols(bin) %>% 
-                           tidytable::rename(bin = '...4') %>% 
-                           tidytable::select(-length)) %>% 
-    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
-    tidytable::summarise(popn = sum(popn), .by = c(year, length))
+  test_lens %>% 
+    tidytable::bind_cols(bin) %>% 
+    tidytable::rename(length = '...1',
+                      bin = '...2')
 }
 
 ss3_len_com <- function(data, ss3_args, iss, nsamp){

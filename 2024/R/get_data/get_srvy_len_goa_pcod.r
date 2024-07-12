@@ -63,10 +63,16 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
   ts_lpop <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'))
   
   # bin length comps to desired bin width
-  ts_lpop %>% 
-    tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
-    get_bin(., bins) -> ts_lpop_bin  
-
+  tidytable::expand_grid(year = sort(unique(ts_lpop$year)),
+                         length = bins) %>% 
+    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_lpop$year)))) %>% 
+    tidytable::left_join(ts_lpop %>% 
+                           tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
+                           tidytable::left_join(get_bin(.$length, bins)) %>% 
+                           tidytable::summarise(popn = sum(popn), .by = c(year, bin))) %>% 
+    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
+    tidytable::select(-bin) -> ts_lpop_bin
+    
   # compute comps
   ts_lpop_bin %>% 
     tidytable::mutate(lencomp = popn / sum(popn), .by = year) %>% 
@@ -133,10 +139,16 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
     tidytable::filter(year >= 1990)
   
   # bin length comps to desired bin width
-  lls_lpop %>% 
-    tidytable::filter(length > 0) %>% 
-    tidytable::summarise(popn = sum(rpn), .by = c(year, length)) %>% 
-    get_bin(., bins) -> lls_lpop_bin
+  tidytable::expand_grid(year = sort(unique(lls_lpop$year)),
+                         length = bins) %>% 
+    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(lls_lpop$year)))) %>% 
+    tidytable::left_join(lls_lpop %>% 
+                           tidytable::filter(length > 0) %>% 
+                           tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
+                           tidytable::left_join(get_bin(.$length, bins)) %>% 
+                           tidytable::summarise(popn = sum(popn), .by = c(year, bin))) %>% 
+    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
+    tidytable::select(-bin) -> lls_lpop_bin
   
   # compute comps
   lls_lpop_bin %>% 
