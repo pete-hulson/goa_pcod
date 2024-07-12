@@ -114,6 +114,7 @@ if (file.exists(here::here(new_SS_dat_year, "output")) & length(list.files(here:
 # source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
 # purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
 source(here::here(new_dat_year, "R", "utils.R"))
+source(here::here(new_dat_year, "R", "get_data", "query_data_goa_pcod.R"))
 source(here::here(new_dat_year, "R", "get_data", "get_catch_goa_pcod.r"))
 source(here::here(new_dat_year, "R", "get_data", "get_srvy_indices_goa_pcod.r"))
 source(here::here(new_dat_year, "R", "get_data", "get_srvy_len_goa_pcod.r"))
