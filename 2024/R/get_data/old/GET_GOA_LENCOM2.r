@@ -1,4 +1,11 @@
-GET_GOA_LENCOMP2<-function(fsh_sp_str1=202, len_bins1=len_bins, fsh_start_yr1=fsh_start_yr, new_SS_dat_year1= new_SS_dat_year, seas=1,gender=1,part=0,Nsamp=-1) {
+GET_GOA_LENCOMP2<-function(fsh_sp_str1=202, 
+                           len_bins1=len_bins, 
+                           fsh_start_yr1=fsh_start_yr, 
+                           new_SS_dat_year1= new_SS_dat_year, 
+                           seas=1,
+                           gender=1,
+                           part=0,
+                           Nsamp=-1) {
    require(data.table)
     
   test <- paste("SELECT CASE  \n", 
@@ -112,6 +119,7 @@ GET_GOA_LENCOMP2<-function(fsh_sp_str1=202, len_bins1=len_bins, fsh_start_yr1=fs
 
   Dspcomp=sqlQuery(AFSC,test)
   vroom::vroom_write(Dspcomp, here::here(new_SS_dat_year1, 'data', 'raw', 'fish_lencomp_domestic.csv'), delim = ",")
+  
   Dspcomp$GEAR1<-"TRAWL"
   Dspcomp$GEAR1[Dspcomp$GEAR==2]<-"POT"
   Dspcomp$GEAR1[Dspcomp$GEAR==3]<-"LONGLINE"
