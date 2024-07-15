@@ -121,7 +121,7 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  # trawl survey length data ----
+  # trawl survey length pop'n data ----
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_sizecomp')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(year,
@@ -326,5 +326,45 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "fsh_lfreq_foreign_afsc_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("foreign fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  
+  # trawl survey age pop'n data ----
+  # get connected
+  db = 'akfin'
+  conn = afscdata::connect(db)
+  
+  # query data
+  dplyr::tbl(conn, dplyr::sql('gap_products.akfin_agecomp')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(year,
+                  survey_definition_id,
+                  area_id,
+                  species_code,
+                  age,
+                  sex,
+                  population_count,
+                  length_mm_mean) %>% 
+    dplyr::filter(year <= new_year,
+                  survey_definition_id == twl_srvy,
+                  species_code == srv_sp,
+                  area_id %in% c(99903)) %>% 
+    dplyr::select(year,
+                  survey = survey_definition_id, 
+                  strata = area_id, 
+                  species_code,
+                  age, 
+                  sex,
+                  num = population_count,
+                  mean_len = length_mm_mean) -> twl_q
+  
+  dplyr::collect(twl_q) %>% 
+    tidytable::filter(age > 0) %>% 
+    tidytable::mutate(mean_len = mean_len / 10) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_apop.csv'), delim = ",")
+  capture.output(dplyr::show_query(twl_q), 
+                 file = here::here(new_year, "data", "sql", "twl_srvy_apop_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
   
 }
