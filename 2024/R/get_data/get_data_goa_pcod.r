@@ -95,7 +95,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   # note: for time-being, these are entered by hand from emailed data
   ss3_larval_indx <- vroom::vroom(here::here(new_year, 'data', 'raw', 'larval_indices.csv'))
   
-  ## format for ss3 data file ----
+  ## plop into ss3 data file ----
   cpue <- ss3_twl_indx %>% 
     tidytable::bind_rows(ss3_ll_indx) %>% 
     tidytable::bind_rows(ss3_iphc_indx) %>% 
@@ -104,7 +104,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
-  cat(crayon::green$bold("\u2713"), crayon::blue("survey index data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("ss3 survey index data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   # get length composition data ----
 
@@ -125,75 +125,36 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## fishery ----
-  new_fsh_comp <- get_catch_len(new_year,
-                                fltr = TRUE)
-  cat(crayon::green$bold("\u2713"), crayon::blue("fishery length data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
+  ### pre-1991 ----
+  pre_fsh_lcomp <- get_fsh_len_pre91(new_year,
+                                     bins = len_bins)
+  cat(crayon::green$bold("\u2713"), crayon::blue("pre-1991 fishery length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  ### post-1991 ----
+  post_fsh_lcomp <- get_fsh_len_post91(new_year,
+                                       fltr = TRUE,
+                                       bins = len_bins)
+  cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  pre_fsh_lcomp %>% 
+    tidytable::bind_rows(post_fsh_lcomp) %>% 
+    tidytable::arrange(fltsrv) -> ss3_fsh_lcomp
 
+  ## plop into ss3 data file ----
+  lcomp <- ss3_fsh_lcomp %>% 
+    tidytable::bind_rows(ss3_twl_lcomp) %>% 
+    tidytable::bind_rows(ss3_ll_lcomp)
+  
+  new_data$N_lencomp <- nrow(lcomp)
+  new_data$lencomp <- lcomp
+  cat(crayon::green$bold("\u2713"), crayon::blue("ss3 length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
-  ## ----- Get fishery size composition data -----
-  
-  # If no auxiliary state data
-  FISHLCOMP <- data.frame(GET_GOA_LENCOMP2(fsh_sp_str1 = 202, 
-                                           len_bins1 = len_bins, 
-                                           fsh_start_yr1 = fsh_start_yr, 
-                                           new_SS_dat_year1 = new_year, 
-                                           seas = 1,
-                                           gender = 0,
-                                           part = 0,
-                                           Nsamp = -1)) 
-  names(FISHLCOMP) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
-  
-  # if state lengths included in length dataset
-  if(AUXFCOMP > 0){
-    
-      auxFLCOMP <- LENGTH_BY_CATCH_GOA(fsh_sp_str = fsh_sp_str,
-                                       fsh_sp_label = fsh_sp_label,
-                                       ly = new_year)
-      if(AUXFCOMP == 1) auxFLCOMP <- auxFLCOMP[[1]]
-      if(AUXFCOMP == 2) auxFLCOMP <- auxFLCOMP[[2]]
-      if(AUXFCOMP == 3) auxFLCOMP <- auxFLCOMP[[3]]
-      
-      auxFLCOMP$FltSrv <- 1
-      auxFLCOMP$FltSrv[auxFLCOMP$GEAR == "LONGLINE"] <- 2
-      auxFLCOMP$FltSrv[auxFLCOMP$GEAR == "POT"] <- 3
-      
-      auxflCOMP1 = data.frame(Year = auxFLCOMP$YEAR,
-                              Seas = rep(1, nrow(auxFLCOMP)),
-                              FltSrv = auxFLCOMP$FltSrv,
-                              gender = rep(0, nrow(auxFLCOMP)),
-                              Part = rep(0, nrow(auxFLCOMP)),
-                              Nsamp = auxFLCOMP$Nsamp,
-                              auxFLCOMP[ , 4:(ncol(auxFLCOMP) - 1)])
-      names(auxflCOMP1) <- c("Year", "Seas", "FltSrv", "Gender", "Part", "Nsamp", len_bins)
-      
-      fishLCOMP = subset(FISHLCOMP, FISHLCOMP$Year < 1991)
-      fishLCOMP <- rbind(fishLCOMP, auxflCOMP1)
-      FISHLCOMP <- fishLCOMP[order(fishLCOMP$FltSrv, fishLCOMP$Year), ]
-    
-    # standardize length comps
-    if(sndz_lc == TRUE){
-      for(i in 1:length(FISHLCOMP[,1])){
-        FISHLCOMP[i,7:length(FISHLCOMP[1,])] <- FISHLCOMP[i,7:length(FISHLCOMP[1,])] / sum(FISHLCOMP[i,7:length(FISHLCOMP[1,])])
-      }
-    }
-  }
-  
-  print("Fisheries LCOMP2 done")
   
   
-
-  ## combine all the length comp data
-  LCOMP <- rbind(FISHLCOMP, SRV_LCOMP_SS, LL_LENGTH)
-  LCOMP[7:ncol(LCOMP), ] <- round(LCOMP[7:ncol(LCOMP), ], 5)
   
-  ## write into SS3 files
-  new_data$lencomp <- LCOMP
-  new_data$lencomp$Nsamp[new_data$lencomp$Nsamp >= 200] <- 200
-  new_data$N_lencomp <- nrow(LCOMP)
   
-  print("All LCOMP done")
   
   
   ## ----- Get trawl survey age composition data -----

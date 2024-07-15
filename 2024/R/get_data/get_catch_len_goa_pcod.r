@@ -3,10 +3,12 @@
 #' Re-developed in 2024 by p. hulson (too many changes for short note)
 #' 
 #' @param new_year current assessment year
+#' @param bins specified length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' 
 
 get_fsh_len_pre91 <- function(new_year = 9999,
+                              bins = NULL,
                               ss3_frmt = TRUE){
   
   # read and prep data ----
@@ -146,11 +148,13 @@ get_fsh_len_pre91 <- function(new_year = 9999,
 #' 
 #' @param new_year current assessment year
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
+#' @param bins specified length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' 
 
 get_fsh_len_post91 <- function(new_year = 9999,
                                fltr = TRUE,
+                               bins = NULL,
                                ss3_frmt = TRUE){
   
   # read and prep data ----
