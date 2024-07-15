@@ -58,3 +58,28 @@ ss3_len_com_fsh <- function(data, ss3_args, nsamp){
   
   ss3_lcomp
 }
+#' function to format survey age comp data for ss3 data file
+ss3_age_com <- function(data, ss3_args, iss, nsamp){
+  
+  data %>% 
+    tidytable::mutate(seas = ss3_args[1],
+                      fltsrv = ss3_args[2],
+                      gender = ss3_args[3],
+                      part = ss3_args[4],
+                      ageerr = ss3_args[5],
+                      lgin_lo = ss3_args[6],
+                      lgin_hi = ss3_args[7]) -> acomp_part
+  
+  # test if input sample size constant or read-in (e.g., from surveyISS package)
+  if(isTRUE(iss)){
+    acomp_part %>% 
+      tidytable::left_join(nsamp) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
+  } else{
+    lcomp_part %>% 
+      tidytable::mutate(nsamp = nsamp) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
+  }
+  
+  ss3_acomp
+}
