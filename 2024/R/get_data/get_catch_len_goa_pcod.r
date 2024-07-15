@@ -34,8 +34,7 @@ get_fsh_len_pre91 <- function(new_year = 9999,
                            tidytable::summarise(hfreq = sum(freq),
                                                 n1 = min(numb),
                                                 .by = c(year, gear, haul_join)) %>% 
-                           tidytable::mutate(tfreq = sum(hfreq),
-                                             tn = sum(n1),
+                           tidytable::mutate(tn = sum(n1),
                                              .by = c(year, gear))) %>% 
     # compute weighted haul-level length comp
     tidytable::mutate(prop = ((freq / hfreq) * n1) / tn) %>% 
@@ -56,8 +55,7 @@ get_fsh_len_pre91 <- function(new_year = 9999,
                            tidytable::summarise(hfreq = sum(freq),
                                                 n1 = min(numb),
                                                 .by = c(year, gear, haul1)) %>% 
-                           tidytable::mutate(tfreq = sum(hfreq),
-                                             tn = sum(n1),
+                           tidytable::mutate(tn = sum(n1),
                                              .by = c(year, gear))) %>% 
     # compute weighted haul-level length comp
     tidytable::mutate(prop = ((freq / hfreq) * n1) / tn) %>% 
@@ -263,15 +261,10 @@ get_fsh_len_post91 <- function(new_year = 9999,
                            tidytable::left_join(fsh_len_full_f %>% 
                                                   tidytable::summarise(n1 = min(numb),
                                                                        hfreq = sum(freq),
-                                                                       .by = c(year, wed, trimester, area, haul1, gear))) %>% 
-                           # join number of fish by year, week, area, and gear
-                           tidytable::left_join(fsh_len_full_f %>% 
-                                                  tidytable::summarise(n1 = min(numb),
-                                                                       hfreq = sum(freq),
                                                                        .by = c(year, wed, trimester, area, haul1, gear)) %>% 
-                                                  tidytable::summarise(n2 = sum(n1),
-                                                                       tfreq = sum(hfreq),
-                                                                       .by = c(year, wed, trimester, area, gear))) %>% 
+                                                  # compute number of fish by year, week, area, and gear
+                                                  tidytable::mutate(n2 = sum(n1),
+                                                                    .by = c(year, wed, trimester, area, gear))) %>% 
                            # proportion of haul catch-at-length by gear-area-week observed catch
                            # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
                            tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>%
@@ -286,10 +279,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
                            # weight length comp by proportion of catch
                            tidytable::mutate(prop1 = prop * catch_prop) %>% 
                            tidytable::drop_na() %>% 
-                           tidytable::summarise(prop1 = sum(prop1), 
+                           tidytable::summarise(prop = sum(prop1), 
                                                 .by = c(year, trimester, area, gear, length))) %>% 
-    tidytable::mutate(prop1 = tidytable::replace_na(prop1, 0)) %>% 
-    tidytable::rename(prop = prop1) -> fsh_len_comp_f
+    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
   
   ## state catch weighted length comp ----
   # get grid of all possible combos of state year-gear-area-trimester-length
