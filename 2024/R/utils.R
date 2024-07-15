@@ -76,7 +76,7 @@ ss3_age_com <- function(data, ss3_args, iss, nsamp){
       tidytable::left_join(nsamp) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   } else{
-    lcomp_part %>% 
+    acomp_part %>% 
       tidytable::mutate(nsamp = nsamp) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   }
