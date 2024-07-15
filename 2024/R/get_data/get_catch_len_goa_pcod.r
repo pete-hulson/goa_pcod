@@ -189,9 +189,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
     tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
                       gear1 = tidytable::case_when(gear == 91 ~ 'pot',
                                                    gear %in% c(5, 26, 61) ~ 'longline',
-                                                   .default = 'trawl'),
+                                                   .default = 'trawl'), # define gears
                       length = tidytable::case_when(length > 116 ~ 117,
-                                                    .default = length),
+                                                    .default = length), # set plus length to 117 cm
                       trimester = tidytable::case_when(month <= 4 ~ 1,
                                                        month %in% seq(5, 8) ~ 2,
                                                        month >= 9 ~ 3)) %>% 
