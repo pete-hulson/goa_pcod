@@ -189,10 +189,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
     tidytable::filter(length > 0) %>% 
     # define area, gear, plus length, trimester
     tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
-                      gear1 = 'trawl',
                       gear1 = tidytable::case_when(gear == 91 ~ 'pot',
                                                    gear %in% c(5, 26, 61) ~ 'longline',
-                                                   gear1 == 'trawl' ~ 'trawl'),
+                                                   .default = 'trawl'),
                       length = tidytable::case_when(length > 116 ~ 117,
                                                     .default = length),
                       trimester = tidytable::case_when(month <= 4 ~ 1,
@@ -203,52 +202,20 @@ get_fsh_len_post91 <- function(new_year = 9999,
   ## catch data ----
   vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>% 
     tidytable::mutate(month = lubridate::month(week_end_date),
-                      season = tidytable::case_when(month <= 2 ~ 1,
-                                                    month %in% c(3, 4) ~ 2,
-                                                    month %in% c(5, 6, 7, 8) ~ 3,
-                                                    month %in% c(9, 10) ~ 4,
-                                                    month >= 11 ~ 5),
-                      quarter = tidytable::case_when(month <= 3 ~ 1,
-                                                     month %in% c(4, 5, 6) ~ 2,
-                                                     month %in% c(7, 8, 9) ~ 3,
-                                                     month >= 10 ~ 4),
                       trimester = tidytable::case_when(month <= 4 ~ 1,
                                                        month %in% c(5, 6, 7, 8) ~ 2,
                                                        month >= 9 ~ 3)) %>% 
-    tidytable::summarise(tons = sum(weight_posted),
-                         .by = c(year, 
-                                 month, 
-                                 season, 
-                                 quarter,
-                                 trimester,
-                                 fmp_gear,
-                                 reporting_area_code, 
-                                 retained_or_discarded, 
-                                 week_end_date,
-                                 akr_state_federal_waters_code)) %>% 
-    tidytable::select(tons,
-                      month,
-                      season,
-                      quarter,
-                      trimester,
-                      gear = fmp_gear,
-                      year,
-                      area = reporting_area_code,
-                      wed = week_end_date,
-                      state = akr_state_federal_waters_code) %>% 
-    # define NAs in state flag, gear type, and truncate area to nearest 10
-    tidytable::mutate(wed = date(wed),
-                      state = tidytable::case_when(is.na(state) ~ 'F',
-                                                   .default = state),
-                      gear = tidytable::case_when(gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
-                                                  gear == 'POT' ~ 'pot',
-                                                  gear %in% c('HAL', 'JIG') ~ 'longline'),
-                      area = trunc(area / 10) * 10) %>% 
+    # define gear type, and truncate area to nearest 10
+    tidytable::mutate(wed = date(week_end_date),
+                      gear = tidytable::case_when(fmp_gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
+                                                  fmp_gear == 'POT' ~ 'pot',
+                                                  fmp_gear %in% c('HAL', 'JIG') ~ 'longline'),
+                      area = trunc(reporting_area_code / 10) * 10) %>% 
     # compute proportion of annual catch by week-area-gear
-    tidytable::summarise(tons = sum(tons), .by = c(year, wed, trimester, area, gear)) %>% 
+    tidytable::summarise(tons = sum(weight_posted), .by = c(year, wed, trimester, area, gear)) %>% 
     tidytable::mutate(total = sum(tons), .by = year) %>% 
     tidytable::mutate(catch_prop = tons / total) -> catch_p
-  
+
   # filter length freq data ----
   if(isTRUE(fltr)){
     ## filtering data to hauls with greater than 10 (federal) and 30 (state) lengths (old way) ----
