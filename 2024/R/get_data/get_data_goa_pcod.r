@@ -152,25 +152,14 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   
   
+  # get age composition data ----
+
+  ## afsc bottom trawl sruvey -----
+  ss3_twl_acomp <- get_twl_srvy_acomp(new_year,
+                                      max_age)
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
-  
-  
-  
-  ## ----- Get trawl survey age composition data -----
-  
-  GOA_ACOMP <- GET_GOA_ACOMP1(srv_sp_str = srv_sp_str, 
-                              max_age = max_age,
-                              Seas = 7,
-                              FLT = -4,
-                              Gender = 0,
-                              Part = 0,
-                              Ageerr = 1,
-                              Lgin_lo = -1,
-                              Lgin_hi = -1,
-                              Nsamp = 100,
-                              new_year)
-  print("Survey agecomp done")
   
   ## ----- Get fishery age composition data -----
   
