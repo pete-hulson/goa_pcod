@@ -481,43 +481,34 @@ get_fsh_len4age <- function(new_year = 9999,
   
   # fill-in with state data ----
   ## federal catch weighted length comp ----
-  # get grid of all possible combos of federal year-gear-area-trimester-length
-  tidytable::expand_grid(year = sort(unique(fsh_len_full_f$year)),
-                         trimester = c(1:3),
-                         gear = unique(fsh_len_full_f$gear),
-                         area = unique(fsh_len_full_f$area),
-                         sex = c('M', 'F', 'U'),
-                         length = seq(1,117,1)) %>% 
-    # join weighted fish length comp
+  fsh_len_full_f %>% 
+    # haul-level length frequency
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, wed, trimester, area, haul1, gear, sex, length)) %>% 
+    # join number of total fish sampled per haul
     tidytable::left_join(fsh_len_full_f %>% 
-                           # haul-level length frequency
-                           tidytable::summarise(freq = sum(freq),
-                                                .by = c(year, wed, trimester, area, haul1, gear, sex, length)) %>% 
-                           # join number of total fish sampled per haul
-                           tidytable::left_join(fsh_len_full_f %>% 
-                                                  tidytable::summarise(n1 = min(numb),
-                                                                       hfreq = sum(freq),
-                                                                       .by = c(year, wed, trimester, area, haul1, gear)) %>% 
-                                                  # compute number of fish by year, week, area, and gear
-                                                  tidytable::mutate(n2 = sum(n1),
-                                                                    .by = c(year, wed, trimester, area, gear))) %>% 
-                           # proportion of haul catch-at-length by gear-area-week observed catch
-                           # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
-                           tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>%
-                           # summarise to length composition by week-area-gear
-                           tidytable::summarise(prop = sum(prop),
-                                                .by = c(year, wed, trimester, area, gear, sex, length)) %>% 
-                           # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
-                           tidytable::left_join(catch_p) %>% 
-                           # set plus length group to 117 cm
-                           tidytable::mutate(length = tidytable::case_when(length > 116 ~ 117,
-                                                                           .default = length)) %>% 
-                           # weight length comp by proportion of catch
-                           tidytable::mutate(prop1 = prop * catch_prop) %>% 
-                           tidytable::drop_na() %>% 
-                           tidytable::summarise(prop = sum(prop1), 
-                                                .by = c(year, trimester, area, gear, sex, length))) %>% 
-    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
+                           tidytable::summarise(n1 = min(numb),
+                                                hfreq = sum(freq),
+                                                .by = c(year, wed, trimester, area, haul1, gear)) %>% 
+                           # compute number of fish by year, week, area, and gear
+                           tidytable::mutate(n2 = sum(n1),
+                                             .by = c(year, wed, trimester, area, gear))) %>% 
+    # proportion of haul catch-at-length by gear-area-week observed catch
+    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
+    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>%
+    # summarise to length composition by week-area-gear
+    tidytable::summarise(prop = sum(prop),
+                         .by = c(year, wed, trimester, area, gear, sex, length)) %>% 
+    # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
+    tidytable::left_join(catch_p) %>% 
+    # set plus length group to 117 cm
+    tidytable::mutate(length = tidytable::case_when(length > 116 ~ 117,
+                                                    .default = length)) %>% 
+    # weight length comp by proportion of catch
+    tidytable::mutate(prop1 = prop * catch_prop) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::summarise(prop = sum(prop1), 
+                         .by = c(year, trimester, area, gear, sex, length)) -> fsh_len_comp_f
   
   if(isTRUE(fltr)){
     ## filtering data to year-trimester-area-gear with greater than 30 observations
@@ -526,6 +517,20 @@ get_fsh_len4age <- function(new_year = 9999,
                              tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
       tidytable::filter(tfreq >= 30) -> fsh_len_comp_f
   }
+  
+  
+  # get grid of all possible combos of federal year-gear-area-trimester-length
+  tidytable::expand_grid(year = sort(unique(fsh_len_full_f$year)),
+                         trimester = c(1:3),
+                         gear = unique(fsh_len_full_f$gear),
+                         area = unique(fsh_len_full_f$area),
+                         sex = c('M', 'F', 'U'),
+                         length = seq(1,117,1)) %>% 
+    # join weighted fish length comp
+    tidytable::left_join(fsh_len_comp_f) %>% 
+    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
+  
+
   
   ## state catch weighted length comp ----
   # get grid of all possible combos of state year-gear-area-trimester-length
