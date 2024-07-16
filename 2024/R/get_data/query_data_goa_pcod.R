@@ -368,5 +368,44 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  
+  # domestic fishery age data ----
+    # get connected
+    db = 'afsc'
+    conn = afscdata::connect(db)
+
+    # query data 
+    dplyr::tbl(conn, dplyr::sql('obsint.debriefed_age')) %>% 
+      dplyr::filter(SPECIES == fsh_sp_code) %>% 
+      dplyr::rename_all(tolower) %>% 
+      dplyr::select(year,
+                    area = nmfs_area,
+                    haul_offload,
+                    lon = londd_end,
+                    lat = latdd_end,
+                    gear,
+                    haul_join,
+                    port_join,
+                    sex = sex,
+                    length,
+                    weight,
+                    age) %>% 
+      dplyr::filter(area >= 600,
+                    area <= 699,
+                    area != 670) %>% 
+      dplyr::mutate(haul_join = paste0('H', haul_join),
+                    port_join = paste0('P', port_join)) -> afsc_age
+
+    dplyr::collect(afsc_age) %>% 
+      dplyr::filter(!is.na(age)) %>% 
+      dplyr::mutate(gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
+                                            gear == 6 ~ 'pot',
+                                            gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>% 
+      dplyr::filter(!is.na(gear)) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv'), delim = ",")
+    
+    capture.output(dplyr::show_query(afsc_age), 
+                   file = here::here(new_year, "data", "sql", "fsh_age_domestic_afsc_sql.txt"))
+    # print message when done
+    cat(crayon::green$bold("\u2713"), crayon::blue("fishery age query"), crayon::green$underline$bold$italic("DONE"), "\n")
+    
 }
