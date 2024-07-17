@@ -190,9 +190,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
                                                    .default = 'trawl'), # define gears
                       length = tidytable::case_when(length > 116 ~ 117,
                                                     .default = length), # set plus length to 117 cm
-                      trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                       month %in% seq(5, 8) ~ 2,
-                                                       month >= 9 ~ 3)) %>% 
+                      trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
+                                                       month >= 9 ~ 3,
+                                                       .default = 1)) %>% 
     tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
   
   ## catch data ----
@@ -214,32 +214,15 @@ get_fsh_len_post91 <- function(new_year = 9999,
 
   # filter length freq data ----
   if(isTRUE(fltr)){
-    ## filtering data to hauls with greater than 10 (federal) and 30 (state) lengths (old way) ----
+    ## filtering data to hauls with greater than 10 (federal) ----
     fsh_len_f %>% 
       # filter hauls w/ less than 10 lengths observed
       tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
       tidytable::filter(n_hl >= 10) %>% 
       tidytable::select(-n_hl) -> fsh_len_full_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() %>% 
-      # filter to >30 lengths per trimester, area, and gear
-      tidytable::left_join(fsh_len_s %>% 
-                             tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                             tidytable::drop_na()) %>% 
-      tidytable::filter(sfreq >= 30) %>% 
-      tidytable::select(-sfreq) -> fsh_len_full_s
   } else{
     ## not filtering data  ----
     fsh_len_full_f <- fsh_len_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() -> fsh_len_full_s
-    
   }
   
   # fill-in with state data ----
@@ -282,19 +265,35 @@ get_fsh_len_post91 <- function(new_year = 9999,
     tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
   
   ## state catch weighted length comp ----
+  
+  
+  fsh_len_s %>% 
+    # length freq at trimester-area-gear
+    tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, length)) %>% 
+    # total lengths obs by trimester-area-gear
+    tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+    # compute state length comp by trimester, area, and gear
+    tidytable::mutate(prop = freq / total) %>% 
+    tidytable::select(-total, -freq) -> fsh_len_comp_s
+  
+  ## filtering data to year-trimester-area-gear with greater than 30 observations
+  if(isTRUE(fltr)){
+    fsh_len_comp_s %>% 
+      tidytable::left_join(fsh_len_s %>% 
+                             tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+                             tidytable::drop_na()) %>% 
+      tidytable::filter(sfreq >= 30) %>% 
+      tidytable::select(-sfreq)  -> fsh_len_comp_s
+  }
+  
   # get grid of all possible combos of state year-gear-area-trimester-length
-  tidytable::expand_grid(year = sort(unique(fsh_len_full_s$year)),
-                         gear = unique(fsh_len_full_s$gear),
-                         area = unique(fsh_len_full_s$area),
+  tidytable::expand_grid(year = sort(unique(fsh_len_s$year)),
                          trimester = c(1:3),
+                         gear = unique(fsh_len_s$gear),
+                         area = unique(fsh_len_s$area),
                          length = seq(1,117,1)) %>% 
     # join state length frequencies
-    tidytable::left_join(fsh_len_full_s %>% 
-                           # total lengths obs by trimester-area-gear
-                           tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                           # compute state length comp by trimester, area, and gear
-                           tidytable::mutate(prop = freq / total) %>% 
-                           tidytable::select(-total, -freq)) %>% 
+    tidytable::left_join(fsh_len_comp_s) %>% 
     # join federal catch for trimester-area-gear
     tidytable::left_join(catch_p %>% 
                            tidytable::summarise(catch_prop = sum(catch_prop), .by = c(year, trimester, area, gear))) %>% 
@@ -303,7 +302,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
                       catch_prop = tidytable::replace_na(catch_prop, 0),
                       prop1 = prop * catch_prop) %>% 
     tidytable::summarise(prop = sum(prop1), .by = c(year, trimester, area, gear, length)) -> fsh_len_comp_s
-  
+
   ## merge state and federal length frequencies ----
   # test which trimester-area-gear length freqs have more state than fed data
   fsh_len_full_f %>% 
@@ -424,12 +423,16 @@ get_fsh_len4age <- function(new_year = 9999,
                                                    .default = 'trawl'), # define gears
                       length = tidytable::case_when(length > 116 ~ 117,
                                                     .default = length), # set plus length to 117 cm
-                      trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                       month %in% seq(5, 8) ~ 2,
-                                                       month >= 9 ~ 3),
-                      sex = tidytable::case_when(sex == 1 ~ 'M',
+                      trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
+                                                       month >= 9 ~ 3,
+                                                       .default = 1),
+                      # this is the wrong, but historical way of assigning sex, right way is commented out
+                      sex = tidytable::case_when(sex == 9 ~ 'U',
                                                  sex == 2 ~ 'F',
-                                                 .default = 'U')) %>% 
+                                                 .default = 'M')) %>% 
+                      # sex = tidytable::case_when(sex == 1 ~ 'M',
+                      #                            sex == 2 ~ 'F',
+                      #                            .default = 'U')) %>% 
     tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
   
   ## catch data ----
@@ -451,32 +454,15 @@ get_fsh_len4age <- function(new_year = 9999,
   
   # filter length freq data ----
   if(isTRUE(fltr)){
-    ## filtering data to hauls with greater than 10 (federal) and 30 (state) lengths (old way) ----
+    ## filtering data to hauls with greater than 10 (federal) ----
     fsh_len_f %>% 
       # filter hauls w/ less than 10 lengths observed
       tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
       tidytable::filter(n_hl >= 10) %>% 
       tidytable::select(-n_hl) -> fsh_len_full_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() %>% 
-      # filter to >30 lengths per trimester, area, and gear
-      tidytable::left_join(fsh_len_s %>% 
-                             tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                             tidytable::drop_na()) %>% 
-      tidytable::filter(sfreq >= 30) %>% 
-      tidytable::select(-sfreq) -> fsh_len_full_s
   } else{
     ## not filtering data  ----
     fsh_len_full_f <- fsh_len_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() -> fsh_len_full_s
-    
   }
   
   # fill-in with state data ----
@@ -510,8 +496,8 @@ get_fsh_len4age <- function(new_year = 9999,
     tidytable::summarise(prop = sum(prop1), 
                          .by = c(year, trimester, area, gear, sex, length)) -> fsh_len_comp_f
   
+  ## filtering data to year-trimester-area-gear with greater than 30 observations
   if(isTRUE(fltr)){
-    ## filtering data to year-trimester-area-gear with greater than 30 observations
     fsh_len_comp_f %>% 
       tidytable::left_join(fsh_len_full_f %>% 
                              tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
@@ -529,10 +515,28 @@ get_fsh_len4age <- function(new_year = 9999,
     # join weighted fish length comp
     tidytable::left_join(fsh_len_comp_f) %>% 
     tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
-  
 
-  
   ## state catch weighted length comp ----
+  
+  fsh_len_s %>% 
+    # length freq at trimester-area-gear
+    tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, sex, length)) %>% 
+    # total lengths obs by trimester-area-gear
+    tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+    # compute state length comp by trimester, area, and gear
+    tidytable::mutate(prop = freq / total) %>% 
+    tidytable::select(-total, -freq) -> fsh_len_comp_s
+  
+  ## filtering data to year-trimester-area-gear with greater than 30 observations
+  if(isTRUE(fltr)){
+    fsh_len_comp_s %>% 
+      tidytable::left_join(fsh_len_s %>% 
+                             tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
+                             tidytable::drop_na()) %>% 
+      tidytable::filter(sfreq >= 30) %>% 
+      tidytable::select(-sfreq)  -> fsh_len_comp_s
+  }
+
   # get grid of all possible combos of state year-gear-area-trimester-length
   tidytable::expand_grid(year = sort(unique(fsh_len_full_s$year)),
                          trimester = c(1:3),
@@ -541,12 +545,7 @@ get_fsh_len4age <- function(new_year = 9999,
                          sex = c('M', 'F', 'U'),
                          length = seq(1,117,1)) %>% 
     # join state length frequencies
-    tidytable::left_join(fsh_len_full_s %>% 
-                           # total lengths obs by trimester-area-gear
-                           tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                           # compute state length comp by trimester, area, and gear
-                           tidytable::mutate(prop = freq / total) %>% 
-                           tidytable::select(-total, -freq)) %>% 
+    tidytable::left_join(fsh_len_comp_s) %>% 
     # join federal catch for trimester-area-gear
     tidytable::left_join(catch_p %>% 
                            tidytable::summarise(catch_prop = sum(catch_prop), .by = c(year, trimester, area, gear))) %>% 
