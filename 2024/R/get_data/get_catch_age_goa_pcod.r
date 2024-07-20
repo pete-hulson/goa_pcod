@@ -15,25 +15,8 @@ get_fsh_age <- function(new_year = 9999,
   
   # get expanded length comps ----
   
-  fsh_len_comp <- get_fsh_len4age(new_year, fltr)
-  
-  
-  # test with old script
-  ldata %>% 
-    dplyr::rename_all(tolower) %>% 
-    mutate(gear = tolower(gear)) %>% 
-    select(-nsamp) %>%
-    left_join(fsh_len_comp %>% 
-                rename(prop_new = prop) %>% 
-                select(-nsamp)) %>%
-    mutate(diff = prop - prop_new) %>% 
-    # filter(abs(diff) > 0.001) %>% 
-    arrange(diff) %>% 
-    data.table()
-  
-  
-  
-  
+  fsh_len_comp <- get_fsh_len4age(new_year)
+
   # age data ----
   fsh_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv')) %>% 
     # filter to years post-2007 (as default)
@@ -44,33 +27,233 @@ get_fsh_age <- function(new_year = 9999,
   fsh_len_comp %>% 
     tidytable::mutate(freq = prop * 10000) %>% 
     # filter to years post-2007 (as default)
-    tidytable::filter(year > st_yr) -> fsh_len_comp
+    tidytable::filter(year > st_yr) -> fsh_len_exp
 
   
-  ldata %>% 
-    dplyr::rename_all(tolower) %>% 
-    mutate(gear = tolower(gear)) %>% 
-    select(-nsamp) %>% 
-    left_join(fsh_len_comp %>% 
-                rename(prop_new = prop) %>% 
-                select(-nsamp)) %>%
-    filter(year == 2008,
-           sex == 'F',
-           gear == 'longline') %>% 
-    mutate(diff = prop - prop_new) %>% 
-    filter(diff != 0) %>%
-    # filter(abs(diff) > 0.001) %>% 
-    arrange(length) %>% 
-    data.table()
+
+  # test for single iteration
+  Adata_test <- fsh_age %>% 
+    tidytable::filter(gear == 'trawl',
+                      year == 2008)
+  Ldata_test <- fsh_len_exp %>% 
+    tidytable::filter(gear == 'trawl',
+                      year == 2008)
+  
+  Adata<-age[GEAR==gears[1]]
+  Ldata<-ldata[GEAR==gears[1]]
+  year<-sort(unique(age1$YEAR))[1]
+  
+
+  Adata_test <- Adata_test %>% 
+    tidytable::mutate(age = tidytable::case_when(age > 20 ~ 20,
+                                                 .default = age))
+  
+  
+  Adata$AGE1<-Adata$AGE
+  Adata$AGE1[Adata$AGE>20] <- 20
+  
+  rb.age1_test <- Adata_test %>% 
+    tidytable::filter(sex == 'M') %>% 
+    tidytable::select(age, tl = length)
+  rb.age2_test <- Adata_test %>% 
+    tidytable::filter(sex == 'F') %>% 
+    tidytable::select(age, tl = length)
+  rb.len1_test <- Ldata_test %>% 
+    tidytable::filter(sex == 'M') %>% 
+    tidytable::select(tl = length, freq)
+  rb.len2_test <- Ldata_test %>% 
+    tidytable::filter(sex == 'F') %>% 
+    tidytable::select(tl = length, freq)
+  
+  rb.age1<-subset(Adata,Adata$YEAR==year&Adata$SEX=="M")
+  rb.age2<-subset(Adata,Adata$YEAR==year&Adata$SEX=="F")
+  rb.len1<-subset(Ldata,Ldata$YEAR==year&Ldata$SEX=="M")
+  rb.len2<-subset(Ldata,Ldata$YEAR==year&Ldata$SEX=="F")
+
+  rb.age1<-data.frame(age=rb.age1$AGE1,tl=rb.age1$LENGTH)
+  rb.age2<-data.frame(age=rb.age2$AGE1,tl=rb.age2$LENGTH)
+
+  rb.len1<-aggregate(list(FREQ=rb.len1$FREQUENCY),by=list(LENGTH=rb.len1$LENGTH),FUN=sum)
+  rb.len2<-aggregate(list(FREQ=rb.len2$FREQUENCY),by=list(LENGTH=rb.len2$LENGTH),FUN=sum)
+
+  
+  rb.len1_test %>% 
+    tidytable::mutate(freq = floor(freq)) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::mutate(age = NA) %>% 
+    tidytable::select(age, tl) -> rb.len1_test
+  rb.len2_test %>% 
+    tidytable::mutate(freq = floor(freq)) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::mutate(age = NA) %>% 
+    tidytable::select(age, tl) -> rb.len2_test
+  
+  expand.length<-function(data){
+    x<-rep(data$LENGTH[1],data$FREQ[1])
+    for( i  in 2:nrow(data)){
+      x1<-rep(data$LENGTH[i],data$FREQ[i])
+      x<-c(x,x1)
+    }
+    y<-data.frame(age=NA,tl=x)
+    y
+  }
+
+  rb.len1<-expand.length(rb.len1)
+  rb.len2<-expand.length(rb.len2)
+
+  rb.age1_test <- rb.age1_test %>% 
+    tidytable::bind_rows(tidytable::expand_grid(age = 1,
+                                                tl = c(min(rb.len1_test$tl),(min(rb.age1_test$tl)-1))))
+  rb.age2_test <- rb.age2_test %>% 
+    tidytable::bind_rows(tidytable::expand_grid(age = 1,
+                                                tl = c(min(rb.len2_test$tl),(min(rb.age2_test$tl)-1))))
+  
+  rb.age1=rbind(rb.age1,expand.grid(age=1,tl=c(min(rb.len1$tl),(min(rb.age1$tl)-1))))
+  rb.age2=rbind(rb.age2,expand.grid(age=1,tl=c(min(rb.len2$tl),(min(rb.age2$tl)-1))))
+  
+
+  rb.age1.1_test <- FSA::lencat(x = ~tl, data = rb.age1_test, startcat = 5, w = 5)
+  rb.age2.1_test <- FSA::lencat(x = ~tl, data = rb.age2_test, startcat = 5, w = 5)
+
+  rb.age1.1<-lencat(x=~tl,data=rb.age1,startcat=5,w=5)
+  rb.age2.1<-lencat(x=~tl,data=rb.age2,startcat=5,w=5)
+  
+  rb.key1_test <- prop.table(table(rb.age1.1_test$LCat, rb.age1.1_test$age), margin = 1)
+  rb.key2_test <- prop.table(table(rb.age2.1_test$LCat, rb.age2.1_test$age), margin = 1)
+  
+  rb.raw1 <- table(rb.age1.1$LCat,rb.age1.1$age)
+  rb.key1 <- prop.table(rb.raw1,margin=1)
+  rb.raw2 <- table(rb.age2.1$LCat,rb.age2.1$age)
+  rb.key2 <- prop.table(rb.raw2,margin=1)
+  
+  
+  rb.len1.1_test <- FSA::alkIndivAge(rb.key1_test, formula = ~tl, data = rb.len1_test) 
+  rb.len2.1_test <- FSA::alkIndivAge(rb.key2_test, formula = ~tl, data = rb.len2_test) 
+  
+  rb.len1.1 <- alkIndivAge(rb.key1,formula=~tl,data=rb.len1) 
+  rb.len2.1 <- alkIndivAge(rb.key2,formula=~tl,data=rb.len2) 
+  
+  AL<-list(len1=rb.len1.1,len2=rb.len2.1)
+
+  al <- list(len1 = rb.len1.1_test, len2 = rb.len2.1_test)
+
+  
+
+  
+  
+  
+  
+  
+  
+  
+  Adata_test %>% 
+    tidytable::mutate(age = tidytable::case_when(age > 20 ~ 20,
+                                                 .default = age)) %>% 
+    tidytable::select(sex, age, tl = length) -> adata_test
+
+  Ldata_test %>% 
+    tidytable::select(sex, tl = length, freq) %>% 
+    tidytable::mutate(freq = floor(freq)) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::mutate(age = NA) %>% 
+    tidytable::select(sex, age, tl) -> ldata_test
+  
+  adata_test %>% 
+    tidytable::bind_rows(ldata_test %>% 
+                           tidytable::summarise(tl = min(tl), .by = sex) %>% 
+                           tidytable::bind_rows(adata_test %>% 
+                                                  tidytable::summarise(tl = min(tl) - 1, .by = sex)) %>% 
+                           tidytable::mutate(age = 1)) %>% 
+    FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_test
+
+  
+  
+  
+  
+  
   
   fsh_age %>% 
-    data.table()
+    tidytable::mutate(age = tidytable::case_when(age > 20 ~ 20,
+                                                 .default = age)) %>% 
+    tidytable::select(year, gear, sex, age, tl = length) -> adata_alk
+
+  fsh_len_exp %>% 
+    tidytable::select(year, gear, sex, tl = length, freq) %>% 
+    tidytable::mutate(freq = floor(freq)) %>% 
+    tidytable::uncount(freq) %>% 
+    tidytable::mutate(age = NA) %>% 
+    tidytable::select(year, gear, sex, age, tl) -> ldata_alk
   
-  fsh_len_comp %>% 
-    filter(year == 2008,
-           sex == 'F',
-           gear == 'longline') %>% 
-    data.table()
+  adata_alk %>% 
+    tidytable::bind_rows(ldata_alk %>% 
+                           tidytable::summarise(tl = min(tl), .by = c(year, gear, sex)) %>% 
+                           tidytable::bind_rows(adata_alk %>% 
+                                                  tidytable::summarise(tl = min(tl) - 1, .by = c(year, gear, sex))) %>% 
+                           tidytable::mutate(age = 1)) %>% 
+    FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+  
+
+  years <- sort(unique(fsh_age$year))
+  gears <- unique(fsh_age$gear)
+  
+  
+  
+  
+  
+  get_alk <- function(adata_alk, ldata_alk){
+    
+    sexes <- c('M', 'F')
+    
+    purrr::map(1:length(sexes), ~FSA::alkIndivAge(prop.table(table(subset(adata_alk$LCat, adata_alk$sex == sexes[.]), 
+                                                                   subset(adata_alk$age, adata_alk$sex == sexes[.])), 
+                                                             margin = 1), 
+                                                  formula = ~tl, 
+                                                  data = subset(ldata_alk, ldata_alk$sex == sexes[.]))) %>% 
+      tidytable::map_df(., ~as.data.frame(.x), .id = "sex_num") %>% 
+      select(sex = sex_num, age, length = tl)
+  }
+
+  adata_alk_test <- adata_alk %>% 
+    tidytable::filter(year == years[1],
+                      gear == gears[1]) %>% 
+    tidytable::select(sex, age, tl, LCat)
+
+  ldata_alk_test <- ldata_alk %>% 
+    tidytable::filter(year == years[1],
+                      gear == gears[1]) %>% 
+    tidytable::select(sex, age, tl)
+
+  t <- get_alk(adata_alk_test, ldata_alk_test)
+  adata_alk_test %>% 
+  print(n = 50)
+
+
+  rb.key1_test <- prop.table(table(rb.age1.1_test$LCat, rb.age1.1_test$age), margin = 1)
+  rb.key2_test <- prop.table(table(rb.age2.1_test$LCat, rb.age2.1_test$age), margin = 1)
+  
+
+  rb.len1.1_test <- FSA::alkIndivAge(rb.key1_test, formula = ~tl, data = rb.len1_test) 
+  rb.len2.1_test <- FSA::alkIndivAge(rb.key2_test, formula = ~tl, data = rb.len2_test) 
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   gears<-unique(age$GEAR)
   z<-data.frame(matrix(ncol=5,nrow=1))
@@ -89,96 +272,6 @@ get_fsh_age <- function(new_year = 9999,
     
   }
   
-  year = 2008
-  adata <- fsh_age %>% 
-    tidytable::filter(gear == 'longline',
-                      year == 2008)
-  Adata <- age[GEAR==gears[1]]
-  
-  ldata_new <- fsh_len_comp %>% 
-    tidytable::filter(gear == 'longline',
-                      year == 2008)
-  Ldata = ldata[GEAR==gears[1]]
-  
-  
-  
-  
-  get_alk<-function(adata,ldata,year){
-
-    adata %>% 
-      tidytable::mutate(age = case_when(age > 20 ~ 20,
-                                        .default = age)) -> adata
-    
-    Adata$AGE1<-Adata$AGE
-    Adata$AGE1[Adata$AGE>20] <- 20
-    
-    adata_m <- adata %>% 
-      tidytable::filter(sex == 'M') %>% 
-      tidytable::select(age, tl = length)
-    adata_f <- adata %>% 
-      tidytable::filter(sex == 'F') %>% 
-      tidytable::select(age, tl = length)
-    
-    ldata_m <- ldata_new %>% 
-      tidytable::filter(sex == 'M') %>% 
-      tidytable::select(length, freq)
-    ldata_f <- ldata_new %>% 
-      tidytable::filter(sex == 'F') %>% 
-      tidytable::select(length, freq)
-    
-    rb.age1<-subset(Adata,Adata$YEAR==year&Adata$SEX=="M")
-    rb.age2<-subset(Adata,Adata$YEAR==year&Adata$SEX=="F")
-    rb.len1<-subset(Ldata,Ldata$YEAR==year&Ldata$SEX=="M")
-    rb.len2<-subset(Ldata,Ldata$YEAR==year&Ldata$SEX=="F")
-
-    rb.age1<-data.frame(age=rb.age1$AGE1,tl=rb.age1$LENGTH)
-    rb.age2<-data.frame(age=rb.age2$AGE1,tl=rb.age2$LENGTH)
-    rb.len1<-aggregate(list(FREQ=rb.len1$FREQUENCY),by=list(LENGTH=rb.len1$LENGTH),FUN=sum)
-    rb.len2<-aggregate(list(FREQ=rb.len2$FREQUENCY),by=list(LENGTH=rb.len2$LENGTH),FUN=sum)
-    
-    
-    expand.length<-function(data){
-      x<-rep(data$LENGTH[1],data$FREQ[1])
-      for( i  in 2:nrow(data)){
-        x1<-rep(data$LENGTH[i],data$FREQ[i])
-        x<-c(x,x1)
-      }
-      y<-data.frame(age=NA,tl=x)
-      y
-    }
-    
-    rb.len1<-expand.length(rb.len1)
-    rb.len2<-expand.length(rb.len2)
-    
-    rb.age1=rbind(rb.age1,expand.grid(age=1,tl=c(min(rb.len1$tl),(min(rb.age1$tl)-1))))
-    rb.age2=rbind(rb.age2,expand.grid(age=1,tl=c(min(rb.len2$tl),(min(rb.age2$tl)-1))))
-    
-    
-    
-    #rb.age1.1<-lencat(rb.age1,"tl",startcat=5,w=5)
-    #rb.age2.1<-lencat(rb.age2,"tl",startcat=5,w=5)
-    rb.age1.1<-lencat(x=~tl,data=rb.age1,startcat=5,w=5)
-    rb.age2.1<-lencat(x=~tl,data=rb.age2,startcat=5,w=5)
-    
-    
-    
-    rb.raw1 <- table(rb.age1.1$LCat,rb.age1.1$age)
-    rb.key1 <- prop.table(rb.raw1,margin=1)
-    rb.raw2 <- table(rb.age2.1$LCat,rb.age2.1$age)
-    rb.key2 <- prop.table(rb.raw2,margin=1)
-    
-    rb.len1.1 <- alkIndivAge(rb.key1,formula=~tl,data=rb.len1) 
-    rb.len2.1 <- alkIndivAge(rb.key2,formula=~tl,data=rb.len2) 
-    
-    
-    
-    #rb.len1.1 <- ageKey(rb.key1,cl="tl",ca="age",dl=rb.len1,type="SR")
-    #  rb.len2.1 <- ageKey(rb.key2,formula=age~tl,data=rb.len2,type="SR")
-    #rb.len2.1 <- ageKey(rb.key2,cl="tl",ca="age",dl=rb.len2,type="SR")
-    
-    AL<-list(len1=rb.len1.1,len2=rb.len2.1)
-    AL
-  }
   
   
   
@@ -190,213 +283,21 @@ get_fsh_age <- function(new_year = 9999,
   
   
   
-  ## length freq data ----
-  ### federal ----
-  fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
-    # filter to years post-1991
-    tidytable::filter(year >= 1991) %>% 
-    # unique cruise-permit-haul description
-    tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
-    # get correct week end date
-    tidytable::mutate(weekday = weekdays(hday),
-                      wed = lubridate::ceiling_date(hday, "week"),
-                      plus = tidytable::case_when(weekdays(hday) == "Sunday" ~ 6, 
-                                                  .default = -1),
-                      yr = lubridate::year(hday),
-                      next_saturday = tidytable::case_when(yr >= 1993 ~ date(wed) + plus,
-                                                           .default = date(wed)),
-                      yr2 = lubridate::year(next_saturday),
-                      wed2 = tidytable::case_when(yr != yr2 ~ date(paste0(yr, '-12-31')), 
-                                                  .default = next_saturday)) %>% 
-    tidytable::select(-weekday, - wed, -plus, -yr, -next_saturday, -yr2) %>% 
-    tidytable::rename(wed = wed2) %>% 
-    # truncate area to nearest 10 (e.g., 649 becomes 640)
-    tidytable::mutate(area = trunc(area / 10) * 10)
-  
-  ### state ----
-  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'ALL_STATE_LENGTHS.csv')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    #filter to positive lengths
-    tidytable::filter(length > 0) %>% 
-    # define area, gear, plus length, trimester
-    tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
-                      gear1 = tidytable::case_when(gear == 91 ~ 'pot',
-                                                   gear %in% c(5, 26, 61) ~ 'longline',
-                                                   .default = 'trawl'), # define gears
-                      length = tidytable::case_when(length > 116 ~ 117,
-                                                    .default = length), # set plus length to 117 cm
-                      trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                       month %in% seq(5, 8) ~ 2,
-                                                       month >= 9 ~ 3),
-                      sex = tidytable::case_when(sex == 1 ~ 'M',
-                                                 sex == 2 ~ 'F',
-                                                 .default = 'U')) %>% 
-    tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
-  
-  ## catch data ----
-  vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>% 
-    tidytable::mutate(month = lubridate::month(week_end_date),
-                      trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                       month %in% c(5, 6, 7, 8) ~ 2,
-                                                       month >= 9 ~ 3)) %>% 
-    # define gear type, and truncate area to nearest 10
-    tidytable::mutate(wed = date(week_end_date),
-                      gear = tidytable::case_when(fmp_gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
-                                                  fmp_gear == 'POT' ~ 'pot',
-                                                  fmp_gear %in% c('HAL', 'JIG') ~ 'longline'),
-                      area = trunc(reporting_area_code / 10) * 10) %>% 
-    # compute proportion of annual catch by week-area-gear
-    tidytable::summarise(tons = sum(weight_posted), .by = c(year, wed, trimester, area, gear)) %>% 
-    tidytable::mutate(total = sum(tons), .by = year) %>% 
-    tidytable::mutate(catch_prop = tons / total) -> catch_p
-  
-  # filter length freq data ----
-  if(isTRUE(fltr)){
-    ## filtering data to hauls with greater than 10 (federal) and 30 (state) lengths (old way) ----
-    fsh_len_f %>% 
-      # filter hauls w/ less than 10 lengths observed
-      tidytable::mutate(n_hl = sum(freq), .by = c(haul_join, numb)) %>% 
-      tidytable::filter(n_hl >= 10) %>% 
-      tidytable::select(-n_hl) -> fsh_len_full_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() %>% 
-      # filter to >30 lengths per trimester, area, and gear
-      tidytable::left_join(fsh_len_s %>% 
-                             tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                             tidytable::drop_na()) %>% 
-      tidytable::filter(sfreq >= 30) %>% 
-      tidytable::select(-sfreq) -> fsh_len_full_s
-  } else{
-    ## not filtering data  ----
-    fsh_len_full_f <- fsh_len_f
-    
-    fsh_len_s %>% 
-      # length freq at trimester-area-gear
-      tidytable::summarise(freq = sum(freq), .by = c(year, month, trimester, area, gear, length)) %>% 
-      tidytable::drop_na() -> fsh_len_full_s
-    
-  }
-  
-  # fill-in with state data ----
-  ## federal catch weighted length comp ----
-  fsh_len_full_f %>% 
-    # haul-level length frequency
-    tidytable::summarise(freq = sum(freq),
-                         .by = c(year, wed, trimester, area, haul1, gear, sex, length)) %>% 
-    # join number of total fish sampled per haul
-    tidytable::left_join(fsh_len_full_f %>% 
-                           tidytable::summarise(n1 = min(numb),
-                                                hfreq = sum(freq),
-                                                .by = c(year, wed, trimester, area, haul1, gear)) %>% 
-                           # compute number of fish by year, week, area, and gear
-                           tidytable::mutate(n2 = sum(n1),
-                                             .by = c(year, wed, trimester, area, gear))) %>% 
-    # proportion of haul catch-at-length by gear-area-week observed catch
-    # expand the haul length composition by haul catch, then divide by the gear-area-week total observed haul catches
-    tidytable::mutate(prop = ((freq / hfreq) * n1) / n2) %>%
-    # summarise to length composition by week-area-gear
-    tidytable::summarise(prop = sum(prop),
-                         .by = c(year, wed, trimester, area, gear, sex, length)) %>% 
-    # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
-    tidytable::left_join(catch_p) %>% 
-    # set plus length group to 117 cm
-    tidytable::mutate(length = tidytable::case_when(length > 116 ~ 117,
-                                                    .default = length)) %>% 
-    # weight length comp by proportion of catch
-    tidytable::mutate(prop1 = prop * catch_prop) %>% 
-    tidytable::drop_na() %>% 
-    tidytable::summarise(prop = sum(prop1), 
-                         .by = c(year, trimester, area, gear, sex, length)) -> fsh_len_comp_f
-  
-  if(isTRUE(fltr)){
-    ## filtering data to year-trimester-area-gear with greater than 30 observations
-    fsh_len_comp_f %>% 
-      tidytable::left_join(fsh_len_full_f %>% 
-                             tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
-      tidytable::filter(tfreq >= 30) -> fsh_len_comp_f
-  }
   
   
-  # get grid of all possible combos of federal year-gear-area-trimester-length
-  tidytable::expand_grid(year = sort(unique(fsh_len_full_f$year)),
-                         trimester = c(1:3),
-                         gear = unique(fsh_len_full_f$gear),
-                         area = unique(fsh_len_full_f$area),
-                         sex = c('M', 'F', 'U'),
-                         length = seq(1,117,1)) %>% 
-    # join weighted fish length comp
-    tidytable::left_join(fsh_len_comp_f) %>% 
-    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) -> fsh_len_comp_f
   
-
   
-  ## state catch weighted length comp ----
-  # get grid of all possible combos of state year-gear-area-trimester-length
-  tidytable::expand_grid(year = sort(unique(fsh_len_full_s$year)),
-                         trimester = c(1:3),
-                         gear = unique(fsh_len_full_s$gear),
-                         area = unique(fsh_len_full_s$area),
-                         sex = c('M', 'F', 'U'),
-                         length = seq(1,117,1)) %>% 
-    # join state length frequencies
-    tidytable::left_join(fsh_len_full_s %>% 
-                           # total lengths obs by trimester-area-gear
-                           tidytable::mutate(total = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                           # compute state length comp by trimester, area, and gear
-                           tidytable::mutate(prop = freq / total) %>% 
-                           tidytable::select(-total, -freq)) %>% 
-    # join federal catch for trimester-area-gear
-    tidytable::left_join(catch_p %>% 
-                           tidytable::summarise(catch_prop = sum(catch_prop), .by = c(year, trimester, area, gear))) %>% 
-    # compute catch weighted length comp
-    tidytable::mutate(prop = tidytable::replace_na(prop, 0),
-                      catch_prop = tidytable::replace_na(catch_prop, 0),
-                      prop1 = prop * catch_prop) %>% 
-    tidytable::summarise(prop = sum(prop1), .by = c(year, trimester, area, gear, sex, length)) -> fsh_len_comp_s
   
-  ## merge state and federal length frequencies ----
-  # test which trimester-area-gear length freqs have more state than fed data
-  fsh_len_full_f %>% 
-    # get federal number of length obs by trimester-area-gear
-    tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-    # get state number of length obs by trimester-area-gear
-    tidytable::full_join(fsh_len_s %>% 
-                           tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
-    # set index for when state > federal lengths
-    tidytable::mutate(tfreq = tidytable::replace_na(tfreq, 0),
-                      sfreq = tidytable::replace_na(sfreq, 0),
-                      state = tidytable::case_when(sfreq > tfreq ~ 1,
-                                                   .default = 0)) %>% 
-    # filter to state with greater than 30 lengths and fed with less
-    tidytable::filter(tfreq < 30,
-                      sfreq >= 30) %>% 
-    tidytable::select(-sfreq, -tfreq) -> state_test 
   
-  # join state test to fed lengths
-  fsh_len_comp_f %>% 
-    tidytable::left_join(state_test) %>% 
-    tidytable::filter(is.na(state)) %>% 
-    tidytable::left_join(fsh_len_full_f %>%
-                           tidytable::summarise(nsamp = length(unique(haul_join)),
-                                                .by = c(year, trimester, area, gear))) %>% 
-    tidytable::mutate(state = tidytable::replace_na(state, 0),
-                      nsamp = tidytable::replace_na(nsamp, 0)) %>% 
-    # bind state data where fed data doesn't exist
-    tidytable::bind_rows(fsh_len_comp_s %>% 
-                           tidytable::left_join(state_test) %>% 
-                           tidytable::filter(!is.na(state)) %>% 
-                           tidytable::left_join(fsh_len_full_s %>% 
-                                                  tidytable::summarise(tot = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                                                  tidytable::drop_na() %>% 
-                                                  tidytable::mutate(nsamp = round(tot / 50)) %>% 
-                                                  tidytable::select(-tot))) %>% 
-    tidytable::summarise(prop = sum(prop),
-                         nsamp = sum(nsamp),
-                         .by = c(year, gear, sex, length)) -> fsh_len_comp
   
-  fsh_len_comp
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
