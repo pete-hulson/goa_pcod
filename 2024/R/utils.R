@@ -83,3 +83,38 @@ ss3_age_com <- function(data, ss3_args, iss, nsamp){
   
   ss3_acomp
 }
+#' function to format fishery age comp data for ss3 data file
+ss3_age_com_fsh <- function(data, ss3_args, max_age, iss, nsamp){
+  
+  data %>% 
+    tidytable::mutate(seas = ss3_args[1],
+                      fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
+                                                    gear == 'longline' ~ 2,
+                                                    gear == 'pot' ~ 3),
+                      gender = ss3_args[2],
+                      part = ss3_args[3],
+                      ageerr = ss3_args[4],
+                      lgin_lo = ss3_args[5],
+                      lgin_hi = ss3_args[6],
+                      age = tidytable::case_when(age > max_age ~ max_age,
+                                                 .default = age)) %>% 
+    tidytable::summarise(agecomp = sum(agecomp), .by = c(year, seas, fltsrv, gender, part, ageerr, lgin_lo, lgin_hi, age)) -> acomp_part
+  
+  # test if input sample size constant or read-in (e.g., from surveyISS package)
+  if(isTRUE(iss)){
+    acomp_part %>% 
+      tidytable::left_join(nsamp %>% 
+                             tidytable::mutate(fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
+                                                                             gear == 'longline' ~ 2,
+                                                                             gear == 'pot' ~ 3)) %>% 
+                             tidytable::select(year, fltsrv, nsamp)) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = agecomp) %>% 
+      tidytable::arrange(fltsrv, year) -> ss3_acomp
+  } else{
+    acomp_part %>% 
+      tidytable::mutate(nsamp = nsamp) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
+  }
+  
+  ss3_acomp
+}

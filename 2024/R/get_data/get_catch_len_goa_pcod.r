@@ -402,7 +402,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
 #' 
 #' @param new_year current assessment year
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
-#' @param fltr switch for whether to compute sex-specific comps (default = TRUE)
+#' @param by_sex switch for whether to compute sex-specific comps (default = TRUE)
 #' 
 
 get_fsh_len4age <- function(new_year = 9999,
@@ -491,7 +491,7 @@ get_fsh_len4age <- function(new_year = 9999,
   ## federal catch weighted length comp ----
 
   # sex - specific comps
-  if(isTRUE(sex_spec)){
+  if(isTRUE(by_sex)){
     # compute federal comps
     fsh_len_full_f %>% 
       # haul-level length frequency
@@ -608,7 +608,7 @@ get_fsh_len4age <- function(new_year = 9999,
   
   ## state catch weighted length comp ----
   # sex-specific comps
-  if(isTRUE(sex_spec)){
+  if(isTRUE(by_sex)){
     fsh_len_s %>% 
       # length freq at trimester-area-gear
       tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, sex, length)) %>% 
