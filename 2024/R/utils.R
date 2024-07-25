@@ -46,9 +46,9 @@ ss3_len_com_fsh <- function(data, ss3_args, nsamp){
   
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
-                      fltsrv = case_when(gear == 'trawl' ~ 1,
-                                         gear == 'longline' ~ 2,
-                                         gear == 'pot' ~ 3),
+                      fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
+                                                    gear == 'longline' ~ 2,
+                                                    gear == 'pot' ~ 3),
                       gender = ss3_args[2],
                       part = ss3_args[3]) %>% 
     tidytable::left_join(nsamp) %>% 
@@ -84,7 +84,7 @@ ss3_age_com <- function(data, ss3_args, iss, nsamp){
   ss3_acomp
 }
 #' function to format fishery age comp data for ss3 data file
-ss3_age_com_fsh <- function(data, ss3_args, max_age, iss, nsamp){
+ss3_age_com_fsh <- function(data, ss3_args, max_age, iss, nsamp, fit){
   
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
@@ -114,6 +114,11 @@ ss3_age_com_fsh <- function(data, ss3_args, max_age, iss, nsamp){
     acomp_part %>% 
       tidytable::mutate(nsamp = nsamp) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
+  }
+  
+  if(!isTRUE(fit)){
+    ss3_acomp %>% 
+      tidytable::mutate(fltsrv = fltsrv * -1) -> ss3_acomp
   }
   
   ss3_acomp

@@ -3,14 +3,14 @@
 #' Re-developed in 2024 by p. hulson to link to gap_products tables with dplyr::tbl()
 #' 
 #' @param new_year current assessment year
-#' @param max_age user defined maximum age (default = NULL)
+#' @param max_age user defined maximum age (default = 10)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
 #' @param nsamp value or vector for input sample size (default = 100)
 #' 
 
 get_twl_srvy_acomp <- function(new_year = 9999,
-                               max_age = NULL,
+                               max_age = 10,
                                ss3_frmt = TRUE,
                                iss = FALSE,
                                nsamp = 100){

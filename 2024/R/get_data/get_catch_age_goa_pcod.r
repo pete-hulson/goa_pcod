@@ -8,6 +8,7 @@
 #' @param fltr switch for whether to filter length samples (default = TRUE)
 #' @param by_sex switch for whether to compute sex-specific comps (default = TRUE)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
+#' @param fit whether to fit age comps in model (default = FALSE)
 #' 
 
 get_fsh_age <- function(new_year = 9999,
@@ -15,7 +16,8 @@ get_fsh_age <- function(new_year = 9999,
                         max_age = 10,
                         fltr = TRUE,
                         by_sex = TRUE,
-                        ss3_frmt = TRUE){
+                        ss3_frmt = TRUE,
+                        fit = FALSE){
   
   # get data ----
   ## expanded length comps ----
@@ -123,6 +125,7 @@ get_fsh_age <- function(new_year = 9999,
   }
 
   # get age comp for all combos of year-gear-age
+
   tidytable::expand_grid(year = sort(unique(fsh_age$year)),
                          gear = unique(fsh_age$gear),
                          age = seq(1, 20)) %>% 
@@ -131,7 +134,8 @@ get_fsh_age <- function(new_year = 9999,
     tidytable::mutate(freq = tidytable::replace_na(freq, 0)) %>% 
     tidytable::mutate(total = sum(freq), .by = c(year, gear)) %>% 
     tidytable::mutate(agecomp = freq / total) %>% 
-    select(-total, -freq) -> fsh_acomp
+    tidytable::select(-total, -freq) %>% 
+    tidytable::drop_na() -> fsh_acomp
 
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
@@ -142,7 +146,7 @@ get_fsh_age <- function(new_year = 9999,
       tidytable::summarise(nsamp = mean(nsamp), .by = c(year, gear)) %>% 
       tidytable::mutate(nsamp = case_when(nsamp > 200 ~ 200, .default = nsamp)) -> nsamp
     # format data
-    fsh_acomp <- ss3_age_com_fsh(fsh_acomp, ss3_args, max_age, iss = TRUE, nsamp)
+    fsh_acomp <- ss3_age_com_fsh(fsh_acomp, ss3_args, max_age, iss = TRUE, nsamp, fit)
   }
 
   fsh_acomp
