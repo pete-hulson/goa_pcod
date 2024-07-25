@@ -204,4 +204,24 @@ ss3_caal_fsh <- function(data = NULL,
     tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
     tidytable::arrange(fltsrv, year)
 }
-
+#' function to format growth data for ss3 data file
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' 
+ss3_grwth <- function(data = NULL,
+                      ss3_args = NULL){
+  data %>% 
+    tidytable::mutate(seas = ss3_args[1],
+                      fltsrv = ss3_args[2],
+                      gender = ss3_args[3],
+                      part = ss3_args[4],
+                      ageerr = ss3_args[5],
+                      ignore = ss3_args[6],
+                      age = paste0('a', age)) %>% 
+    tidytable::select(-nsamp) %>% 
+    tidytable::pivot_wider(names_from = age, values_from = mean) %>% 
+    tidytable::left_join(data %>% 
+                           tidytable::mutate(age = paste0('n_a', age)) %>% 
+                           tidytable::select(-mean) %>% 
+                           tidytable::pivot_wider(names_from = age, values_from = nsamp))
+}
