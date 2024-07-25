@@ -182,62 +182,31 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$agecomp <- acomp
   cat(crayon::green$bold("\u2713"), crayon::blue("ss3 age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  
-  
-  
-  
-  ## ----- Get trawl survey mean size-at-age data data -----
-  
-  ## Get all survey Age Data
-  
-  Age <- GET_SURV_AGE_cor(sp_area = sp_area,
-                          srv_sp_str = srv_sp_str,
-                          start_yr = srv_start_yr,
-                          max_age = max_age,
-                          new_year)
-  Age$Sur <- 4          #Survey 4 is bottom trawl
-  
-  
-  ## format survey mean size-at-age data for SS3
-  AGE_LENGTH_SS <- data.frame(FORMAT_AGE_MEANS1(srv_age_samples = Age,
-                                                max_age = max_age,
-                                                type = "L",
-                                                seas = 1,
-                                                flt = -4,
-                                                gender = 0,
-                                                part = 0))
-  
-  names(AGE_LENGTH_SS) <- c("Yr", 
-                            "Seas", 
-                            "FltSrv", 
-                            "Gender", 
-                            "Part", 
-                            "Ageerr", 
-                            "Ignore", 
-                            paste0("a", rep(seq(1, max_age, 1))), 
-                            paste0("N_a", rep(seq(1, max_age, 1))))
+  # get growth data -----
+  ss3_grwth <- get_growth(new_year)
 
-  
-  ## write into SS3 files
-  new_data$MeanSize_at_Age_obs <- AGE_LENGTH_SS
-  new_data$N_MeanSize_at_Age_obs <- nrow(AGE_LENGTH_SS)
-  print("Mean size at age done")
-  
-  ## ----- Get ageing error specs -----
-  
-  ## Add in ageing error specs
+  ## plop into ss3 data file ----
+  new_data$MeanSize_at_Age_obs <- ss3_grwth
+  new_data$N_MeanSize_at_Age_obs <- nrow(ss3_grwth)
+  cat(crayon::green$bold("\u2713"), crayon::blue("growth data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  # ageing error ----- (note to self: look at this again sometime)
   new_data$agebin_vector = seq(1, max_age, 1)
   error <- matrix(ncol = (max_age + 1), nrow = 2)
   error[1, ] <- rep(-1, max_age + 1)
   error[2, ] <- rep(-0.001, max_age + 1)
   new_data$ageerror <- data.frame(error)
+  cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  ## ----- Add environmental data (look at old Steve function for other indices, this is trimmed down to LL survey q index) -----
+  # environmental data (look at old Steve function for other indices, this is trimmed down to LL survey q index) -----
   
-  TEMPHW <- data.table(TEMPHW)
-  x1 <- data.table(Yr = TEMPHW$YR, Variable = 1, Value = TEMPHW$TEMP)
-  envdata<-data.frame(x1) # whittling down to LL q link
-  new_data$envdat <- envdata
+  ss3_lls_env <- get_lls_env(new_year)
+
+  ## plop into ss3 data file ----
+  new_data$envdat <- ss3_lls_env
+  cat(crayon::green$bold("\u2713"), crayon::blue("env link data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   new_data
+  cat(crayon::green$bold("\u2713"), crayon::blue("ss3 data file"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
 }

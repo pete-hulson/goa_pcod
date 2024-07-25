@@ -50,7 +50,7 @@ get_growth <- function(new_year,
                          ss3_args)
   }
   
-  if(type = 'len'){
+  if(type == 'len'){
     mean_len
   } else{
     mean_wt
