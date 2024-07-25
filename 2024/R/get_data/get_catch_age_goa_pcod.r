@@ -7,6 +7,7 @@
 #' @param max_age max age for age comps (i.e., plus group, default = 10)
 #' @param fltr switch for whether to filter length samples (default = TRUE)
 #' @param use_FSA switch for whether to use FSA package to compute age-length key or to do it manually (default = TRUE)
+#' @param iters when using FSA, option to have replicates of age-length key (default = 1)
 #' @param by_sex switch for whether to compute sex-specific comps (default = TRUE)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param fit whether to fit age comps in model (default = FALSE)
@@ -17,6 +18,7 @@ get_fsh_age <- function(new_year = 9999,
                         max_age = 10,
                         fltr = TRUE,
                         use_FSA = TRUE,
+                        iters = 1,
                         by_sex = TRUE,
                         ss3_frmt = TRUE,
                         fit = FALSE){
@@ -66,22 +68,41 @@ get_fsh_age <- function(new_year = 9999,
         dplyr::distinct() %>% 
         tidytable::filter(sex != 'U')
       
-      length_age <- purrr::map(1:nrow(combos), ~FSA::alkIndivAge(prop.table(table(subset(adata_alk$LCat, 
-                                                                                         adata_alk$year == combos$year[.] & 
-                                                                                           adata_alk$gear == combos$gear[.] & 
-                                                                                           adata_alk$sex == combos$sex[.]),
-                                                                                  subset(adata_alk$age, 
-                                                                                         adata_alk$year == combos$year[.] & 
-                                                                                           adata_alk$gear == combos$gear[.] & 
-                                                                                           adata_alk$sex == combos$sex[.])), 
-                                                                            margin = 1), 
-                                                                 formula = ~tl, 
-                                                                 data = subset(ldata_alk, 
-                                                                               ldata_alk$year == combos$year[.] & 
-                                                                                 ldata_alk$gear == combos$gear[.] & 
-                                                                                 ldata_alk$sex == combos$sex[.]))) %>% 
-        tidytable::map_df(., ~as.data.frame(.x), .id = "combo") %>% 
-        select(year, gear, sex, age, length = tl)
+      length_age_list <- purrr::map(1:iters, ~purrr::map(1:nrow(combos), ~FSA::alkIndivAge(prop.table(table(subset(adata_alk$LCat, 
+                                                                                                              adata_alk$year == combos$year[.] & 
+                                                                                                                adata_alk$gear == combos$gear[.] & 
+                                                                                                                adata_alk$sex == combos$sex[.]),
+                                                                                                       subset(adata_alk$age, 
+                                                                                                              adata_alk$year == combos$year[.] & 
+                                                                                                                adata_alk$gear == combos$gear[.] & 
+                                                                                                                adata_alk$sex == combos$sex[.])), 
+                                                                                                 margin = 1), 
+                                                                                      formula = ~tl, 
+                                                                                      data = subset(ldata_alk, 
+                                                                                                    ldata_alk$year == combos$year[.] & 
+                                                                                                      ldata_alk$gear == combos$gear[.] & 
+                                                                                                      ldata_alk$sex == combos$sex[.]))),
+                                    .progress = list(type = "iterator", 
+                                                     format = "Resampling {cli::pb_bar} {cli::pb_percent}",
+                                                     clear = TRUE))
+      
+      
+      purrr::map(1:iters, ~tidytable::map_df(length_age_list[[.]], ~as.data.frame(.x), .id = "combo")) %>% 
+        tidytable::map_df(., ~as.data.frame(.x), .id = "iter") %>% 
+        select(iter, year, gear, sex, age, length = tl) %>% 
+        tidytable::summarise(freq = .N, .by = c(iter, year, gear, age)) %>% 
+        tidytable::summarise(freq = mean(freq), .by = c(year, gear, age)) -> length_age
+
+      # get age comp for all combos of year-gear-age
+      tidytable::expand_grid(year = sort(unique(fsh_age$year)),
+                             gear = unique(fsh_age$gear),
+                             age = seq(1, 20)) %>% 
+        tidytable::left_join(length_age) %>% 
+        tidytable::mutate(freq = tidytable::replace_na(freq, 0)) %>% 
+        tidytable::mutate(total = sum(freq), .by = c(year, gear)) %>% 
+        tidytable::mutate(agecomp = freq / total) %>% 
+        tidytable::select(-total, -freq) %>% 
+        tidytable::drop_na() -> fsh_acomp
     } else{
       ### sex-aggregated comps ----
       # prep age and length data
