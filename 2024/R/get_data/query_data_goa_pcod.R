@@ -432,6 +432,7 @@ query_goa_pcod <- function(new_year = 9999,
                     longitude_dd_end,
                     sex,
                     length_mm,
+                    weight_g,
                     age) %>% 
       dplyr::filter(survey_definition_id %in% twl_srvy,
                     species_code %in% srv_sp) %>% 
@@ -444,13 +445,15 @@ query_goa_pcod <- function(new_year = 9999,
                     hauljoin,
                     sex,
                     length = length_mm,
+                    weight = weight_g,
                     age,
                     lat_mid,
                     long_mid) -> twl_q
     
     dplyr::collect(twl_q) %>% 
       tidytable::filter(age > 0) %>% 
-      tidytable::mutate(length = length / 10) %>% 
+      tidytable::mutate(length = length / 10,
+                        weight = weight / 1000) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), delim = ",")
     capture.output(dplyr::show_query(twl_q), 
                    file = here::here(new_year, "data", "sql", "twl_srvy_age_sql.txt"))
