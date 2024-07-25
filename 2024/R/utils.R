@@ -1,6 +1,11 @@
 #' utility fcns
+#' 
 #' function to bin length data to custom length bins 
-get_bin <- function(data, bins){
+#' @param data length data to bin (default = NULL)
+#' @param bins user-defined length bins (default = NULL)
+#' 
+get_bin <- function(data = NULL,
+                    bins = NULL){
   
   test_lens = seq(min(data), max(data))
   
@@ -20,7 +25,15 @@ get_bin <- function(data, bins){
                       bin = '...2')
 }
 #' function to format survey length comp data for ss3 data file
-ss3_len_com <- function(data, ss3_args, iss, nsamp){
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' @param iss switch for whether iss is time-varying or constant (default = NULL)
+#' @param nsamp input sample size (default = NULL)
+#' 
+ss3_len_com <- function(data = NULL, 
+                        ss3_args = NULL, 
+                        iss = NULL, 
+                        nsamp = NULL){
   
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
@@ -42,7 +55,13 @@ ss3_len_com <- function(data, ss3_args, iss, nsamp){
   ss3_lcomp
 }
 #' function to format fishery length comp data for ss3 data file
-ss3_len_com_fsh <- function(data, ss3_args, nsamp){
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' @param nsamp input sample size (default = NULL)
+#' 
+ss3_len_com_fsh <- function(data = NULL, 
+                            ss3_args = NULL, 
+                            nsamp = NULL){
   
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
@@ -59,8 +78,15 @@ ss3_len_com_fsh <- function(data, ss3_args, nsamp){
   ss3_lcomp
 }
 #' function to format survey age comp data for ss3 data file
-ss3_age_com <- function(data, ss3_args, iss, nsamp){
-  
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' @param iss switch for whether iss is time-varying or constant (default = NULL)
+#' @param nsamp input sample size (default = NULL)
+#' 
+ss3_age_com <- function(data = NULL, 
+                        ss3_args = NULL, 
+                        iss = NULL, 
+                        nsamp = NULL){
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
                       fltsrv = ss3_args[2],
@@ -84,7 +110,19 @@ ss3_age_com <- function(data, ss3_args, iss, nsamp){
   ss3_acomp
 }
 #' function to format fishery age comp data for ss3 data file
-ss3_age_com_fsh <- function(data, ss3_args, max_age, iss, nsamp, fit){
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' @param max_age max age for data (default = 10)
+#' @param iss switch for whether iss is time-varying or constant (default = NULL)
+#' @param nsamp input sample size (default = NULL)
+#' @param fit switch for whether fishery age data is fit (default = FALSE)
+#' 
+ss3_age_com_fsh <- function(data = NULL,
+                            ss3_args = NULL,
+                            max_age = 10, 
+                            iss = NULL, 
+                            nsamp = NULL,
+                            fit = FALSE){
   
   data %>% 
     tidytable::mutate(seas = ss3_args[1],
