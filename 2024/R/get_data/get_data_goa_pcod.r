@@ -161,20 +161,18 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   
+  
+  
   # get conditional age-at-length data ----
   
   
-  ## ----- Get trawl survey conditional age-length data -----
+  ## afsc bottom trawl survey -----
+  ss3_twl_caal <- get_twl_srvy_caal(new_year,
+                                    bins = len_bins)
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey conditional age-at-length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   
-  svr_cond_al <- cond_length_age_cor(species = srv_sp_str,
-                                     area = sp_area,
-                                     start_year = fsh_start_yr,
-                                     max_age1 = max_age,
-                                     len_bins = len_bins,
-                                     new_year)
-  cond_age_length <- data.frame(svr_cond_al$norm)
-  names(cond_age_length) <- names(GOA_ACOMP)
-  print("Conditional survey age length done")      
+  
   
   ## ----- Get fishery conditional age-length data -----
   

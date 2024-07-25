@@ -6,16 +6,12 @@
 #' @param max_age user defined maximum age (default = 10)
 #' @param bins user-defined length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
-#' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
-#' @param nsamp value or vector for input sample size (default = 100)
 #' 
 
 get_twl_srvy_caal <- function(new_year = 9999,
                               max_age = 10,
                               bins = NULL,
-                              ss3_frmt = TRUE,
-                              iss = TRUE,
-                              nsamp = 100){
+                              ss3_frmt = TRUE){
   
   # compute conditional age-at-length  ----
   ts_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'))
