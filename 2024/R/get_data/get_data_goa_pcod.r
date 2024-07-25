@@ -114,7 +114,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                                       ss3_frmt,
                                       iss = FALSE,
                                       nsamp = 100)
-  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## afsc longline survey ----
   ss3_ll_lcomp <- get_ll_srvy_lcomp(new_year,
@@ -122,20 +122,20 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     ss3_frmt,
                                     iss = FALSE,
                                     nsamp = 100)
-  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## fishery ----
   
   ### pre-1991 ----
   pre_fsh_lcomp <- get_fsh_len_pre91(new_year,
                                      bins = len_bins)
-  cat(crayon::green$bold("\u2713"), crayon::blue("pre-1991 fishery length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("pre-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ### post-1991 ----
   post_fsh_lcomp <- get_fsh_len_post91(new_year,
                                        fltr = TRUE,
                                        bins = len_bins)
-  cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   pre_fsh_lcomp %>% 
     tidytable::bind_rows(post_fsh_lcomp) %>% 
@@ -149,30 +149,20 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$N_lencomp <- nrow(lcomp)
   new_data$lencomp <- lcomp
   cat(crayon::green$bold("\u2713"), crayon::blue("ss3 length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  
-  
+
   # get age composition data ----
 
-  ## afsc bottom trawl sruvey -----
-  ss3_twl_acomp <- get_twl_srvy_acomp(new_year,
-                                      max_age)
-  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age data"), crayon::green$underline$bold$italic("DONE"), "\n")
+  ## afsc bottom trawl survey -----
+  ss3_twl_acomp <- get_twl_srvy_acomp(new_year)
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  ## fishery -----
+  ss3_fsh_acomp <- get_fsh_age(new_year)
+  cat(crayon::green$bold("\u2713"), crayon::blue("fishery age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   
+  # get conditional age-at-length data ----
   
-  
-  ## ----- Get fishery age composition data -----
-  
-  GOA_ACOMPF <- LENGTH4AGE_BY_CATCH_GOA(fsh_sp_str = 202,
-                                        fsh_sp_label = "'PCOD'",
-                                        ly = new_year, 
-                                        STATE = 3, 
-                                        max_age = max_age)
-  
-  ## Note that these aren't used in the current model so are turned off here...
-  GOA_ACOMPF$FltSrv <- GOA_ACOMPF$FltSrv * -1 
-  names(GOA_ACOMPF) <- names(GOA_ACOMP)
-  print("Fisheries agecomp done")
   
   ## ----- Get trawl survey conditional age-length data -----
   

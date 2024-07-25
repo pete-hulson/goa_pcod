@@ -490,7 +490,7 @@ get_fsh_len4age <- function(new_year = 9999,
   # fill-in with state data ----
   ## federal catch weighted length comp ----
 
-  # sex - specific comps
+  ### sex - specific comps ----
   if(isTRUE(by_sex)){
     # compute federal comps
     fsh_len_full_f %>% 
@@ -549,6 +549,7 @@ get_fsh_len4age <- function(new_year = 9999,
       tidytable::mutate(prop1 = tidytable::replace_na(prop1, 0)) %>% 
       tidytable::rename(prop = prop1) -> fsh_len_comp_f
   } else{
+    ### sex-combined comps ----
     # compute federal comps
     fsh_len_full_f %>% 
       # haul-level length frequency
@@ -607,7 +608,7 @@ get_fsh_len4age <- function(new_year = 9999,
   }
   
   ## state catch weighted length comp ----
-  # sex-specific comps
+  ### sex-specific comps ----
   if(isTRUE(by_sex)){
     fsh_len_s %>% 
       # length freq at trimester-area-gear
@@ -646,6 +647,7 @@ get_fsh_len4age <- function(new_year = 9999,
                         prop1 = prop * catch_prop) %>% 
       tidytable::summarise(prop = sum(prop1), .by = c(year, trimester, area, gear, sex, length)) -> fsh_len_comp_s
   } else{
+    ### sex-combined comps ----
     fsh_len_s %>% 
       # length freq at trimester-area-gear
       tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, length)) %>% 
@@ -702,19 +704,33 @@ get_fsh_len4age <- function(new_year = 9999,
     tidytable::select(-sfreq, -tfreq) -> state_test 
 
   # join state test to fed lengths
-  fsh_len_comp_f %>% 
-    tidytable::left_join(state_test) %>% 
-    tidytable::filter(is.na(state)) %>% 
-    tidytable::mutate(state = tidytable::replace_na(state, 0)) %>% 
-    # bind state data where fed data doesn't exist
-    tidytable::bind_rows(fsh_len_comp_s %>% 
-                           tidytable::left_join(state_test) %>% 
-                           tidytable::filter(!is.na(state))) %>% 
-    tidytable::summarise(prop = sum(prop),
-                         .by = c(year, gear, sex, length)) -> fsh_len_comp
+  ### sex-specific comps ----
+  if(isTRUE(by_sex)){
+    fsh_len_comp_f %>% 
+      tidytable::left_join(state_test) %>% 
+      tidytable::filter(is.na(state)) %>% 
+      tidytable::mutate(state = tidytable::replace_na(state, 0)) %>% 
+      # bind state data where fed data doesn't exist
+      tidytable::bind_rows(fsh_len_comp_s %>% 
+                             tidytable::left_join(state_test) %>% 
+                             tidytable::filter(!is.na(state))) %>% 
+      tidytable::summarise(prop = sum(prop),
+                           .by = c(year, gear, sex, length)) -> fsh_len_comp
+  } else{
+    ### sex-combined comps ----
+    fsh_len_comp_f %>% 
+      tidytable::left_join(state_test) %>% 
+      tidytable::filter(is.na(state)) %>% 
+      tidytable::mutate(state = tidytable::replace_na(state, 0)) %>% 
+      # bind state data where fed data doesn't exist
+      tidytable::bind_rows(fsh_len_comp_s %>% 
+                             tidytable::left_join(state_test) %>% 
+                             tidytable::filter(!is.na(state))) %>% 
+      tidytable::summarise(prop = sum(prop),
+                           .by = c(year, gear, length)) -> fsh_len_comp
+  }
   
   # join nsamp correctly
-  
   if(isTRUE(fltr)){
     fsh_len_comp %>% 
       tidytable::left_join(fsh_len_full_f %>%
