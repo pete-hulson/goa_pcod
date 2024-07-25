@@ -34,7 +34,7 @@ get_fsh_caal <- function(new_year = 9999,
                                                  .default = age)) %>% 
     tidytable::summarise(count = .N, .by = c(year, gear, length, age)) %>% 
     tidytable::mutate(tot = sum(count), .by = c(year, gear, length)) %>% 
-    tidytable::mutate(caal = count / tot) %>% 
+    tidytable::mutate(caal = round(count / tot, digits = 5)) %>% 
     tidytable::select(year, gear, length, age, caal) -> fsh_caal
   
   # format for ss3 if desired ----

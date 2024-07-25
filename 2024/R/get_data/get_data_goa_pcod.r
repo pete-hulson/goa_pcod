@@ -160,48 +160,31 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_fsh_acomp <- get_fsh_age(new_year)
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  
-  
-  
   # get conditional age-at-length data ----
-  
-  
+
   ## afsc bottom trawl survey -----
   ss3_twl_caal <- get_twl_srvy_caal(new_year,
                                     bins = len_bins)
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey conditional age-at-length data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
+  ## fishery -----
+  ss3_fsh_caal <- get_fsh_caal(new_year,
+                               bins = len_bins)
+  cat(crayon::green$bold("\u2713"), crayon::blue("fishery conditional age-at-length data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  ## plop into ss3 data file ----
+  acomp <- ss3_fsh_acomp %>% 
+    tidytable::bind_rows(ss3_twl_acomp) %>% 
+    tidytable::bind_rows(ss3_fsh_caal) %>% 
+    tidytable::bind_rows(ss3_twl_caal)
+  
+  new_data$N_agecomp <- nrow(acomp)
+  new_data$agecomp <- acomp
+  cat(crayon::green$bold("\u2713"), crayon::blue("ss3 age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   
   
   
-  ## ----- Get fishery conditional age-length data -----
-  
-  fish_cond_al <- cond_length_age_corFISH(species = fsh_sp_str,
-                                          area = sp_area,
-                                          start_year = fsh_start_yr,
-                                          max_age1 = max_age,
-                                          len_bins = len_bins,
-                                          new_year)
-  cond_age_lengthFISH <- data.frame(fish_cond_al$norm)
-  
-  ## negating the older fish ages from the file
-  cond_age_lengthFISH <- data.table(cond_age_lengthFISH)
-  cond_age_lengthFISH[X1 < 2007]$X3 = cond_age_lengthFISH[X1 < 2007]$X3 * -1
-  cond_age_lengthFISH <- data.frame(cond_age_lengthFISH)
-  names(cond_age_lengthFISH) <- names(GOA_ACOMP)
-  print("Conditional fisheries age length done")     
-  
-  ## combine all the age comp data
-  
-  ACOMP <- rbind(GOA_ACOMPF,
-                 GOA_ACOMP,
-                 cond_age_lengthFISH,
-                 cond_age_length)
-  ACOMP[10:ncol(ACOMP), ] <- round(ACOMP[10:ncol(ACOMP), ], 5)
-  
-  ## write into SS3 files
-  new_data$agecomp<-ACOMP
-  new_data$N_agecomp<-nrow(ACOMP)
   
   ## ----- Get trawl survey mean size-at-age data data -----
   
