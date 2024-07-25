@@ -6,6 +6,7 @@
 #' @param st_yr start year for age data (default = 2007)
 #' @param max_age max age for age comps (i.e., plus group, default = 10)
 #' @param fltr switch for whether to filter length samples (default = TRUE)
+#' @param use_FSA switch for whether to use FSA package to compute age-length key or to do it manually (default = TRUE)
 #' @param by_sex switch for whether to compute sex-specific comps (default = TRUE)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param fit whether to fit age comps in model (default = FALSE)
@@ -15,6 +16,7 @@ get_fsh_age <- function(new_year = 9999,
                         st_yr = 2007,
                         max_age = 10,
                         fltr = TRUE,
+                        use_FSA = TRUE,
                         by_sex = TRUE,
                         ss3_frmt = TRUE,
                         fit = FALSE){
@@ -121,28 +123,45 @@ get_fsh_age <- function(new_year = 9999,
                                                                                  ldata_alk$gear == combos$gear[.]))) %>% 
         tidytable::map_df(., ~as.data.frame(.x), .id = "combo") %>% 
         select(year, gear, age, length = tl)
+      
+      # get age comp for all combos of year-gear-age
+      tidytable::expand_grid(year = sort(unique(fsh_age$year)),
+                             gear = unique(fsh_age$gear),
+                             age = seq(1, 20)) %>% 
+        tidytable::left_join(length_age %>% 
+                               tidytable::summarise(freq = length(length), .by = c(year, gear, age))) %>% 
+        tidytable::mutate(freq = tidytable::replace_na(freq, 0)) %>% 
+        tidytable::mutate(total = sum(freq), .by = c(year, gear)) %>% 
+        tidytable::mutate(agecomp = freq / total) %>% 
+        tidytable::select(-total, -freq) %>% 
+        tidytable::drop_na() -> fsh_acomp
     }
   } else{
-    # with age-length key (note: only for sex-combined comps)
+    ## with age-length key (note: only for sex-combined comps) ----
     
+    # get age comp for all combos of year-gear-age
+    tidytable::expand_grid(year = sort(unique(fsh_age$year)),
+                           gear = unique(fsh_age$gear),
+                           age = seq(1, 20)) %>% 
+      tidytable::left_join(fsh_age %>% 
+                             tidytable::select(year, gear, length, age) %>% 
+                             # compute age-length key
+                             tidytable::summarise(count = .N, .by = c(year, gear, length, age)) %>% 
+                             tidytable::mutate(tot = sum(count), .by = c(year, gear, length)) %>% 
+                             tidytable::mutate(alk = count / tot) %>% 
+                             tidytable::select(year, gear, length, age, alk) %>% 
+                             # join length comps and compute expanded age comps
+                             tidytable::left_join(fsh_len_exp %>% 
+                                                    tidytable::select(year, gear, length, prop)) %>% 
+                             tidytable::mutate(acomp = alk * prop) %>% 
+                             tidytable::summarise(acomp1 = sum(acomp), .by = c(year, gear, age))) %>% 
+      tidytable::mutate(acomp1 = tidytable::replace_na(acomp1, 0)) %>% 
+      # standardize age comps
+      tidytable::mutate(tot = sum(acomp1), .by = c(year, gear)) %>% 
+      tidytable::mutate(agecomp = acomp1 / tot) %>% 
+      tidytable::select(year, gear, age, agecomp) %>% 
+      tidytable::drop_na() -> fsh_acomp
   }
-  
-  
-  
-  
-  
-  # get age comp for all combos of year-gear-age
-
-  tidytable::expand_grid(year = sort(unique(fsh_age$year)),
-                         gear = unique(fsh_age$gear),
-                         age = seq(1, 20)) %>% 
-    tidytable::left_join(length_age %>% 
-                           tidytable::summarise(freq = length(length), .by = c(year, gear, age))) %>% 
-    tidytable::mutate(freq = tidytable::replace_na(freq, 0)) %>% 
-    tidytable::mutate(total = sum(freq), .by = c(year, gear)) %>% 
-    tidytable::mutate(agecomp = freq / total) %>% 
-    tidytable::select(-total, -freq) %>% 
-    tidytable::drop_na() -> fsh_acomp
 
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
