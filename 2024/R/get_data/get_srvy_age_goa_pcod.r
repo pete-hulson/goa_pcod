@@ -37,5 +37,5 @@ get_twl_srvy_acomp <- function(new_year = 9999,
                             nsamp)
   }
 
-  ts_acomp %>% data.table()
+  ts_acomp
 }

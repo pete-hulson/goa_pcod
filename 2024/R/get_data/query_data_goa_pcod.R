@@ -451,7 +451,7 @@ query_goa_pcod <- function(new_year = 9999,
     dplyr::collect(twl_q) %>% 
       tidytable::filter(age > 0) %>% 
       tidytable::mutate(length = length / 10) %>% 
-      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_aage.csv'), delim = ",")
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), delim = ",")
     capture.output(dplyr::show_query(twl_q), 
                    file = here::here(new_year, "data", "sql", "twl_srvy_age_sql.txt"))
     # print message when done
