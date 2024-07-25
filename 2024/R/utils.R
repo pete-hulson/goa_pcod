@@ -225,3 +225,14 @@ ss3_grwth <- function(data = NULL,
                            tidytable::select(-mean) %>% 
                            tidytable::pivot_wider(names_from = age, values_from = nsamp))
 }
+
+#' function to format environmental link data for ss3 data file
+#' @param data data to format for ss3 (default = NULL)
+#' @param var variable column for ss3 data file (default = NULL)
+#' 
+ss3_envlnk <- function(data = NULL,
+                       var = NULL){
+  data %>% 
+    tidytable::mutate(variable = var) %>% 
+    tidytable::select(year, variable, index)
+}
