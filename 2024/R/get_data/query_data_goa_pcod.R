@@ -150,7 +150,7 @@ query_goa_pcod <- function(new_year = 9999,
   capture.output(dplyr::show_query(twl_q), 
                  file = here::here(new_year, "data", "sql", "twl_srvy_lpop_sql.txt"))
   # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length pop'n query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # longline survey length data ----
   afscdata::q_lls_rpn_length(year = new_year,
@@ -158,7 +158,7 @@ query_goa_pcod <- function(new_year = 9999,
                              area = srv_area,
                              db = conn)
   # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # domestic fishery length data ----
   ## afsc ----
@@ -366,7 +366,7 @@ query_goa_pcod <- function(new_year = 9999,
   capture.output(dplyr::show_query(twl_q), 
                  file = here::here(new_year, "data", "sql", "twl_srvy_apop_sql.txt"))
   # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age pop'n query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # domestic fishery age data ----
     # get connected
@@ -407,5 +407,54 @@ query_goa_pcod <- function(new_year = 9999,
                    file = here::here(new_year, "data", "sql", "fsh_age_domestic_afsc_sql.txt"))
     # print message when done
     cat(crayon::green$bold("\u2713"), crayon::blue("fishery age query"), crayon::green$underline$bold$italic("DONE"), "\n")
+    
+    
+    # trawl survey age specimen data ----
+    # get connected
+    db = 'akfin'
+    conn = afscdata::connect(db)
+    
+    # query data
+    dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
+      dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_cruise')),
+                        by = c('CRUISEJOIN')) %>% 
+      dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_specimen')),
+                        by = c('HAULJOIN')) %>% 
+      dplyr::rename_all(tolower) %>% 
+      dplyr::select(year,
+                    survey_definition_id,
+                    species_code,
+                    stratum,
+                    hauljoin,
+                    latitude_dd_start,
+                    latitude_dd_end,
+                    longitude_dd_start,
+                    longitude_dd_end,
+                    sex,
+                    length_mm,
+                    age) %>% 
+      dplyr::filter(survey_definition_id %in% twl_srvy,
+                    species_code %in% srv_sp) %>% 
+      dplyr::mutate(lat_mid = (latitude_dd_start + latitude_dd_end) / 2,
+                    long_mid = (longitude_dd_start + longitude_dd_end) / 2) %>% 
+      dplyr::select(year, 
+                    survey = survey_definition_id,
+                    species_code,
+                    stratum,
+                    hauljoin,
+                    sex,
+                    length = length_mm,
+                    age,
+                    lat_mid,
+                    long_mid) -> twl_q
+    
+    dplyr::collect(twl_q) %>% 
+      tidytable::filter(age > 0) %>% 
+      tidytable::mutate(length = length / 10) %>% 
+      vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_aage.csv'), delim = ",")
+    capture.output(dplyr::show_query(twl_q), 
+                   file = here::here(new_year, "data", "sql", "twl_srvy_age_sql.txt"))
+    # print message when done
+    cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age specimen query"), crayon::green$underline$bold$italic("DONE"), "\n")
     
 }
