@@ -6,6 +6,7 @@
 #' @param st_yr start year for age data (default = 2007)
 #' @param max_age max age for age comps (i.e., plus group, default = 10)
 #' @param fltr switch for whether to filter length samples (default = TRUE)
+#' @param add_a1 option to define smallest lengths in data as age-1 (default = TRUE)
 #' @param use_FSA switch for whether to use FSA package to compute age-length key or to do it manually (default = TRUE)
 #' @param iters when using FSA, option to have replicates of age-length key (default = 1)
 #' @param by_sex switch for whether to compute sex-specific comps (default = TRUE)
@@ -17,6 +18,7 @@ get_fsh_age <- function(new_year = 9999,
                         st_yr = 2007,
                         max_age = 10,
                         fltr = TRUE,
+                        add_a1 = TRUE,
                         use_FSA = TRUE,
                         iters = 1,
                         by_sex = TRUE,
@@ -55,13 +57,20 @@ get_fsh_age <- function(new_year = 9999,
         tidytable::mutate(age = NA) %>% 
         tidytable::select(year, gear, sex, age, tl) -> ldata_alk
       
-      adata_alk %>% 
-        tidytable::bind_rows(ldata_alk %>% 
-                               tidytable::summarise(tl = min(tl), .by = c(year, gear, sex)) %>% 
-                               tidytable::bind_rows(adata_alk %>% 
-                                                      tidytable::summarise(tl = min(tl) - 1, .by = c(year, gear, sex))) %>% 
-                               tidytable::mutate(age = 1)) %>% 
-        FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      # define smallest lengths as age 1, or not
+      if(isTRUE(add_a1)){
+        adata_alk %>% 
+          tidytable::bind_rows(ldata_alk %>% 
+                                 tidytable::summarise(tl = min(tl), .by = c(year, gear, sex)) %>% 
+                                 tidytable::bind_rows(adata_alk %>% 
+                                                        tidytable::summarise(tl = min(tl) - 1, .by = c(year, gear, sex))) %>% 
+                                 tidytable::mutate(age = 1)) %>% 
+          FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      } else{
+        adata_alk %>% 
+          FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      }
+      
       # get ages for unobserved lengths with FSA package
       combos <- fsh_age %>% 
         tidytable::select(year, gear, sex) %>% 
@@ -118,13 +127,19 @@ get_fsh_age <- function(new_year = 9999,
         tidytable::mutate(age = NA) %>% 
         tidytable::select(year, gear, age, tl) -> ldata_alk
       
-      adata_alk %>% 
-        tidytable::bind_rows(ldata_alk %>% 
-                               tidytable::summarise(tl = min(tl), .by = c(year, gear)) %>% 
-                               tidytable::bind_rows(adata_alk %>% 
-                                                      tidytable::summarise(tl = min(tl) - 1, .by = c(year, gear))) %>% 
-                               tidytable::mutate(age = 1)) %>% 
-        FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      # define smallest lengths as age 1, or not
+      if(isTRUE(add_a1)){
+        adata_alk %>% 
+          tidytable::bind_rows(ldata_alk %>% 
+                                 tidytable::summarise(tl = min(tl), .by = c(year, gear)) %>% 
+                                 tidytable::bind_rows(adata_alk %>% 
+                                                        tidytable::summarise(tl = min(tl) - 1, .by = c(year, gear))) %>% 
+                                 tidytable::mutate(age = 1)) %>% 
+          FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      } else{
+        adata_alk %>% 
+          FSA::lencat(x = ~tl, data = ., startcat = 5, w = 5) -> adata_alk
+      }
       
       # get ages for unobserved lengths with FSA package
       combos <- fsh_age %>% 
