@@ -181,3 +181,27 @@ ss3_caal <- function(data = NULL,
     tidytable::select(-length) %>% 
     tidytable::pivot_wider(names_from = age, values_from = caal)
 }
+#' function to format fishery conditional age-at-length data for ss3 data file
+#' @param data data to format for ss3 (default = NULL)
+#' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
+#' @param nsamp input sample size (default = NULL)
+#' 
+ss3_caal_fsh <- function(data = NULL,
+                         ss3_args = NULL,
+                         nsamp = NULL){
+  data %>% 
+    tidytable::mutate(seas = ss3_args[1],
+                      fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
+                                                    gear == 'longline' ~ 2,
+                                                    gear == 'pot' ~ 3),
+                      gender = ss3_args[2],
+                      part = ss3_args[3],
+                      ageerr = ss3_args[4],
+                      lgin_lo = length,
+                      lgin_hi = length) %>% 
+    tidytable::left_join(nsamp) %>% 
+    tidytable::select(-gear, -length) %>% 
+    tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
+    tidytable::arrange(fltsrv, year)
+}
+
