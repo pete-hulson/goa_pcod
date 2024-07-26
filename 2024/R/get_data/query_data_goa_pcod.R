@@ -22,6 +22,7 @@ query_goa_pcod <- function(new_year = 9999,
   conn = afscdata::connect(db)  
   
   # catch data ----
+  cat("\u231b", crayon::blue("working on catch query..."), "\n")
   # query catch data and write raw data to folder 
   afscdata::q_catch(year = new_year,
                     species = fsh_sp,
@@ -53,6 +54,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # trawl survey index data ----
+  cat("\u231b", crayon::blue("working on trawl survey index query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_biomass')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(year,
@@ -88,6 +90,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # longline survey index data ----
+  cat("\u231b", crayon::blue("working on longline survey index query..."), "\n")
   afscdata::q_lls_rpn(year = new_year,
                       species = srv_sp,
                       area = area,
@@ -98,6 +101,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # iphc survey index data ----
+  cat("\u231b", crayon::blue("working on iphc survey index query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::filter(species %in% c('Pacific cod'),
@@ -120,6 +124,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # trawl survey length pop'n data ----
+  cat("\u231b", crayon::blue("working on trawl survey length pop'n query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_sizecomp')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(year,
@@ -151,6 +156,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length pop'n query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # longline survey length data ----
+  cat("\u231b", crayon::blue("working on longline survey length rpn query..."), "\n")
   afscdata::q_lls_rpn_length(year = new_year,
                              species = srv_sp,
                              area = area,
@@ -159,6 +165,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # domestic fishery length data ----
+  cat("\u231b", crayon::blue("working on domestic fishery length query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
     dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
                         dplyr::filter(SPECIES == fsh_sp_code),
@@ -214,6 +221,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # trawl survey age pop'n data ----
+  cat("\u231b", crayon::blue("working on trawl survey age pop'n query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_agecomp')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(year,
@@ -247,6 +255,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age pop'n query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # trawl survey age specimen data ----
+  cat("\u231b", crayon::blue("working on trawl survey age specimen query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
     dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_cruise')),
                       by = c('CRUISEJOIN')) %>% 
@@ -293,6 +302,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age specimen query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # foreign fishery length data ----
+  cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
   # get connected
   db = 'afsc'
   conn = afscdata::connect(db)
@@ -341,6 +351,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("foreign fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # domestic fishery age data ----
+  cat("\u231b", crayon::blue("working on fishery age query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('obsint.debriefed_age')) %>% 
     dplyr::filter(SPECIES == fsh_sp_code) %>% 
     dplyr::rename_all(tolower) %>% 

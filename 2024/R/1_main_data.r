@@ -38,10 +38,10 @@ lapply(libs, library, character.only = TRUE)
 old_dat_filename <- "GOAPcod2023Oct16.dat"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = FALSE
+query = TRUE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
-run_glm <- FALSE
+run_glm <- TRUE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
@@ -103,7 +103,14 @@ len_bins <- seq(min_size, max_size, bin_width)
 max_age <- 10
 
 # set up needed folders ----
+
 # Make folders for output and plots
+if (!file.exists(here::here(new_dat_year, "data", "raw"))){
+  dir.create(here::here(new_dat_year, "data", "raw"))
+}
+if (!file.exists(here::here(new_dat_year, "data", "sql"))){
+  dir.create(here::here(new_dat_year, "data", "sql"))
+}
 if (!file.exists(here::here(new_dat_year, "output"))){
   dir.create(here::here(new_dat_year, "output"))
 }
@@ -120,6 +127,7 @@ if (file.exists(here::here(new_dat_year, "output")) & length(list.files(here::he
 # source functions ----
 source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
 purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
+source(here::here(new_dat_year, "R", "utils.r"))
 
 # get ss data file ----
 

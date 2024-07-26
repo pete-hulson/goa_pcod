@@ -19,11 +19,6 @@
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param max_age maximum age for age comps (default = 10)
 #' 
-#' @return
-#' @export get_data_goa_pcod
-#' 
-#' @examples
-#' 
 
 get_data_goa_pcod <- function(new_data = new_data,
                               new_file = "blarYYYY.dat",
