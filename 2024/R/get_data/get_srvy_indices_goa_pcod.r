@@ -15,35 +15,24 @@ get_twl_srvy_index <- function(new_year = 9999,
   # get pop'n numbers index
   if(indx == 'num'){
     ts_indx %>% 
-      tidytable::expand(year = min(ts_indx$year):max(ts_indx$year)) %>% 
-      tidytable::left_join(ts_indx %>% 
-                             tidytable::filter(area == 'goa') %>% 
-                             tidytable::mutate(obs = num / 1000,
-                                               se_log = sqrt(log(1 + (sqrt(num_var) / num) ^ 2))) %>% 
-                             tidytable::select(year, obs, se_log)) %>% 
+      tidytable::filter(area == 'goa') %>% 
+      tidytable::mutate(obs = num / 1000,
+                        se_log = sqrt(log(1 + (sqrt(num_var) / num) ^ 2))) %>% 
+      tidytable::select(year, obs, se_log) %>% 
       tidytable::mutate(seas = 7,
-                        obs = replace_na(obs, 1),
-                        se_log = replace_na(se_log, 1)) %>% 
-      tidytable::mutate(index = case_when(obs == 1 ~ -4,
-                                          obs > 1 ~ 4)) %>% 
+                        index = 4) %>% 
       tidytable::select(year, seas, index, obs, se_log)
-  } else{.
+  } else{
     # get biomass index
     ts_indx %>% 
-      tidytable::expand(year = min(ts_indx$year):max(ts_indx$year)) %>% 
-      tidytable::left_join(ts_indx %>% 
-                             tidytable::filter(area == 'goa') %>% 
-                             tidytable::mutate(obs = biom,
-                                               se_log = sqrt(log(1 + (sqrt(biom_var) / biom) ^ 2))) %>% 
-                             tidytable::select(year, obs, se_log)) %>% 
+      tidytable::filter(area == 'goa') %>% 
+      tidytable::mutate(obs = biom,
+                        se_log = sqrt(log(1 + (sqrt(biom_var) / biom) ^ 2))) %>% 
+      tidytable::select(year, obs, se_log) %>% 
       tidytable::mutate(seas = 7,
-                        obs = replace_na(obs, 1),
-                        se_log = replace_na(se_log, 1)) %>% 
-      tidytable::mutate(index = case_when(obs == 1 ~ -4,
-                                          obs > 1 ~ 4)) %>% 
+                        index = 4) %>% 
       tidytable::select(year, seas, index, obs, se_log)
   }
-
 }
 
 #' Function to pull longline survey abundance indices (either by number, rpn, or by weight, rpw)
@@ -66,34 +55,24 @@ get_ll_srvy_index <- function(new_year = 9999,
   # get rpn index
   if(indx == 'num'){
     lls_indx %>% 
-      tidytable::expand(year = min(lls_indx$year):max(lls_indx$year)) %>% 
-      tidytable::left_join(lls_indx %>% 
-                             tidytable::summarise(obs = sum(rpn, na.rm = TRUE),
-                                                  rpn_var = sum(rpn_var, na.rm = TRUE),
-                                                  .by = c(year)) %>% 
-                             tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpn_var) / obs) ^ 2))) %>% 
-                             tidytable::select(year, obs, se_log)) %>% 
+      tidytable::summarise(obs = sum(rpn, na.rm = TRUE),
+                           rpn_var = sum(rpn_var, na.rm = TRUE),
+                           .by = c(year)) %>% 
+      tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpn_var) / obs) ^ 2))) %>% 
+      tidytable::select(year, obs, se_log) %>% 
       tidytable::mutate(seas = 7,
-                        obs = replace_na(obs, 1),
-                        se_log = replace_na(se_log, 1)) %>% 
-      tidytable::mutate(index = case_when(obs == 1 ~ -5,
-                                          obs > 1 ~ 5)) %>% 
+                        index = 5) %>% 
       tidytable::select(year, seas, index, obs, se_log)
   } else{
     # get rpw index
     lls_indx %>% 
-      tidytable::expand(year = min(lls_indx$year):max(lls_indx$year)) %>% 
-      tidytable::left_join(lls_indx %>% 
-                             tidytable::summarise(obs = sum(rpw, na.rm = TRUE),
-                                                  rpw_var = sum(rpw_var, na.rm = TRUE),
-                                                  .by = c(year)) %>% 
-                             tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpw_var) / obs) ^ 2))) %>% 
-                             tidytable::select(year, obs, se_log)) %>% 
+      tidytable::summarise(obs = sum(rpw, na.rm = TRUE),
+                           rpw_var = sum(rpw_var, na.rm = TRUE),
+                           .by = c(year)) %>% 
+      tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpw_var) / obs) ^ 2))) %>% 
+      tidytable::select(year, obs, se_log) %>% 
       tidytable::mutate(seas = 7,
-                        obs = replace_na(obs, 1),
-                        se_log = replace_na(se_log, 1)) %>% 
-      tidytable::mutate(index = case_when(obs == 1 ~ -5,
-                                          obs > 1 ~ 5)) %>% 
+                        index = 5) %>% 
       tidytable::select(year, seas, index, obs, se_log)
   }
 
@@ -120,7 +99,8 @@ get_iphc_srvy_index <- function(new_year = 9999){
     tidytable::summarise(obs = sum(strata_rpn),
                          se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
                          .by = c(year)) %>%
-    tidytable::mutate(seas = 7, index = -6) %>%
+    tidytable::mutate(seas = 7, 
+                      index = -6) %>%
     tidytable::select(year, seas, index, obs, se_log)
   
 }
@@ -144,7 +124,7 @@ get_adfg_srvy_index <- function(new_year = 9999,
     dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
     
     # get model data together
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_srvy_index.csv')) %>% 
+    vroom::vroom(here::here(new_year, 'data', 'adfg_srvy_index.csv')) %>% 
       tidytable::filter(district %in% c(1,2,6),
                         !is.na(avg_depth_fm),
                         !is.na(start_longitude)) %>% 

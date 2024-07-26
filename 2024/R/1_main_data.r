@@ -1,28 +1,26 @@
-## adapted/generalized from Steve Barbeaux' files for
-## generating SS files for EBS/AI Greenland Turbot
-## ZTA, 2021-10-07, R version 4.05.01 64 bit
-## GOA Pacific cod
+## Get SS# data file for GOA Pacific cod
+## adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot ZTA, 2021-10-07, R version 4.05.01 64 bit
 ## Altered in 2022 by Pete Hulson
-## Re-developed in 2024 by Pete Hulson
+## Completely re-developed in 2024 by Pete Hulson
 ## Sections denoted with ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< need to be updated at the start of each assessment cycle
 
-# load afscdata package
-devtools::install_github("afsc-assessments/afscdata", force = TRUE)
+# install packages (if not installed) ----
 
+# afscdata
+# devtools::install_github("afsc-assessments/afscdata", force = TRUE)
 
-# Load libraries
+# r4ss
+# devtools::install_github("r4ss/r4ss", force = TRUE)
+
+# load necessary libraries ----
 libs <- c("r4ss",
-          "RODBC",
-          "DBI",
-          "dplyr",
+          # "RODBC",
+          # "DBI",
           "data.table",
           "FSA",
           "lubridate",
-          "tidyr",
           "afscdata",
-          "purrr",
           "tidyverse",
-          "tidytable",
           "vroom",
           "here")
 
@@ -32,51 +30,70 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 
 lapply(libs, library, character.only = TRUE)
 
-## DEFINE ALL CONSTANTS FOR THIS RUN
+# user-defined function arguments ----
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
-# previous SS DAT filename, if it exists
-old_dat_filename <- "GOAPcod2022Oct25_wADFG.dat"
+# previous ss3 dat filename
+old_dat_filename <- "GOAPcod2023Oct16.dat"
 
-# SS DAT filename
+# run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
+query = FALSE
+
+# run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
+run_glm <- FALSE
+
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+
+# automated function arguments ----
+
+## data file specs ----
+
+# current year ss3 dat filename
 new_dat_filename <- paste0("GOAPcod", 
                               format(Sys.Date(), format = "%Y%b%d"),
                               ".dat")
 
-# Update IPHC & ADF&G survey indices? TRUE if first time running this script, FALSE for every run thereafter
-update_adfg_iphc <- FALSE
-
-## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
-
 # Current assessment year
 new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# is this a new SS DAT file
-is_new_SS_DAT_file <- FALSE
+# format data for ss3 dat file
+ss3_frmt = TRUE
 
-# the FMP area for this stock
-fsh_area = 'GOA'
+## fishery data arguments ----
 
-# the GOA FMP sub-areas in the COUNCIL.COMPREHENSIVE_BLEND_CA database table
+# the fmp region for this stock
+area = 'goa'
+
+# the fishery sub-areas
 fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY")
 
-# species label for AKFIN
-fsh_sp_label = 'PCOD'
+# catch data species label
+fsh_sp = "PCOD"
 
-# the fishery species code(s) for this stock/these stocks
-fsh_sp_code = '202'
+# observer species code
+fsh_sp_code = 202
 
-# year in which to start the fishery data
-fsh_start_yr <- 1977
+# year in which to start the fishery age comp data
+fsh_age_st_yr = 2007
 
-# the survey species code(s) for this stock/these stocks
-srv_sp_str <- 21720
+# filter out small number of lenth observations
+fltr = TRUE
 
-# year in which to start the bottom trawl survey data
-srv_start_yr <- 1984
+## survey data arguments ----
 
-# length bins to use for fsh and srv length comp data
+# region of trawl sruvey
+twl_srvy = 47
+
+# survey species code
+srv_sp = 21720
+
+# type of survey index (numbers/biomass)
+indx = 'num'
+
+## comp data arguments ----
+
+# length bins to use for length comp data
 bin_width <- 1
 min_size <- 0.5
 max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
@@ -85,119 +102,53 @@ len_bins <- seq(min_size, max_size, bin_width)
 # maximum age
 max_age <- 10
 
-## Get all the alternative data that isn't in AKFIN or AFSC databases
-OLD_SEAS_GEAR_CATCH <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'OLD_SEAS_GEAR_CATCH.csv'))
-Larval_indices <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'Larval_indices.csv'))
-ALL_STATE_LENGTHS <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ALL_STATE_LENGTHS.csv'))
-TEMPHW <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'TEMPANDHEAT.csv'))
-if(update_adfg_iphc == TRUE){
-  ADFG_IPHC <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ADFG_IPHC.csv'))
-}else{ADFG_IPHC <- vroom::vroom(here::here(new_SS_dat_year, 'data', 'ADFG_IPHC_updated.csv'))}
-
+# set up needed folders ----
 # Make folders for output and plots
-if (!file.exists(here::here(new_SS_dat_year, "output"))){
-  dir.create(here::here(new_SS_dat_year, "output"))
+if (!file.exists(here::here(new_dat_year, "output"))){
+  dir.create(here::here(new_dat_year, "output"))
 }
-if (!file.exists(here::here(new_SS_dat_year, "plots"))){
-  dir.create(here::here(new_SS_dat_year, "plots", "assessment"), recursive = TRUE)
-  dir.create(here::here(new_SS_dat_year, "plots", "nonSS"), recursive = TRUE)
+if (!file.exists(here::here(new_dat_year, "plots"))){
+  dir.create(here::here(new_dat_year, "plots", "assessment"), recursive = TRUE)
+  dir.create(here::here(new_dat_year, "plots", "nonSS"), recursive = TRUE)
 }
 
 # Remove previous dat files from output folder
-if (file.exists(here::here(new_SS_dat_year, "output")) & length(list.files(here::here(new_SS_dat_year, "output"), pattern = "GOAPcod")) > 0) {
-  file.remove(here::here(new_SS_dat_year, "output", list.files(here::here(new_SS_dat_year, "output"), pattern = "GOAPcod")))
+if (file.exists(here::here(new_dat_year, "output")) & length(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")) > 0) {
+  file.remove(here::here(new_dat_year, "output", list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")))
 }
 
-## Get all the functions for pulling GOA Pcod data
+# source functions ----
+source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
+purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
 
+# get ss data file ----
 
-# source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
-# purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
-source(here::here(new_dat_year, "R", "utils.R"))
-source(here::here(new_dat_year, "R", "get_data", "query_data_goa_pcod.R"))
-source(here::here(new_dat_year, "R", "get_data", "get_catch_goa_pcod.r"))
-source(here::here(new_dat_year, "R", "get_data", "get_srvy_indices_goa_pcod.r"))
-source(here::here(new_dat_year, "R", "get_data", "get_srvy_len_goa_pcod.r"))
-source(here::here(new_dat_year, "R", "get_data", "get_catch_len_goa_pcod.r"))
+# read in previous assessment ss3 datafile
+old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
 
-source(here::here(new_SS_dat_year, "R", "get_data", "GET_LENGTH_BY_CATCH_GOA.R"))
-
-
-source(here::here(new_SS_dat_year, "R", "data", "BIN_LEN_DATA.r"))
-source(here::here(new_SS_dat_year, "R", "data", "cond_length_age_corFISH.r"))
-source(here::here(new_SS_dat_year, "R", "data", "conditional_Length_AGE_cor.r"))
-source(here::here(new_SS_dat_year, "R", "data", "find_ALF.r"))
-source(here::here(new_SS_dat_year, "R", "data", "FISH_AGE_COMP.r"))
-source(here::here(new_SS_dat_year, "R", "data", "FORMAT_AGE_MEANS1.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_DOM_AGE.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_ACOMP1.r"))
-source(here::here(new_dat_year, "R", "get_data", "GET_GOA_BIOM.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LCOMP1.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LENCOM2.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_GOA_LL_RPN.r"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_LENGTH_BY_CATCH_GOA.R"))
-source(here::here(new_SS_dat_year, "R", "data", "GET_SURV_AGE_cor.r"))
-
-## Open up data base connections
-db <- vroom::vroom(here::here(new_SS_dat_year, "database_specs.csv"))
-afsc_user = db$username[db$database == "AFSC"]
-afsc_pass = db$password[db$database == "AFSC"]
-akfin_user = db$username[db$database == "AKFIN"]
-akfin_pass = db$password[db$database == "AKFIN"]
-
-AFSC = odbcConnect("AFSC", 
-                   afsc_user, 
-                   afsc_pass, 
-                   believeNRows=FALSE)
-CHINA = odbcConnect("AKFIN", 
-                    akfin_user, 
-                    akfin_pass, 
-                    believeNRows=FALSE)
-
-## Get all data for data file
-source(here::here(new_SS_dat_year, "R", "data", "SBSS_GET_ALL_DATA_GOA_PCOD_cor.r"))
-
-if (!is_new_SS_DAT_file){
-  old_data <- r4ss::SS_readdat_3.30(here::here(new_SS_dat_year, "data", old_SS_dat_filename))
-  new_data <- old_data}else{print(" Warning:  Need to enter old SS data file name")}
-
-# # for testing functions
-# new_data = new_data
-# new_file = new_SS_dat_filename
-# new_year = new_SS_dat_year
-# inc_ADFG = TRUE
-# sndz_lc = FALSE
-# catch_table = TRUE
-# AUXFCOMP = 3
-
-# get new data file
-new_data <- SBSS_GET_ALL_DATA(new_data = new_data,
-                              new_file = new_SS_dat_filename,
-                              new_year = new_SS_dat_year,
-                              sp_area = sp_area,
-                              fsh_sp_label = fsh_sp_label,
-                              fsh_sp_area = fsh_sp_area,
-                              fsh_sp_str = fsh_sp_str,
-                              fsh_start_yr = fsh_start_yr,
-                              srv_sp_str = srv_sp_str,
-                              srv_start_yr = srv_start_yr,
+# get new ss3 dat
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = query,
+                              fsh_sp = fsh_sp,
+                              fsh_sp_code = fsh_sp_code,
+                              fsh_subarea = fsh_subarea,
+                              fsh_age_st_yr = fsh_age_st_yr,
+                              twl_srvy = twl_srvy,
+                              srv_sp = srv_sp,
+                              area = area,
+                              indx = indx,
+                              run_glm = run_glm,
                               len_bins = len_bins,
-                              max_age = max_age,
-                              is_new_SS_DAT_file = is_new_SS_DAT_file,
-                              update_adfg_iphc = update_adfg_iphc,
-                              inc_ADFG = TRUE,
-                              sndz_lc = FALSE,
-                              catch_table = TRUE,
-                              AUXFCOMP = 3)
+                              fltr = fltr,
+                              ss3_frmt = ss3_frmt,
+                              max_age = max_age)
+
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_SS_dat_year, "output", new_SS_dat_filename), overwrite = TRUE)
-
-# # test that the new file is readable
-# test_dat <- r4ss::SS_readdat_3.30(here::here("output", new_SS_dat_filename), verbose = TRUE)
-
-
+                       here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
 
 
 

@@ -41,7 +41,7 @@ ss3_len_com <- function(data = NULL,
                       gender = ss3_args[3],
                       part = ss3_args[4]) -> lcomp_part
   
-  # test if input sample size constant or read-in (e.g., from surveyISS package)
+  # switch if input sample size time-dependent (e.g., from surveyISS package) or constant
   if(isTRUE(iss)){
     lcomp_part %>% 
       tidytable::left_join(nsamp) %>% 
@@ -96,7 +96,7 @@ ss3_age_com <- function(data = NULL,
                       lgin_lo = ss3_args[6],
                       lgin_hi = ss3_args[7]) -> acomp_part
   
-  # test if input sample size constant or read-in (e.g., from surveyISS package)
+  # switch if input sample size time-dependent (e.g., from surveyISS package) or constant
   if(isTRUE(iss)){
     acomp_part %>% 
       tidytable::left_join(nsamp) %>% 

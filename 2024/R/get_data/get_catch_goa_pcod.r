@@ -56,7 +56,7 @@ get_catch_goa_pcod <- function(new_year = 9999){
   
   # adf&g catch ----
   
-  # read in adf&g catch and add gear descriptions
+  # add gear descriptions and summarise catch by gear
   adfg_raw %>% 
     tidytable::rename(year = akfin_year) %>% 
     tidytable::mutate(gear = case_when(fmp_gear %in% c("JIG", "HAL") ~ "longline",

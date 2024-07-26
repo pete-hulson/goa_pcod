@@ -44,10 +44,10 @@ get_growth <- function(new_year,
   if(isTRUE(ss3_frmt)){
     # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part, ageerr, ignore)
     ss3_args = c(7, -4, 0, 0, 1, 999)
-    mean_len <- ss3_grwth(mean_len,
-                          ss3_args)
-    mean_wt <- ss3_grwth(mean_wt,
-                         ss3_args)
+    mean_len <- ss3_grwth(data = mean_len,
+                          ss3_args = ss3_args)
+    mean_wt <- ss3_grwth(data = mean_wt,
+                         ss3_args = ss3_args)
   }
   
   if(type == 'len'){
