@@ -45,14 +45,16 @@ ss3_len_com <- function(data = NULL,
   if(isTRUE(iss)){
     lcomp_part %>% 
       tidytable::left_join(nsamp) %>% 
+      tidytable::mutate(length = paste0('l', length)) %>% 
       tidytable::pivot_wider(names_from = length, values_from = lencomp) -> ss3_lcomp
   } else{
     lcomp_part %>% 
-      tidytable::mutate(nsamp = nsamp) %>% 
+      tidytable::mutate(nsamp = nsamp,
+                        length = paste0('l', length)) %>% 
       tidytable::pivot_wider(names_from = length, values_from = lencomp) -> ss3_lcomp
   }
   
-  ss3_lcomp
+  data.frame(ss3_lcomp)
 }
 #' function to format fishery length comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -72,10 +74,11 @@ ss3_len_com_fsh <- function(data = NULL,
                       part = ss3_args[3]) %>% 
     tidytable::left_join(nsamp) %>% 
     tidytable::select(-gear) %>% 
+    tidytable::mutate(length = paste0('l', length)) %>% 
     tidytable::pivot_wider(names_from = length, values_from = lencomp) %>% 
     tidytable::arrange(fltsrv) -> ss3_lcomp
   
-  ss3_lcomp
+  data.frame(ss3_lcomp)
 }
 #' function to format survey age comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -100,14 +103,16 @@ ss3_age_com <- function(data = NULL,
   if(isTRUE(iss)){
     acomp_part %>% 
       tidytable::left_join(nsamp) %>% 
+      tidytable::mutate(age = paste0('a', age)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   } else{
     acomp_part %>% 
-      tidytable::mutate(nsamp = nsamp) %>% 
+      tidytable::mutate(nsamp = nsamp,
+                        age = paste0('a', age)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   }
   
-  ss3_acomp
+  data.frame(ss3_acomp)
 }
 #' function to format fishery age comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -146,11 +151,13 @@ ss3_age_com_fsh <- function(data = NULL,
                                                                              gear == 'longline' ~ 2,
                                                                              gear == 'pot' ~ 3)) %>% 
                              tidytable::select(year, fltsrv, nsamp)) %>% 
+      tidytable::mutate(age = paste0('a', age)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) %>% 
       tidytable::arrange(fltsrv, year) -> ss3_acomp
   } else{
     acomp_part %>% 
-      tidytable::mutate(nsamp = nsamp) %>% 
+      tidytable::mutate(nsamp = nsamp,
+                        age = paste0('a', age)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   }
   
@@ -159,7 +166,7 @@ ss3_age_com_fsh <- function(data = NULL,
       tidytable::mutate(fltsrv = fltsrv * -1) -> ss3_acomp
   }
   
-  ss3_acomp
+  data.frame(ss3_acomp)
 }
 #' function to format survey conditional age-at-length data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -169,17 +176,18 @@ ss3_age_com_fsh <- function(data = NULL,
 ss3_caal <- function(data = NULL, 
                      ss3_args = NULL, 
                      nsamp = NULL){
-  data %>% 
-    tidytable::mutate(seas = ss3_args[1],
-                      fltsrv = ss3_args[2],
-                      gender = ss3_args[3],
-                      part = ss3_args[4],
-                      ageerr = ss3_args[5],
-                      lgin_lo = length,
-                      lgin_hi = length) %>% 
-    tidytable::left_join(nsamp) %>% 
-    tidytable::select(-length) %>% 
-    tidytable::pivot_wider(names_from = age, values_from = caal)
+  data.frame(data %>% 
+               tidytable::mutate(seas = ss3_args[1],
+                                 fltsrv = ss3_args[2],
+                                 gender = ss3_args[3],
+                                 part = ss3_args[4],
+                                 ageerr = ss3_args[5],
+                                 lgin_lo = length,
+                                 lgin_hi = length) %>% 
+               tidytable::left_join(nsamp) %>% 
+               tidytable::select(-length) %>% 
+               tidytable::mutate(age = paste0('a', age)) %>% 
+               tidytable::pivot_wider(names_from = age, values_from = caal))
 }
 #' function to format fishery conditional age-at-length data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -189,20 +197,21 @@ ss3_caal <- function(data = NULL,
 ss3_caal_fsh <- function(data = NULL,
                          ss3_args = NULL,
                          nsamp = NULL){
-  data %>% 
-    tidytable::mutate(seas = ss3_args[1],
-                      fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
-                                                    gear == 'longline' ~ 2,
-                                                    gear == 'pot' ~ 3),
-                      gender = ss3_args[2],
-                      part = ss3_args[3],
-                      ageerr = ss3_args[4],
-                      lgin_lo = length,
-                      lgin_hi = length) %>% 
-    tidytable::left_join(nsamp) %>% 
-    tidytable::select(-gear, -length) %>% 
-    tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
-    tidytable::arrange(fltsrv, year)
+  data.frame(data %>% 
+               tidytable::mutate(seas = ss3_args[1],
+                                 fltsrv = tidytable::case_when(gear == 'trawl' ~ 1,
+                                                               gear == 'longline' ~ 2,
+                                                               gear == 'pot' ~ 3),
+                                 gender = ss3_args[2],
+                                 part = ss3_args[3],
+                                 ageerr = ss3_args[4],
+                                 lgin_lo = length,
+                                 lgin_hi = length) %>% 
+               tidytable::left_join(nsamp) %>% 
+               tidytable::select(-gear, -length) %>% 
+               tidytable::mutate(age = paste0('a', age)) %>% 
+               tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
+               tidytable::arrange(fltsrv, year))
 }
 #' function to format growth data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
@@ -210,20 +219,20 @@ ss3_caal_fsh <- function(data = NULL,
 #' 
 ss3_grwth <- function(data = NULL,
                       ss3_args = NULL){
-  data %>% 
-    tidytable::mutate(seas = ss3_args[1],
-                      fltsrv = ss3_args[2],
-                      gender = ss3_args[3],
-                      part = ss3_args[4],
-                      ageerr = ss3_args[5],
-                      ignore = ss3_args[6],
-                      age = paste0('a', age)) %>% 
-    tidytable::select(-nsamp) %>% 
-    tidytable::pivot_wider(names_from = age, values_from = mean) %>% 
-    tidytable::left_join(data %>% 
-                           tidytable::mutate(age = paste0('n_a', age)) %>% 
-                           tidytable::select(-mean) %>% 
-                           tidytable::pivot_wider(names_from = age, values_from = nsamp))
+  data.frame(data %>% 
+               tidytable::mutate(seas = ss3_args[1],
+                                 fltsrv = ss3_args[2],
+                                 gender = ss3_args[3],
+                                 part = ss3_args[4],
+                                 ageerr = ss3_args[5],
+                                 ignore = ss3_args[6],
+                                 age = paste0('a', age)) %>% 
+               tidytable::select(-nsamp) %>% 
+               tidytable::pivot_wider(names_from = age, values_from = mean) %>% 
+               tidytable::left_join(data %>% 
+                                      tidytable::mutate(age = paste0('n_a', age)) %>% 
+                                      tidytable::select(-mean) %>% 
+                                      tidytable::pivot_wider(names_from = age, values_from = nsamp)))
 }
 
 #' function to format environmental link data for ss3 data file
@@ -232,7 +241,7 @@ ss3_grwth <- function(data = NULL,
 #' 
 ss3_envlnk <- function(data = NULL,
                        var = NULL){
-  data %>% 
-    tidytable::mutate(variable = var) %>% 
-    tidytable::select(year, variable, index)
+  data.frame(data %>% 
+               tidytable::mutate(variable = var) %>% 
+               tidytable::select(year, variable, index))
 }

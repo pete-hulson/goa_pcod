@@ -87,14 +87,14 @@ get_data_goa_pcod <- function(new_data = new_data,
   
   ## larval and beach seine indices ----
   # note: for time-being, these are entered by hand from emailed data
-  ss3_other_indx <- vroom::vroom(here::here(new_year, 'data', 'other_indices.csv'))
+  ss3_other_indx <- data.frame(vroom::vroom(here::here(new_year, 'data', 'other_indices.csv')))
   
   ## plop into ss3 data file ----
-  cpue <- ss3_twl_indx %>% 
-    tidytable::bind_rows(ss3_ll_indx) %>% 
-    tidytable::bind_rows(ss3_iphc_indx) %>% 
-    tidytable::bind_rows(ss3_adfg_indx) %>% 
-    tidytable::bind_rows(ss3_other_indx)
+  cpue <- rbind(ss3_twl_indx,
+                ss3_ll_indx,
+                ss3_iphc_indx,
+                ss3_adfg_indx,
+                ss3_other_indx)
   
   new_data$N_cpue <- nrow(cpue)
   new_data$CPUE <- cpue
@@ -129,14 +129,14 @@ get_data_goa_pcod <- function(new_data = new_data,
                                        ss3_frmt = ss3_frmt)
   cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  pre_fsh_lcomp %>% 
-    tidytable::bind_rows(post_fsh_lcomp) %>% 
-    tidytable::arrange(fltsrv) -> ss3_fsh_lcomp
+  data.frame(pre_fsh_lcomp %>% 
+               tidytable::bind_rows(post_fsh_lcomp) %>% 
+               tidytable::arrange(fltsrv)) -> ss3_fsh_lcomp
 
   ## plop into ss3 data file ----
-  lcomp <- ss3_fsh_lcomp %>% 
-    tidytable::bind_rows(ss3_twl_lcomp) %>% 
-    tidytable::bind_rows(ss3_ll_lcomp)
+  lcomp <- rbind(ss3_fsh_lcomp,
+                 ss3_twl_lcomp,
+                 ss3_ll_lcomp)
   
   new_data$N_lencomp <- nrow(lcomp)
   new_data$lencomp <- lcomp
@@ -181,10 +181,10 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery conditional age-at-length data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## plop into ss3 data file ----
-  acomp <- ss3_fsh_acomp %>% 
-    tidytable::bind_rows(ss3_twl_acomp) %>% 
-    tidytable::bind_rows(ss3_fsh_caal) %>% 
-    tidytable::bind_rows(ss3_twl_caal)
+  acomp <- rbind(ss3_fsh_acomp,
+                 ss3_twl_acomp,
+                 ss3_fsh_caal,
+                 ss3_twl_caal)
   
   new_data$N_agecomp <- nrow(acomp)
   new_data$agecomp <- acomp
@@ -218,8 +218,8 @@ get_data_goa_pcod <- function(new_data = new_data,
   ## plop into ss3 data file ----
   new_data$envdat <- ss3_lls_env
   cat(crayon::green$bold("\u2713"), crayon::blue("env link data"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  new_data
+ 
   cat(crayon::green$bold("\u2713"), crayon::blue("ss3 data file"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+  new_data
+
 }

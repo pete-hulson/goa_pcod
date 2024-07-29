@@ -76,7 +76,7 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
     tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(lls_lpop$year)))) %>% 
     tidytable::left_join(lls_lpop %>% 
                            tidytable::filter(length > 0) %>% 
-                           tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
+                           tidytable::summarise(popn = sum(rpn), .by = c(year, length)) %>% 
                            tidytable::left_join(get_bin(.$length, bins)) %>% 
                            tidytable::summarise(popn = sum(popn), .by = c(year, bin))) %>% 
     tidytable::mutate(popn = replace_na(popn, 0)) %>% 

@@ -14,8 +14,6 @@
 
 # load necessary libraries ----
 libs <- c("r4ss",
-          # "RODBC",
-          # "DBI",
           "data.table",
           "FSA",
           "lubridate",
@@ -38,10 +36,10 @@ lapply(libs, library, character.only = TRUE)
 old_dat_filename <- "GOAPcod2023Oct16.dat"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
+query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
-run_glm <- TRUE
+run_glm <- FALSE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
@@ -157,6 +155,4 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
-
-
 

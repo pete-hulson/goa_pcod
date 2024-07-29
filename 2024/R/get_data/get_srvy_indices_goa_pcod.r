@@ -8,30 +8,30 @@
 
 get_twl_srvy_index <- function(new_year = 9999,
                                indx = NULL){
-
+  
   # format for ss3 ----
   ts_indx <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_index.csv'))
   
   # get pop'n numbers index
   if(indx == 'num'){
-    ts_indx %>% 
-      tidytable::filter(area == 'goa') %>% 
-      tidytable::mutate(obs = num / 1000,
-                        se_log = sqrt(log(1 + (sqrt(num_var) / num) ^ 2))) %>% 
-      tidytable::select(year, obs, se_log) %>% 
-      tidytable::mutate(seas = 7,
-                        index = 4) %>% 
-      tidytable::select(year, seas, index, obs, se_log)
+    data.frame(ts_indx %>% 
+                 tidytable::filter(area == 'goa') %>% 
+                 tidytable::mutate(obs = num / 1000,
+                                   se_log = sqrt(log(1 + (sqrt(num_var) / num) ^ 2))) %>% 
+                 tidytable::select(year, obs, se_log) %>% 
+                 tidytable::mutate(seas = 7,
+                                   index = 4) %>% 
+                 tidytable::select(year, seas, index, obs, se_log))
   } else{
     # get biomass index
-    ts_indx %>% 
-      tidytable::filter(area == 'goa') %>% 
-      tidytable::mutate(obs = biom,
-                        se_log = sqrt(log(1 + (sqrt(biom_var) / biom) ^ 2))) %>% 
-      tidytable::select(year, obs, se_log) %>% 
-      tidytable::mutate(seas = 7,
-                        index = 4) %>% 
-      tidytable::select(year, seas, index, obs, se_log)
+    data.frame(ts_indx %>% 
+                 tidytable::filter(area == 'goa') %>% 
+                 tidytable::mutate(obs = biom,
+                                   se_log = sqrt(log(1 + (sqrt(biom_var) / biom) ^ 2))) %>% 
+                 tidytable::select(year, obs, se_log) %>% 
+                 tidytable::mutate(seas = 7,
+                                   index = 4) %>% 
+                 tidytable::select(year, seas, index, obs, se_log))
   }
 }
 
@@ -45,7 +45,7 @@ get_twl_srvy_index <- function(new_year = 9999,
 
 get_ll_srvy_index <- function(new_year = 9999,
                               indx = NULL){
-
+  
   # format for ss3 ----
   
   # read in longline survey data and filter to 1990 on
@@ -54,28 +54,28 @@ get_ll_srvy_index <- function(new_year = 9999,
   
   # get rpn index
   if(indx == 'num'){
-    lls_indx %>% 
-      tidytable::summarise(obs = sum(rpn, na.rm = TRUE),
-                           rpn_var = sum(rpn_var, na.rm = TRUE),
-                           .by = c(year)) %>% 
-      tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpn_var) / obs) ^ 2))) %>% 
-      tidytable::select(year, obs, se_log) %>% 
-      tidytable::mutate(seas = 7,
-                        index = 5) %>% 
-      tidytable::select(year, seas, index, obs, se_log)
+    data.frame(lls_indx %>% 
+                 tidytable::summarise(obs = sum(rpn, na.rm = TRUE),
+                                      rpn_var = sum(rpn_var, na.rm = TRUE),
+                                      .by = c(year)) %>% 
+                 tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpn_var) / obs) ^ 2))) %>% 
+                 tidytable::select(year, obs, se_log) %>% 
+                 tidytable::mutate(seas = 7,
+                                   index = 5) %>% 
+                 tidytable::select(year, seas, index, obs, se_log))
   } else{
     # get rpw index
-    lls_indx %>% 
-      tidytable::summarise(obs = sum(rpw, na.rm = TRUE),
-                           rpw_var = sum(rpw_var, na.rm = TRUE),
-                           .by = c(year)) %>% 
-      tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpw_var) / obs) ^ 2))) %>% 
-      tidytable::select(year, obs, se_log) %>% 
-      tidytable::mutate(seas = 7,
-                        index = 5) %>% 
-      tidytable::select(year, seas, index, obs, se_log)
+    data.frame(lls_indx %>% 
+                 tidytable::summarise(obs = sum(rpw, na.rm = TRUE),
+                                      rpw_var = sum(rpw_var, na.rm = TRUE),
+                                      .by = c(year)) %>% 
+                 tidytable::mutate(se_log = sqrt(log(1 + (sqrt(rpw_var) / obs) ^ 2))) %>% 
+                 tidytable::select(year, obs, se_log) %>% 
+                 tidytable::mutate(seas = 7,
+                                   index = 5) %>% 
+                 tidytable::select(year, seas, index, obs, se_log))
   }
-
+  
 }
 
 
@@ -87,7 +87,7 @@ get_ll_srvy_index <- function(new_year = 9999,
 #' 
 
 get_iphc_srvy_index <- function(new_year = 9999){
-
+  
   # format for ss3 ----
   
   # read in iphc longline survey data
@@ -95,13 +95,13 @@ get_iphc_srvy_index <- function(new_year = 9999){
   
   # get iphc rpn index
   # note: can not reproduce original cvs as obtained from s. barbeaux in 2021 by bootstrap
-  iphc_indx %>% 
-    tidytable::summarise(obs = sum(strata_rpn),
-                         se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
-                         .by = c(year)) %>%
-    tidytable::mutate(seas = 7, 
-                      index = -6) %>%
-    tidytable::select(year, seas, index, obs, se_log)
+  data.frame(iphc_indx %>% 
+               tidytable::summarise(obs = sum(strata_rpn),
+                                    se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
+                                    .by = c(year)) %>%
+               tidytable::mutate(seas = 7, 
+                                 index = -6) %>%
+               tidytable::select(year, seas, index, obs, se_log))
   
 }
 
@@ -116,7 +116,7 @@ get_iphc_srvy_index <- function(new_year = 9999){
 
 get_adfg_srvy_index <- function(new_year = 9999,
                                 run_glm = FALSE){
-
+  
   
   # run delta glm model ----
   if(isTRUE(run_glm)){
@@ -145,16 +145,16 @@ get_adfg_srvy_index <- function(new_year = 9999,
   }
   
   # format for ss3 ----
-      
+  
   # read in adf&g glm model results
   adfg_indx <- vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"))
   
   # get adf&g index
-  adfg_indx %>% 
-    tidytable::rename(obs = index) %>% 
-    tidytable::mutate(se_log = sqrt(log(1 + jack.se / obs) ^ 2),
-                      seas = 7, 
-                      index = -7) %>% 
-    tidytable::select(year, seas, index, obs, se_log)
-
+  data.frame(adfg_indx %>% 
+               tidytable::rename(obs = index) %>% 
+               tidytable::mutate(se_log = sqrt(log(1 + jack.se / obs) ^ 2),
+                                 seas = 7, 
+                                 index = -7) %>% 
+               tidytable::select(year, seas, index, obs, se_log))
+  
 }

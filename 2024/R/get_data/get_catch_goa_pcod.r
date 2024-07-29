@@ -82,15 +82,15 @@ get_catch_goa_pcod <- function(new_year = 9999){
     tidytable::mutate(fleet = case_when(gear == "trawl" ~ 1,
                                         gear == "longline" ~ 2,
                                         gear == "pot" ~ 3),
-                      se = 0.05,
+                      catch_se = 0.05,
                       seas = 1) %>% 
     tidytable::rename(catch = tons) %>% 
-    tidytable::select(year, seas, fleet, catch, se) %>% 
+    tidytable::select(year, seas, fleet, catch, catch_se) %>% 
     tidytable::bind_rows(data.frame(year = c(-999, -999, -999), 
                                     seas = c(1, 1, 1), 
                                     fleet = c(1, 2, 3), 
                                     catch = c(0, 0, 0), 
-                                    se = rep(0.05, 3))) %>% 
+                                    catch_se = rep(0.05, 3))) %>% 
     tidytable::arrange(fleet, year) -> ss3_catch
   
   # SAFE catch tables ----
@@ -175,6 +175,6 @@ get_catch_goa_pcod <- function(new_year = 9999){
   
   # fcn return ----
   
-  ss3_catch
+  data.frame(ss3_catch)
   
 }
