@@ -55,6 +55,8 @@ Hist_SSB.xlsx
 Hist_trawl_fit.xlsx
 COMPREHENSIVE_OBS_EM.csv
 data/
+data_old/
+1_main_data_old.r
 emailed data/
 emailed_data/
 retrospectives/

@@ -118,9 +118,9 @@ if (!file.exists(here::here(new_dat_year, "plots"))){
 }
 
 # Remove previous dat files from output folder
-if (file.exists(here::here(new_dat_year, "output")) & length(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")) > 0) {
-  file.remove(here::here(new_dat_year, "output", list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")))
-}
+# if (file.exists(here::here(new_dat_year, "output")) & length(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")) > 0) {
+#   file.remove(here::here(new_dat_year, "output", list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")))
+# }
 
 # source functions ----
 source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
@@ -150,7 +150,6 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               fltr = fltr,
                               ss3_frmt = ss3_frmt,
                               max_age = max_age)
-
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,

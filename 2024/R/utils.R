@@ -45,12 +45,14 @@ ss3_len_com <- function(data = NULL,
   if(isTRUE(iss)){
     lcomp_part %>% 
       tidytable::left_join(nsamp) %>% 
-      tidytable::mutate(length = paste0('l', length)) %>% 
+      tidytable::mutate(length = paste0('l', length),
+                        lencomp = round(lencomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = length, values_from = lencomp) -> ss3_lcomp
   } else{
     lcomp_part %>% 
       tidytable::mutate(nsamp = nsamp,
-                        length = paste0('l', length)) %>% 
+                        length = paste0('l', length),
+                        lencomp = round(lencomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = length, values_from = lencomp) -> ss3_lcomp
   }
   
@@ -74,7 +76,8 @@ ss3_len_com_fsh <- function(data = NULL,
                       part = ss3_args[3]) %>% 
     tidytable::left_join(nsamp) %>% 
     tidytable::select(-gear) %>% 
-    tidytable::mutate(length = paste0('l', length)) %>% 
+    tidytable::mutate(length = paste0('l', length),
+                      lencomp = round(lencomp, digits = 5)) %>% 
     tidytable::pivot_wider(names_from = length, values_from = lencomp) %>% 
     tidytable::arrange(fltsrv) -> ss3_lcomp
   
@@ -103,12 +106,14 @@ ss3_age_com <- function(data = NULL,
   if(isTRUE(iss)){
     acomp_part %>% 
       tidytable::left_join(nsamp) %>% 
-      tidytable::mutate(age = paste0('a', age)) %>% 
+      tidytable::mutate(age = paste0('a', age),
+                        agecomp = round(agecomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   } else{
     acomp_part %>% 
       tidytable::mutate(nsamp = nsamp,
-                        age = paste0('a', age)) %>% 
+                        age = paste0('a', age),
+                        agecomp = round(agecomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   }
   
@@ -151,13 +156,15 @@ ss3_age_com_fsh <- function(data = NULL,
                                                                              gear == 'longline' ~ 2,
                                                                              gear == 'pot' ~ 3)) %>% 
                              tidytable::select(year, fltsrv, nsamp)) %>% 
-      tidytable::mutate(age = paste0('a', age)) %>% 
+      tidytable::mutate(age = paste0('a', age),
+                        agecomp = round(agecomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) %>% 
       tidytable::arrange(fltsrv, year) -> ss3_acomp
   } else{
     acomp_part %>% 
       tidytable::mutate(nsamp = nsamp,
-                        age = paste0('a', age)) %>% 
+                        age = paste0('a', age),
+                        agecomp = round(agecomp, digits = 5)) %>% 
       tidytable::pivot_wider(names_from = age, values_from = agecomp) -> ss3_acomp
   }
   
@@ -186,7 +193,8 @@ ss3_caal <- function(data = NULL,
                                  lgin_hi = length) %>% 
                tidytable::left_join(nsamp) %>% 
                tidytable::select(-length) %>% 
-               tidytable::mutate(age = paste0('a', age)) %>% 
+               tidytable::mutate(age = paste0('a', age),
+                                 caal = round(caal, digits = 5)) %>% 
                tidytable::pivot_wider(names_from = age, values_from = caal))
 }
 #' function to format fishery conditional age-at-length data for ss3 data file
@@ -209,7 +217,8 @@ ss3_caal_fsh <- function(data = NULL,
                                  lgin_hi = length) %>% 
                tidytable::left_join(nsamp) %>% 
                tidytable::select(-gear, -length) %>% 
-               tidytable::mutate(age = paste0('a', age)) %>% 
+               tidytable::mutate(age = paste0('a', age),
+                                 caal = round(caal, digits = 5)) %>% 
                tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
                tidytable::arrange(fltsrv, year))
 }
