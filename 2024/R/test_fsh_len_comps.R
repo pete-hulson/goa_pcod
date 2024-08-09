@@ -35,7 +35,7 @@ min_size <- 0.5
 max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
 
-len_bins = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5, 109.5, 114.5, 119.5)
+# len_bins = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5, 109.5, 114.5, 119.5)
 
 
 # get old way of doing comps
@@ -73,7 +73,9 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_grid(rows = vars(gear))
+  facet_grid(rows = vars(gear)) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (trawl) ----
 lcomp_old %>% 
@@ -90,7 +92,9 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (longline) ----
 lcomp_old %>% 
@@ -107,7 +111,9 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (pot) ----
 lcomp_old %>% 
@@ -124,7 +130,9 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 
 # age comps ----
@@ -141,7 +149,6 @@ acomp_old <- get_fsh_age(new_year,
                          by_sex = TRUE,
                          ss3_frmt = FALSE,
                          fit = FALSE)
-
 
 # get new way of doing comps
 acomp_new <- get_fsh_age_new(new_year,
@@ -174,7 +181,9 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_grid(rows = vars(gear))
+  facet_grid(rows = vars(gear)) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (trawl) ----
 acomp_old %>% 
@@ -193,7 +202,9 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (longline) ----
 acomp_old %>% 
@@ -212,7 +223,9 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))
 
 ## annual plot (pot) ----
 acomp_old %>% 
@@ -231,4 +244,6 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_wrap( ~ year)
+  facet_wrap( ~ year) +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green'))

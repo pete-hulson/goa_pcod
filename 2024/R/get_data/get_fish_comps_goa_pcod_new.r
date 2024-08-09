@@ -195,7 +195,7 @@ get_fsh_age_new <- function(new_year = 9999,
   fsh_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv')) %>% 
     # filter to years post-2007 (as default)
     tidytable::filter(year > st_yr)
-  
+
   # compute age comps (with ALK) ----
   # get age comp for all combos of year-gear-age
   tidytable::expand_grid(year = sort(unique(fsh_age$year)),
@@ -210,6 +210,7 @@ get_fsh_age_new <- function(new_year = 9999,
                            tidytable::select(year, gear, length, age, alk) %>% 
                            # join length comps and compute expanded age comps
                            tidytable::left_join(fsh_len_exp) %>% 
+                           tidytable::drop_na() %>% 
                            tidytable::mutate(acomp = alk * prop) %>% 
                            tidytable::summarise(acomp1 = sum(acomp), .by = c(year, gear, age))) %>% 
     tidytable::mutate(acomp1 = tidytable::replace_na(acomp1, 0)) %>% 

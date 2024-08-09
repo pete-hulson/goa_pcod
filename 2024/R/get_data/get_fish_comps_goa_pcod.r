@@ -969,6 +969,7 @@ get_fsh_age <- function(new_year = 9999,
                              # join length comps and compute expanded age comps
                              tidytable::left_join(fsh_len_exp %>% 
                                                     tidytable::select(year, gear, length, prop)) %>% 
+                             tidytable::drop_na() %>% 
                              tidytable::mutate(acomp = alk * prop) %>% 
                              tidytable::summarise(acomp1 = sum(acomp), .by = c(year, gear, age))) %>% 
       tidytable::mutate(acomp1 = tidytable::replace_na(acomp1, 0)) %>% 
