@@ -46,7 +46,6 @@ run_glm <- FALSE
 # automated function arguments ----
 
 ## data file specs ----
-
 # current year ss3 dat filename
 new_dat_filename <- paste0("GOAPcod", 
                               format(Sys.Date(), format = "%Y%b%d"),
@@ -55,50 +54,12 @@ new_dat_filename <- paste0("GOAPcod",
 # Current assessment year
 new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# format data for ss3 dat file
-ss3_frmt = TRUE
-
-## fishery data arguments ----
-
-# the fmp region for this stock
-area = 'goa'
-
-# the fishery sub-areas
-fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY")
-
-# catch data species label
-fsh_sp = "PCOD"
-
-# observer species code
-fsh_sp_code = 202
-
-# year in which to start the fishery age comp data
-fsh_age_st_yr = 2007
-
-# filter out small number of lenth observations
-fltr = TRUE
-
-## survey data arguments ----
-
-# region of trawl sruvey
-twl_srvy = 47
-
-# survey species code
-srv_sp = 21720
-
-# type of survey index (numbers/biomass)
-indx = 'num'
-
 ## comp data arguments ----
-
 # length bins to use for length comp data
 bin_width <- 1
 min_size <- 0.5
 max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
-
-# maximum age
-max_age <- 10
 
 # set up needed folders ----
 
@@ -137,19 +98,19 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = query,
-                              fsh_sp = fsh_sp,
-                              fsh_sp_code = fsh_sp_code,
-                              fsh_subarea = fsh_subarea,
-                              fsh_age_st_yr = fsh_age_st_yr,
-                              twl_srvy = twl_srvy,
-                              srv_sp = srv_sp,
-                              area = area,
-                              indx = indx,
+                              fsh_sp = "PCOD", # catch data species label
+                              fsh_sp_code = 202, # observer species code
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+                              twl_srvy = 47, # region of trawl survey
+                              srv_sp = 21720, # survey species code
+                              area = 'goa', # the fmp region for this stock
+                              indx = 'num', # type of survey index (numbers/biomass)
                               run_glm = run_glm,
                               len_bins = len_bins,
-                              fltr = fltr,
-                              ss3_frmt = ss3_frmt,
-                              max_age = max_age)
+                              fltr = TRUE, # filter out small number of length observations
+                              ss3_frmt = TRUE, # format data for ss3 dat file
+                              max_age = 10) # maximum age
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
