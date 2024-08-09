@@ -47,7 +47,7 @@ expand_fsh_len <- function(new_year = 9999){
     tidytable::summarise(tons = sum(weight_posted), .by = c(year, trimester, area, gear)) %>%
     tidytable::mutate(total = sum(tons), .by = year) %>%
     tidytable::mutate(catch_prop = tons / total) -> catch_p
-  
+
   # compute comps: fed merged with state ----
   
   # start with federal length frequencies
@@ -64,19 +64,40 @@ expand_fsh_len <- function(new_year = 9999){
                          .by = c(year, trimester, area, gear, length)) %>% 
     tidytable::mutate(tfreq = sum(freq), 
                       .by = c(year, trimester, area, gear)) %>% 
-    # join number of total fish sampled per trimester (using fed observer data as proxy)
+    # join number of total fish caught per trimester-area-gear (using fed observer data as proxy)
+    tidytable::left_join(fsh_len_f %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                .by = c(year, trimester, area, gear, haul1)) %>% 
+                           tidytable::summarise(n1 = sum(n1),
+                                                .by = c(year, trimester, area, gear))) %>% 
+    # if total fish caught missing for trimester-area-gear, use avg for year-gear
+    tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year, gear)) %>% 
+    tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
+                                                .default = n1)) %>% 
+    tidytable::select(-mean_n1) %>% 
+    # if total fish caught missing for year-gear, use avg for year
+    tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year)) %>%
+    tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
+                                                .default = n1)) %>% 
+    tidytable::select(-mean_n1) %>% 
+    # join number of total fish sampled over the year (using fed observer data as proxy)
     tidytable::left_join(fsh_len_f %>% 
                            tidytable::summarise(n1 = min(numb),
                                                 .by = c(year, trimester, area, gear, haul1)) %>% 
                            tidytable::summarise(n2 = sum(n1),
-                                                .by = c(year, trimester, area, gear))) %>% 
+                                                .by = year)) %>% 
     # expand the trimester-area-gear length composition by numbers observed across all hauls
-    tidytable::mutate(prop = (freq / tfreq) * n2) %>%
+    tidytable::mutate(prop = ((freq / tfreq) * n1) / n2) %>%
     # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
     tidytable::left_join(catch_p) %>% 
+    tidytable::select(year, trimester, area, gear, length, prop, catch_prop) %>% 
+    # if total catch_prop missing for trimester-area-gear, use avg for year-gear
+    tidytable::mutate(mean_cp = mean(catch_prop, na.rm = TRUE), .by = c(year, gear)) %>% 
+    tidytable::mutate(catch_prop = tidytable::case_when(is.na(catch_prop) ~ mean_cp,
+                                                .default = catch_prop)) %>% 
+    tidytable::select(-mean_cp) %>% 
     # weight length comp by proportion of catch
     tidytable::mutate(prop1 = prop * catch_prop) %>% 
-    tidytable::drop_na() %>% 
     # summarise to year-gear level
     tidytable::summarise(prop = sum(prop1), 
                          .by = c(year, gear, length)) -> lcomp_c
@@ -100,6 +121,11 @@ get_fsh_len_post91_new <- function(new_year = 9999,
   # expand length frequencies  ----
   lcomp_c <- expand_fsh_len(new_year)
 
+  lcomp_c %>% 
+    filter(year == 2020, gear == 'pot')
+  
+  
+  
   # compute comps ----
   tidytable::expand_grid(year = sort(unique(lcomp_c$year)),
                          gear = sort(unique(lcomp_c$gear)),
@@ -116,7 +142,9 @@ get_fsh_len_post91_new <- function(new_year = 9999,
     # standardize length comps
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
-    tidytable::select(-prop, -prop_tot) -> fsh_lcomp
+    tidytable::select(-prop, -prop_tot) %>% 
+    # remove years without data (i.e., 2020 pot fleet)
+    tidytable::drop_na() -> fsh_lcomp
   
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){

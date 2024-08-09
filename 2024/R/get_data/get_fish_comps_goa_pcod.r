@@ -290,7 +290,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
   fsh_len_s %>% 
     # length freq obs by trimester-area-gear
     tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, length)) %>% 
-    # join ltotal ength obs by trimester-area-gear
+    # join total length obs by trimester-area-gear
     tidytable::left_join(fsh_len_s %>% 
                            # length freq obs by trimester-area-gear
                            tidytable::summarise(total = sum(freq), .by = c(year, trimester, area, gear))) %>% 
@@ -374,6 +374,8 @@ get_fsh_len_post91 <- function(new_year = 9999,
                            tidytable::summarise(prop = sum(prop), 
                                                 .by = c(year, gear, new_length)) %>% 
                            tidytable::rename(length = new_length)) %>% 
+    # replace NA's
+    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) %>% 
     # standardize length comps
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
