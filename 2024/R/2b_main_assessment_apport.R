@@ -186,11 +186,12 @@ compare_cv <- rema::compare_rema_models(list(apport_mdl5, apport_mdl6, apport_md
                                          biomass_ylab = 'Biomass (t)',
                                          cpue_ylab = 'Relative Population Weights')
 
-vroom::vroom_write(knitr::kable(compare_cv$aic), here::here('output', 'apport_cv_compare.csv'), delim = "","")
-
 knitr::kable(compare_cv$aic)
 
 
+knitr::kable(apport_out$parameter_estimates)
+
+knitr::kable(apport_out7$parameter_estimates)
 
 ## compare base with selected models ----
 
@@ -225,6 +226,27 @@ suppressWarnings(ggplot2::ggsave(cowplot::plot_grid(base_plots$biomass_by_strata
                                  file = here::here(new_year, "plots", 'other','fit_compare.png'),
                                  width = 12, height = 7, unit = 'in', dpi = 520))
 
+
+suppressWarnings(ggplot2::ggsave(cowplot::plot_grid(base_plots$proportion_biomass_by_strata + theme(legend.position = 'top'),
+                                                    new_plots$proportion_biomass_by_strata + theme(legend.position = 'none'),
+                                                    labels = c('Trawl only', 'Trawl and Longline'),
+                                                    label_x = 0.7,
+                                                    ncol = 1, rel_widths = c(0.65, 0.35)),
+                                 file = here::here(new_year, "plots", 'other','apport_compare.png'),
+                                 width = 12, height = 7, unit = 'in', dpi = 520))
+
+knitr::kable(apport_out$proportion_biomass_by_strata %>% 
+               tidytable::filter(year == 2023) %>% 
+               tidytable::mutate(central = round(100 * central, digits = 1),
+                                 western = round(100 * western, digits = 1),
+                                 eastern = round(100 * eastern, digits = 1)) %>% 
+               tidytable::select(model_name, year, eastern, central, western) %>% 
+               bind_rows(apport_out7$proportion_biomass_by_strata %>% 
+                           tidytable::filter(year == 2023) %>% 
+                           tidytable::mutate(central = round(100 * central, digits = 1),
+                                             western = round(100 * western, digits = 1),
+                                             eastern = round(100 * eastern, digits = 1)) %>% 
+                           tidytable::select(model_name, year, eastern, central, western)))
 
 
 
