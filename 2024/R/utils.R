@@ -7,22 +7,16 @@
 get_bin <- function(data = NULL,
                     bins = NULL){
   
-  test_lens = seq(min(data), max(data))
-  
-  bins %>% 
-    tidytable::bind_cols(less = c(bins[2:length(bins)], 1000),
-                         bin = seq(1, length(bins))) %>% 
-    tidytable::rename(more = '...1') -> bin_test
-  bin = vector(length = length(test_lens))
-  
-  for(i in 1:length(test_lens)){
-    bin[i] = which(test_lens[i] > bin_test$more & test_lens[i] < bin_test$less)
-  }
-  
-  test_lens %>% 
-    tidytable::bind_cols(bin) %>% 
-    tidytable::rename(length = '...1',
-                      bin = '...2')
+  # custom length bins, convention follows ss3 binning
+  # set up bin bounds
+  tidytable::tidytable(lwr = c(0, bins)) %>% 
+    tidytable::mutate(label = tidytable::case_when(lwr != 0 ~ lwr,
+                                                   lwr == 0 ~ bins[1])) -> bin_bnds
+  # determine which bin length is in
+  data %>% 
+    tidytable::mutate(new_length = bin_bnds$label[max(which(bin_bnds$lwr < length))], 
+                      .by = c(length))
+
 }
 #' function to format survey length comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)

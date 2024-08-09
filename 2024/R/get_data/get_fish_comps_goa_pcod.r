@@ -107,11 +107,11 @@ get_fsh_len_pre91 <- function(new_year = 9999,
   tidytable::expand_grid(year = sort(unique(fsh_len_comp$year)),
                          gear = sort(unique(fsh_len_comp$gear)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(rep(seq(1, length(bins)), length(unique(fsh_len_comp$year))), length(unique(fsh_len_comp$gear)))) %>% 
     tidytable::left_join(fsh_len_comp %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::summarise(prop = sum(prop), .by = c(year, gear, bin))) %>% 
-    tidytable::select(-bin) %>% 
+                           tidytable::left_join(get_bin(fsh_len_comp %>% 
+                                                          tidytable::distinct(length), bins)) %>% 
+                           tidytable::summarise(prop = sum(prop), .by = c(year, gear, new_length)) %>% 
+                           tidytable::rename(length = new_length)) %>% 
     # drop year/gear combos with no data
     tidytable::drop_na() %>% 
     # standardize length comps
@@ -368,11 +368,12 @@ get_fsh_len_post91 <- function(new_year = 9999,
   tidytable::expand_grid(year = sort(unique(fsh_len_comp$year)),
                          gear = sort(unique(fsh_len_comp$gear)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(rep(seq(1, length(bins)), length(unique(fsh_len_comp$year))), length(unique(fsh_len_comp$gear)))) %>% 
     tidytable::left_join(fsh_len_comp %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::summarise(prop = sum(prop), .by = c(year, gear, bin))) %>% 
-    tidytable::select(-bin) %>% 
+                           tidytable::left_join(get_bin(fsh_len_comp %>% 
+                                                          tidytable::distinct(length), bins)) %>% 
+                           tidytable::summarise(prop = sum(prop), 
+                                                .by = c(year, gear, new_length)) %>% 
+                           tidytable::rename(length = new_length)) %>% 
     # standardize length comps
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
@@ -1017,12 +1018,11 @@ get_fsh_caal <- function(new_year = 9999,
   tidytable::expand_grid(year = sort(unique(fsh_age$year)),
                          gear = sort(unique(fsh_age$gear)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(fsh_age$year)) * length(unique(fsh_age$gear)))) %>% 
     tidytable::left_join(fsh_age %>% 
                            tidytable::select(year, gear, length, age) %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::select(year, gear, age, bin)) %>% 
-    tidytable::select(-bin) %>% 
+                           tidytable::left_join(get_bin(fsh_age %>% 
+                                                          tidytable::distinct(length), bins)) %>% 
+                           tidytable::select(year, gear, age, length = new_length)) %>% 
     tidytable::drop_na() %>%
     tidytable::mutate(age = tidytable::case_when(age > max_age ~ max_age,
                                                  .default = age)) %>% 
@@ -1048,12 +1048,11 @@ get_fsh_caal <- function(new_year = 9999,
     tidytable::expand_grid(year = sort(unique(fsh_age$year)),
                            gear = sort(unique(fsh_age$gear)),
                            length = bins) %>% 
-      tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(fsh_age$year)) * length(unique(fsh_age$gear)))) %>% 
       tidytable::left_join(fsh_age %>% 
                              tidytable::select(year, gear, length, age) %>% 
-                             tidytable::left_join(get_bin(.$length, bins)) %>% 
-                             tidytable::select(year, gear, age, bin)) %>% 
-      tidytable::select(-bin) %>% 
+                             tidytable::left_join(get_bin(fsh_age %>% 
+                                                            tidytable::distinct(length), bins)) %>% 
+                             tidytable::select(year, gear, age, length = new_length)) %>% 
       tidytable::drop_na() %>% 
       tidytable::summarise(count = .N, .by = c(year, gear, length)) %>% 
       tidytable::mutate(nsamp = count * 0.14) %>% 

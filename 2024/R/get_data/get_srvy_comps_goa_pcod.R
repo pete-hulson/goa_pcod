@@ -21,14 +21,16 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
   # bin length comps to desired bin width
   tidytable::expand_grid(year = sort(unique(ts_lpop$year)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_lpop$year)))) %>% 
     tidytable::left_join(ts_lpop %>% 
                            tidytable::summarise(popn = sum(num), .by = c(year, length)) %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::summarise(popn = sum(popn), .by = c(year, bin))) %>% 
-    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
-    tidytable::select(-bin) -> ts_lpop_bin
-  
+                           tidytable::left_join(get_bin(ts_lpop %>% 
+                                                          tidytable::summarise(popn = sum(num), 
+                                                                               .by = c(year, length)) %>% 
+                                                          distinct(length), bins)) %>% 
+                           tidytable::summarise(popn = sum(popn), .by = c(year, new_length)) %>% 
+                           tidytable::rename(length = new_length)) %>% 
+    tidytable::mutate(popn = replace_na(popn, 0)) -> ts_lpop_bin
+
   # compute comps
   ts_lpop_bin %>% 
     tidytable::mutate(lencomp = popn / sum(popn), .by = year) %>% 
@@ -73,14 +75,16 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
   # bin length comps to desired bin width
   tidytable::expand_grid(year = sort(unique(lls_lpop$year)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(lls_lpop$year)))) %>% 
     tidytable::left_join(lls_lpop %>% 
                            tidytable::filter(length > 0) %>% 
                            tidytable::summarise(popn = sum(rpn), .by = c(year, length)) %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::summarise(popn = sum(popn), .by = c(year, bin))) %>% 
-    tidytable::mutate(popn = replace_na(popn, 0)) %>% 
-    tidytable::select(-bin) -> lls_lpop_bin
+                           tidytable::left_join(get_bin(lls_lpop %>% 
+                                                          tidytable::filter(length > 0) %>% 
+                                                          tidytable::summarise(popn = sum(rpn), .by = c(year, length)) %>% 
+                                                          distinct(length), bins)) %>% 
+                           tidytable::summarise(popn = sum(popn), .by = c(year, new_length)) %>% 
+                           tidytable::rename(length = new_length)) %>% 
+    tidytable::mutate(popn = replace_na(popn, 0)) -> lls_lpop_bin
   
   # compute comps
   lls_lpop_bin %>% 
@@ -162,12 +166,11 @@ get_twl_srvy_caal <- function(new_year = 9999,
   
   tidytable::expand_grid(year = sort(unique(ts_age$year)),
                          length = bins) %>% 
-    tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_age$year)))) %>% 
     tidytable::left_join(ts_age %>% 
                            tidytable::select(year, length, age) %>% 
-                           tidytable::left_join(get_bin(.$length, bins)) %>% 
-                           tidytable::select(year, age, bin)) %>% 
-    tidytable::select(-bin) %>% 
+                           tidytable::left_join(get_bin(ts_age %>% 
+                                                          tidytable::distinct(length), bins)) %>% 
+                           tidytable::select(year, age, length = new_length)) %>% 
     tidytable::drop_na() %>%
     tidytable::mutate(age = tidytable::case_when(age > max_age ~ max_age,
                                                  .default = age)) %>% 
@@ -194,9 +197,9 @@ get_twl_srvy_caal <- function(new_year = 9999,
       tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_age$year)))) %>% 
       tidytable::left_join(ts_age %>% 
                              tidytable::select(year, length, age) %>% 
-                             tidytable::left_join(get_bin(.$length, bins)) %>% 
-                             tidytable::select(year, age, bin)) %>% 
-      tidytable::select(-bin) %>% 
+                             tidytable::left_join(get_bin(ts_age %>% 
+                                                            tidytable::distinct(length), bins)) %>% 
+                             tidytable::select(year, age, , length = new_length)) %>% 
       tidytable::drop_na() %>% 
       tidytable::summarise(count = .N, .by = c(year, length)) %>% 
       tidytable::mutate(nsamp = count * 0.14) %>% 
