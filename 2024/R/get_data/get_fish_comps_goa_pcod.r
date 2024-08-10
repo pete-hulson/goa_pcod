@@ -181,9 +181,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
   # filter to hauls with greater than 10 lengths
   if(isTRUE(fltr)){
     fsh_len_f %>% 
-      # filter to >30 lengths per trimester, area, and gear
+      # filter to >10 lengths per haul
       tidytable::left_join(fsh_len_f %>% 
-                             tidytable::summarise(tfreq = sum(freq), .by = c(haul_join, numb))) %>% 
+                             tidytable::summarise(tfreq = sum(freq), .by = c(year, gear, haul1, numb))) %>% 
       tidytable::filter(tfreq >= 10) %>% 
       tidytable::select(-tfreq) -> fsh_len_full_f
   } else{
@@ -227,7 +227,6 @@ get_fsh_len_post91 <- function(new_year = 9999,
   # fill-in with state data ----
   
   ## federal catch weighted length comp ----
-  
   # compute federal comps
   fsh_len_full_f %>% 
     # haul-level length frequency
@@ -306,7 +305,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
       tidytable::filter(sfreq >= 30) %>% 
       tidytable::select(-sfreq) -> lcomp_s
   }
-
+  
   # get grid of all possible combos of state year-gear-area-trimester-length
   tidytable::expand_grid(year = sort(unique(fsh_len_s$year)),
                          gear = unique(fsh_len_s$gear),
@@ -380,8 +379,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
     tidytable::select(-prop, -prop_tot) -> fsh_lcomp
-  
-  
+
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
     # hard-wired in season, etc for ss3 in ss3_args c(seas, gender, part)
