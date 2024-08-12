@@ -338,8 +338,75 @@ suppressWarnings(ggplot2::ggsave(bin_ll,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_ll.png'),
                                  width = 12, height = 7, unit = 'in', dpi = 520))
 
+### trawl survey ----
+# get new way of doing comps
+lcomp_srv <- get_twl_srvy_lcomp(new_year = new_year,
+                                bins = len_bins,
+                                ss3_frmt = FALSE)
+
+lcomp_srv_bins <- get_twl_srvy_lcomp(new_year = new_year,
+                                     bins = len_bins2,
+                                     ss3_frmt = FALSE) %>% 
+  tidytable::rename(bin_lencomp = lencomp)
+
+lcomp_srv %>% 
+  tidytable::mutate(name = 'lcomp_new') %>% 
+  tidytable::bind_rows(lcomp_srv_bins %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin') %>% 
+                         tidytable::rename(lencomp = bin_lencomp)) %>% 
+  tidytable::left_join(lcomp_srv %>% 
+                         tidytable::summarise(max_og = max(lencomp), .by = c(year))) %>% 
+  tidytable::left_join(lcomp_srv_bins %>% 
+                         tidytable::summarise(max_bin = max(bin_lencomp), .by = c(year)))  %>% 
+  tidytable::mutate(length = ceiling(length),
+                    lencomp = tidytable::case_when(name == 'lcomp_new' ~ lencomp,
+                                                   name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) %>% 
+  tidytable::filter(year <= 2023,
+                    year >= 2018) -> dat
 
 
+ggplot(data = dat, 
+       aes(x = as.numeric(length), y = lencomp, group = name)) +
+  geom_line(aes(color = name))  +
+  geom_point(aes(color = name), size = 0.5) +
+  geom_area(aes(fill = name),
+            alpha = 0.3777,
+            position = 'identity') +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
+  facet_wrap( ~ year) +
+  labs(y = "Trawl survey length composition", x = "Length (cm)") +
+  scale_color_manual(values = c('blue', 'green')) +
+  scale_fill_manual(values = c('blue', 'green')) -> bin_twl_srv
+
+suppressWarnings(ggplot2::ggsave(bin_twl_srv,
+                                 file = here::here(new_year, "plots", 'other','lcomp_compare_bin_tsrv.png'),
+                                 width = 12, height = 7, unit = 'in', dpi = 520))
+
+### longline survey ----
+
+# get new way of doing comps
+lcomp_srv <- get_ll_srvy_lcomp(new_year = new_year,
+                               bins = len_bins,
+                               ss3_frmt = FALSE)
+
+lcomp_srv_bins <- get_ll_srvy_lcomp(new_year = new_year,
+                                    bins = len_bins2,
+                                    ss3_frmt = FALSE)
+
+lcomp_srv %>% 
+  tidytable::mutate(name = 'lcomp_new') %>% 
+  tidytable::bind_rows(lcomp_srv_bins %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin')) %>% 
+  tidytable::filter(year <= 2023,
+                    year >= 2018) %>% 
+  tidytable::left_join(lcomp_srv %>% 
+                         tidytable::summarise(max_og = max(lencomp), .by = c(year))) %>% 
+  tidytable::left_join(lcomp_srv_bins %>% 
+                         tidytable::summarise(max_bin = max(lencomp), .by = c(year))) %>% 
+  tidytable::mutate(length = ceiling(length),
+                    lencomp = tidytable::case_when(name == 'lcomp_new' ~ lencomp,
+                                                   name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) -> dat
 
 
 ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
@@ -348,14 +415,16 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
-  labs(y = "Pot length composition", x = "Length (cm)") +
+  labs(y = "Longline survey length composition", x = "Length (cm)") +
   scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green'))
+  scale_fill_manual(values = c('blue', 'green')) -> bin_ll_srv
 
-
-
+suppressWarnings(ggplot2::ggsave(bin_ll_srv,
+                                 file = here::here(new_year, "plots", 'other','lcomp_compare_bin_llsrv.png'),
+                                 width = 12, height = 7, unit = 'in', dpi = 520))
 
 
 
