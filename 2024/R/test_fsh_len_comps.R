@@ -495,16 +495,22 @@ acomp_old %>%
   tidytable::select(gear, age, acomp_old, acomp_new) %>% 
   tidytable::pivot_longer(cols = c(acomp_old, acomp_new)) -> dat
 
-ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
+ggplot(data = dat, aes(x = age, y = value, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
-  facet_grid(rows = vars(gear)) +
+  facet_wrap( ~ gear, nrow = 3,
+             strip.position = 'top') +
+  labs(y = "Aggregated age composition", x = "Age") +
   scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green'))
+  scale_fill_manual(values = c('blue', 'green')) -> agg_age
+
+suppressWarnings(ggplot2::ggsave(agg_age,
+                                 file = here::here(new_year, "plots", 'other','acomp_compare_agg.png'),
+                                 width = 12, height = 7, unit = 'in', dpi = 520))
 
 ## annual plot (trawl) ----
 acomp_old %>% 
@@ -523,9 +529,14 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
+  labs(y = "Trawl age composition", x = "Age") +
   facet_wrap( ~ year) +
   scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green'))
+  scale_fill_manual(values = c('blue', 'green')) -> twl_age
+
+suppressWarnings(ggplot2::ggsave(twl_age,
+                                 file = here::here(new_year, "plots", 'other','acomp_compare_twl.png'),
+                                 width = 7, height = 7, unit = 'in', dpi = 520))
 
 ## annual plot (longline) ----
 acomp_old %>% 
@@ -544,9 +555,14 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
+  labs(y = "Longline age composition", x = "Age") +
   facet_wrap( ~ year) +
   scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green'))
+  scale_fill_manual(values = c('blue', 'green')) -> ll_age
+
+suppressWarnings(ggplot2::ggsave(ll_age,
+                                 file = here::here(new_year, "plots", 'other','acomp_compare_ll.png'),
+                                 width = 7, height = 7, unit = 'in', dpi = 520))
 
 ## annual plot (pot) ----
 acomp_old %>% 
@@ -565,6 +581,11 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top") +
+  labs(y = "Pot age composition", x = "Age") +
   facet_wrap( ~ year) +
   scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green'))
+  scale_fill_manual(values = c('blue', 'green')) -> pot_age
+
+suppressWarnings(ggplot2::ggsave(ll_age,
+                                 file = here::here(new_year, "plots", 'other','acomp_compare_pot.png'),
+                                 width = 7, height = 7, unit = 'in', dpi = 520))
