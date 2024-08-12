@@ -30,7 +30,7 @@ source(here::here(new_year, "R", "utils.r"))
 
 # filtering analysis ----
 
-## federal ----
+## federal > 10 per haul ----
 fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
   # filter to years post-1991
   tidytable::filter(year >= 1991) %>% 
@@ -50,7 +50,7 @@ fsh_len_f %>%
   tidytable::pivot_wider(names_from = gear, values_from = prop_fltrd) %>% 
   vroom::vroom_write(., here::here(new_year, 'output', 'fed_fltrd_hls.csv'), delim = ",")
 
-## state ----
+## state great than fed (step 1), and has > 30 (step 2) ----
 fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
   dplyr::rename_all(tolower) %>% 
   #filter to positive lengths
@@ -66,12 +66,6 @@ fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) 
                                                      month >= 9 ~ 3,
                                                      .default = 1)) %>% 
   tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
-
-
-
-
-
-
 
 fsh_len_f %>% 
   # get federal number of length obs by trimester-area-gear
@@ -91,9 +85,6 @@ fsh_len_f %>%
   tidytable::select(year, gear, prop_fltrd) %>% 
   tidytable::pivot_wider(names_from = gear, values_from = prop_fltrd) %>% 
   vroom::vroom_write(., here::here(new_year, 'output', 'st_fltrd_s1.csv'), delim = ",")
-
-
-
 
 fsh_len_f %>% 
   # get federal number of length obs by trimester-area-gear
@@ -142,6 +133,11 @@ lcomp_old <- get_fsh_len_post91(new_year,
                                 bins = len_bins,
                                 ss3_frmt = FALSE)
 
+# old way with no filter
+lcomp_old_fltr <- get_fsh_len_post91(new_year,
+                                fltr = FALSE,
+                                bins = len_bins,
+                                ss3_frmt = FALSE)
 
 # get new way of doing comps
 lcomp_new <- get_fsh_len_post91_new(new_year,
@@ -149,6 +145,7 @@ lcomp_new <- get_fsh_len_post91_new(new_year,
                                     ss3_frmt = FALSE) %>% 
   tidytable::rename(new_lencomp = lencomp)
 
+# new way with new bins
 lcomp_new_bins <- get_fsh_len_post91_new(new_year,
                                          bins = len_bins2,
                                          ss3_frmt = FALSE) %>% 
@@ -263,8 +260,39 @@ suppressWarnings(ggplot2::ggsave(pot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_pot.png'),
                                  width = 7, height = 7, unit = 'in', dpi = 520))
 
-## compare bins ----
+### 2022 pot ----
 
+lcomp_old %>% 
+  tidytable::mutate(name = 'Original') %>% 
+  tidytable::bind_rows(lcomp_old_fltr %>% 
+                         tidytable::mutate(name = 'Original, no filter')) %>% 
+  tidytable::bind_rows(lcomp_new %>% 
+                         tidytable::mutate(name = 'New aggregated T-A-G, merged state, no filter') %>% 
+                         tidytable::rename(lencomp = new_lencomp)) %>% 
+  tidytable::mutate(length = ceiling(length)) %>% 
+  tidytable::filter(year == 2022,
+                    gear == 'pot') %>% 
+  tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated T-A-G, merged state, no filter'))) -> dat
+
+
+ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
+  geom_line(aes(color = name2))  +
+  geom_point(aes(color = name2), size = 0.5) +
+  geom_area(aes(fill = name2),
+            alpha = 0.3777,
+            position = 'identity') +
+  theme(legend.position = 'none') +
+  facet_wrap( ~ name2, ncol = 1) +
+  labs(y = "Pot length composition", x = "Length (cm)", fill = "Data treatment:", color = "Data treatment:") +
+  scale_color_manual(values = c('green', 'red', 'blue')) +
+  scale_fill_manual(values = c('green', 'red', 'blue')) -> pot_22
+
+
+suppressWarnings(ggplot2::ggsave(pot_22,
+                                 file = here::here(new_year, "plots", 'other','lcomp_compare_pot_22.png'),
+                                 width = 7, height = 7, unit = 'in', dpi = 520))
+
+## compare bins ----
 lcomp_new %>% 
   tidytable::mutate(name = 'lcomp_new') %>% 
   tidytable::rename(lencomp = new_lencomp) %>% 
@@ -276,7 +304,7 @@ lcomp_new %>%
   tidytable::left_join(lcomp_new_bins %>% 
                          tidytable::summarise(max_bin = max(bin_lencomp), .by = c(year, gear)))  %>% 
   tidytable::mutate(length = ceiling(length),
-                    lencomp = tidytable::case_when(name == 'lcomp_new' ~ lencomp,
+                    lencomp = tidytable::case_when(name %in% c('lcomp_old', 'lcomp_old_fltr', 'lcomp_new') ~ lencomp,
                                                    name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) %>% 
   tidytable::filter(year <= 2023,
                     year >= 2018) -> dat
