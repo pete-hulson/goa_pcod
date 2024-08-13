@@ -39,7 +39,10 @@ old_dat_filename <- "GOAPcod2023Oct16.dat"
 query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
-run_glm <- FALSE
+run_glm = FALSE
+
+# do you want to remove previous dat files
+remove_dat = TRUE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
@@ -79,9 +82,11 @@ if (!file.exists(here::here(new_dat_year, "plots"))){
 }
 
 # Remove previous dat files from output folder
-# if (file.exists(here::here(new_dat_year, "output")) & length(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")) > 0) {
-#   file.remove(here::here(new_dat_year, "output", list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod")))
-# }
+if(isTRUE(remove_dat)){
+  if (file.exists(here::here(new_dat_year, "output")) & setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old")) > 0) {
+    file.remove(here::here(new_dat_year, "output", setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))))
+  }
+}
 
 # source functions ----
 source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")

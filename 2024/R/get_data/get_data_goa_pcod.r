@@ -16,6 +16,7 @@
 #' @param run_glm switch for whether to run delta glm model for adf&g index (default = FALSE)
 #' @param len_bins user-defined length bins for length comps (default = NULL)
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
+#' @param new_lcomp use old or new method for computing fishery length comps (default = FALSE)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param max_age maximum age for age comps (default = 10)
 #' 
@@ -35,6 +36,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                               run_glm = FALSE,
                               len_bins = NULL,
                               fltr = TRUE,
+                              new_lcomp = FALSE,
                               ss3_frmt = TRUE,
                               max_age = 10) {
   
@@ -123,10 +125,17 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("pre-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ### post-1991 ----
-  post_fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
-                                       fltr = fltr,
-                                       bins = len_bins,
-                                       ss3_frmt = ss3_frmt)
+  if(isTRUE(new_lcomp)){
+    post_fsh_lcomp <- get_fsh_len_post91_new(new_year = new_year,
+                                             bins = len_bins,
+                                             ss3_frmt = ss3_frmt)
+  } else{
+    post_fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
+                                         fltr = fltr,
+                                         bins = len_bins,
+                                         ss3_frmt = ss3_frmt)
+  }
+
   cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   data.frame(pre_fsh_lcomp %>% 
@@ -151,6 +160,13 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## fishery -----
+  if(isTRUE(new_lcomp)){
+    ss3_fsh_acomp <- get_fsh_age_new(new_year = new_year,
+                                     st_yr = fsh_age_st_yr,
+                                     max_age = max_age,
+                                     ss3_frmt = ss3_frmt,
+                                     fit = FALSE)
+  } else{
   ss3_fsh_acomp <- get_fsh_age(new_year = new_year,
                                st_yr = fsh_age_st_yr,
                                max_age = max_age,
@@ -161,6 +177,8 @@ get_data_goa_pcod <- function(new_data = new_data,
                                by_sex = TRUE,
                                ss3_frmt = ss3_frmt,
                                fit = FALSE)
+  }
+  
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   # get conditional age-at-length data ----
