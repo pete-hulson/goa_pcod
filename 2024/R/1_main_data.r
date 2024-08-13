@@ -36,7 +36,7 @@ lapply(libs, library, character.only = TRUE)
 old_dat_filename <- "GOAPcod2023Oct16.dat"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = FALSE
+query = TRUE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -128,7 +128,7 @@ r4ss::SS_writedat_3.30(new_data,
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
-                              query = query,
+                              query = FALSE,
                               fsh_sp = "PCOD", # catch data species label
                               fsh_sp_code = 202, # observer species code
                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
@@ -154,7 +154,7 @@ r4ss::SS_writedat_3.30(new_data,
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
-                              query = query,
+                              query = FALSE,
                               fsh_sp = "PCOD", # catch data species label
                               fsh_sp_code = 202, # observer species code
                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
@@ -179,7 +179,7 @@ r4ss::SS_writedat_3.30(new_data,
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
-                              query = query,
+                              query = FALSE,
                               fsh_sp = "PCOD", # catch data species label
                               fsh_sp_code = 202, # observer species code
                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
@@ -194,6 +194,18 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               update_ae = TRUE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
                               max_age = 10) # maximum age
+
+# new_data$lbin_vector_pop
+# new_data$N_lbinspop
+# new_data$lbin_method
+# new_data$binwidth
+# new_data$minimum_size
+# new_data$maximum_size
+# new_data$max_combined_lbin
+# new_data$use_lencomp
+
+new_data$N_lbins <- length(len_bins2)
+new_data$lbin_vector <- len_bins2
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,

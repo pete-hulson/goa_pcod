@@ -112,8 +112,11 @@ get_fsh_len_pre91 <- function(new_year = 9999,
                                                           tidytable::distinct(length), bins)) %>% 
                            tidytable::summarise(prop = sum(prop), .by = c(year, gear, new_length)) %>% 
                            tidytable::rename(length = new_length)) %>% 
+    tidytable::mutate(prop = tidytable::replace_na(prop, 0)) %>% 
     # drop year/gear combos with no data
-    tidytable::drop_na() %>% 
+    tidytable::mutate(prop_test = sum(prop), .by = c(year, gear)) %>% 
+    tidytable::filter(prop_test >  0) %>% 
+    tidytable::select(-prop_test) %>% 
     # standardize length comps
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
