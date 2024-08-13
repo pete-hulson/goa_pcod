@@ -17,6 +17,7 @@
 #' @param len_bins user-defined length bins for length comps (default = NULL)
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
 #' @param new_lcomp use old or new method for computing fishery length comps (default = FALSE)
+#' @param update_ae switch to update ageing error
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param max_age maximum age for age comps (default = 10)
 #' 
@@ -37,6 +38,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                               len_bins = NULL,
                               fltr = TRUE,
                               new_lcomp = FALSE,
+                              update_ae = FALSE,
                               ss3_frmt = TRUE,
                               max_age = 10) {
   
@@ -222,8 +224,17 @@ get_data_goa_pcod <- function(new_data = new_data,
   # ageing error ----- (note to self: look at this again sometime)
   new_data$agebin_vector = seq(1, max_age, 1)
   error <- matrix(ncol = (max_age + 1), nrow = 2)
-  error[1, ] <- rep(-1, max_age + 1)
-  error[2, ] <- rep(-0.001, max_age + 1)
+  if(isTRUE(update_ae)){
+    ae <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Spline', 'Pcod SS3_format_Reader1.csv')) %>% 
+      tidytable::filter(...1 == 'SD') %>% 
+      tidytable::pivot_longer() %>% 
+      tidytable::select(value)
+    error[1, ] <- seq(0.5, max_age + 0.5)
+    error[2, ] <- as.numeric(ae$value[2:length(ae$value)])
+  } else{
+    error[1, ] <- rep(-1, max_age + 1)
+    error[2, ] <- rep(-0.001, max_age + 1)
+  }
   new_data$ageerror <- data.frame(error)
   cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
   
