@@ -5,7 +5,7 @@
 #
 GOAPcod2023Oct16.dat #_datfile
 Model19_1b.ctl #_ctlfile
-1 #_init_values_src
+0 #_init_values_src
 1 #_run_display_detail
 1 #_detailed_age_structure
 0 #_checkup

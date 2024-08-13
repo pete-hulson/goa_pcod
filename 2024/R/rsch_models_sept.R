@@ -14,7 +14,10 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 lapply(libs, library, character.only = TRUE)
 
 # model names
-base_mdl <- "2019.1a-2022" # 2022 accepted model
+base_mdl <- "2019.1b-2023-new_lw" # 2023 accepted model
+base_mdl_update <- "2019.1b-2024" # 2023 accepted model
+
+
 new_base <- "2019.1b-2022" # 2022 model with minsamplesize correction
 new_base_noll <- "2019.1c-2022" # 2022 model with no llq env link
 new_base_llq <- "2019.1d-2022" # 2022 model with new llq env link
@@ -32,12 +35,12 @@ asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # helper fcns ----
 start_ss_fldr <- function(from, to){
+  # get model input files
   r4ss::copy_SS_inputs(dir.old = from, 
                        dir.new = to,
                        overwrite = TRUE)
-  base::file.copy(from = paste0(from, "/ss.exe"),
-                  to = paste0(to, "/ss.exe"),
-                  overwrite = TRUE)
+  # get exe
+  r4ss::get_ss3_exe(dir = to)
 }
 
 growth_L0 <- function(data, T){
@@ -75,15 +78,55 @@ run_ss_model <- function(asmnt_yr, mdl){
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# base model (model 2019.1a) ----
+# base model (2023 model 2019.1b) ----
 # read results from base model
-base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl),
+base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
                             verbose = TRUE,
                             printstats = TRUE)
 
-retro_base <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
-  here::here(asmnt_yr, 'rsch', base_mdl), "retrospectives",
-  paste("retro", 0:-ret_yr, sep = ""))))
+# retro_base <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
+#   here::here(asmnt_yr, 'rsch', base_mdl), "retrospectives",
+#   paste("retro", 0:-ret_yr, sep = ""))))
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# updated base model (2024 model 2019.1b) ----
+
+# copy ss input files
+start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
+              to = here::here(asmnt_yr, 'rsch', base_mdl_update))
+
+# set up forecast file (with generic blocks for years so won't need to update in the future)
+forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'forecast.ss'))
+
+forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
+
+forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
+
+r4ss::SS_writeforecast(mylist = forecast,
+                       dir = here::here(asmnt_yr, "rsch", base_mdl_update),
+                       overwrite = TRUE)
+
+
+# set up starter file
+starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'starter.ss'))
+
+old_starter$init_values_src = 0
+
+r4ss::SS_writestarter(mylist = old_starter,
+                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                      overwrite = TRUE)
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
