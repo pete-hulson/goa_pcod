@@ -121,11 +121,9 @@ get_fsh_len_post91_new <- function(new_year = 9999,
   # expand length frequencies  ----
   lcomp_c <- expand_fsh_len(new_year)
 
-  lcomp_c %>% 
+  nsamp %>% 
     filter(year == 2020, gear == 'pot')
-  
-  
-  
+
   # compute comps ----
   tidytable::expand_grid(year = sort(unique(lcomp_c$year)),
                          gear = sort(unique(lcomp_c$gear)),
@@ -142,25 +140,46 @@ get_fsh_len_post91_new <- function(new_year = 9999,
     # standardize length comps
     tidytable::mutate(prop_tot = sum(prop), .by = c(year, gear)) %>% 
     tidytable::mutate(lencomp = prop / prop_tot) %>% 
-    tidytable::select(-prop, -prop_tot) %>% 
-    # remove years without data (i.e., 2020 pot fleet)
-    tidytable::drop_na() -> fsh_lcomp
+    tidytable::select(-prop, -prop_tot) -> fsh_lcomp
   
   # format for ss3 if desired ----
   if(isTRUE(ss3_frmt)){
     # hard-wired in season, etc for ss3 in ss3_args c(seas, gender, part)
     ss3_args = c(1, 0, 0)
     # get input sample size
+    # federal data
     vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
       # filter to years post-1991
       tidytable::filter(year >= 1991) %>% 
       # unique cruise-permit-haul description
       tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
       # input sample size is number of hauls or 200, whichever is smaller (from federal data)
-      tidytable::summarise(nsamp = length(unique(haul1)),
+      tidytable::summarise(nsamp_f = length(unique(haul1)),
                            .by = c(year, gear)) %>% 
-      tidytable::mutate(nsamp = tidytable::case_when(nsamp > 200 ~ 200,
-                                                     .default = nsamp)) -> nsamp
+      tidytable::mutate(nsamp_f = tidytable::case_when(nsamp_f > 200 ~ 200,
+                                                       .default = nsamp_f)) -> nsamp_f
+    # state data
+    vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+      dplyr::rename_all(tolower) %>% 
+      #filter to positive lengths
+      tidytable::filter(length > 0) %>% 
+      # define area, gear, plus length, trimester
+      tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
+                        gear1 = tidytable::case_when(gear == 91 ~ 'pot',
+                                                     gear %in% c(5, 26, 61) ~ 'longline',
+                                                     .default = 'trawl'), # define gears
+                        trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
+                                                         month >= 9 ~ 3,
+                                                         .default = 1)) %>% 
+      tidytable::select(year, area, gear = gear1, trimester, sex, length, freq) %>% 
+      tidytable::summarise(nsamp_s = round(sum(freq) / 50), .by = c(year, gear)) %>% 
+      tidytable::mutate(nsamp_s = tidytable::case_when(nsamp_s > 200 ~ 200,
+                                                       .default = nsamp_s)) -> nsamp_s
+    nsamp_f %>% 
+      tidytable::full_join(nsamp_s) %>% 
+      tidytable::mutate(nsamp = tidytable::case_when(!is.na(nsamp_f) ~ nsamp_f,
+                                                     is.na(nsamp_f) ~ nsamp_s)) %>% 
+      tidytable::select(year, gear, nsamp) -> nsamp
     # format data
     fsh_lcomp <- ss3_len_com_fsh(fsh_lcomp, ss3_args, nsamp)
   }
