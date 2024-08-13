@@ -63,6 +63,7 @@ bin_width <- 1
 min_size <- 0.5
 max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
+len_bins2 = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5, 109.5, 114.5, 119.5)
 
 # set up needed folders ----
 
@@ -98,7 +99,7 @@ source(here::here(new_dat_year, "R", "utils.r"))
 # read in previous assessment ss3 datafile
 old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
 
-# get new ss3 dat
+# get new ss3 dat (updated base)
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
@@ -114,6 +115,8 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               run_glm = run_glm,
                               len_bins = len_bins,
                               fltr = TRUE, # filter out small number of length observations
+                              new_lcomp = FALSE, # use new method to get fishery length comps
+                              update_ae = FALSE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
                               max_age = 10) # maximum age
 
@@ -121,3 +124,78 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
 
+# get new ss3 dat with updated ageing error
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = query,
+                              fsh_sp = "PCOD", # catch data species label
+                              fsh_sp_code = 202, # observer species code
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+                              twl_srvy = 47, # region of trawl survey
+                              srv_sp = 21720, # survey species code
+                              area = 'goa', # the fmp region for this stock
+                              indx = 'num', # type of survey index (numbers/biomass)
+                              run_glm = run_glm,
+                              len_bins = len_bins,
+                              fltr = TRUE, # filter out small number of length observations
+                              new_lcomp = FALSE, # use new method to get fishery length comps
+                              update_ae = TRUE, # update ageing error
+                              ss3_frmt = TRUE, # format data for ss3 dat file
+                              max_age = 10) # maximum age
+
+# Write out data script
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
+
+# get new ss3 dat with updated ageing error & new len comp
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = query,
+                              fsh_sp = "PCOD", # catch data species label
+                              fsh_sp_code = 202, # observer species code
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+                              twl_srvy = 47, # region of trawl survey
+                              srv_sp = 21720, # survey species code
+                              area = 'goa', # the fmp region for this stock
+                              indx = 'num', # type of survey index (numbers/biomass)
+                              run_glm = run_glm,
+                              len_bins = len_bins,
+                              new_lcomp = TRUE, # use new method to get fishery length comps
+                              update_ae = TRUE, # update ageing error
+                              ss3_frmt = TRUE, # format data for ss3 dat file
+                              max_age = 10) # maximum age
+
+# Write out data script
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_new.dat")), overwrite = TRUE)
+
+# get new ss3 dat with updated ageing error & new len comp & new length bins
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = query,
+                              fsh_sp = "PCOD", # catch data species label
+                              fsh_sp_code = 202, # observer species code
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+                              twl_srvy = 47, # region of trawl survey
+                              srv_sp = 21720, # survey species code
+                              area = 'goa', # the fmp region for this stock
+                              indx = 'num', # type of survey index (numbers/biomass)
+                              run_glm = run_glm,
+                              len_bins = len_bins2,
+                              new_lcomp = TRUE, # use new method to get fishery length comps
+                              update_ae = TRUE, # update ageing error
+                              ss3_frmt = TRUE, # format data for ss3 dat file
+                              max_age = 10) # maximum age
+
+# Write out data script
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin.dat")), overwrite = TRUE)
