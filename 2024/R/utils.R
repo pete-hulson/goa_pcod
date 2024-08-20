@@ -18,6 +18,38 @@ get_bin <- function(data = NULL,
                       .by = c(length))
 
 }
+#' function to get weight-length parameters (from survey data)
+#' @param new_year year of assessment, to get data file (default = NULL)
+#' 
+wt_len <- function(new_year = NULL){
+  
+  # summarise weight data (mean & sd) by year and length
+  summ_data <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv')) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::summarise(wt = mean(weight, na.rm = TRUE),
+                         wt_sd = sd(weight, na.rm = TRUE),
+                         n = .N,
+                         .by = c(year, length)) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::filter(wt_sd > 0)
+  
+  # define optimizing function
+  ests <- function(pars, summ_data){
+    summ_data %>% 
+    tidytable::mutate(est_wt = pars[1] * length ^ pars[2],
+                      rss = (wt - est_wt) ^ 2 / wt_sd) %>% 
+    tidytable::summarise(obj = sum(rss))
+  }
+  
+  # fit model
+  fit <- stats::optim(par = c(3e-06, 3), 
+                      fn = ests,
+                      summ_data = summ_data)
+
+  # return weight-length parms
+  fit$par
+  
+}
 #' function to format survey length comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
