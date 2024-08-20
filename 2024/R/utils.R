@@ -1,22 +1,81 @@
 #' utility fcns
 #' 
-#' function to bin length data to custom length bins 
-#' @param data length data to bin (default = NULL)
-#' @param bins user-defined length bins (default = NULL)
 #' 
-get_bin <- function(data = NULL,
-                    bins = NULL){
-  
-  # custom length bins, convention follows ss3 binning
-  # set up bin bounds
-  tidytable::tidytable(lwr = c(0, bins)) %>% 
-    tidytable::mutate(label = tidytable::case_when(lwr != 0 ~ lwr,
-                                                   lwr == 0 ~ bins[1])) -> bin_bnds
-  # determine which bin length is in
-  data %>% 
-    tidytable::mutate(new_length = bin_bnds$label[max(which(bin_bnds$lwr < length))], 
-                      .by = c(length))
+#' function to run ss3 model with recruitment bias ramp adjustment
+#' @param asmnt_yr year of assessment (default = NULL)
+#' @param folder root foloder containing models (default = NULL)
+#' @param mdl name of model to run (default = NULL)
+#' @param ctl_filename name of ctl file in which to adjust recruitment ramp parameters (default = NULL)
+#' 
+run_ss_model <- function(asmnt_yr = NULL, 
+                         folder = NULL,
+                         mdl = NULL, 
+                         ctl_filename = NULL){
 
+# run iniital model
+# if par file doesn't exist then run without initial conditions, otherwise, use par file
+if(base::file.exists(here::here(asmnt_yr, folder, mdl, "ss.par"))){
+  mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
+  mdl_starter$init_values_src = 1
+  r4ss::SS_writestarter(mdl_starter, 
+                        dir = here::here(asmnt_yr, folder, mdl),
+                        overwrite = TRUE)
+  
+  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+} else{
+  mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
+  mdl_starter$init_values_src = 0
+  r4ss::SS_writestarter(mdl_starter, 
+                        dir = here::here(asmnt_yr, folder, mdl),
+                        overwrite = TRUE)
+  
+  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+  
+  mdl_starter$init_values_src = 1
+  r4ss::SS_writestarter(mdl_starter, 
+                        dir = here::here(asmnt_yr, folder, mdl),
+                        overwrite = TRUE)
+}
+
+# function to get recruitment ramp
+get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
+  # update recruitment bias ramp ests in ctl file
+  mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl))
+  rec_ramp <- r4ss::SS_fitbiasramp(mdl_res)
+  ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
+  ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
+  ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]
+  ctl$last_yr_fullbias_adj <- rec_ramp$newbias$par[3]
+  ctl$first_recent_yr_nobias_adj <- rec_ramp$newbias$par[4]
+  ctl$max_bias_adj <- rec_ramp$newbias$par[5]
+  r4ss::SS_writectl_3.30(ctllist = ctl,
+                         outfile = here::here(asmnt_yr, folder, mdl, ctl_filename),
+                         overwrite = TRUE)
+  # run model
+  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+}
+
+# iterate model twice to get recruitment bias ramp
+purrr::map(1:2, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
+
+}
+#' function to set up folder with ss3 model files and exe
+#' @param from folder containing ss3 files that are to be copied (default = NULL)
+#' @param to destination folder for ss3 files (default = NULL)
+#' 
+start_ss_fldr <- function(from, to){
+  # get model input files
+  r4ss::copy_SS_inputs(dir.old = from, 
+                       dir.new = to,
+                       overwrite = TRUE)
+  # get exe
+  r4ss::get_ss3_exe(dir = to)
 }
 #' function to get weight-length parameters (from survey data)
 #' @param new_year year of assessment, to get data file (default = NULL)
@@ -50,6 +109,25 @@ wt_len <- function(new_year = NULL){
   fit$par
   
 }
+#' function to bin length data to custom length bins 
+#' @param data length data to bin (default = NULL)
+#' @param bins user-defined length bins (default = NULL)
+#' 
+get_bin <- function(data = NULL,
+                    bins = NULL){
+  
+  # custom length bins, convention follows ss3 binning
+  # set up bin bounds
+  tidytable::tidytable(lwr = c(0, bins)) %>% 
+    tidytable::mutate(label = tidytable::case_when(lwr != 0 ~ lwr,
+                                                   lwr == 0 ~ bins[1])) -> bin_bnds
+  # determine which bin length is in
+  data %>% 
+    tidytable::mutate(new_length = bin_bnds$label[max(which(bin_bnds$lwr < length))], 
+                      .by = c(length))
+
+}
+
 #' function to format survey length comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)

@@ -223,14 +223,6 @@ r4ss::SS_writedat_3.30(new_data,
 old_ctl <- r4ss::SS_readctl_3.30(here::here(new_dat_year, "data", old_ctl_filename))
 
 ## reset params this one time ----
-# reset end year with 0 in block designs
-old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- 0
-old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- 0
-old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- 0
-
-# reset end year for recr_devs
-old_ctl$MainRdevYrLast <- -2
-
 # reset F ballpark to 0
 old_ctl$F_ballpark <- 0
 
@@ -247,6 +239,15 @@ old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 1]
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 4] <- 0
 
 ## reset params annually ----
+# reset end year in block designs
+old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- new_dat_year
+old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- new_dat_year
+old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_dat_year
+
+# reset end year for recr_devs
+old_ctl$MainRdevYrLast <- new_dat_year - 2
+
+
 # update weight-length parameters
 wtlen <- wt_len(new_dat_year)
 old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
@@ -254,7 +255,7 @@ old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- 
 
 
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_dat_year, "output", "old_ctl_filename.ctl"),
+                       outfile = here::here(new_dat_year, "output", old_ctl_filename),
                        overwrite = TRUE)
 
 

@@ -13,16 +13,6 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 
 lapply(libs, library, character.only = TRUE)
 
-# model names
-base_mdl <- "2019.1b-2023-new_lw" # 2023 accepted model
-base_mdl_update <- "2019.1b-2024" # 2023 accepted model
-
-
-new_base <- "2019.1b-2022" # 2022 model with minsamplesize correction
-new_base_noll <- "2019.1c-2022" # 2022 model with no llq env link
-new_base_llq <- "2019.1d-2022" # 2022 model with new llq env link
-new_mdl1 <- "2023.1-2022" # 2022 model with env growth link
-new_mdl2 <- "2023.2-2022" # 2022 model with env growth link and pref llq env link
 
 # run models? if not just get results
 run_mdl = FALSE
@@ -33,53 +23,12 @@ ret_yr <- 10 # For full
 # assessment year
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# helper fcns ----
-start_ss_fldr <- function(from, to){
-  # get model input files
-  r4ss::copy_SS_inputs(dir.old = from, 
-                       dir.new = to,
-                       overwrite = TRUE)
-  # get exe
-  r4ss::get_ss3_exe(dir = to)
-}
-
-growth_L0 <- function(data, T){
-  exp(0.2494 + 0.3216 * (T + data) - 0.0069 * (T + data) ^ 2 - 0.0004 * (T + data) ^ 3) / exp(0.2494 + 0.3216*(T)-0.0069 * (T) ^ 2 - 0.0004 * (T) ^ 3)
-}
-
-run_ss_model <- function(asmnt_yr, mdl){
-  # if par file doesn't exist then run without initial conditions, otherwise, use par file
-  if(base::file.exists(here::here(asmnt_yr, 'rsch', mdl, "ss.par"))){
-    mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, 'rsch', mdl, "starter.ss"))
-    mdl_starter$init_values_src = 1
-    r4ss::SS_writestarter(mdl_starter, 
-                          dir = here::here(asmnt_yr, 'rsch', mdl),
-                          overwrite = TRUE)
-    
-    r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', mdl),
-                        skipfinished = FALSE,
-                        intern = TRUE)
-  } else{
-    mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, 'rsch', mdl, "starter.ss"))
-    mdl_starter$init_values_src = 0
-    r4ss::SS_writestarter(mdl_starter, 
-                          dir = here::here(asmnt_yr, 'rsch', mdl),
-                          overwrite = TRUE)
-    
-    r4ss::run_SS_models(dirvec = here::here(asmnt_yr, 'rsch', mdl),
-                        skipfinished = FALSE,
-                        intern = TRUE)
-    
-    mdl_starter$init_values_src = 1
-    r4ss::SS_writestarter(mdl_starter, 
-                          dir = here::here(asmnt_yr, 'rsch', mdl),
-                          overwrite = TRUE)
-  }
-}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # base model (2023 model 2019.1b) ----
 # read results from base model
+base_mdl <- "2019.1b-2023-new_lw" # 2023 accepted model
+
 base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
                             verbose = TRUE,
                             printstats = TRUE)
@@ -91,32 +40,59 @@ base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # updated base model (2024 model 2019.1b) ----
+base_mdl_update <- "2019.1b-2024"
 
-# copy ss input files
+## copy ss input files ----
 start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
               to = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
 # set up forecast file (with generic blocks for years so won't need to update in the future)
 forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'forecast.ss'))
-
 forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
-
 forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
-
 r4ss::SS_writeforecast(mylist = forecast,
                        dir = here::here(asmnt_yr, "rsch", base_mdl_update),
                        overwrite = TRUE)
 
+## update files ----
+# get updated data file
+data_filename <- "GOAPcod2024Aug13_old.dat"
+# Remove previous dat files
+if(length(list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = "GOAPcod")) > 0) {
+  file.remove(here::here(asmnt_yr, 'rsch', base_mdl_update, list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = "GOAPcod")))
+}
+# copy new data file
+file.copy(here::here(asmnt_yr, 'output', data_filename),
+          here::here(asmnt_yr, 'rsch', base_mdl_update, data_filename))
+
+# get update ctl file
+ctl_filename <- "Model19_1b.ctl"
+# Remove previous ctl files
+if(length(list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = ctl_filename)) > 0) {
+  file.remove(here::here(asmnt_yr, 'rsch', base_mdl_update, list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = ctl_filename)))
+}
+# copy new ctl file
+file.copy(here::here(asmnt_yr, 'output', ctl_filename),
+          here::here(asmnt_yr, 'rsch', base_mdl_update, ctl_filename))
 
 # set up starter file
-starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'starter.ss'))
-
+old_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'starter.ss'))
+old_starter$datfile <- data_filename
+old_starter$ctlfile <- ctl_filename
 old_starter$init_values_src = 0
-
 r4ss::SS_writestarter(mylist = old_starter,
-                      dir = here::here(new_SS_dat_year, "mgmt", Model_name_old),
+                      dir = here::here(asmnt_yr, "rsch", base_mdl_update),
                       overwrite = TRUE)
 
+## run model ----
+run_ss_model(asmnt_yr, 
+             folder = 'rsch',
+             mdl = base_mdl_update,
+             ctl_filename = "Model19_1b.ctl")
+
+
+# read the model output
+update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
 
 
@@ -124,6 +100,19 @@ r4ss::SS_writestarter(mylist = old_starter,
 
 
 
+
+
+rec_ramp <- r4ss::SS_fitbiasramp(update_base_res)
+
+ctl_filename <- "Model19_1b.ctl"
+
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, "rsch", base_mdl_update, ctl_filename))
+
+ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
+ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]
+ctl$last_yr_fullbias_adj <- rec_ramp$newbias$par[3]
+ctl$first_recent_yr_nobias_adj <- rec_ramp$newbias$par[4]
+ctl$max_bias_adj <- rec_ramp$newbias$par[5]
 
 
 
