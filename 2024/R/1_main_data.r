@@ -33,7 +33,12 @@ lapply(libs, library, character.only = TRUE)
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # previous ss3 dat filename
+# note: need to copy in the following files into the 'data' folder:
+# 1. accepted model dat file from previous assessment
+# 2. accepted model ctl file from previous assessment
+# 3. data_echo.ss_new file from accepted model
 old_dat_filename <- "GOAPcod2023Oct16.dat"
+old_ctl_filename <- "Model19_1b.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
 query = TRUE
@@ -84,7 +89,7 @@ if (!file.exists(here::here(new_dat_year, "plots"))){
 
 # Remove previous dat files from output folder
 if(isTRUE(remove_dat)){
-  if (file.exists(here::here(new_dat_year, "output")) & setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old")) > 0) {
+  if (file.exists(here::here(new_dat_year, "output")) & length(setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))) > 0) {
     file.remove(here::here(new_dat_year, "output", setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))))
   }
 }
@@ -94,7 +99,7 @@ source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
 purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
 source(here::here(new_dat_year, "R", "utils.r"))
 
-# get ss data file ----
+# get ss3 data file ----
 
 # read in previous assessment ss3 datafile
 old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
@@ -173,7 +178,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_new.dat")), overwrite = TRUE)
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
 
 # get new ss3 dat with updated ageing error & new len comp & new length bins
 new_data <- get_data_goa_pcod(new_data = old_data,
@@ -211,3 +216,46 @@ new_data$lbin_vector <- len_bins2
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin.dat")), overwrite = TRUE)
+
+# get ss3 ctl file ----
+
+# read in previous assessment ss3 ctl
+old_ctl <- r4ss::SS_readctl_3.30(here::here(new_dat_year, "data", old_ctl_filename))
+
+## reset params this one time ----
+# reset end year with 0 in block designs
+old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- 0
+old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- 0
+old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- 0
+
+# reset end year for recr_devs
+old_ctl$MainRdevYrLast <- -2
+
+# reset F ballpark to 0
+old_ctl$F_ballpark <- 0
+
+# reset q params for surveys not fit to 0
+old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_SPAWN(8)"), 3] <- 0
+old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "Q_power_SPAWN(8)"), 3] <- 0
+old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_Seine(9)"), 3] <- 0
+old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "Q_power_Seine(9)"), 3] <- 0
+
+# reset selex patterns for surveys not fit to 0
+old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 1] <- 0
+old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 4] <- 0
+old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 1] <- 0
+old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 4] <- 0
+
+## reset params annually ----
+# update weight-length parameters
+wtlen <- wt_len(new_dat_year)
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
+
+
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_dat_year, "output", "old_ctl_filename.ctl"),
+                       overwrite = TRUE)
+
+
+
