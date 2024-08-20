@@ -28,7 +28,17 @@ source_files <- list.files(here::here(new_year, "R", "get_data"), "*.r$")
 purrr::map(here::here(new_year, "R", "get_data", source_files), source)
 source(here::here(new_year, "R", "utils.r"))
 
-# filtering analysis ----
+
+# ageing error plots ----
+
+vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Spline', 'Pcod SS3_format_Reader1.csv')) %>% 
+  tidytable::filter(...1 == 'SD') %>% 
+  tidytable::pivot_longer() %>% 
+  tidytable::select(value)
+
+
+
+# fishery comp filtering analysis ----
 
 ## federal > 10 per haul ----
 fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
@@ -117,7 +127,7 @@ fsh_len_f %>%
 
 
 
-# length comps ----
+# fishery length comps ----
 # length bins to use for length comp data
 bin_width <- 1
 min_size <- 0.5
@@ -456,7 +466,7 @@ suppressWarnings(ggplot2::ggsave(bin_ll_srv,
 
 
 
-# age comps ----
+# fishery age comps ----
 max_age = 10
 
 # get old way of doing comps

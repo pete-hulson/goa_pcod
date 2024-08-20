@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-08-20 11:33:09.502003
+#C file write time: 2024-08-20 15:38:18.903523
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -67,12 +67,12 @@
   -99	      99	          1	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_alpha_Fem_GP_1
   -99	      99	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_beta_Fem_GP_1 
   0.1	      10	          1	     1	    1	0	 -1	0	0	0	0	0	0	0	#_CohortGrowDev      
-  -10	      10	          3	     0	    0	0	 -5	0	0	0	0	0	0	0	#_AgeKeyParm1        
+  -10	      10	          1	     0	    0	0	 -5	0	0	0	0	0	0	0	#_AgeKeyParm1        
   -10	      10	          0	     0	    0	0	-10	0	0	0	0	0	6	2	#_AgeKeyParm2        
   -10	      10	          0	     0	    0	0	-10	0	0	0	0	0	6	2	#_AgeKeyParm3        
   -10	      10	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm4        
-  -10	      10	       0.57	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm5        
-  -10	      10	       1.16	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm6        
+  -10	      10	   0.109465	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm5        
+  -10	      10	    1.09465	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm6        
   -10	      10	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm7        
 1e-06	0.999999	        0.5	   0.5	  0.5	0	-99	0	0	0	0	0	0	0	#_FracFemale_GP_1    
 #_timevary MG parameters
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.15977092236 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1986.12718691712 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2020.75768071085 #_last_yr_fullbias_adj_in_MPD
-2023.2646022949 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.906146567745542 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1960.91882487506 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1987.38149826351 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2020.75700655008 #_last_yr_fullbias_adj_in_MPD
+2023.27144675203 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.903938671771511 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev

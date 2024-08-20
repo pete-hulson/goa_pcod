@@ -63,7 +63,7 @@ r4ss::SS_writeforecast(mylist = forecast,
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
-                 mdl = "2019.1b-2024", 
+                 mdl = base_mdl_update, 
                  dat_filename = "GOAPcod2024Aug13_old.dat",
                  ctl_in = "Model19_1b.ctl",
                  ctl_out = "Model19_1b.ctl")
@@ -90,7 +90,7 @@ start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
-                 mdl = "2019.1c-2024", 
+                 mdl = new_base, 
                  dat_filename = "GOAPcod2024Aug13.dat",
                  ctl_in = "Model19_1b.ctl",
                  ctl_out = "Model19_1c.ctl")
@@ -106,6 +106,27 @@ run_ss3_model(asmnt_yr,
 new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# new base model with updated ageing error ----
+new_base_ae <- "2019.1d-2024"
+
+## copy ss input files ----
+start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
+              to = here::here(asmnt_yr, 'rsch', new_base_ae))
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_ae, 
+                 dat_filename = "GOAPcod2024Aug13.dat",
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model19_1d.ctl")
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = new_base_ae,
+              ctl_filename = "Model19_1d.ctl")
 
 
 

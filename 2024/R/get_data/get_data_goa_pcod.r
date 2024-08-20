@@ -221,7 +221,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$N_MeanSize_at_Age_obs <- nrow(ss3_grwth)
   cat(crayon::green$bold("\u2713"), crayon::blue("growth data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  # ageing error ----- (note to self: look at this again sometime)
+  # ageing error ----
   new_data$agebin_vector = seq(1, max_age, 1)
   error <- matrix(ncol = (max_age + 1), nrow = 2)
   if(isTRUE(update_ae)){

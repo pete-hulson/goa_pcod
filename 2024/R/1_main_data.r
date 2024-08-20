@@ -129,33 +129,33 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
 
-# get new ss3 dat with updated ageing error
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              fsh_sp = "PCOD", # catch data species label
-                              fsh_sp_code = 202, # observer species code
-                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
-                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
-                              twl_srvy = 47, # region of trawl survey
-                              srv_sp = 21720, # survey species code
-                              area = 'goa', # the fmp region for this stock
-                              indx = 'num', # type of survey index (numbers/biomass)
-                              run_glm = run_glm,
-                              len_bins = len_bins,
-                              fltr = TRUE, # filter out small number of length observations
-                              new_lcomp = FALSE, # use new method to get fishery length comps
-                              update_ae = TRUE, # update ageing error
-                              ss3_frmt = TRUE, # format data for ss3 dat file
-                              max_age = 10) # maximum age
+# # get new ss3 dat with updated ageing error
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               fsh_sp = "PCOD", # catch data species label
+#                               fsh_sp_code = 202, # observer species code
+#                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+#                               fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+#                               twl_srvy = 47, # region of trawl survey
+#                               srv_sp = 21720, # survey species code
+#                               area = 'goa', # the fmp region for this stock
+#                               indx = 'num', # type of survey index (numbers/biomass)
+#                               run_glm = run_glm,
+#                               len_bins = len_bins,
+#                               fltr = TRUE, # filter out small number of length observations
+#                               new_lcomp = FALSE, # use new method to get fishery length comps
+#                               update_ae = TRUE, # update ageing error
+#                               ss3_frmt = TRUE, # format data for ss3 dat file
+#                               max_age = 10) # maximum age
+# 
+# # Write out data script
+# r4ss::SS_writedat_3.30(new_data,
+#                        here::here(new_dat_year, "output", 
+#                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
 
-# Write out data script
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
-
-# get new ss3 dat with updated ageing error & new len comp
+# get new ss3 dat with new len comp
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
@@ -171,7 +171,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               run_glm = run_glm,
                               len_bins = len_bins,
                               new_lcomp = TRUE, # use new method to get fishery length comps
-                              update_ae = TRUE, # update ageing error
+                              update_ae = FALSE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
                               max_age = 10) # maximum age
 
@@ -180,7 +180,7 @@ r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
 
-# get new ss3 dat with updated ageing error & new len comp & new length bins
+# get new ss3 dat with new len comp & new length bins
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
@@ -196,7 +196,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               run_glm = run_glm,
                               len_bins = len_bins2,
                               new_lcomp = TRUE, # use new method to get fishery length comps
-                              update_ae = TRUE, # update ageing error
+                              update_ae = FALSE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
                               max_age = 10) # maximum age
 
@@ -247,16 +247,27 @@ old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_dat_year
 # reset end year for recr_devs
 old_ctl$MainRdevYrLast <- new_dat_year - 2
 
-
 # update weight-length parameters
 wtlen <- wt_len(new_dat_year)
 old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
 old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
 
-
+# write base model ctl
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_dat_year, "output", old_ctl_filename),
                        overwrite = TRUE)
 
+# update ageing error parameters
+ae <- vroom::vroom(here::here(new_dat_year, 'data', 'ageing_error', 'ResultsGOA_Linear', 'Pcod SS3_format_Reader1.csv')) %>% 
+  tidytable::filter(...1 == 'SD') %>% 
+  tidytable::pivot_longer() %>% 
+  tidytable::select(value)
 
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"), 3] <- 1
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"), 3] <- as.numeric(ae[2])
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"), 3] <- as.numeric(ae[length(ae$value)])
 
+# write base model ctl with updated ageing error
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_dat_year, "output", "updated_ae.ctl"),
+                       overwrite = TRUE)
