@@ -2,6 +2,7 @@
 
 # Load required packages & define parameters ----
 
+# load necessary pkgs
 libs <- c("data.table",
           "dplyr",
           "ggplot2",
@@ -13,6 +14,13 @@ if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) 
 
 lapply(libs, library, character.only = TRUE)
 
+# assessment year
+asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
+
+# source functions
+# source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
+# purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
+source(here::here(asmnt_yr, "R", "utils.r"))
 
 # run models? if not just get results
 run_mdl = FALSE
@@ -20,8 +28,6 @@ run_retro = FALSE
 # ret_yr <- 2 # For testing
 ret_yr <- 10 # For full
 
-# assessment year
-asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,54 +53,57 @@ start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
               to = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
 # set up forecast file (with generic blocks for years so won't need to update in the future)
-forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'forecast.ss'))
+forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, 'rsch', base_mdl_update, 'forecast.ss'))
 forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
 forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
 r4ss::SS_writeforecast(mylist = forecast,
-                       dir = here::here(asmnt_yr, "rsch", base_mdl_update),
+                       dir = here::here(asmnt_yr, 'rsch', base_mdl_update),
                        overwrite = TRUE)
 
 ## update files ----
-# get updated data file
-data_filename <- "GOAPcod2024Aug13_old.dat"
-# Remove previous dat files
-if(length(list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = "GOAPcod")) > 0) {
-  file.remove(here::here(asmnt_yr, 'rsch', base_mdl_update, list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = "GOAPcod")))
-}
-# copy new data file
-file.copy(here::here(asmnt_yr, 'output', data_filename),
-          here::here(asmnt_yr, 'rsch', base_mdl_update, data_filename))
-
-# get update ctl file
-ctl_filename <- "Model19_1b.ctl"
-# Remove previous ctl files
-if(length(list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = ctl_filename)) > 0) {
-  file.remove(here::here(asmnt_yr, 'rsch', base_mdl_update, list.files(here::here(asmnt_yr, 'rsch', base_mdl_update), pattern = ctl_filename)))
-}
-# copy new ctl file
-file.copy(here::here(asmnt_yr, 'output', ctl_filename),
-          here::here(asmnt_yr, 'rsch', base_mdl_update, ctl_filename))
-
-# set up starter file
-old_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, "rsch", base_mdl_update, 'starter.ss'))
-old_starter$datfile <- data_filename
-old_starter$ctlfile <- ctl_filename
-old_starter$init_values_src = 0
-r4ss::SS_writestarter(mylist = old_starter,
-                      dir = here::here(asmnt_yr, "rsch", base_mdl_update),
-                      overwrite = TRUE)
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = "2019.1b-2024", 
+                 dat_filename = "GOAPcod2024Aug13_old.dat",
+                 ctl_in = "Model19_1b.ctl",
+                 ctl_out = "Model19_1b.ctl")
 
 ## run model ----
-run_ss_model(asmnt_yr, 
-             folder = 'rsch',
-             mdl = base_mdl_update,
-             ctl_filename = "Model19_1b.ctl")
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = base_mdl_update,
+              ctl_filename = "Model19_1b.ctl")
 
 
 # read the model output
 update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# new base model ----
+new_base <- "2019.1c-2024"
+
+## copy ss input files ----
+start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+              to = here::here(asmnt_yr, 'rsch', new_base))
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = "2019.1c-2024", 
+                 dat_filename = "GOAPcod2024Aug13.dat",
+                 ctl_in = "Model19_1b.ctl",
+                 ctl_out = "Model19_1c.ctl")
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = new_base,
+              ctl_filename = "Model19_1c.ctl")
+
+
+# read the model output
+new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
 
 
 
@@ -102,17 +111,52 @@ update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_u
 
 
 
-rec_ramp <- r4ss::SS_fitbiasramp(update_base_res)
 
-ctl_filename <- "Model19_1b.ctl"
 
-ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, "rsch", base_mdl_update, ctl_filename))
 
-ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
-ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]
-ctl$last_yr_fullbias_adj <- rec_ramp$newbias$par[3]
-ctl$first_recent_yr_nobias_adj <- rec_ramp$newbias$par[4]
-ctl$max_bias_adj <- rec_ramp$newbias$par[5]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

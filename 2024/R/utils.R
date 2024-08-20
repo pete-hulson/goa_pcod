@@ -7,64 +7,108 @@
 #' @param mdl name of model to run (default = NULL)
 #' @param ctl_filename name of ctl file in which to adjust recruitment ramp parameters (default = NULL)
 #' 
-run_ss_model <- function(asmnt_yr = NULL, 
-                         folder = NULL,
-                         mdl = NULL, 
-                         ctl_filename = NULL){
-
-# run iniital model
-# if par file doesn't exist then run without initial conditions, otherwise, use par file
-if(base::file.exists(here::here(asmnt_yr, folder, mdl, "ss.par"))){
-  mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
-  mdl_starter$init_values_src = 1
-  r4ss::SS_writestarter(mdl_starter, 
+run_ss3_model <- function(asmnt_yr = NULL, 
+                          folder = NULL,
+                          mdl = NULL, 
+                          ctl_filename = NULL){
+  
+  # run iniital model
+  # if par file doesn't exist then run without initial conditions, otherwise, use par file
+  if(base::file.exists(here::here(asmnt_yr, folder, mdl, "ss.par"))){
+    mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
+    mdl_starter$init_values_src = 1
+    r4ss::SS_writestarter(mdl_starter, 
+                          dir = here::here(asmnt_yr, folder, mdl),
+                          overwrite = TRUE)
+    
+    r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+              skipfinished = FALSE,
+              show_in_console = TRUE)
+  } else{
+    mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
+    mdl_starter$init_values_src = 0
+    r4ss::SS_writestarter(mdl_starter, 
+                          dir = here::here(asmnt_yr, folder, mdl),
+                          overwrite = TRUE)
+    
+    r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+              skipfinished = FALSE,
+              show_in_console = TRUE)
+    
+    mdl_starter$init_values_src = 1
+    r4ss::SS_writestarter(mdl_starter, 
+                          dir = here::here(asmnt_yr, folder, mdl),
+                          overwrite = TRUE)
+  }
+  
+  # function to get recruitment ramp
+  get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
+    # update recruitment bias ramp ests in ctl file
+    mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl))
+    rec_ramp <- r4ss::SS_fitbiasramp(mdl_res)
+    ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
+    ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
+    ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]
+    ctl$last_yr_fullbias_adj <- rec_ramp$newbias$par[3]
+    ctl$first_recent_yr_nobias_adj <- rec_ramp$newbias$par[4]
+    ctl$max_bias_adj <- rec_ramp$newbias$par[5]
+    r4ss::SS_writectl_3.30(ctllist = ctl,
+                           outfile = here::here(asmnt_yr, folder, mdl, ctl_filename),
+                           overwrite = TRUE)
+    # run model
+    r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
+              skipfinished = FALSE,
+              show_in_console = TRUE)
+  }
+  
+  # iterate model twice to get recruitment bias ramp
+  purrr::map(1:2, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
+  
+}
+#' function to update ss3 model dat, ctl, and starter files
+#' @param asmnt_yr year of assessment (default = NULL)
+#' @param folder root foloder containing models (default = NULL)
+#' @param mdl name of model to run (default = NULL)
+#' @param dat_filename name of dat file  to update(default = NULL)
+#' @param ctl_in name of ctl file in 'output' folder that has been updated (default = NULL)
+#' @param ctl_out name of ctl file to be writtin in model folder (default = NULL)
+#' 
+update_ss3_files <- function(asmnt_yr = NULL, 
+                             folder = NULL,
+                             mdl = NULL, 
+                             dat_filename = NULL,
+                             ctl_in = NULL,
+                             ctl_out){
+  
+  # update dat file
+  # Remove previous dat files
+  if(length(list.files(here::here(asmnt_yr, folder, mdl), pattern = "GOAPcod")) > 0) {
+    file.remove(here::here(asmnt_yr, folder, mdl, list.files(here::here(asmnt_yr, folder, mdl), pattern = "GOAPcod")))
+  }
+  # copy new data file
+  file.copy(here::here(asmnt_yr, 'output', dat_filename),
+            here::here(asmnt_yr, folder, mdl, dat_filename))
+  
+  # update ctl file
+  # Remove previous ctl files
+  if(length(list.files(here::here(asmnt_yr, folder, mdl), pattern = ".ctl")) > 0) {
+    file.remove(here::here(asmnt_yr, folder, mdl, list.files(here::here(asmnt_yr, folder, mdl), pattern = ".ctl")))
+  }
+  # copy new ctl file
+  file.copy(here::here(asmnt_yr, 'output', ctl_in),
+            here::here(asmnt_yr, folder, mdl, ctl_out))
+  
+  # set up starter file
+  old_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, 'starter.ss'))
+  old_starter$datfile <- dat_filename
+  old_starter$ctlfile <- ctl_out
+  old_starter$init_values_src = 0
+  r4ss::SS_writestarter(mylist = old_starter,
                         dir = here::here(asmnt_yr, folder, mdl),
                         overwrite = TRUE)
   
-  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-} else{
-  mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
-  mdl_starter$init_values_src = 0
-  r4ss::SS_writestarter(mdl_starter, 
-                        dir = here::here(asmnt_yr, folder, mdl),
-                        overwrite = TRUE)
-  
-  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-  
-  mdl_starter$init_values_src = 1
-  r4ss::SS_writestarter(mdl_starter, 
-                        dir = here::here(asmnt_yr, folder, mdl),
-                        overwrite = TRUE)
 }
 
-# function to get recruitment ramp
-get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
-  # update recruitment bias ramp ests in ctl file
-  mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl))
-  rec_ramp <- r4ss::SS_fitbiasramp(mdl_res)
-  ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
-  ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
-  ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]
-  ctl$last_yr_fullbias_adj <- rec_ramp$newbias$par[3]
-  ctl$first_recent_yr_nobias_adj <- rec_ramp$newbias$par[4]
-  ctl$max_bias_adj <- rec_ramp$newbias$par[5]
-  r4ss::SS_writectl_3.30(ctllist = ctl,
-                         outfile = here::here(asmnt_yr, folder, mdl, ctl_filename),
-                         overwrite = TRUE)
-  # run model
-  r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
-            skipfinished = FALSE,
-            show_in_console = TRUE)
-}
-
-# iterate model twice to get recruitment bias ramp
-purrr::map(1:2, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
-
-}
 #' function to set up folder with ss3 model files and exe
 #' @param from folder containing ss3 files that are to be copied (default = NULL)
 #' @param to destination folder for ss3 files (default = NULL)
