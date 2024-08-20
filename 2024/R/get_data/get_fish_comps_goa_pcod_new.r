@@ -121,9 +121,6 @@ get_fsh_len_post91_new <- function(new_year = 9999,
   # expand length frequencies  ----
   lcomp_c <- expand_fsh_len(new_year)
 
-  nsamp %>% 
-    filter(year == 2020, gear == 'pot')
-
   # compute comps ----
   tidytable::expand_grid(year = sort(unique(lcomp_c$year)),
                          gear = sort(unique(lcomp_c$gear)),
