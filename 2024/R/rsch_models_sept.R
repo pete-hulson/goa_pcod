@@ -221,8 +221,9 @@ r4ss::SSplotComparisons(base_summ,
                         legendlabels = c(update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))
 
-vroom::vroom_write(base_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes.csv'), delim = ",")
-vroom::vroom_write(base_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes_by_fleet.csv'), delim = ",")
+
+vroom::vroom_write(base_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps', 'base_summ_likes.csv'), delim = ",")
+vroom::vroom_write(base_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps', 'base_summ_likes_by_fleet.csv'), delim = ",")
 
 
 
