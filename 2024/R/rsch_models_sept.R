@@ -214,11 +214,15 @@ r4ss::SS_plots(new_base_bin_res,
 
 
 # plot comparisons ----
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'), recursive = TRUE)
+}
+
 base_summ <- r4ss::SSsummarize(list(update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res))
 
 r4ss::SSplotComparisons(base_summ,
                         print = TRUE,
-                        legendlabels = c(update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res),
+                        legendlabels = c(base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_bin),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))
 
 

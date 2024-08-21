@@ -1,7 +1,7 @@
 #C starter file written by R function SS_writestarter
 #C rerun model to get more complete formatting in starter.ss_new
 #C should work with SS version: 3.30
-#C file write time: 2024-08-20 14:12:54.063064
+#C file write time: 2024-08-20 17:11:32.049497
 #
 GOAPcod2024Aug13_old.dat #_datfile
 Model19_1b.ctl #_ctlfile

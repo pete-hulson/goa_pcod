@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1964.4 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1979.7 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2012.9 #_last_yr_fullbias_adj_in_MPD
-2017 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.9089 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1960.89089978167 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1989.25588466399 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2020.7867448076 #_last_yr_fullbias_adj_in_MPD
+2023.24947121407 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.905429424483929 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
