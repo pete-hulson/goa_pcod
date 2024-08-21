@@ -129,7 +129,27 @@ run_ss3_model(asmnt_yr,
               ctl_filename = "Model19_1d.ctl")
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# new base model with updated ageing error & fishery length comps ----
+new_base_lcomp <- "2019.1e-2024"
 
+## copy ss input files ----
+start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_ae),
+              to = here::here(asmnt_yr, 'rsch', new_base_lcomp))
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_lcomp, 
+                 dat_filename = "GOAPcod2024Aug13_lcomp.dat",
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model19_1e.ctl")
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = new_base_lcomp,
+              ctl_filename = "Model19_1e.ctl")
 
 
 
