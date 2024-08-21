@@ -18,8 +18,8 @@ lapply(libs, library, character.only = TRUE)
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # source functions
-# source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
-# purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
+source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
+purrr::map(here::here(asmnt_yr, "R", "assessment", source_files), source)
 source(here::here(asmnt_yr, "R", "utils.r"))
 
 # run models? if not just get results
@@ -33,7 +33,7 @@ ret_yr <- 10 # For full
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # base model (2023 model 2019.1b) ----
 # read results from base model
-base_mdl <- "2019.1b-2023-new_lw" # 2023 accepted model
+base_mdl <- "2019.1b-2023" # 2023 accepted model
 
 base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
                             verbose = TRUE,
@@ -83,6 +83,16 @@ r4ss::SS_plots(update_base_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
 
+# run management scens
+update_base_mscen <- Do_AK_Scenarios(Model_name = base_mdl_update,
+                                     Model_dir = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                                     CYR = asmnt_yr,
+                                     SYR = 1977,
+                                     FCASTY = 15,
+                                     FLEETS = c(1:3),
+                                     do_fig = FALSE,
+                                     SEXES = 1)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model ----
 new_base <- "2019.1c-2024"
@@ -114,6 +124,16 @@ r4ss::SS_plots(new_base_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
 
+# run management scens
+new_base_mscen <- Do_AK_Scenarios(Model_name = new_base,
+                                  Model_dir = here::here(asmnt_yr, 'rsch', new_base),
+                                  CYR = asmnt_yr,
+                                  SYR = 1977,
+                                  FCASTY = 15,
+                                  FLEETS = c(1:3),
+                                  do_fig = FALSE,
+                                  SEXES = 1)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model with updated ageing error ----
 new_base_ae <- "2019.1d-2024"
@@ -144,6 +164,15 @@ r4ss::SS_plots(new_base_ae_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
 
+# run management scens
+new_base_ae_mscen <- Do_AK_Scenarios(Model_name = new_base_ae,
+                                     Model_dir = here::here(asmnt_yr, 'rsch', new_base_ae),
+                                     CYR = asmnt_yr,
+                                     SYR = 1977,
+                                     FCASTY = 15,
+                                     FLEETS = c(1:3),
+                                     do_fig = FALSE,
+                                     SEXES = 1)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model with updated ageing error & fishery length comps ----
@@ -174,6 +203,16 @@ new_base_lcomp_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_bas
 r4ss::SS_plots(new_base_lcomp_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp, "plots"))
+
+# run management scens
+new_base_lcomp_mscen <- Do_AK_Scenarios(Model_name = new_base_lcomp,
+                                        Model_dir = here::here(asmnt_yr, 'rsch', new_base_lcomp),
+                                        CYR = asmnt_yr,
+                                        SYR = 1977,
+                                        FCASTY = 15,
+                                        FLEETS = c(1:3),
+                                        do_fig = FALSE,
+                                        SEXES = 1)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model with updated ageing error & fishery length comps & binning ----
@@ -211,6 +250,15 @@ r4ss::SS_plots(new_base_bin_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
 
+# run management scens
+new_base_bin_mscen <- Do_AK_Scenarios(Model_name = new_base_bin,
+                                      Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin),
+                                      CYR = asmnt_yr,
+                                      SYR = 1977,
+                                      FCASTY = 15,
+                                      FLEETS = c(1:3),
+                                      do_fig = FALSE,
+                                      SEXES = 1)
 
 
 # plot comparisons ----
