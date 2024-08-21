@@ -78,6 +78,10 @@ run_ss3_model(asmnt_yr,
 # read the model output
 update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
+# plot results
+r4ss::SS_plots(update_base_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model ----
@@ -105,6 +109,10 @@ run_ss3_model(asmnt_yr,
 # read the model output
 new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
 
+# plot results
+r4ss::SS_plots(new_base_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model with updated ageing error ----
@@ -127,6 +135,14 @@ run_ss3_model(asmnt_yr,
               folder = 'rsch',
               mdl = new_base_ae,
               ctl_filename = "Model19_1d.ctl")
+
+# read the model output
+new_base_ae_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_ae))
+
+# plot results
+r4ss::SS_plots(new_base_ae_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,6 +167,13 @@ run_ss3_model(asmnt_yr,
               mdl = new_base_lcomp,
               ctl_filename = "Model19_1e.ctl")
 
+# read the model output
+new_base_lcomp_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_lcomp))
+
+# plot results
+r4ss::SS_plots(new_base_lcomp_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', new_base_lcomp, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model with updated ageing error & fishery length comps & binning ----
@@ -180,9 +203,26 @@ run_ss3_model(asmnt_yr,
               mdl = new_base_bin,
               ctl_filename = "Model19_1f.ctl")
 
+# read the model output
+new_base_bin_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin))
+
+# plot results
+r4ss::SS_plots(new_base_bin_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
 
 
 
+# plot comparisons ----
+base_summ <- r4ss::SSsummarize(list(update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res))
+
+r4ss::SSplotComparisons(base_summ,
+                        print = TRUE,
+                        legendlabels = c(update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))
+
+vroom::vroom_write(base_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes.csv'), delim = ",")
+vroom::vroom_write(base_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'new_base', 'base_summ_likes_by_fleet.csv'), delim = ",")
 
 
 
@@ -261,309 +301,6 @@ retro_new_base <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
 
 vroom::vroom_write(retro_new_base$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_likes.csv'), delim = ",")
 base::save(retro_new_base, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base.RData'))
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ll survey w/o env link (2019.1c) ----
-
-# copy over the stock synthesis model files to the new directory for model 2019.1c
-# start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-#               to = here::here(asmnt_yr, 'rsch', new_base_noll))
-
-# run model
-if(isTRUE(run_mdl)){
-  run_ss_model(asmnt_yr, mdl = new_base_noll)
-}
-
-# read the model output and print diagnostic messages
-new_base_noll_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_noll),
-                                     verbose = TRUE,
-                                     printstats = TRUE)
-
-if(isTRUE(run_retro)){
-  r4ss::SS_doRetro(masterdir = here::here(asmnt_yr, 'rsch', new_base_noll),
-                   oldsubdir = "",
-                   newsubdir = "retrospectives",
-                   years = 0:-ret_yr)
-}
-
-# get retro results
-retro_new_base_noll <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
-  here::here(asmnt_yr, 'rsch', new_base_noll), "retrospectives",
-  paste("retro", 0:-ret_yr, sep = ""))))
-
-vroom::vroom_write(retro_new_base_noll$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_noll_likes.csv'), delim = ",")
-base::save(retro_new_base_noll, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_noll.RData'))
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# llq new env link model (model 2019.1d) ----
-
-# copy over the stock synthesis model files to the new directory for model 2019.1b
-# start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-#               to = here::here(asmnt_yr, 'rsch', new_base_llq))
-
-if(isTRUE(run_mdl)){
-  # read in env data
-  cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>% 
-    dplyr::rename_with(., tolower) %>% 
-    tidytable::rename(l0_20 = '0_20',
-                      l20_40 = '20_40',
-                      l40_60 = '40_60',
-                      l60_80 = '60_80',
-                      l80plus = '80plus')
-  
-  # read in ss data
-  ss_dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_base_llq, list.files(here::here(asmnt_yr, 'rsch', new_base_llq), pattern = '.dat')))
-  
-  cfsr %>% 
-    tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-    tidytable::filter(month == 3 & name == 'l40_60') %>% 
-    tidytable::mutate(Value = value - as.numeric(cfsr %>% 
-                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                   tidytable::filter(month == 3 & name == 'l40_60' & year %in% 1982:2012) %>% 
-                                                   tidytable::summarise(mean(value))),
-                      Variable = 1) %>% 
-    tidytable::rename(Yr = year) %>% 
-    tidytable::select(Yr, Variable, Value) -> new_env1
-  
-  new_env1 %>% 
-    tidytable::bind_rows(ss_dat$envdat %>% 
-                           tidytable::filter(Variable != 1)) -> new_env
-  
-  ss_dat$envdat <- as.data.frame(new_env)
-  r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_base_llq, list.files(here::here(asmnt_yr, 'rsch', new_base_llq), pattern = '.dat')),
-                    overwrite = TRUE)
-  
-  # run model
-  run_ss_model(asmnt_yr, mdl = new_mdl2)
-  
-}
-
-
-# read the model output and print diagnostic messages
-new_base_llq_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_llq),
-                                    verbose = TRUE,
-                                    printstats = TRUE)
-
-
-# run retro
-if(isTRUE(run_retro)){
-  r4ss::SS_doRetro(masterdir = here::here(asmnt_yr, 'rsch', new_base_llq),
-                   oldsubdir = "",
-                   newsubdir = "retrospectives",
-                   years = 0:-ret_yr)
-}
-
-# get retro results
-retro_new_base_llq <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
-  here::here(asmnt_yr, 'rsch', new_base_llq), "retrospectives",
-  paste("retro", 0:-ret_yr, sep = ""))))
-
-vroom::vroom_write(retro_new_base_llq$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_llq_likes.csv'), delim = ",")
-base::save(retro_new_base_llq, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_new_base_llq.RData'))
-
-
-# run management scenarios function
-source(here::here(asmnt_yr, "R", "assessment", "run_mngmnt_scenarios.r"))
-mscen_new_base_llq <- Do_AK_Scenarios(Model_name = new_base_llq,
-                                      Model_dir = here::here(asmnt_yr, 'rsch', new_base_llq),
-                                      CYR = asmnt_yr,
-                                      SYR = 1977,
-                                      FCASTY = 15,
-                                      FLEETS = c(1:3),
-                                      do_fig = TRUE,
-                                      SEXES = 1)
-
-# save output
-write.csv(mscen_new_base_llq$Two_year, here::here(asmnt_yr, 'rsch', 'output', 'mgmnt_exec_summ_new_base_llq.csv'))
-
-
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# growth env link model (model 2023.1) ----
-
-# copy over the stock synthesis model files to the new directory for model 2019.1b
-# start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-#               to = here::here(asmnt_yr, 'rsch', new_mdl2))
-
-if(isTRUE(run_mdl)){
-  # read in env data
-  cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>% 
-    dplyr::rename_with(., tolower) %>% 
-    tidytable::rename(l0_20 = '0_20',
-                      l20_40 = '20_40',
-                      l40_60 = '40_60',
-                      l60_80 = '60_80',
-                      l80plus = '80plus')
-  
-  # read in ss data
-  ss_dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl1, list.files(here::here(asmnt_yr, 'rsch', new_mdl1), pattern = '.dat')))
-  
-  # kappa env link
-  cfsr %>% 
-    tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-    tidytable::filter(month == 1 & name == 'l60_80') %>% 
-    tidytable::mutate(Value = value - as.numeric(cfsr %>% 
-                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                   tidytable::filter(month == 1 & name == 'l60_80' & year %in% 1982:2012) %>% 
-                                                   tidytable::summarise(mean(value))),
-                      Variable = 2) %>% 
-    tidytable::rename(Yr = year) %>% 
-    tidytable::select(Yr, Variable, Value) -> kappa_env
-  
-  # linf env link
-  cfsr %>% 
-    tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-    tidytable::filter(month == 1 & name == 'l20_40') %>% 
-    tidytable::mutate(Value = value - as.numeric(cfsr %>% 
-                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                   tidytable::filter(month == 1 & name == 'l20_40' & year %in% 1982:2012) %>% 
-                                                   tidytable::summarise(mean(value))),
-                      Variable = 3) %>% 
-    tidytable::rename(Yr = year) %>% 
-    tidytable::select(Yr, Variable, Value) -> linf_env
-  
-  # lzero env link
-  tidytable::bind_cols(c(1977, 1978), c(4, 4), c(1, 1)) %>% 
-    tidytable::rename(Yr = '...1',
-                      Variable = '...2',
-                      Value = '...3') %>% 
-    tidytable::bind_rows(cfsr %>% 
-                           tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                           tidytable::filter(month == 10 & name == 'l0_20') %>% 
-                           tidytable::mutate(index = value - as.numeric(cfsr %>% 
-                                                                          tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                                          tidytable::filter(month == 10 & name == 'l0_20' & year %in% 1982:2012) %>% 
-                                                                          tidytable::summarise(mean(value)))) %>% 
-                           tidytable::mutate(Value = growth_L0(index, as.numeric(cfsr %>% 
-                                                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                                                   tidytable::filter(month == 10 & name == 'l0_20' & year %in% 1982:2012) %>% 
-                                                                                   tidytable::summarise(mean(value)))),
-                                             Variable = 4) %>% 
-                           tidytable::rename(Yr = year) %>% 
-                           tidytable::select(Yr, Variable, Value)) -> lzero_env
-  
-  #put it all together
-  ss_dat$envdat %>% 
-    tidytable::filter(Variable == 1) %>% 
-    tidytable::bind_rows(kappa_env) %>%
-    tidytable::bind_rows(linf_env) %>%
-    tidytable::bind_rows(lzero_env) -> new_env
-  
-  # write ss datafile
-  ss_dat$envdat <- as.data.frame(new_env)
-  r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_mdl1, 'all_best', list.files(here::here(asmnt_yr, 'rsch', new_mdl1), pattern = '.dat')),
-                    overwrite = TRUE)
-  
-  # add env link to ctl file - something doesn't work here, change it manually
-  
-  # ctl <- r4ss::SS_readctl(here::here(asmnt_yr, 'rsch', base_mdl, list.files(here::here(asmnt_yr, 'rsch', base_mdl), pattern = 'ctl')),
-  #                         datlist = here::here(asmnt_yr, 'rsch', base_mdl, list.files(here::here(asmnt_yr, 'rsch', base_mdl), pattern = 'dat')[2]))
-  # 
-  # ctl$MG_parms$`env_var&link`[2:3] = 101
-  # 
-  # r4ss::SS_writectl(ctllist = ctl,
-  #                   outfile = here::here(asmnt_yr, 'rsch', new_base, list.files(here::here(asmnt_yr, 'rsch', new_mdl1), pattern = 'ctl')),
-  #                   overwrite = TRUE)
-  
-  # run model
-  run_ss_model(asmnt_yr, mdl = new_mdl1)
-}
-
-# read the model output and print diagnostic messages
-mdl1_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl1),
-                            verbose = TRUE,
-                            printstats = TRUE)
-
-# run retro
-if(isTRUE(run_retro)){
-  r4ss::SS_doRetro(masterdir = here::here(asmnt_yr, 'rsch', new_mdl1),
-                   oldsubdir = "",
-                   newsubdir = "retrospectives",
-                   years = 0:-ret_yr)
-}
-
-# get retro results
-retro_mdl1 <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
-  here::here(asmnt_yr, 'rsch', new_mdl1), "retrospectives",
-  paste("retro", 0:-ret_yr, sep = ""))))
-
-vroom::vroom_write(retro_mdl1$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_mdl1_likes.csv'), delim = ",")
-base::save(retro_mdl1, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_mdl1.RData'))
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# growth and llq env link model (model 2023.2) ----
-
-# copy over the stock synthesis model files to the new directory for model 2019.1b
-# start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_mdl1),
-#               to = here::here(asmnt_yr, 'rsch', new_mdl2))
-
-if(isTRUE(run_mdl)){
-  # read in env data
-  cfsr <- vroom::vroom(here::here(asmnt_yr, 'data', 'raw_cfsr.csv')) %>% 
-    dplyr::rename_with(., tolower) %>% 
-    tidytable::rename(l0_20 = '0_20',
-                      l20_40 = '20_40',
-                      l40_60 = '40_60',
-                      l60_80 = '60_80',
-                      l80plus = '80plus')
-  
-  # read in ss data
-  ss_dat <- r4ss::SS_readdat(here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')))
-  
-  cfsr %>% 
-    tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-    tidytable::filter(month == 3 & name == 'l40_60') %>% 
-    tidytable::mutate(Value = value - as.numeric(cfsr %>% 
-                                                   tidytable::pivot_longer(cols = c(l0_20, l20_40, l40_60, l60_80, l80plus)) %>% 
-                                                   tidytable::filter(month == 3 & name == 'l40_60' & year %in% 1982:2012) %>% 
-                                                   tidytable::summarise(mean(value))),
-                      Variable = 1) %>% 
-    tidytable::rename(Yr = year) %>% 
-    tidytable::select(Yr, Variable, Value) -> new_env1
-  
-  new_env1 %>% 
-    tidytable::bind_rows(ss_dat$envdat %>% 
-                           tidytable::filter(Variable != 1)) -> new_env
-  
-  ss_dat$envdat <- as.data.frame(new_env)
-  r4ss::SS_writedat(datlist = ss_dat, 
-                    outfile = here::here(asmnt_yr, 'rsch', new_mdl2, list.files(here::here(asmnt_yr, 'rsch', new_mdl2), pattern = '.dat')),
-                    overwrite = TRUE)
-  
-  # run model
-  run_ss_model(asmnt_yr, mdl = new_mdl2)
-  
-}
-
-
-# read the model output and print diagnostic messages
-mdl2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_mdl2),
-                            verbose = TRUE,
-                            printstats = TRUE)
-
-
-# run retro
-if(isTRUE(run_retro)){
-  r4ss::SS_doRetro(masterdir = here::here(asmnt_yr, 'rsch', new_mdl2),
-                   oldsubdir = "",
-                   newsubdir = "retrospectives",
-                   years = 0:-ret_yr)
-}
-
-# get retro results
-retro_mdl2 <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
-  here::here(asmnt_yr, 'rsch', new_mdl2), "retrospectives",
-  paste("retro", 0:-ret_yr, sep = ""))))
-
-vroom::vroom_write(retro_mdl2$likelihoods, here::here(asmnt_yr, 'rsch', 'output', 'retro_mdl2_likes.csv'), delim = ",")
-base::save(retro_mdl2, file = here::here(asmnt_yr, 'rsch', 'output', 'retro_mdl2.RData'))
-
-
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
