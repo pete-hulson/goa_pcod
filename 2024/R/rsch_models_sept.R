@@ -152,17 +152,33 @@ run_ss3_model(asmnt_yr,
               ctl_filename = "Model19_1e.ctl")
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# new base model with updated ageing error & fishery length comps & binning ----
+new_base_bin <- "2019.1f-2024"
 
+## copy ss input files ----
+start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
+              to = here::here(asmnt_yr, 'rsch', new_base_bin))
 
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_bin, 
+                 dat_filename = "GOAPcod2024Aug13_bin.dat",
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model19_1f.ctl")
 
+# correct max for length bins
+dat <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch', new_base_bin, "GOAPcod2024Aug13_bin.dat"))
+dat$maximum_size = max(dat$lbin_vector)
+r4ss::SS_writedat_3.30(dat,
+                       here::here(asmnt_yr, 'rsch', new_base_bin, "GOAPcod2024Aug13_bin.dat"), overwrite = TRUE)
 
-
-
-
-
-
-
-
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = new_base_bin,
+              ctl_filename = "Model19_1f.ctl")
 
 
 

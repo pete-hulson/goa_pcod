@@ -68,7 +68,7 @@ bin_width <- 1
 min_size <- 0.5
 max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
-len_bins2 = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5, 109.5, 114.5, 119.5)
+len_bins2 = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
 
 # set up needed folders ----
 
