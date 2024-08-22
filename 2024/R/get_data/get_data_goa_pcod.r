@@ -20,6 +20,7 @@
 #' @param update_ae switch to update ageing error
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size comes from surveyISS package (TRUE) or not (FALSE)
+#' @param bin_iss value for special case of iss based on bin size (e.g., 'bin2', default = NULL)
 #' @param max_age maximum age for age comps (default = 10)
 #' 
 
@@ -42,6 +43,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                               update_ae = FALSE,
                               ss3_frmt = TRUE,
                               iss = FALSE,
+                              bin_iss = NULL,
                               max_age = 10) {
   
   new_data$sourcefile <- new_file
@@ -112,7 +114,8 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_twl_lcomp <- get_twl_srvy_lcomp(new_year = new_year,
                                       bins = len_bins,
                                       ss3_frmt = ss3_frmt,
-                                      iss = iss)
+                                      iss = iss,
+                                      bin_iss = bin_iss)
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## afsc longline survey ----
@@ -162,7 +165,8 @@ get_data_goa_pcod <- function(new_data = new_data,
   ss3_twl_acomp <- get_twl_srvy_acomp(new_year = new_year,
                                       max_age = max_age,
                                       ss3_frmt = ss3_frmt,
-                                      iss = iss)
+                                      iss = iss,
+                                      bin_iss = bin_iss)
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## fishery -----
@@ -194,7 +198,8 @@ get_data_goa_pcod <- function(new_data = new_data,
                                     max_age = max_age,
                                     bins = len_bins,
                                     ss3_frmt = ss3_frmt,
-                                    iss = iss)
+                                    iss = iss,
+                                    bin_iss = bin_iss)
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey conditional age-at-length data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## fishery -----

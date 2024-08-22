@@ -6,6 +6,7 @@
 #' @param bins user defined length bins (min/max for the length bin, default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
+#' @param bin_iss value for special case of iss based on bin size (e.g., 'bin2', default = NULL)
 #' @param nsamp value or vector for input sample size (default = 100)
 #' 
 
@@ -13,6 +14,7 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
                                bins = NULL,
                                ss3_frmt = TRUE,
                                iss = FALSE,
+                               bin_iss = NULL,
                                nsamp = 100){
   
   # compute comps ----
@@ -42,14 +44,22 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
     ss3_args = c(7, 4, 0, 0)
     # define iss
     if(isTRUE(iss)){
-      nsamp = afscISS::get_ISS(species = 21720,
+      if(is.null(bin_iss)){
+      nsamp <- afscISS::get_ISS(species = 21720,
                                region = 'goa',
                                comp = 'length',
                                sex_cat = 4) %>% 
         tidytable::select(year, nsamp = iss)
-      
+      } else{
+        nsamp <- afscISS::get_ISS(species = 21720,
+                                  region = 'goa',
+                                  comp = 'length',
+                                  sex_cat = 4,
+                                  spec_case = bin_iss) %>% 
+          tidytable::select(year, nsamp = iss)
+      }
     } else{
-      nsamp = 100
+      nsamp <- 100
     }
     # get ss3 data
     ts_lcomp <- ss3_len_com(data = ts_lcomp,
@@ -123,6 +133,7 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
 #' @param max_age user defined maximum age (default = 10)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size time-dependent (TRUE) or constant (FALSE)
+#' @param bin_iss value for special case of iss based on bin size (e.g., 'bin2', default = NULL)
 #' @param nsamp value or vector for input sample size (default = 100)
 #' 
 
@@ -130,6 +141,7 @@ get_twl_srvy_acomp <- function(new_year = 9999,
                                max_age = 10,
                                ss3_frmt = TRUE,
                                iss = FALSE,
+                               bin_iss = NULL,
                                nsamp = 100){
   
   # compute comps ----
@@ -150,12 +162,20 @@ get_twl_srvy_acomp <- function(new_year = 9999,
     ss3_args = c(7, -4, 0, 0, 1, -1, -1)
     # define iss
     if(isTRUE(iss)){
-      nsamp = afscISS::get_ISS(species = 21720,
-                               region = 'goa',
-                               comp = 'age',
-                               sex_cat = 4) %>% 
-        tidytable::select(year, nsamp = iss)
-      
+      if(is.null(bin_iss)){
+        nsamp <- afscISS::get_ISS(species = 21720,
+                                  region = 'goa',
+                                  comp = 'age',
+                                  sex_cat = 4) %>% 
+          tidytable::select(year, nsamp = iss)
+      } else{
+        nsamp <- afscISS::get_ISS(species = 21720,
+                                  region = 'goa',
+                                  comp = 'age',
+                                  sex_cat = 4,
+                                  spec_case = bin_iss) %>% 
+          tidytable::select(year, nsamp = iss)
+      }
     } else{
       nsamp = 100
     }
@@ -178,13 +198,15 @@ get_twl_srvy_acomp <- function(new_year = 9999,
 #' @param bins user-defined length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size determined from surveyISS (TRUE) or not (FALSE)
+#' @param bin_iss value for special case of iss based on bin size (e.g., 'bin2', default = NULL)
 #' 
 
 get_twl_srvy_caal <- function(new_year = 9999,
                               max_age = 10,
                               bins = NULL,
                               ss3_frmt = TRUE,
-                              iss = FALSE){
+                              iss = FALSE,
+                              bin_iss = NULL){
   
   # compute conditional age-at-length  ----
   ts_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'))
@@ -217,23 +239,33 @@ get_twl_srvy_caal <- function(new_year = 9999,
       tidytable::select(-test) -> ts_caal
     # get iss
     if(isTRUE(iss)){
-      # get nsamp from surveyISS package
-      afscISS::get_ISS(species = 21720,
-                       region = 'goa',
-                       comp = 'caal',
-                       sex_cat = 4) %>% 
-        tidytable::select(year, length, nsamp = iss) -> nsamp1
-      
-      nsamp1 %>% 
-        tidytable::left_join(get_bin(nsamp1 %>% 
-                                       tidytable::distinct(length), bins)) %>% 
-        tidytable::select(year, length = new_length, nsamp) -> nsamp2
-      # take care of plus group
-      nsamp2 %>% 
-        tidytable::filter(length != max(len_bins)) %>% 
-        tidytable::bind_rows(nsamp %>% 
-                               tidytable::filter(length == max(len_bins)) %>% 
-                               tidytable::summarise(nsamp = mean(nsamp), .by = c(year, length))) -> nsamp
+      if(is.null(bin_iss)){
+        # get nsamp from surveyISS package
+        afscISS::get_ISS(species = 21720,
+                         region = 'goa',
+                         comp = 'caal',
+                         sex_cat = 4) %>% 
+          tidytable::select(year, length, nsamp = iss) -> nsamp1
+        
+        nsamp1 %>% 
+          tidytable::left_join(get_bin(nsamp1 %>% 
+                                         tidytable::distinct(length), bins)) %>% 
+          tidytable::select(year, length = new_length, nsamp) -> nsamp2
+        # take care of plus group
+        nsamp2 %>% 
+          tidytable::filter(length != max(len_bins)) %>% 
+          tidytable::bind_rows(nsamp2 %>% 
+                                 tidytable::filter(length == max(len_bins)) %>% 
+                                 tidytable::summarise(nsamp = mean(nsamp), .by = c(year, length))) -> nsamp
+      } else{
+        # get nsamp from surveyISS package
+        afscISS::get_ISS(species = 21720,
+                         region = 'goa',
+                         comp = 'caal',
+                         sex_cat = 4,
+                         spec_case = bin_iss) %>% 
+          tidytable::select(year, length, nsamp = iss) -> nsamp
+      }
     } else{
       # get nsamp as sample size multiplied by 0.14
       tidytable::expand_grid(year = sort(unique(ts_age$year)),
