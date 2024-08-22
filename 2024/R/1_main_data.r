@@ -66,9 +66,10 @@ new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # length bins to use for length comp data
 bin_width <- 1
 min_size <- 0.5
-max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
+max_size <- 100.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
-len_bins2 = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
+len_bins2 <- seq(min_size, max_size, 2)
+len_bins5 <- seq(min_size, max_size, 5)
 
 # set up needed folders ----
 
@@ -180,7 +181,7 @@ r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
 
-# get new ss3 dat with new len comp & new length bins
+# get new ss3 dat with new len comp & 2cm length bins
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
@@ -200,22 +201,41 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               ss3_frmt = TRUE, # format data for ss3 dat file
                               max_age = 10) # maximum age
 
-# new_data$lbin_vector_pop
-# new_data$N_lbinspop
-# new_data$lbin_method
-# new_data$binwidth
-# new_data$minimum_size
-# new_data$maximum_size
-# new_data$max_combined_lbin
-# new_data$use_lencomp
-
 new_data$N_lbins <- length(len_bins2)
 new_data$lbin_vector <- len_bins2
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin.dat")), overwrite = TRUE)
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin2.dat")), overwrite = TRUE)
+
+# get new ss3 dat with new len comp & 5cm length bins
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = FALSE,
+                              fsh_sp = "PCOD", # catch data species label
+                              fsh_sp_code = 202, # observer species code
+                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+                              twl_srvy = 47, # region of trawl survey
+                              srv_sp = 21720, # survey species code
+                              area = 'goa', # the fmp region for this stock
+                              indx = 'num', # type of survey index (numbers/biomass)
+                              run_glm = run_glm,
+                              len_bins = len_bins5,
+                              new_lcomp = TRUE, # use new method to get fishery length comps
+                              update_ae = FALSE, # update ageing error
+                              ss3_frmt = TRUE, # format data for ss3 dat file
+                              max_age = 10) # maximum age
+
+new_data$N_lbins <- length(len_bins5)
+new_data$lbin_vector <- len_bins5
+
+# Write out data script
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin5.dat")), overwrite = TRUE)
 
 # get ss3 ctl file ----
 
@@ -237,6 +257,10 @@ old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 4] <- 0
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 1] <- 0
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 4] <- 0
+old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "IPHCLL"), 1] <- 0
+old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "IPHCLL"), 4] <- 0
+old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "ADFG"), 1] <- 0
+old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "ADFG"), 4] <- 0
 
 ## reset params annually ----
 # reset end year in block designs

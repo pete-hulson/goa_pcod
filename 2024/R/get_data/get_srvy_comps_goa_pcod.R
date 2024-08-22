@@ -40,12 +40,23 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
   if(isTRUE(ss3_frmt)){
     # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part)
     ss3_args = c(7, 4, 0, 0)
+    # define iss
+    if(isTRUE(iss)){
+      nsamp = afscISS::get_ISS(species = 21720,
+                               region = 'goa',
+                               comp = 'length',
+                               sex_cat = 4) %>% 
+        tidytable::select(year, nsamp = iss)
+      
+    } else{
+      nsamp = 100
+    }
+    # get ss3 data
     ts_lcomp <- ss3_len_com(data = ts_lcomp,
-                            ss3_args = ss3_args,
-                            iss = FALSE,
-                            nsamp = 100)
+                            ss3_args,
+                            iss,
+                            nsamp)
   }
-  
   ts_lcomp
 }
 
@@ -137,10 +148,22 @@ get_twl_srvy_acomp <- function(new_year = 9999,
   if(isTRUE(ss3_frmt)){
     # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part, ageerr, lgin_lo, lgin_hi)
     ss3_args = c(7, -4, 0, 0, 1, -1, -1)
+    # define iss
+    if(isTRUE(iss)){
+      nsamp = afscISS::get_ISS(species = 21720,
+                               region = 'goa',
+                               comp = 'age',
+                               sex_cat = 4) %>% 
+        tidytable::select(year, nsamp = iss)
+      
+    } else{
+      nsamp = 100
+    }
+    # get ss3 data
     ts_acomp <- ss3_age_com(data = ts_acomp,
-                            ss3_args = ss3_args,
-                            iss = FALSE,
-                            nsamp = 100)
+                            ss3_args,
+                            iss,
+                            nsamp)
   }
   
   ts_acomp
@@ -154,12 +177,14 @@ get_twl_srvy_acomp <- function(new_year = 9999,
 #' @param max_age user defined maximum age (default = 10)
 #' @param bins user-defined length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
+#' @param iss test for whether input sample size determined from surveyISS (TRUE) or not (FALSE)
 #' 
 
 get_twl_srvy_caal <- function(new_year = 9999,
                               max_age = 10,
                               bins = NULL,
-                              ss3_frmt = TRUE){
+                              ss3_frmt = TRUE,
+                              iss = FALSE){
   
   # compute conditional age-at-length  ----
   ts_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'))
@@ -190,26 +215,46 @@ get_twl_srvy_caal <- function(new_year = 9999,
       tidytable::mutate(test = sum(caal), .by = c(year, length)) %>% 
       tidytable::filter(test > 0) %>% 
       tidytable::select(-test) -> ts_caal
-    
-    # get nsamp as sample size multiplied by 0.14
-    tidytable::expand_grid(year = sort(unique(ts_age$year)),
-                           length = bins) %>% 
-      tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_age$year)))) %>% 
-      tidytable::left_join(ts_age %>% 
-                             tidytable::select(year, length, age) %>% 
-                             tidytable::left_join(get_bin(ts_age %>% 
-                                                            tidytable::distinct(length), bins)) %>% 
-                             tidytable::select(year, age, , length = new_length)) %>% 
-      tidytable::drop_na() %>% 
-      tidytable::summarise(count = .N, .by = c(year, length)) %>% 
-      tidytable::mutate(nsamp = count * 0.14) %>% 
-      tidytable::select(-count) -> nsamp
-    
+    # get iss
+    if(isTRUE(iss)){
+      # get nsamp from surveyISS package
+      afscISS::get_ISS(species = 21720,
+                       region = 'goa',
+                       comp = 'caal',
+                       sex_cat = 4) %>% 
+        tidytable::select(year, length, nsamp = iss) -> nsamp1
+      
+      nsamp1 %>% 
+        tidytable::left_join(get_bin(nsamp1 %>% 
+                                       tidytable::distinct(length), bins)) %>% 
+        tidytable::select(year, length = new_length, nsamp) -> nsamp2
+      # take care of plus group
+      nsamp2 %>% 
+        tidytable::filter(length != max(len_bins)) %>% 
+        tidytable::bind_rows(nsamp %>% 
+                               tidytable::filter(length == max(len_bins)) %>% 
+                               tidytable::summarise(nsamp = mean(nsamp), .by = c(year, length))) -> nsamp
+    } else{
+      # get nsamp as sample size multiplied by 0.14
+      tidytable::expand_grid(year = sort(unique(ts_age$year)),
+                             length = bins) %>% 
+        tidytable::bind_cols(bin = rep(seq(1, length(bins)), length(unique(ts_age$year)))) %>% 
+        tidytable::left_join(ts_age %>% 
+                               tidytable::select(year, length, age) %>% 
+                               tidytable::left_join(get_bin(ts_age %>% 
+                                                              tidytable::distinct(length), bins)) %>% 
+                               tidytable::select(year, age, , length = new_length)) %>% 
+        tidytable::drop_na() %>% 
+        tidytable::summarise(count = .N, .by = c(year, length)) %>% 
+        tidytable::mutate(nsamp = count * 0.14) %>% 
+        tidytable::select(-count) -> nsamp
+    }
     # hard-wired in season, etc for ss3 in ss3_args c(seas, fltsrv, gender, part, ageerr, lgin_lo, lgin_hi)
     ss3_args = c(7, 4, 0, 0, 1)
+    # get ss3 data
     ts_caal <- ss3_caal(data = ts_caal,
-                        ss3_args = ss3_args,
-                        nsamp = nsamp)
+                        ss3_args,
+                        nsamp)
   }
   
   ts_caal
