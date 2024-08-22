@@ -40,7 +40,7 @@ old_dat_filename <- "GOAPcod2023Oct16.dat"
 old_ctl_filename <- "Model19_1b.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
+query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -65,7 +65,7 @@ new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # length bins to use for length comp data
 bin_width <- 1
 min_size <- 0.5
-max_size <- 100.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
+max_size <- 105.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
 len_bins2 <- seq(min_size, max_size, 2)
 len_bins5 <- seq(min_size, max_size, 5)
@@ -158,9 +158,6 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               iss = TRUE,
                               bin_iss = 'bin2')
 
-new_data$N_lbins <- length(len_bins2)
-new_data$lbin_vector <- len_bins2
-
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output",
@@ -176,9 +173,6 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               new_lcomp = TRUE, # use new method to get fishery length comps
                               iss = TRUE,
                               bin_iss = 'bin5')
-
-new_data$N_lbins <- length(len_bins5)
-new_data$lbin_vector <- len_bins5
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,

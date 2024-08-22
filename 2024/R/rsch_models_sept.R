@@ -36,8 +36,8 @@ ret_yr <- 10 # For full
 base_mdl <- "2019.1b-2023" # 2023 accepted model
 
 base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
-                            verbose = TRUE,
-                            printstats = TRUE)
+                               verbose = TRUE,
+                               printstats = TRUE)
 
 # retro_base <- r4ss::SSsummarize(r4ss::SSgetoutput(dirvec = file.path(
 #   here::here(asmnt_yr, 'rsch', base_mdl), "retrospectives",
@@ -215,14 +215,6 @@ run_ss3_model(asmnt_yr,
               mdl = new_base_lcomp,
               ctl_filename = "Model19_1e.ctl")
 
-# read the model output
-new_base_lcomp_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_lcomp))
-
-# plot results
-r4ss::SS_plots(new_base_lcomp_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_lcomp, "plots"))
-
 ## get and plot model output ----
 # get output
 new_base_lcomp_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_lcomp))
@@ -247,16 +239,16 @@ new_base_lcomp_mscen <- Do_AK_Scenarios(Model_name = new_base_lcomp,
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2 cm bin (2019.1f.2) ----
-new_base_bin <- "2019.1f.2-2024"
+new_base_bin2 <- "2019.1f.2-2024"
 
 ## copy ss input files ----
 start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
-              to = here::here(asmnt_yr, 'rsch', new_base_bin))
+              to = here::here(asmnt_yr, 'rsch', new_base_bin2))
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
-                 mdl = new_base_bin, 
+                 mdl = new_base_bin2, 
                  dat_filename = "GOAPcod2024Aug22_bin2.dat",
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1f.ctl")
@@ -264,51 +256,43 @@ update_ss3_files(asmnt_yr,
 ## run model ----
 run_ss3_model(asmnt_yr, 
               folder = 'rsch',
-              mdl = new_base_bin,
+              mdl = new_base_bin2,
               ctl_filename = "Model19_1f.ctl")
-
-# read the model output
-new_base_bin_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin))
-
-# plot results
-r4ss::SS_plots(new_base_bin_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
 
 ## get and plot model output ----
 # get output
-new_base_bin_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin))
+new_base_bin2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin2))
 # if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_bin, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_bin, 'plots'), recursive = TRUE)
+if(file.exists(here::here(asmnt_yr, 'rsch', new_base_bin2, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch', new_base_bin2, 'plots'), recursive = TRUE)
 }
 # plot results
-r4ss::SS_plots(new_base_bin_res,
+r4ss::SS_plots(new_base_bin2_res,
                printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
+               dir = here::here(asmnt_yr, 'rsch', new_base_bin2, "plots"))
 
 ## run management scens ----
-new_base_bin_mscen <- Do_AK_Scenarios(Model_name = new_base_bin,
-                                      Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin),
-                                      CYR = asmnt_yr,
-                                      SYR = 1977,
-                                      FCASTY = 15,
-                                      FLEETS = c(1:3),
-                                      do_fig = FALSE,
-                                      SEXES = 1)
+new_base_bin2_mscen <- Do_AK_Scenarios(Model_name = new_base_bin2,
+                                       Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin2),
+                                       CYR = asmnt_yr,
+                                       SYR = 1977,
+                                       FCASTY = 15,
+                                       FLEETS = c(1:3),
+                                       do_fig = FALSE,
+                                       SEXES = 1)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 5 cm bin (2019.1f.2) ----
-new_base_bin <- "2019.1f.5-2024"
+# 5 cm bin (2019.1f.5) ----
+new_base_bin5 <- "2019.1f.5-2024"
 
 ## copy ss input files ----
 start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
-              to = here::here(asmnt_yr, 'rsch', new_base_bin))
+              to = here::here(asmnt_yr, 'rsch', new_base_bin5))
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
-                 mdl = new_base_bin, 
+                 mdl = new_base_bin5, 
                  dat_filename = "GOAPcod2024Aug22_bin5.dat",
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1f.ctl")
@@ -316,66 +300,30 @@ update_ss3_files(asmnt_yr,
 ## run model ----
 run_ss3_model(asmnt_yr, 
               folder = 'rsch',
-              mdl = new_base_bin,
+              mdl = new_base_bin5,
               ctl_filename = "Model19_1f.ctl")
-
-# read the model output
-new_base_bin_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin))
-
-# plot results
-r4ss::SS_plots(new_base_bin_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
 
 ## get and plot model output ----
 # get output
-new_base_bin_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin))
+new_base_bin5_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_bin5))
 # if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_bin, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_bin, 'plots'), recursive = TRUE)
+if(file.exists(here::here(asmnt_yr, 'rsch', new_base_bin5, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch', new_base_bin5, 'plots'), recursive = TRUE)
 }
 # plot results
-r4ss::SS_plots(new_base_bin_res,
+r4ss::SS_plots(new_base_bin5_res,
                printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_bin, "plots"))
+               dir = here::here(asmnt_yr, 'rsch', new_base_bin5, "plots"))
 
 ## run management scens ----
-new_base_bin_mscen <- Do_AK_Scenarios(Model_name = new_base_bin,
-                                      Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin),
-                                      CYR = asmnt_yr,
-                                      SYR = 1977,
-                                      FCASTY = 15,
-                                      FLEETS = c(1:3),
-                                      do_fig = FALSE,
-                                      SEXES = 1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+new_base5_bin_mscen <- Do_AK_Scenarios(Model_name = new_base_bin5,
+                                       Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin5),
+                                       CYR = asmnt_yr,
+                                       SYR = 1977,
+                                       FCASTY = 15,
+                                       FLEETS = c(1:3),
+                                       do_fig = FALSE,
+                                       SEXES = 1)
 
 
 # plot comparisons ----
@@ -383,11 +331,11 @@ if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))){
   dir.create(here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'), recursive = TRUE)
 }
 
-base_summ <- r4ss::SSsummarize(list(base_res_23, update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin_res))
+base_summ <- r4ss::SSsummarize(list(base_res_23, update_base_res, new_base_res, new_base_ae_res, new_base_lcomp_res, new_base_bin2_res, new_base_bin5_res))
 
 r4ss::SSplotComparisons(base_summ,
                         print = TRUE,
-                        legendlabels = c(base_mdl, base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_bin),
+                        legendlabels = c(base_mdl, base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_bin2, new_base_bin5),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps'))
 
 

@@ -45,11 +45,11 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
     # define iss
     if(isTRUE(iss)){
       if(is.null(bin_iss)){
-      nsamp <- afscISS::get_ISS(species = 21720,
-                               region = 'goa',
-                               comp = 'length',
-                               sex_cat = 4) %>% 
-        tidytable::select(year, nsamp = iss)
+        nsamp <- afscISS::get_ISS(species = 21720,
+                                  region = 'goa',
+                                  comp = 'length',
+                                  sex_cat = 4) %>% 
+          tidytable::select(year, nsamp = iss)
       } else{
         nsamp <- afscISS::get_ISS(species = 21720,
                                   region = 'goa',

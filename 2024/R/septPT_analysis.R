@@ -129,13 +129,13 @@ fsh_len_f %>%
 
 # fishery length comps ----
 # length bins to use for length comp data
-bin_width <- 1
-min_size <- 0.5
-max_size <- 116.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
-len_bins <- seq(min_size, max_size, bin_width)
-
-len_bins2 = c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5, 109.5, 114.5, 119.5)
-
+  bin_width <- 1
+  min_size <- 0.5
+  max_size <- 105.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
+  len_bins <- seq(min_size, max_size, bin_width)
+  len_bins2 <- seq(min_size, max_size, 2)
+  len_bins5 <- seq(min_size, max_size, 5)
+  
 
 # get old way of doing comps
 lcomp_old <- get_fsh_len_post91(new_year,
@@ -145,9 +145,9 @@ lcomp_old <- get_fsh_len_post91(new_year,
 
 # old way with no filter
 lcomp_old_fltr <- get_fsh_len_post91(new_year,
-                                fltr = FALSE,
-                                bins = len_bins,
-                                ss3_frmt = FALSE)
+                                     fltr = FALSE,
+                                     bins = len_bins,
+                                     ss3_frmt = FALSE)
 
 # get new way of doing comps
 lcomp_new <- get_fsh_len_post91_new(new_year,
@@ -156,8 +156,14 @@ lcomp_new <- get_fsh_len_post91_new(new_year,
   tidytable::rename(new_lencomp = lencomp)
 
 # new way with new bins
-lcomp_new_bins <- get_fsh_len_post91_new(new_year,
+# 2 cm
+lcomp_new_bin2 <- get_fsh_len_post91_new(new_year,
                                          bins = len_bins2,
+                                         ss3_frmt = FALSE) %>% 
+  tidytable::rename(bin_lencomp = lencomp)
+# 5 cm
+lcomp_new_bin5 <- get_fsh_len_post91_new(new_year,
+                                         bins = len_bins5,
                                          ss3_frmt = FALSE) %>% 
   tidytable::rename(bin_lencomp = lencomp)
 
@@ -304,18 +310,26 @@ suppressWarnings(ggplot2::ggsave(pot_22,
 
 ## compare bins ----
 lcomp_new %>% 
-  tidytable::mutate(name = 'lcomp_new') %>% 
+  tidytable::mutate(name = 'lcomp_new',
+                    length = ceiling(length)) %>% 
   tidytable::rename(lencomp = new_lencomp) %>% 
-  tidytable::bind_rows(lcomp_new_bins %>% 
-                         tidytable::mutate(name = 'lcomp_new_bin') %>% 
+  tidytable::bind_rows(lcomp_new_bin2 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin2',
+                                           length = length + 1) %>% 
+                         tidytable::rename(lencomp = bin_lencomp)) %>% 
+  tidytable::bind_rows(lcomp_new_bin5 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin5',
+                                           length = length + 2.5) %>% 
                          tidytable::rename(lencomp = bin_lencomp)) %>% 
   tidytable::left_join(lcomp_new %>% 
                          tidytable::summarise(max_og = max(new_lencomp), .by = c(year, gear))) %>% 
-  tidytable::left_join(lcomp_new_bins %>% 
-                         tidytable::summarise(max_bin = max(bin_lencomp), .by = c(year, gear)))  %>% 
-  tidytable::mutate(length = ceiling(length),
-                    lencomp = tidytable::case_when(name %in% c('lcomp_old', 'lcomp_old_fltr', 'lcomp_new') ~ lencomp,
-                                                   name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) %>% 
+  tidytable::left_join(lcomp_new_bin2 %>% 
+                         tidytable::summarise(max_bin2 = max(bin_lencomp), .by = c(year, gear))) %>% 
+  tidytable::left_join(lcomp_new_bin5 %>% 
+                         tidytable::summarise(max_bin5 = max(bin_lencomp), .by = c(year, gear)))  %>% 
+  tidytable::mutate(lencomp = tidytable::case_when(name %in% c('lcomp_old', 'lcomp_old_fltr', 'lcomp_new') ~ lencomp,
+                                                   name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
+                                                   name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
   tidytable::filter(year <= 2023,
                     year >= 2018) -> dat
 
@@ -323,7 +337,7 @@ lcomp_new %>%
 ggplot(data = dat %>% tidytable::filter(gear == 'pot'), 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name), size = 0.5) +
+  geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -331,8 +345,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'pot'),
         axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
   labs(y = "Pot length composition", x = "Length (cm)") +
-  scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green')) -> bin_pot
+  scale_color_manual(values = c('blue', 'red', 'green')) +
+  scale_fill_manual(values = c('blue', 'red' , 'green')) -> bin_pot
 
 suppressWarnings(ggplot2::ggsave(bin_pot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_pot.png'),
@@ -342,7 +356,7 @@ suppressWarnings(ggplot2::ggsave(bin_pot,
 ggplot(data = dat %>% tidytable::filter(gear == 'trawl'), 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name), size = 0.5) +
+  geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -350,8 +364,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'trawl'),
         axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
   labs(y = "Trawl length composition", x = "Length (cm)") +
-  scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green')) -> bin_trawl
+  scale_color_manual(values = c('blue', 'red', 'green')) +
+  scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_trawl
 
 suppressWarnings(ggplot2::ggsave(bin_trawl,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_twl.png'),
@@ -361,7 +375,7 @@ suppressWarnings(ggplot2::ggsave(bin_trawl,
 ggplot(data = dat %>% tidytable::filter(gear == 'longline'), 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name), size = 0.5) +
+  geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -369,8 +383,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'longline'),
         axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
   labs(y = "Longline length composition", x = "Length (cm)") +
-  scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green')) -> bin_ll
+  scale_color_manual(values = c('blue', 'red', 'green')) +
+  scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll
 
 suppressWarnings(ggplot2::ggsave(bin_ll,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_ll.png'),
@@ -382,23 +396,37 @@ lcomp_srv <- get_twl_srvy_lcomp(new_year = new_year,
                                 bins = len_bins,
                                 ss3_frmt = FALSE)
 
-lcomp_srv_bins <- get_twl_srvy_lcomp(new_year = new_year,
+lcomp_srv_bin2 <- get_twl_srvy_lcomp(new_year = new_year,
                                      bins = len_bins2,
                                      ss3_frmt = FALSE) %>% 
   tidytable::rename(bin_lencomp = lencomp)
 
+lcomp_srv_bin5 <- get_twl_srvy_lcomp(new_year = new_year,
+                                     bins = len_bins5,
+                                     ss3_frmt = FALSE) %>% 
+  tidytable::rename(bin_lencomp = lencomp)
+
+
 lcomp_srv %>% 
-  tidytable::mutate(name = 'lcomp_new') %>% 
-  tidytable::bind_rows(lcomp_srv_bins %>% 
-                         tidytable::mutate(name = 'lcomp_new_bin') %>% 
+  tidytable::mutate(name = 'lcomp_new',
+                    length = ceiling(length)) %>% 
+  tidytable::bind_rows(lcomp_srv_bin2 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin2',
+                                           length = length + 1) %>% 
+                         tidytable::rename(lencomp = bin_lencomp)) %>% 
+  tidytable::bind_rows(lcomp_srv_bin5 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin5',
+                                           length = length + 2.5) %>% 
                          tidytable::rename(lencomp = bin_lencomp)) %>% 
   tidytable::left_join(lcomp_srv %>% 
                          tidytable::summarise(max_og = max(lencomp), .by = c(year))) %>% 
-  tidytable::left_join(lcomp_srv_bins %>% 
-                         tidytable::summarise(max_bin = max(bin_lencomp), .by = c(year)))  %>% 
-  tidytable::mutate(length = ceiling(length),
-                    lencomp = tidytable::case_when(name == 'lcomp_new' ~ lencomp,
-                                                   name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) %>% 
+  tidytable::left_join(lcomp_srv_bin2 %>% 
+                         tidytable::summarise(max_bin2 = max(bin_lencomp), .by = c(year))) %>% 
+  tidytable::left_join(lcomp_srv_bin5 %>% 
+                         tidytable::summarise(max_bin5 = max(bin_lencomp), .by = c(year)))  %>% 
+  tidytable::mutate(lencomp = tidytable::case_when(name %in% c('lcomp_old', 'lcomp_old_fltr', 'lcomp_new') ~ lencomp,
+                                                   name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
+                                                   name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
   tidytable::filter(year <= 2023,
                     year >= 2018) -> dat
 
@@ -406,7 +434,7 @@ lcomp_srv %>%
 ggplot(data = dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name), size = 0.5) +
+  geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -414,8 +442,8 @@ ggplot(data = dat,
         axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
   labs(y = "Trawl survey length composition", x = "Length (cm)") +
-  scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green')) -> bin_twl_srv
+  scale_color_manual(values = c('blue', 'red', 'green')) +
+  scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_twl_srv
 
 suppressWarnings(ggplot2::ggsave(bin_twl_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_tsrv.png'),
@@ -428,28 +456,38 @@ lcomp_srv <- get_ll_srvy_lcomp(new_year = new_year,
                                bins = len_bins,
                                ss3_frmt = FALSE)
 
-lcomp_srv_bins <- get_ll_srvy_lcomp(new_year = new_year,
+lcomp_srv_bin2 <- get_ll_srvy_lcomp(new_year = new_year,
                                     bins = len_bins2,
                                     ss3_frmt = FALSE)
 
+lcomp_srv_bin5 <- get_ll_srvy_lcomp(new_year = new_year,
+                                    bins = len_bins5,
+                                    ss3_frmt = FALSE)
+
 lcomp_srv %>% 
-  tidytable::mutate(name = 'lcomp_new') %>% 
-  tidytable::bind_rows(lcomp_srv_bins %>% 
-                         tidytable::mutate(name = 'lcomp_new_bin')) %>% 
-  tidytable::filter(year <= 2023,
-                    year >= 2018) %>% 
+  tidytable::mutate(name = 'lcomp_new',
+                    length = ceiling(length)) %>% 
+  tidytable::bind_rows(lcomp_srv_bin2 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin2',
+                                           length = length + 1)) %>% 
+  tidytable::bind_rows(lcomp_srv_bin5 %>% 
+                         tidytable::mutate(name = 'lcomp_new_bin5',
+                                           length = length + 2.5)) %>% 
   tidytable::left_join(lcomp_srv %>% 
                          tidytable::summarise(max_og = max(lencomp), .by = c(year))) %>% 
-  tidytable::left_join(lcomp_srv_bins %>% 
-                         tidytable::summarise(max_bin = max(lencomp), .by = c(year))) %>% 
-  tidytable::mutate(length = ceiling(length),
-                    lencomp = tidytable::case_when(name == 'lcomp_new' ~ lencomp,
-                                                   name == 'lcomp_new_bin' ~ -1 * lencomp * max_og / max_bin)) -> dat
-
+  tidytable::left_join(lcomp_srv_bin2 %>% 
+                         tidytable::summarise(max_bin2 = max(lencomp), .by = c(year))) %>% 
+  tidytable::left_join(lcomp_srv_bin5 %>% 
+                         tidytable::summarise(max_bin5 = max(lencomp), .by = c(year)))  %>% 
+  tidytable::mutate(lencomp = tidytable::case_when(name %in% c('lcomp_old', 'lcomp_old_fltr', 'lcomp_new') ~ lencomp,
+                                                   name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
+                                                   name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
+  tidytable::filter(year <= 2023,
+                    year >= 2018) -> dat
 
 ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name), size = 0.5) +
+  geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -457,8 +495,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
         axis.text.y = element_blank()) +
   facet_wrap( ~ year) +
   labs(y = "Longline survey length composition", x = "Length (cm)") +
-  scale_color_manual(values = c('blue', 'green')) +
-  scale_fill_manual(values = c('blue', 'green')) -> bin_ll_srv
+  scale_color_manual(values = c('blue', 'red', 'green')) +
+  scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll_srv
 
 suppressWarnings(ggplot2::ggsave(bin_ll_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_llsrv.png'),
