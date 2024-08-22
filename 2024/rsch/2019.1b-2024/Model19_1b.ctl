@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-08-20 15:38:18.596388
+#C file write time: 2024-08-22 11:26:52.14505
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -175,8 +175,8 @@
 10	0	0	0	#_3 FshPot  
 10	0	0	0	#_4 Srv     
 10	0	0	0	#_5 LLSrv   
-10	0	0	0	#_6 IPHCLL  
-10	0	0	0	#_7 ADFG    
+ 0	0	0	0	#_6 IPHCLL  
+ 0	0	0	0	#_7 ADFG    
  0	0	0	0	#_8 SPAWN   
  0	0	0	0	#_9 Seine   
 #
