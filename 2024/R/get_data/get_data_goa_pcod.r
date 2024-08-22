@@ -248,8 +248,12 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$ageerror <- data.frame(error)
   cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  # environmental data (look at old Steve function for other indices, this is trimmed down to LL survey q index) -----
+  # length bins ----
+  old_data$maximum_size <- max(len_bins)
+  old_data$N_lbins <- length(len_bins)
+  old_data$lbin_vector <- len_bins
   
+  # environmental data (look at old Steve function for other indices, this is trimmed down to LL survey q index) -----
   ss3_lls_env <- get_lls_env(new_year = new_year,
                              ss3_frmt = ss3_frmt,
                              var = 1)
