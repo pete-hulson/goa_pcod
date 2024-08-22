@@ -20,7 +20,8 @@ libs <- c("r4ss",
           "afscdata",
           "tidyverse",
           "vroom",
-          "here")
+          "here",
+          "afscISS")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
@@ -124,6 +125,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               new_lcomp = FALSE, # use new method to get fishery length comps
                               update_ae = FALSE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
+                              iss = TRUE, # use surveyISS
                               max_age = 10) # maximum age
 
 # Write out data script
@@ -174,6 +176,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               new_lcomp = TRUE, # use new method to get fishery length comps
                               update_ae = FALSE, # update ageing error
                               ss3_frmt = TRUE, # format data for ss3 dat file
+                              iss = TRUE, # use surveyISS
                               max_age = 10) # maximum age
 
 # Write out data script
@@ -181,61 +184,61 @@ r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
 
-# get new ss3 dat with new len comp & 2cm length bins
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              fsh_sp = "PCOD", # catch data species label
-                              fsh_sp_code = 202, # observer species code
-                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
-                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
-                              twl_srvy = 47, # region of trawl survey
-                              srv_sp = 21720, # survey species code
-                              area = 'goa', # the fmp region for this stock
-                              indx = 'num', # type of survey index (numbers/biomass)
-                              run_glm = run_glm,
-                              len_bins = len_bins2,
-                              new_lcomp = TRUE, # use new method to get fishery length comps
-                              update_ae = FALSE, # update ageing error
-                              ss3_frmt = TRUE, # format data for ss3 dat file
-                              max_age = 10) # maximum age
-
-new_data$N_lbins <- length(len_bins2)
-new_data$lbin_vector <- len_bins2
-
-# Write out data script
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin2.dat")), overwrite = TRUE)
-
-# get new ss3 dat with new len comp & 5cm length bins
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              fsh_sp = "PCOD", # catch data species label
-                              fsh_sp_code = 202, # observer species code
-                              fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
-                              fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
-                              twl_srvy = 47, # region of trawl survey
-                              srv_sp = 21720, # survey species code
-                              area = 'goa', # the fmp region for this stock
-                              indx = 'num', # type of survey index (numbers/biomass)
-                              run_glm = run_glm,
-                              len_bins = len_bins5,
-                              new_lcomp = TRUE, # use new method to get fishery length comps
-                              update_ae = FALSE, # update ageing error
-                              ss3_frmt = TRUE, # format data for ss3 dat file
-                              max_age = 10) # maximum age
-
-new_data$N_lbins <- length(len_bins5)
-new_data$lbin_vector <- len_bins5
-
-# Write out data script
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin5.dat")), overwrite = TRUE)
+# # get new ss3 dat with new len comp & 2cm length bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               fsh_sp = "PCOD", # catch data species label
+#                               fsh_sp_code = 202, # observer species code
+#                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+#                               fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+#                               twl_srvy = 47, # region of trawl survey
+#                               srv_sp = 21720, # survey species code
+#                               area = 'goa', # the fmp region for this stock
+#                               indx = 'num', # type of survey index (numbers/biomass)
+#                               run_glm = run_glm,
+#                               len_bins = len_bins2,
+#                               new_lcomp = TRUE, # use new method to get fishery length comps
+#                               update_ae = FALSE, # update ageing error
+#                               ss3_frmt = TRUE, # format data for ss3 dat file
+#                               max_age = 10) # maximum age
+# 
+# new_data$N_lbins <- length(len_bins2)
+# new_data$lbin_vector <- len_bins2
+# 
+# # Write out data script
+# r4ss::SS_writedat_3.30(new_data,
+#                        here::here(new_dat_year, "output", 
+#                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin2.dat")), overwrite = TRUE)
+# 
+# # get new ss3 dat with new len comp & 5cm length bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               fsh_sp = "PCOD", # catch data species label
+#                               fsh_sp_code = 202, # observer species code
+#                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"), # the fishery sub-areas
+#                               fsh_age_st_yr = 2007, # year in which to start the fishery age comp data
+#                               twl_srvy = 47, # region of trawl survey
+#                               srv_sp = 21720, # survey species code
+#                               area = 'goa', # the fmp region for this stock
+#                               indx = 'num', # type of survey index (numbers/biomass)
+#                               run_glm = run_glm,
+#                               len_bins = len_bins5,
+#                               new_lcomp = TRUE, # use new method to get fishery length comps
+#                               update_ae = FALSE, # update ageing error
+#                               ss3_frmt = TRUE, # format data for ss3 dat file
+#                               max_age = 10) # maximum age
+# 
+# new_data$N_lbins <- length(len_bins5)
+# new_data$lbin_vector <- len_bins5
+# 
+# # Write out data script
+# r4ss::SS_writedat_3.30(new_data,
+#                        here::here(new_dat_year, "output", 
+#                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin5.dat")), overwrite = TRUE)
 
 # get ss3 ctl file ----
 
