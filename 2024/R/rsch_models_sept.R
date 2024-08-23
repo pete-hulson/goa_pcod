@@ -89,14 +89,11 @@ r4ss::SS_plots(update_base_res,
                dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
 
 ## run management scens ----
-update_base_mscen <- Do_AK_Scenarios(Model_name = base_mdl_update,
-                                     Model_dir = here::here(asmnt_yr, 'rsch', base_mdl_update),
-                                     CYR = asmnt_yr,
-                                     SYR = 1977,
-                                     FCASTY = 15,
-                                     FLEETS = c(1:3),
-                                     do_fig = FALSE,
-                                     SEXES = 1)
+update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', base_mdl_update), 
+                                            CYR = asmnt_yr,  
+                                            FLEETS = c(1:3),
+                                            do_fig = FALSE,
+                                            do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new base model  (2019.1c) ----
@@ -139,14 +136,11 @@ r4ss::SS_plots(new_base_res,
                dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
 
 ## run management scens ----
-new_base_mscen <- Do_AK_Scenarios(Model_name = new_base,
-                                  Model_dir = here::here(asmnt_yr, 'rsch', new_base),
-                                  CYR = asmnt_yr,
-                                  SYR = 1977,
-                                  FCASTY = 15,
-                                  FLEETS = c(1:3),
-                                  do_fig = FALSE,
-                                  SEXES = 1)
+new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base), 
+                                         CYR = asmnt_yr,  
+                                         FLEETS = c(1:3),
+                                         do_fig = FALSE,
+                                         do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # update ageing error (2019.1d) ----
@@ -183,14 +177,11 @@ r4ss::SS_plots(new_base_ae_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
 
 ## run management scens ----
-new_base_ae_mscen <- Do_AK_Scenarios(Model_name = new_base_ae,
-                                     Model_dir = here::here(asmnt_yr, 'rsch', new_base_ae),
-                                     CYR = asmnt_yr,
-                                     SYR = 1977,
-                                     FCASTY = 15,
-                                     FLEETS = c(1:3),
-                                     do_fig = FALSE,
-                                     SEXES = 1)
+new_base_ae_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_ae), 
+                                            CYR = asmnt_yr,  
+                                            FLEETS = c(1:3),
+                                            do_fig = FALSE,
+                                            do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # new fishery length comps (2019.1e) ----
@@ -228,14 +219,11 @@ r4ss::SS_plots(new_base_lcomp_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp, "plots"))
 
 ## run management scens ----
-new_base_lcomp_mscen <- Do_AK_Scenarios(Model_name = new_base_lcomp,
-                                        Model_dir = here::here(asmnt_yr, 'rsch', new_base_lcomp),
-                                        CYR = asmnt_yr,
-                                        SYR = 1977,
-                                        FCASTY = 15,
-                                        FLEETS = c(1:3),
-                                        do_fig = FALSE,
-                                        SEXES = 1)
+new_base_lcomp_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp), 
+                                               CYR = asmnt_yr,  
+                                               FLEETS = c(1:3),
+                                               do_fig = FALSE,
+                                               do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2 cm bin (2019.1f.2) ----
@@ -272,14 +260,11 @@ r4ss::SS_plots(new_base_bin2_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_bin2, "plots"))
 
 ## run management scens ----
-new_base_bin2_mscen <- Do_AK_Scenarios(Model_name = new_base_bin2,
-                                       Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin2),
-                                       CYR = asmnt_yr,
-                                       SYR = 1977,
-                                       FCASTY = 15,
-                                       FLEETS = c(1:3),
-                                       do_fig = FALSE,
-                                       SEXES = 1)
+new_base_bin2_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_bin2), 
+                                              CYR = asmnt_yr,  
+                                              FLEETS = c(1:3),
+                                              do_fig = FALSE,
+                                              do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 5 cm bin (2019.1f.5) ----
@@ -316,14 +301,11 @@ r4ss::SS_plots(new_base_bin5_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_bin5, "plots"))
 
 ## run management scens ----
-new_base5_bin_mscen <- Do_AK_Scenarios(Model_name = new_base_bin5,
-                                       Model_dir = here::here(asmnt_yr, 'rsch', new_base_bin5),
-                                       CYR = asmnt_yr,
-                                       SYR = 1977,
-                                       FCASTY = 15,
-                                       FLEETS = c(1:3),
-                                       do_fig = FALSE,
-                                       SEXES = 1)
+new_base5_bin_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_bin5), 
+                                              CYR = asmnt_yr,  
+                                              FLEETS = c(1:3),
+                                              do_fig = FALSE,
+                                              do_mark = FALSE)
 
 
 # plot comparisons ----
@@ -343,11 +325,13 @@ vroom::vroom_write(base_summ$likelihoods, here::here(asmnt_yr, 'rsch', 'output',
 vroom::vroom_write(base_summ$likelihoods_by_fleet, here::here(asmnt_yr, 'rsch', 'output', 'plots', 'comps', 'base_summ_likes_by_fleet.csv'), delim = ",")
 
 
-
-
-
-
-
+abc_comp <- data.frame(model = c(base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_bin2, new_base_bin5)) %>% 
+  tidytable::bind_cols(data.frame(abc = update_base_mscen$Two_year$C_ABC[1]) %>% 
+                         tidytable::bind_rows(data.frame(abc = new_base_mscen$Two_year$C_ABC[1])) %>% 
+                         tidytable::bind_rows(data.frame(abc = new_base_ae_mscen$Two_year$C_ABC[1])) %>% 
+                         tidytable::bind_rows(data.frame(abc = new_base_lcomp_mscen$Two_year$C_ABC[1])) %>% 
+                         tidytable::bind_rows(data.frame(abc = new_base_bin2_mscen$Two_year$C_ABC[1])) %>% 
+                         tidytable::bind_rows(data.frame(abc = new_base_bin5_mscen$Two_year$C_ABC[1])))
 
 
 

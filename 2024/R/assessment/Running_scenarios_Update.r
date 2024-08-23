@@ -81,7 +81,7 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
    setwd(file.path(DIR,"scenario_1"))
 
 ## have to run scenario 1 first to get the forecast parameters for scenarios 6 and 7
-   r4ss::run(exe = "ss", skipfinished = FALSE, verbose = TRUE)
+   r4ss::run(exe = "ss3", skipfinished = FALSE, verbose = TRUE)
 
 ## setting up parallel computing    
 	# Get the number of available cores
@@ -190,7 +190,7 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
 	
 	setwd(DIR)
 	scenarios <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8")
-	mods1<-SSgetoutput(dirvec=scenarios[1:8])
+	mods1<-r4ss::SSgetoutput(dirvec=scenarios[1:8])
 
 # Calculate the year index for the summary statistics
 	EYR<- CYR+FCASTY
@@ -205,7 +205,7 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
   		SUMM <- data.table(mod$timeseries)[Yr %in% Yrs]$Bio_smry
   		SSB <- data.table(mod$timeseries)[Yr %in% Yrs]$SpawnBio / sex
   		std <- data.table(mod$stdtable)[name %like% "SSB"][3:yr1, ]$std / sex
-  		F <- data.table(mod$sprseries)[Yr %in% Yrs]$F_report
+  		F <- data.table(mod$sprseries)[Yr %in% Yrs]$maxF_1
   		Catch <- data.table(mod$sprseries)[Yr %in% Yrs]$Enc_Catch
   		SSB_unfished <- data.table(mod$derived_quants)[Label == "SSB_unfished"]$Value / sex
   		model <- scenarios[i]
