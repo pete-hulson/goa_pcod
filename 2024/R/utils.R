@@ -6,11 +6,13 @@
 #' @param folder root foloder containing models (default = NULL)
 #' @param mdl name of model to run (default = NULL)
 #' @param ctl_filename name of ctl file in which to adjust recruitment ramp parameters (default = NULL)
+#' @param iters the number of iters to run for rec ramp (default = 2)
 #' 
 run_ss3_model <- function(asmnt_yr = NULL, 
                           folder = NULL,
                           mdl = NULL, 
-                          ctl_filename = NULL){
+                          ctl_filename = NULL,
+                          iters = 2){
   
   # run iniital model
   # if par file doesn't exist then run without initial conditions, otherwise, use par file
@@ -62,7 +64,7 @@ run_ss3_model <- function(asmnt_yr = NULL,
   }
   
   # iterate model twice to get recruitment bias ramp
-  purrr::map(1:2, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
+  purrr::map(1:iters, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
   
 }
 #' function to update ss3 model dat, ctl, and starter files
