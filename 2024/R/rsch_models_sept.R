@@ -17,6 +17,9 @@ lapply(libs, library, character.only = TRUE)
 # assessment year
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
+# day data pulled
+dat_dat <- "Aug22"
+
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
 purrr::map(here::here(asmnt_yr, "R", "assessment", source_files), source)
@@ -50,8 +53,10 @@ base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
 base_mdl_update <- "2019.1b-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
-              to = here::here(asmnt_yr, 'rsch', base_mdl_update))
+if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
+                to = here::here(asmnt_yr, 'rsch', base_mdl_update))
+}
 
 # set up forecast file (with generic blocks for years so won't need to update in the future)
 forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, 'rsch', base_mdl_update, 'forecast.ss'))
@@ -65,7 +70,7 @@ r4ss::SS_writeforecast(mylist = forecast,
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = base_mdl_update, 
-                 dat_filename = "GOAPcod2024Aug22_old.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_old.dat"),
                  ctl_in = "Model19_1b.ctl",
                  ctl_out = "Model19_1b.ctl")
 
@@ -106,14 +111,16 @@ update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', b
 new_base <- "2019.1c-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
-              to = here::here(asmnt_yr, 'rsch', new_base))
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                to = here::here(asmnt_yr, 'rsch', new_base))
+}
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = new_base, 
-                 dat_filename = "GOAPcod2024Aug22.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, ".dat"),
                  ctl_in = "Model19_1b.ctl",
                  ctl_out = "Model19_1c.ctl")
 
@@ -147,14 +154,16 @@ new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_
 new_base_ae <- "2019.1d-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-              to = here::here(asmnt_yr, 'rsch', new_base_ae))
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_ae, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
+                to = here::here(asmnt_yr, 'rsch', new_base_ae))
+}
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = new_base_ae, 
-                 dat_filename = "GOAPcod2024Aug22.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, ".dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1d.ctl")
 
@@ -189,14 +198,16 @@ new_base_ae_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', n
 new_base_lcomp <- "2019.1e-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_ae),
-              to = here::here(asmnt_yr, 'rsch', new_base_lcomp))
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_lcomp, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_ae),
+                to = here::here(asmnt_yr, 'rsch', new_base_lcomp))
+}
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = new_base_lcomp, 
-                 dat_filename = "GOAPcod2024Aug22_lcomp.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1e.ctl")
 
@@ -230,14 +241,16 @@ new_base_lcomp_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch'
 new_base_bin2 <- "2019.1f.2-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
-              to = here::here(asmnt_yr, 'rsch', new_base_bin2))
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_bin2, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
+                to = here::here(asmnt_yr, 'rsch', new_base_bin2))
+}
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = new_base_bin2, 
-                 dat_filename = "GOAPcod2024Aug22_bin2.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin2.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1f.ctl")
 
@@ -271,14 +284,16 @@ new_base_bin2_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch',
 new_base_bin5 <- "2019.1f.5-2024"
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
-              to = here::here(asmnt_yr, 'rsch', new_base_bin5))
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_bin5, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp),
+                to = here::here(asmnt_yr, 'rsch', new_base_bin5))
+}
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
                  folder = 'rsch',
                  mdl = new_base_bin5, 
-                 dat_filename = "GOAPcod2024Aug22_bin5.dat",
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin5.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1f.ctl")
 
@@ -361,30 +376,28 @@ vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', '
 new_base_twlsel <- "2024.0-2024"
 base_mdl <- new_base_bin5
 base_mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl))
-  
+
 ## copy ss input files ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel))){
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'ss3.exe'))){
   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl),
                 to = here::here(asmnt_yr, 'rsch', new_base_twlsel))
 }
 
 ## update files ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'Model24_0.ctl'))){
-  update_ss3_files(asmnt_yr, 
-                   folder = 'rsch',
-                   mdl = new_base_twlsel, 
-                   dat_filename = "GOAPcod2024Aug22_bin5.dat",
-                   ctl_in = "updated_ae.ctl",
-                   ctl_out = "Model24_0.ctl")
-}
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_twlsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model24_0.ctl")
+
 
 ## change selex in ctl ----
 
 # copy data_echo.ss_new file so you can read ctl file
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))){
-  file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
-            here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))
-}
+file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
+          here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))
+
 
 # read ctl file
 # read in previous assessment ss3 ctl
@@ -455,28 +468,24 @@ base_mdl <- new_base_twlsel
 base_mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl))
 
 ## copy ss input files ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex))){
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'ss3.exe'))){
   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl),
                 to = here::here(asmnt_yr, 'rsch', new_base_selex))
 }
 
 ## update files ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_1.ctl'))){
-  update_ss3_files(asmnt_yr, 
-                   folder = 'rsch',
-                   mdl = new_base_selex, 
-                   dat_filename = "GOAPcod2024Aug22_bin5.dat",
-                   ctl_in = "updated_ae.ctl",
-                   ctl_out = "Model24_1.ctl")
-}
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_selex, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model24_1.ctl")
 
 ## change selex in ctl ----
 
 # copy data_echo.ss_new file so you can read ctl file
-if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))){
-  file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
-            here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))
-}
+file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
+          here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))
 
 # read ctl file
 # read in previous assessment ss3 ctl
@@ -548,10 +557,6 @@ new_base_selex_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch'
                                                FLEETS = c(1:3),
                                                do_fig = FALSE,
                                                do_mark = FALSE)
-
-
-
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot model comparisons ----
