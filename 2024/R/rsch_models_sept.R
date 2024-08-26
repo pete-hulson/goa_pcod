@@ -359,24 +359,32 @@ vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', '
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # time-invariant trawl survey selex (2024.0) ----
 new_base_twlsel <- "2024.0-2024"
-
+base_mdl <- new_base_bin5
+base_mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl))
+  
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_bin5),
-              to = here::here(asmnt_yr, 'rsch', new_base_twlsel))
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl),
+                to = here::here(asmnt_yr, 'rsch', new_base_twlsel))
+}
 
 ## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_twlsel, 
-                 dat_filename = "GOAPcod2024Aug22_bin5.dat",
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_0.ctl")
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'Model24_0.ctl'))){
+  update_ss3_files(asmnt_yr, 
+                   folder = 'rsch',
+                   mdl = new_base_twlsel, 
+                   dat_filename = "GOAPcod2024Aug22_bin5.dat",
+                   ctl_in = "updated_ae.ctl",
+                   ctl_out = "Model24_0.ctl")
+}
 
 ## change selex in ctl ----
 
 # copy data_echo.ss_new file so you can read ctl file
-file.copy(here::here(asmnt_yr, 'rsch', new_base_bin5, 'data_echo.ss_new'),
-          here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))){
+  file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
+            here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'))
+}
 
 # read ctl file
 # read in previous assessment ss3 ctl
@@ -391,20 +399,21 @@ ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_
                                                         length(rownames(ctl$size_selex_parms_tv))),]
 
 # set init params at most recent values
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)')] <- new_base_bin5_res$estimated_non_dev_parameters$Value[which(rownames(new_base_bin5_res$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)_BLK1repl_2006')]
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_Srv(4)')] <- new_base_bin5_res$estimated_non_dev_parameters$Value[which(rownames(new_base_bin5_res$estimated_non_dev_parameters) == 'Size_DblN_top_logit_Srv(4)_BLK1repl_2006')]
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_Srv(4)')] <- new_base_bin5_res$estimated_non_dev_parameters$Value[which(rownames(new_base_bin5_res$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_Srv(4)_BLK1repl_2006')]
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] <- new_base_bin5_res$estimated_non_dev_parameters$Value[which(rownames(new_base_bin5_res$estimated_non_dev_parameters) == 'Size_DblN_descend_se_Srv(4)_BLK1repl_2006')]
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- new_base_bin5_res$estimated_non_dev_parameters$Value[which(rownames(new_base_bin5_res$estimated_non_dev_parameters) == 'Size_DblN_start_logit_Srv(4)_BLK1repl_2006')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)_BLK1repl_2006')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_Srv(4)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_top_logit_Srv(4)_BLK1repl_2006')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_Srv(4)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_Srv(4)_BLK1repl_2006')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_descend_se_Srv(4)_BLK1repl_2006')]
+# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_start_logit_Srv(4)_BLK1repl_2006')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- -999
 ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
 
+# freeze ll srv to logistic
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
+
 # fix width of srvy selex
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)')] <- -2
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_Srv(4)')] <- -2
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_Srv(4)')] <- -2
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] <- -2
 ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- -2
 ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
+ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
 
 # write new ctl file
 r4ss::SS_writectl_3.30(ctllist = ctl,
@@ -442,28 +451,37 @@ new_base_twlsel_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # time-invariant selex (2024.1) ----
 new_base_selex <- "2024.1-2024"
+base_mdl <- new_base_twlsel
+base_mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl))
 
 ## copy ss input files ----
-start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_twlsel),
-              to = here::here(asmnt_yr, 'rsch', new_base_selex))
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl),
+                to = here::here(asmnt_yr, 'rsch', new_base_selex))
+}
 
 ## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_selex, 
-                 dat_filename = "GOAPcod2024Aug22_bin5.dat",
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_1.ctl")
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_1.ctl'))){
+  update_ss3_files(asmnt_yr, 
+                   folder = 'rsch',
+                   mdl = new_base_selex, 
+                   dat_filename = "GOAPcod2024Aug22_bin5.dat",
+                   ctl_in = "updated_ae.ctl",
+                   ctl_out = "Model24_1.ctl")
+}
 
 ## change selex in ctl ----
 
 # copy data_echo.ss_new file so you can read ctl file
-file.copy(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'data_echo.ss_new'),
-          here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))
+if (!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))){
+  file.copy(here::here(asmnt_yr, 'rsch', base_mdl, 'data_echo.ss_new'),
+            here::here(asmnt_yr, 'rsch', new_base_selex, 'data_echo.ss_new'))
+}
 
 # read ctl file
 # read in previous assessment ss3 ctl
 ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_1.ctl'))
+
 # set td pars to 0
 ctl$size_selex_parms$dev_link <- 0
 ctl$size_selex_parms$dev_minyr <- 0
@@ -474,6 +492,32 @@ ctl$size_selex_parms$Block_Fxn <- 0
 
 # remove from tv section
 ctl$size_selex_parms_tv <- NULL
+
+# set init params at most recent values
+
+# trawl fishery
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshTrawl(1)')] <- 77.2556
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_FshTrawl(1)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshTrawl(1)_BLK2repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshTrawl(1)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshTrawl(1)_BLK2repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_FshTrawl(1)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_descend_se_FshTrawl(1)_BLK2repl_2017')]
+
+# ll fishery
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshLL(2)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_peak_FshLL(2)_BLK2repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_FshLL(2)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshLL(2)_BLK2repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshLL(2)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshLL(2)_BLK2repl_2017')]
+
+# pot fishery
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshPot(3)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_peak_FshPot(3)_BLK3repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_FshPot(3)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshPot(3)_BLK3repl_2017')]
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshPot(3)')] <- base_mdl_res$estimated_non_dev_parameters$Value[which(rownames(base_mdl_res$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshPot(3)_BLK3repl_2017')]
+
+# fix srvys at asymptotic
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- -999
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
+ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
+ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] <- -2
+ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
+ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
 
 # write new ctl file
 r4ss::SS_writectl_3.30(ctllist = ctl,

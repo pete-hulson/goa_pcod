@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1952.23899582396 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1989.00643017102 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.89517459337 #_last_yr_fullbias_adj_in_MPD
-2023.19327618113 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.917020220604986 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1955.59276509745 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1986.92456810767 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2022.91452741301 #_last_yr_fullbias_adj_in_MPD
+2023.01465072138 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.910838725881275 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -182,21 +182,21 @@
 #
 #_SizeSelex
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE	env-var	use_dev	dev_mnyr	dev_mxyr	dev_PH	Block	Blk_Fxn  #  parm_name
-   10	    110	  57.6551	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshTrawl(1)
-  -20	     10	 -4.57915	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshTrawl(1)
-  -10	     10	  5.09148	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshTrawl(1)
-  -10	     10	-0.301675	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_4_FshTrawl(1)
+   10	    110	  77.2556	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshTrawl(1)
+  -20	     10	-0.520237	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshTrawl(1)
+  -10	     10	   6.0256	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshTrawl(1)
+  -10	     10	  5.16501	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_4_FshTrawl(1)
 -1000	2.71828	     -999	-10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_5_FshTrawl(1)
   -10	     10	       10	 10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_6_FshTrawl(1)
-   10	     90	  66.4253	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshLL(2)   
-  -20	     10	 -5.06337	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshLL(2)   
-  -10	     10	  5.14687	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshLL(2)   
+   10	     90	  82.5903	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshLL(2)   
+  -20	     10	 -4.72505	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshLL(2)   
+  -10	     10	  5.90993	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshLL(2)   
     0	     10	       10	 10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_4_FshLL(2)   
 -1000	2.71828	     -999	-10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_5_FshLL(2)   
   -10	     10	       10	 10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_6_FshLL(2)   
-   10	     90	  70.7282	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshPot(3)  
-  -20	     10	 -12.0643	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshPot(3)  
-  -10	     10	  5.01625	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshPot(3)  
+   10	     90	  80.3864	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_FshPot(3)  
+  -20	     10	  2.07544	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_FshPot(3)  
+  -10	     10	  5.60724	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_FshPot(3)  
     0	     10	   4.0558	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_4_FshPot(3)  
 -1000	2.71828	     -999	-10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_5_FshPot(3)  
   -10	     10	 0.284913	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_6_FshPot(3)  
@@ -204,14 +204,14 @@
   -20	     10	 -11.9482	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_Srv(4)     
   -10	     10	  5.54831	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_Srv(4)     
     0	     10	   3.9945	 10	0	0	 5	0	0	0	0	0	0	0	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	 -3.10266	-10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_5_Srv(4)     
-  -10	     10	 -0.66555	 10	0	0	 5	0	0	0	0	0	0	0	#_SizeSel_P_6_Srv(4)     
+  -10	2.71828	     -999	-10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_5_Srv(4)     
+  -10	     10	       10	 10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	0	0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_2_LLSrv(5)   
   -10	     10	  4.68122	  0	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_3_LLSrv(5)   
     0	     10	  4.64978	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_4_LLSrv(5)   
 -1000	2.71828	     -999	-10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_5_LLSrv(5)   
-  -10	     10	-0.466947	 10	0	0	 2	0	0	0	0	0	0	0	#_SizeSel_P_6_LLSrv(5)   
+  -10	     10	       10	 10	0	0	-2	0	0	0	0	0	0	0	#_SizeSel_P_6_LLSrv(5)   
 #_AgeSelex
 #_No age_selex_parm
 #_no timevary selex parameters
