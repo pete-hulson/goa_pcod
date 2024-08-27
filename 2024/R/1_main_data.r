@@ -124,20 +124,22 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins2,
-                              iss = TRUE)
+                              iss = TRUE,
+                              bin_iss = 'bin2')
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin2.dat")), overwrite = TRUE)
 
-# get new ss3 dat (updated base) with 2 cm bins
+# get new ss3 dat (updated base) with 5 cm bins
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins5,
-                              iss = TRUE)
+                              iss = TRUE,
+                              bin_iss = 'bin5')
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
