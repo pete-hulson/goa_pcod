@@ -349,7 +349,9 @@ get_fsh_len_post91 <- function(new_year = 9999,
     tidytable::left_join(state_test) %>% 
     tidytable::filter(is.na(state)) %>% 
     tidytable::left_join(fsh_len_full_f %>%
-                           tidytable::summarise(nsamp = length(unique(haul_join)),
+                           # unique cruise-permit-haul description
+                           tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
+                           tidytable::summarise(nsamp = length(unique(haul1)),
                                                 .by = c(year, trimester, area, gear))) %>% 
     tidytable::mutate(state = tidytable::replace_na(state, 0),
                       nsamp = tidytable::replace_na(nsamp, 0)) %>% 
