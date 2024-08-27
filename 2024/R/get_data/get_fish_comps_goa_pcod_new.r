@@ -169,13 +169,16 @@ get_fsh_len_post91_new <- function(new_year = 9999,
                                                          month >= 9 ~ 3,
                                                          .default = 1)) %>% 
       tidytable::select(year, area, gear = gear1, trimester, sex, length, freq) %>% 
-      tidytable::summarise(nsamp_s = round(sum(freq) / 50), .by = c(year, gear)) %>% 
+      tidytable::summarise(nsamp_s = round(sum(freq) / 50), .by = c(year, gear)) %>%
       tidytable::mutate(nsamp_s = tidytable::case_when(nsamp_s > 200 ~ 200,
                                                        .default = nsamp_s)) -> nsamp_s
     nsamp_f %>% 
       tidytable::full_join(nsamp_s) %>% 
-      tidytable::mutate(nsamp = tidytable::case_when(!is.na(nsamp_f) ~ nsamp_f,
-                                                     is.na(nsamp_f) ~ nsamp_s)) %>% 
+      tidytable::mutate(nsamp_f = tidytable::replace_na(nsamp_f, 0),
+                        nsamp_s = tidytable::replace_na(nsamp_s, 0)) %>% 
+      tidytable::mutate(nsamp = nsamp_f + nsamp_s) %>%
+      tidytable::mutate(nsamp = tidytable::case_when(nsamp > 200 ~ 200,
+                                                     .default = nsamp)) %>% 
       tidytable::select(year, gear, nsamp) -> nsamp
     # format data
     fsh_lcomp <- ss3_len_com_fsh(fsh_lcomp, ss3_args, nsamp)
