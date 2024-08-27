@@ -40,7 +40,7 @@ old_dat_filename <- "GOAPcod2023Oct16.dat"
 old_ctl_filename <- "Model19_1b.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = FALSE
+query = TRUE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -89,7 +89,7 @@ if (!file.exists(here::here(new_dat_year, "plots"))){
 
 # Remove previous dat files from output folder
 if(isTRUE(remove_dat)){
-  if (file.exists(here::here(new_dat_year, "output")) & length(setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))) > 0) {
+  if(file.exists(here::here(new_dat_year, "output")) & length(setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))) > 0) {
     file.remove(here::here(new_dat_year, "output", setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))))
   }
 }
@@ -226,10 +226,9 @@ old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 4] <- 0
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 1] <- 0
 old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 4] <- 0
-old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "IPHCLL"), 1] <- 0
-old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "IPHCLL"), 4] <- 0
-old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "ADFG"), 1] <- 0
-old_ctl$age_selex_types[which(rownames(old_ctl$age_selex_types) == "ADFG"), 4] <- 0
+old_ctl$age_selex_types[, 1] <- 0
+old_ctl$age_selex_types[, 4] <- 0
+old_ctl$size_selex_parms$HI[which(old_ctl$size_selex_parms$HI > 100)] = 100
 
 ## reset params annually ----
 # reset end year in block designs
