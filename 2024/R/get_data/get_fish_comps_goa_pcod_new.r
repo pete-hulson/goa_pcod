@@ -152,9 +152,7 @@ get_fsh_len_post91_new <- function(new_year = 9999,
       tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
       # input sample size is number of hauls or 200, whichever is smaller (from federal data)
       tidytable::summarise(nsamp_f = length(unique(haul1)),
-                           .by = c(year, gear)) %>% 
-      tidytable::mutate(nsamp_f = tidytable::case_when(nsamp_f > 200 ~ 200,
-                                                       .default = nsamp_f)) -> nsamp_f
+                           .by = c(year, gear)) -> nsamp_f
     # state data
     vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
       dplyr::rename_all(tolower) %>% 
@@ -169,9 +167,7 @@ get_fsh_len_post91_new <- function(new_year = 9999,
                                                          month >= 9 ~ 3,
                                                          .default = 1)) %>% 
       tidytable::select(year, area, gear = gear1, trimester, sex, length, freq) %>% 
-      tidytable::summarise(nsamp_s = round(sum(freq) / 50), .by = c(year, gear)) %>%
-      tidytable::mutate(nsamp_s = tidytable::case_when(nsamp_s > 200 ~ 200,
-                                                       .default = nsamp_s)) -> nsamp_s
+      tidytable::summarise(nsamp_s = round(sum(freq) / 50), .by = c(year, gear)) -> nsamp_s
     nsamp_f %>% 
       tidytable::full_join(nsamp_s) %>% 
       tidytable::mutate(nsamp_f = tidytable::replace_na(nsamp_f, 0),
