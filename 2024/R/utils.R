@@ -1,6 +1,45 @@
 #' utility fcns
 #' 
 #' 
+#' #' function to make 2024 changes to ctl file
+#' @param asmnt_yr year of assessment (default = NULL)
+#' @param folder root foloder containing models (default = NULL)
+#' @param mdl name of model to run (default = NULL)
+#' @param ctl_filename name of ctl file in which to adjust recruitment ramp parameters (default = NULL)
+#' @param iters the number of iters to run for rec ramp (default = 2)
+#' 
+ctl_2024 <- function(asmnt_yr = NULL, 
+                     folder = NULL,
+                     mdl = NULL, 
+                     ctl_filename = NULL){
+  # read ctl file
+  ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
+  
+  # set growth pattern to CV rather than SD
+  ctl$CV_Growth_Pattern = 1
+  # make adjustments to L_at_Amin
+  ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 6
+  ctl$MG_parms$PRIOR[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 6
+  ctl$MG_parms$PR_SD[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 0.6
+  ctl$MG_parms$PR_type[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 6
+  ctl$MG_parms$PHASE[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 10
+  # use ebs cod priors for CV_young & old
+  ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.01
+  ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.0001
+  ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.4
+  ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.2
+  ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.2
+  ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.06
+  # change lower bound for trawl survey start_logit param
+  ctl$size_selex_parms$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -20
+  ctl$size_selex_parms_tv$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)_BLK1repl_1996')] = -20
+  ctl$size_selex_parms_tv$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)_BLK1repl_2006')] = -20
+  
+  # write new ctl file
+  r4ss::SS_writectl_3.30(ctllist = ctl,
+                         outfile = here::here(asmnt_yr, folder, mdl, ctl_filename),
+                         overwrite = TRUE)
+}
 #' function to run ss3 model with recruitment bias ramp adjustment
 #' @param asmnt_yr year of assessment (default = NULL)
 #' @param folder root foloder containing models (default = NULL)
@@ -108,6 +147,9 @@ start_ss_fldr <- function(from, to){
   r4ss::copy_SS_inputs(dir.old = from, 
                        dir.new = to,
                        overwrite = TRUE)
+  # get data_echo file so you can make changes to ctl file
+  file.copy(paste0(from, '/data_echo.ss_new'),
+            paste0(to, '/data_echo.ss_new'))
   # get exe
   r4ss::get_ss3_exe(dir = to)
 }
