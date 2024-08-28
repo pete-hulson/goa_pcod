@@ -128,10 +128,6 @@ ctl_2024(asmnt_yr,
          mdl = new_base, 
          ctl_filename = 'Model19_1c.ctl')
 
-r4ss::run(dir = here::here(asmnt_yr, 'rsch', new_base),
-          skipfinished = FALSE,
-          show_in_console = TRUE)
-
 ## run model ----
 run_ss3_model(asmnt_yr, 
               folder = 'rsch',
