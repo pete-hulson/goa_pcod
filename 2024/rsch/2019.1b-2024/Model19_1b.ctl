@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-08-22 16:41:08.363601
+#C file write time: 2024-08-27 14:25:57.751769
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1962.49060854694 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1983.38877929179 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.79766947348 #_last_yr_fullbias_adj_in_MPD
-2023.52690083493 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.909964415922158 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1964.4 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1979.7 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2012.9 #_last_yr_fullbias_adj_in_MPD
+2017 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.9089 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -170,19 +170,19 @@
 #
 #_age_selex_patterns
 #_Pattern	Discard	Male	Special
-10	0	0	0	#_1 FshTrawl
-10	0	0	0	#_2 FshLL   
-10	0	0	0	#_3 FshPot  
-10	0	0	0	#_4 Srv     
-10	0	0	0	#_5 LLSrv   
- 0	0	0	0	#_6 IPHCLL  
- 0	0	0	0	#_7 ADFG    
- 0	0	0	0	#_8 SPAWN   
- 0	0	0	0	#_9 Seine   
+0	0	0	0	#_1 FshTrawl
+0	0	0	0	#_2 FshLL   
+0	0	0	0	#_3 FshPot  
+0	0	0	0	#_4 Srv     
+0	0	0	0	#_5 LLSrv   
+0	0	0	0	#_6 IPHCLL  
+0	0	0	0	#_7 ADFG    
+0	0	0	0	#_8 SPAWN   
+0	0	0	0	#_9 Seine   
 #
 #_SizeSelex
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE	env-var	use_dev	dev_mnyr	dev_mxyr	dev_PH	Block	Blk_Fxn  #  parm_name
-   10	    110	  57.6551	 50	0	0	 1	0	1	1977	1989	3	2	2	#_SizeSel_P_1_FshTrawl(1)
+   10	    100	  57.6551	 50	0	0	 1	0	1	1977	1989	3	2	2	#_SizeSel_P_1_FshTrawl(1)
   -20	     10	 -4.57915	  0	0	0	 2	0	0	1977	1989	0	2	2	#_SizeSel_P_2_FshTrawl(1)
   -10	     10	  5.09148	  0	0	0	 2	0	1	1977	1989	3	2	2	#_SizeSel_P_3_FshTrawl(1)
   -10	     10	-0.301675	 10	0	0	 2	0	1	1977	1989	3	2	2	#_SizeSel_P_4_FshTrawl(1)

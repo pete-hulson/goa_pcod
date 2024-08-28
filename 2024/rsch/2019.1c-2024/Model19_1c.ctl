@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-08-22 16:41:08.363601
+#C file write time: 2024-08-27 14:25:57.751769
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1962.69362386549 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1988.61571880021 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.98679026812 #_last_yr_fullbias_adj_in_MPD
-2022.23920207963 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.944416203436764 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1959.28396108502 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1986.7874657416 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2020.74166402661 #_last_yr_fullbias_adj_in_MPD
+2023.55584335945 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.915703557089472 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -170,19 +170,19 @@
 #
 #_age_selex_patterns
 #_Pattern	Discard	Male	Special
-10	0	0	0	#_1 FshTrawl
-10	0	0	0	#_2 FshLL   
-10	0	0	0	#_3 FshPot  
-10	0	0	0	#_4 Srv     
-10	0	0	0	#_5 LLSrv   
- 0	0	0	0	#_6 IPHCLL  
- 0	0	0	0	#_7 ADFG    
- 0	0	0	0	#_8 SPAWN   
- 0	0	0	0	#_9 Seine   
+0	0	0	0	#_1 FshTrawl
+0	0	0	0	#_2 FshLL   
+0	0	0	0	#_3 FshPot  
+0	0	0	0	#_4 Srv     
+0	0	0	0	#_5 LLSrv   
+0	0	0	0	#_6 IPHCLL  
+0	0	0	0	#_7 ADFG    
+0	0	0	0	#_8 SPAWN   
+0	0	0	0	#_9 Seine   
 #
 #_SizeSelex
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE	env-var	use_dev	dev_mnyr	dev_mxyr	dev_PH	Block	Blk_Fxn  #  parm_name
-   10	    110	  57.6551	 50	0	0	 1	0	1	1977	1989	3	2	2	#_SizeSel_P_1_FshTrawl(1)
+   10	    100	  57.6551	 50	0	0	 1	0	1	1977	1989	3	2	2	#_SizeSel_P_1_FshTrawl(1)
   -20	     10	 -4.57915	  0	0	0	 2	0	0	1977	1989	0	2	2	#_SizeSel_P_2_FshTrawl(1)
   -10	     10	  5.09148	  0	0	0	 2	0	1	1977	1989	3	2	2	#_SizeSel_P_3_FshTrawl(1)
   -10	     10	-0.301675	 10	0	0	 2	0	1	1977	1989	3	2	2	#_SizeSel_P_4_FshTrawl(1)
@@ -204,7 +204,7 @@
   -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_2_Srv(4)     
   -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_3_Srv(4)     
     0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	 -3.10266	-10	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_5_Srv(4)     
+  -20	2.71828	 -3.10266	-10	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_5_Srv(4)     
   -10	     10	 -0.66555	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_LLSrv(5)   
@@ -269,8 +269,8 @@
   -10	     10	  5.09389	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_2006     
     0	     10	  4.21246	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_1996     
     0	     10	    4.195	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_2006     
-  -10	2.71828	 -2.09021	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_1996     
-  -10	2.71828	 -2.01521	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_2006     
+  -20	2.71828	 -2.09021	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_1996     
+  -20	2.71828	 -2.01521	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_2006     
     0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_1996     
     0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_2006     
 # info on dev vectors created for selex parms are reported with other devs after tag parameter section

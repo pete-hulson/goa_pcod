@@ -1,7 +1,7 @@
 #C forecast file written by R function SS_writeforecast
 #C rerun model to get more complete formatting in forecast.ss_new
 #C should work with SS version: 3.3
-#C file write time: 2024-08-26 10:04:24.883583
+#C file write time: 2024-08-27 15:11:36.498763
 #
 1 #_benchmarks
 1 #_MSY
@@ -40,16 +40,16 @@
 # enter list of fleet number and allocation group assignment, if any; terminate with fleet=-9999
 -9999 -1
 2 #_InputBasis
- #_#Year Seas Fleet  dead(B)                comment
-    2024    1     1  5920.93 #sum_for_2024: 19593.5
-    2024    1     2  5181.54                       
-    2024    1     3  8491.03                       
-    2025    1     1 11430.20 #sum_for_2025: 35902.1
-    2025    1     2 10549.90                       
-    2025    1     3 13922.00                       
-    2026    1     1 10685.50 #sum_for_2026: 33216.4
-    2026    1     2  9764.00                       
-    2026    1     3 12766.90                       
+ #_#Year Seas Fleet  dead(B)                 comment
+    2024    1     1  6122.83 #sum_for_2024: 19940.81
+    2024    1     2  5325.12                        
+    2024    1     3  8492.86                        
+    2025    1     1 10486.40 #sum_for_2025: 32922.89
+    2025    1     2  9673.69                        
+    2025    1     3 12762.80                        
+    2026    1     1  9808.44 #sum_for_2026: 30639.13
+    2026    1     2  9009.89                        
+    2026    1     3 11820.80                        
 -9999 0 0 0
 #
 999 # verify end of input 

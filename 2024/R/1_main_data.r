@@ -40,7 +40,7 @@ old_dat_filename <- "GOAPcod2023Oct16.dat"
 old_ctl_filename <- "Model19_1b.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
+query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -105,41 +105,59 @@ source(here::here(new_dat_year, "R", "utils.r"))
 old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
 
 # get new ss3 dat (updated base)
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = query,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins,
+#                               iss = TRUE)
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = query,
                               run_glm = run_glm,
-                              len_bins = len_bins,
-                              iss = TRUE)
+                              len_bins = len_bins)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
 
 # get new ss3 dat (updated base) with 2 cm bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins2,
+#                               iss = TRUE,
+#                               bin_iss = 'bin2')
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
-                              len_bins = len_bins2,
-                              iss = TRUE,
-                              bin_iss = 'bin2')
+                              len_bins = len_bins2)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_bin2.dat")), overwrite = TRUE)
 
 # get new ss3 dat (updated base) with 5 cm bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins5,
+#                               iss = TRUE,
+#                               bin_iss = 'bin5')
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
-                              len_bins = len_bins5,
-                              iss = TRUE,
-                              bin_iss = 'bin5')
+                              len_bins = len_bins5)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
@@ -162,14 +180,21 @@ r4ss::SS_writedat_3.30(new_data,
 #                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
 
 # get new ss3 dat with new len comp
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins,
+#                               new_lcomp = TRUE, # use new method to get fishery length comps
+#                               iss = TRUE)
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins,
-                              new_lcomp = TRUE, # use new method to get fishery length comps
-                              iss = TRUE)
+                              new_lcomp = TRUE)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
@@ -177,15 +202,22 @@ r4ss::SS_writedat_3.30(new_data,
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
 
 # get new ss3 dat with new len comp & 2cm length bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins2,
+#                               new_lcomp = TRUE, # use new method to get fishery length comps
+#                               iss = TRUE,
+#                               bin_iss = 'bin2')
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins2,
-                              new_lcomp = TRUE, # use new method to get fishery length comps
-                              iss = TRUE,
-                              bin_iss = 'bin2')
+                              new_lcomp = TRUE)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
@@ -193,15 +225,22 @@ r4ss::SS_writedat_3.30(new_data,
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin2.dat")), overwrite = TRUE)
 
 # get new ss3 dat with new len comp & 5cm length bins
+# new_data <- get_data_goa_pcod(new_data = old_data,
+#                               new_file = new_dat_filename,
+#                               new_year = new_dat_year,
+#                               query = FALSE,
+#                               run_glm = run_glm,
+#                               len_bins = len_bins5,
+#                               new_lcomp = TRUE, # use new method to get fishery length comps
+#                               iss = TRUE,
+#                               bin_iss = 'bin5')
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins5,
-                              new_lcomp = TRUE, # use new method to get fishery length comps
-                              iss = TRUE,
-                              bin_iss = 'bin5')
+                              new_lcomp = TRUE)
 
 # Write out data script
 r4ss::SS_writedat_3.30(new_data,
