@@ -1,7 +1,7 @@
 #C forecast file written by R function SS_writeforecast
 #C rerun model to get more complete formatting in forecast.ss_new
 #C should work with SS version: 3.3
-#C file write time: 2024-08-27 15:42:09.183178
+#C file write time: 2024-08-27 16:58:54.594663
 #
 1 #_benchmarks
 1 #_MSY
@@ -44,9 +44,9 @@
     2024    1     1  6136.42 #sum_for_2024: 19964.14
     2024    1     2  5335.26                        
     2024    1     3  8492.46                        
-    2025    1     1 10461.20 #sum_for_2025: 33597.71
-    2025    1     2  9850.11                        
-    2025    1     3 13286.40                        
+    2025    1     1  9960.89  #sum_for_2025: 31856.8
+    2025    1     2  9346.11                        
+    2025    1     3 12549.80                        
 -9999 0 0 0
 #
 999 # verify end of input 

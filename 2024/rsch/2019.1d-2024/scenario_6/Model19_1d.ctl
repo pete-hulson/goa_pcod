@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.09986863549 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1987.81229607321 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2020.60572282034 #_last_yr_fullbias_adj_in_MPD
-2024.05742995573 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.911796572400523 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1959.9209040045 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1987.6080765213 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2021.82921738615 #_last_yr_fullbias_adj_in_MPD
+2022.47597771974 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.907280696459603 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -269,8 +269,8 @@
   -10	     10	  5.09389	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_2006     
     0	     10	  4.21246	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_1996     
     0	     10	    4.195	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_2006     
-  -10	2.71828	     -999	-10	  0	0	-2	#_SizeSel_P_5_Srv(4)_BLK1repl_1996     
-  -10	2.71828	     -999	-10	  0	0	-2	#_SizeSel_P_5_Srv(4)_BLK1repl_2006     
+  -10	2.71828	 -2.09021	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_1996     
+  -10	2.71828	 -2.01521	-10	  0	0	 2	#_SizeSel_P_5_Srv(4)_BLK1repl_2006     
     0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_1996     
     0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_2006     
 # info on dev vectors created for selex parms are reported with other devs after tag parameter section
