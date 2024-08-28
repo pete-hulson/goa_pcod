@@ -32,7 +32,7 @@ run_retro = FALSE
 ret_yr <- 10 # For full
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2023 base model (2019.1b-2023) ----
+# 2019.1b-2023: 2023 base model ----
 # read results from base model
 base_mdl <- "2019.1b-2023" # 2023 accepted model
 
@@ -46,7 +46,7 @@ base_res_23 <- r4ss::SS_output(dir = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# updated base model (2019.1b) ----
+# 2019.1b: updated base model ----
 # includes updated GAP tables and length-weight relationship
 base_mdl_update <- "2019.1b-2024"
 
@@ -92,14 +92,14 @@ r4ss::SS_plots(update_base_res,
                dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
 
 ## run management scens ----
-update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', base_mdl_update), 
-                                            CYR = asmnt_yr,  
-                                            FLEETS = c(1:3),
-                                            do_fig = FALSE,
-                                            do_mark = FALSE)
+# update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', base_mdl_update), 
+#                                             CYR = asmnt_yr,  
+#                                             FLEETS = c(1:3),
+#                                             do_fig = FALSE,
+#                                             do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# new base model  (2019.1c) ----
+# 2019.1c: new base model ----
 # includes:
 # - corrected ll survey sd
 # - corrected ll survey length comps
@@ -122,6 +122,16 @@ update_ss3_files(asmnt_yr,
                  ctl_in = "Model19_1b.ctl",
                  ctl_out = "Model19_1c.ctl")
 
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base, 
+         ctl_filename = 'Model19_1c.ctl')
+
+r4ss::run(dir = here::here(asmnt_yr, 'rsch', new_base),
+          skipfinished = FALSE,
+          show_in_console = TRUE)
+
 ## run model ----
 run_ss3_model(asmnt_yr, 
               folder = 'rsch',
@@ -141,14 +151,14 @@ r4ss::SS_plots(new_base_res,
                dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
 
 ## run management scens ----
-new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base), 
-                                         CYR = asmnt_yr,  
-                                         FLEETS = c(1:3),
-                                         do_fig = FALSE,
-                                         do_mark = FALSE)
+# new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base), 
+#                                          CYR = asmnt_yr,  
+#                                          FLEETS = c(1:3),
+#                                          do_fig = FALSE,
+#                                          do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# update ageing error (2019.1d) ----
+# 2019.1d: update ageing error ----
 new_base_ae <- "2019.1d-2024"
 
 ## copy ss input files ----
@@ -164,6 +174,12 @@ update_ss3_files(asmnt_yr,
                  dat_filename = paste0("GOAPcod2024", dat_day, ".dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1d.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base_ae, 
+         ctl_filename = 'Model19_1d.ctl')
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
@@ -184,100 +200,14 @@ r4ss::SS_plots(new_base_ae_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
 
 ## run management scens ----
-new_base_ae_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_ae), 
-                                            CYR = asmnt_yr,  
-                                            FLEETS = c(1:3),
-                                            do_fig = FALSE,
-                                            do_mark = FALSE)
+# new_base_ae_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_ae), 
+#                                             CYR = asmnt_yr,  
+#                                             FLEETS = c(1:3),
+#                                             do_fig = FALSE,
+#                                             do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# update ageing error with 2 cm bins (2019.1d.2) ----
-new_base_ae_bin2 <- "2019.1d.2-2024"
-
-## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_ae_bin2, 'ss3.exe'))){
-  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-                to = here::here(asmnt_yr, 'rsch', new_base_ae_bin2))
-}
-
-## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_ae_bin2, 
-                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin2.dat"),
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model19_1d.ctl")
-
-## run model ----
-run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_ae_bin2,
-              ctl_filename = "Model19_1d.ctl")
-
-## get and plot model output ----
-# get output
-new_base_ae_bin2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_ae_bin2))
-# if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_ae_bin2, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_ae_bin2, 'plots'), recursive = TRUE)
-}
-# plot results
-r4ss::SS_plots(new_base_ae_bin2_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_ae_bin2, "plots"))
-
-## run management scens ----
-new_base_ae_bin2_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_ae_bin2), 
-                                            CYR = asmnt_yr,  
-                                            FLEETS = c(1:3),
-                                            do_fig = FALSE,
-                                            do_mark = FALSE)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# update ageing error with 5 cm bins (2019.1d.5) ----
-new_base_ae_bin5 <- "2019.1d.5-2024"
-
-## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_ae_bin5, 'ss3.exe'))){
-  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base),
-                to = here::here(asmnt_yr, 'rsch', new_base_ae_bin5))
-}
-
-## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_ae_bin5, 
-                 dat_filename = paste0("GOAPcod2024", dat_day, "_bin5.dat"),
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model19_1d.ctl")
-
-## run model ----
-run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_ae_bin5,
-              ctl_filename = "Model19_1d.ctl")
-
-## get and plot model output ----
-# get output
-new_base_ae_bin5_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_ae_bin5))
-# if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_ae_bin5, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_ae_bin5, 'plots'), recursive = TRUE)
-}
-# plot results
-r4ss::SS_plots(new_base_ae_bin5_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_ae_bin5, "plots"))
-
-## run management scens ----
-new_base_ae_bin5_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_ae_bin5), 
-                                                 CYR = asmnt_yr,  
-                                                 FLEETS = c(1:3),
-                                                 do_fig = FALSE,
-                                                 do_mark = FALSE)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# new fishery length comps (2019.1e) ----
+# 2019.1e: new fishery length comps ----
 # remove filters and aggregate at trimester-area-gear
 new_base_lcomp <- "2019.1e-2024"
 
@@ -294,6 +224,12 @@ update_ss3_files(asmnt_yr,
                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1e.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base_lcomp, 
+         ctl_filename = 'Model19_1e.ctl')
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
@@ -314,14 +250,14 @@ r4ss::SS_plots(new_base_lcomp_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp, "plots"))
 
 ## run management scens ----
-new_base_lcomp_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp), 
-                                               CYR = asmnt_yr,  
-                                               FLEETS = c(1:3),
-                                               do_fig = FALSE,
-                                               do_mark = FALSE)
+# new_base_lcomp_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp), 
+#                                                CYR = asmnt_yr,  
+#                                                FLEETS = c(1:3),
+#                                                do_fig = FALSE,
+#                                                do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# new fishery length comps at 2 cm bin (2019.1e.2) ----
+# 2019.1e.2: new fishery length comps at 2 cm bin ----
 new_base_lcomp_bin2 <- "2019.1e.2-2024"
 
 ## copy ss input files ----
@@ -337,6 +273,12 @@ update_ss3_files(asmnt_yr,
                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin2.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1e.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base_lcomp_bin2, 
+         ctl_filename = 'Model19_1e.ctl')
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
@@ -357,14 +299,14 @@ r4ss::SS_plots(new_base_lcomp_bin2_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin2, "plots"))
 
 ## run management scens ----
-new_base_lcomp_bin2_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin2), 
-                                                    CYR = asmnt_yr,  
-                                                    FLEETS = c(1:3),
-                                                    do_fig = FALSE,
-                                                    do_mark = FALSE)
+# new_base_lcomp_bin2_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin2), 
+#                                                     CYR = asmnt_yr,  
+#                                                     FLEETS = c(1:3),
+#                                                     do_fig = FALSE,
+#                                                     do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# new fishery length comps at 5 cm bin (2019.1e.5) ----
+# 2019.1e.5: new fishery length comps at 5 cm bin ----
 new_base_lcomp_bin5 <- "2019.1e.5-2024"
 
 ## copy ss input files ----
@@ -380,6 +322,12 @@ update_ss3_files(asmnt_yr,
                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
                  ctl_in = "updated_ae.ctl",
                  ctl_out = "Model19_1e.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base_lcomp_bin5, 
+         ctl_filename = 'Model19_1e.ctl')
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
@@ -400,11 +348,11 @@ r4ss::SS_plots(new_base_lcomp_bin5_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin5, "plots"))
 
 ## run management scens ----
-new_base_lcomp_bin5_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin5), 
-                                                    CYR = asmnt_yr,  
-                                                    FLEETS = c(1:3),
-                                                    do_fig = FALSE,
-                                                    do_mark = FALSE)
+# new_base_lcomp_bin5_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin5), 
+#                                                     CYR = asmnt_yr,  
+#                                                     FLEETS = c(1:3),
+#                                                     do_fig = FALSE,
+#                                                     do_mark = FALSE)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -417,8 +365,6 @@ data_summ <- r4ss::SSsummarize(list(base_res_23,
                                     update_base_res, 
                                     new_base_res, 
                                     new_base_ae_res, 
-                                    new_base_ae_bin2_res, 
-                                    new_base_ae_bin5_res,
                                     new_base_lcomp_res, 
                                     new_base_lcomp_bin2_res, 
                                     new_base_lcomp_bin5_res))
@@ -428,9 +374,7 @@ r4ss::SSplotComparisons(data_summ,
                         legendlabels = c(base_mdl, 
                                          base_mdl_update, 
                                          new_base, 
-                                         new_base_ae, 
-                                         new_base_ae_bin2, 
-                                         new_base_ae_bin5, 
+                                         new_base_ae,  
                                          new_base_lcomp, 
                                          new_base_lcomp_bin2, 
                                          new_base_lcomp_bin5),
@@ -442,42 +386,48 @@ vroom::vroom_write(data_summ$likelihoods %>%
                                        '2019.1b-24' = model2,
                                        '2019.1c' = model3,
                                        '2019.1d' = model4,
-                                       '2019.1d.2' = model5,
-                                       '2019.1d.5' = model6,
-                                       '2019.1e' = model7,
-                                       '2019.1e.2' = model8,
-                                       '2019.1e.5' = model9), 
+                                       '2019.1e' = model5,
+                                       '2019.1e.2' = model6,
+                                       '2019.1e.5' = model7), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes.csv'), delim = ",")
 vroom::vroom_write(data_summ$likelihoods_by_fleet %>% 
                      tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-23',
                                                          model == 2 ~ '2019.1b-24',
                                                          model == 3 ~ '2019.1c',
                                                          model == 4 ~ '2019.1d',
-                                                         model == 5 ~ '2019.1d.2',
-                                                         model == 6 ~ '2019.1d.2',
-                                                         model == 7 ~ '2019.1e',
-                                                         model == 8 ~ '2019.1e.2',
-                                                         model == 9 ~ '2019.1e.5')), 
+                                                         model == 5 ~ '2019.1e',
+                                                         model == 6 ~ '2019.1e.2',
+                                                         model == 7 ~ '2019.1e.5')), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_by_fleet.csv'), delim = ",")
 
-
-abc_comp <- data.frame(model = c(base_mdl_update, 
+abc_comp <- data.frame(model = c(base_mdl,
+                                 base_mdl_update, 
                                  new_base, 
                                  new_base_ae, 
-                                 new_base_ae_bin2, 
-                                 new_base_ae_bin5, 
                                  new_base_lcomp, 
                                  new_base_lcomp_bin2, 
-                                 new_base_lcomp_bin5)) %>% 
-  tidytable::bind_cols(data.frame(abc = update_base_mscen$Two_year$C_ABC[1]) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_ae_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_ae_bin2_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_ae_bin5_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_lcomp_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_lcomp_bin2_mscen$Two_year$C_ABC[1])) %>% 
-                         tidytable::bind_rows(data.frame(abc = new_base_lcomp_bin5_mscen$Two_year$C_ABC[1])))
-
+                                 new_base_lcomp_bin5),
+                       abc = c(as.numeric(base_res_23$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2024') %>% 
+                                            select(Value)),
+                               as.numeric(update_base_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_ae_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_lcomp_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_lcomp_bin2_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_lcomp_bin5_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp.csv'), delim = ",")
 
 
