@@ -510,13 +510,13 @@ run_ss3_model(asmnt_yr,
 
 ## get and plot model output ----
 # get output
-new_base.8_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.9))
+new_base.9_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.9))
 # if exists, delete plot folder
 if(file.exists(here::here(asmnt_yr, 'rsch', 'cseries', new_base.9, 'plots'))){
   unlink(here::here(asmnt_yr, 'rsch', 'cseries', new_base.9, 'plots'), recursive = TRUE)
 }
 # plot results
-r4ss::SS_plots(new_base.8_res,
+r4ss::SS_plots(new_base.9_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.9, "plots"))
 
@@ -662,7 +662,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                                          '2019.1c.9-start_logit'))
 
 ## likes & abc ----
-vroom::vroom_write(data_summ$likelihoods %>% 
+vroom::vroom_write(data_summ_cseries$likelihoods %>% 
                      tidytable::rename('2019.1b-24' = model1,
                                        '2019.1c' = model2,
                                        '2019.1c.1' = model3,
@@ -675,7 +675,7 @@ vroom::vroom_write(data_summ$likelihoods %>%
                                        '2019.1c.8' = model10,
                                        '2019.1c.9' = model11), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_cseries.csv'), delim = ",")
-vroom::vroom_write(data_summ_all$likelihoods_by_fleet %>% 
+vroom::vroom_write(data_summ_cseries$likelihoods_by_fleet %>% 
                      tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-24',
                                                          model == 2 ~ '2019.1c',
                                                          model == 3 ~ '2019.1c.1',
