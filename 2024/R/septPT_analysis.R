@@ -29,15 +29,6 @@ purrr::map(here::here(new_year, "R", "get_data", source_files), source)
 source(here::here(new_year, "R", "utils.r"))
 
 
-# ageing error plots ----
-
-vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Spline', 'Pcod SS3_format_Reader1.csv')) %>% 
-  tidytable::filter(...1 == 'SD') %>% 
-  tidytable::pivot_longer() %>% 
-  tidytable::select(value)
-
-
-
 # fishery comp filtering analysis ----
 
 ## federal > 10 per haul ----
@@ -46,7 +37,6 @@ fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domest
   tidytable::filter(year >= 1991) %>% 
   # unique cruise-permit-haul description
   tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_"))
-
 
 fsh_len_f %>%  
   tidytable::summarise(tot_hls = length(unique(haul1)), .by = c(year, gear)) %>% 
@@ -60,7 +50,7 @@ fsh_len_f %>%
   tidytable::pivot_wider(names_from = gear, values_from = prop_fltrd) %>% 
   vroom::vroom_write(., here::here(new_year, 'output', 'fed_fltrd_hls.csv'), delim = ",")
 
-## state great than fed (step 1), and has > 30 (step 2) ----
+## state has > 30 (step 1) ----
 fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
   dplyr::rename_all(tolower) %>% 
   #filter to positive lengths
@@ -77,52 +67,27 @@ fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) 
                                                      .default = 1)) %>% 
   tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
 
-fsh_len_f %>% 
-  # get federal number of length obs by trimester-area-gear
-  tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-  # get state number of length obs by trimester-area-gear
-  tidytable::full_join(fsh_len_s %>% 
-                         tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
-  # set index for when state > federal lengths
-  tidytable::mutate(tfreq = tidytable::replace_na(tfreq, 0),
-                    sfreq = tidytable::replace_na(sfreq, 0),
-                    state = tidytable::case_when(sfreq > tfreq ~ 1,
-                                                 .default = 0)) %>% 
-  tidytable::filter(sfreq > 0) %>% 
-  tidytable::summarise(tot_n = length(sfreq),
-                       used_n = sum(state), .by = c(year, gear)) %>% 
-  tidytable::mutate(prop_fltrd = 1 - used_n / tot_n) %>% 
-  tidytable::select(year, gear, prop_fltrd) %>% 
+fsh_len_s %>% 
+  tidytable::summarise(tfreq = sum(freq), .by = c(year, area, gear)) %>% 
+  tidytable::mutate(fltrd = case_when(tfreq < 30 ~ 1,
+                                      .default = 0)) %>% 
+  tidytable::summarise(prop_fltrd = sum(fltrd) / length(tfreq), .by = c(year, gear)) %>% 
   tidytable::pivot_wider(names_from = gear, values_from = prop_fltrd) %>% 
   vroom::vroom_write(., here::here(new_year, 'output', 'st_fltrd_s1.csv'), delim = ",")
 
+## state removed (step 2) ----
 fsh_len_f %>% 
   # get federal number of length obs by trimester-area-gear
   tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
   # get state number of length obs by trimester-area-gear
   tidytable::full_join(fsh_len_s %>% 
                          tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
-  tidytable::filter(sfreq > 0) %>% 
-  tidytable::summarise(tot_n = length(sfreq), .by = c(year, gear)) %>% 
-  tidytable::left_join(fsh_len_f %>% 
-                         # get federal number of length obs by trimester-area-gear
-                         tidytable::summarise(tfreq = sum(freq), .by = c(year, trimester, area, gear)) %>% 
-                         # get state number of length obs by trimester-area-gear
-                         tidytable::full_join(fsh_len_s %>% 
-                                                tidytable::summarise(sfreq = sum(freq), .by = c(year, trimester, area, gear))) %>% 
-                         tidytable::filter(sfreq > 0) %>% 
-                         tidytable::filter(tfreq < 30,
-                                           sfreq >= 30) %>% 
-                         tidytable::summarise(used_n = length(sfreq), .by = c(year, gear))) %>% 
-  tidytable::mutate(prop_fltrd = 1 - used_n / tot_n) %>% 
-  tidytable::select(year, gear, prop_fltrd) %>% 
+  tidytable::drop_na(sfreq) %>% 
+  tidytable::mutate(fltrd = case_when(is.na(tfreq) ~ 0,
+                                      .default = 1)) %>% 
+  tidytable::summarise(prop_fltrd = sum(fltrd) / length(sfreq), .by = c(year, gear)) %>% 
   tidytable::pivot_wider(names_from = gear, values_from = prop_fltrd) %>% 
   vroom::vroom_write(., here::here(new_year, 'output', 'st_fltrd_s2.csv'), delim = ",")
-  # filter to state with greater than 30 lengths and fed with less
-  tidytable::filter(tfreq < 30,
-                    sfreq >= 30) %>% 
-  tidytable::select(-sfreq, -tfreq) -> state_test 
-
 
 
 
