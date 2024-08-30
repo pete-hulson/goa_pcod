@@ -19,13 +19,13 @@ ctl_2024 <- function(asmnt_yr = NULL,
   ctl$Fcast_recr_phase = -1
   
   # set growth pattern to CV rather than SD & use ebs cod priors for CV_young & old
-  ctl$CV_Growth_Pattern = 1
-  ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.01
-  ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.0001
-  ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.4
-  ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.2
-  ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.2
-  ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.06
+  # ctl$CV_Growth_Pattern = 1
+  # ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.01
+  # ctl$MG_parms$LO[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.0001
+  # ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.4
+  # ctl$MG_parms$HI[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.2
+  # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_young_Fem_GP_1')] = 0.2
+  # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'CV_old_Fem_GP_1')] = 0.06
 
   # add prior to L_at_Amin (with CV = 5%)
   ctl$MG_parms$PR_SD[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 0.3
