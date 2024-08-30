@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-08-28 14:27:31.53215
+#C file write time: 2024-08-30 08:22:21.707623
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.98390711256 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1984.1858343796 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.71552199851 #_last_yr_fullbias_adj_in_MPD
-2023.94186884356 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.914680505569193 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1959.2506242216 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1986.39678953582 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2021.71427429021 #_last_yr_fullbias_adj_in_MPD
+2023.92896625494 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.916822489831457 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev

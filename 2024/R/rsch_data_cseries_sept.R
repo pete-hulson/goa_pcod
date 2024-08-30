@@ -240,9 +240,9 @@ update_ss3_files(asmnt_yr,
                  ctl_out = "Model19_1c.ctl")
 
 ## change fishery iss ----
-dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch',new_base.4, paste0("GOAPcod2024", dat_day, "_old.dat")))
+dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch', 'cseries', new_base.4, paste0("GOAPcod2024", dat_day, "_old.dat")))
 dat <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'output', paste0("GOAPcod2024", dat_day, "_new.dat")))
-dat_orig$lencomp[dat_orig$lencomp$fleet <= 3, 'Nsamp'] = dat$lencomp[dat$lencomp$fleet <= 3, 'Nsamp']
+dat_orig$lencomp[dat_orig$lencomp$fleet %in% c(1, 2, 3), 'Nsamp'] = dat$lencomp[dat$lencomp$fleet %in% c(1, 2, 3), 'Nsamp']
 r4ss::SS_writedat_3.30(dat_orig,
                        here::here(asmnt_yr, 'rsch', 'cseries', new_base.4, paste0("GOAPcod2024", dat_day, "_old.dat")), overwrite = TRUE)
 
@@ -286,7 +286,7 @@ update_ss3_files(asmnt_yr,
                  ctl_out = "Model19_1c.ctl")
 
 ## change plus length bin ----
-dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch',new_base.5, paste0("GOAPcod2024", dat_day, "_old.dat")))
+dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch', 'cseries', new_base.5, paste0("GOAPcod2024", dat_day, "_old.dat")))
 dat <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'output', paste0("GOAPcod2024", dat_day, ".dat")))
 dat_orig$maximum_size = dat$maximum_size
 dat_orig$N_lbins = dat$N_lbins
@@ -352,7 +352,7 @@ update_ss3_files(asmnt_yr,
                  ctl_out = "Model19_1c.ctl")
 
 ## change plus length bin ----
-dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch',new_base.6, paste0("GOAPcod2024", dat_day, "_old.dat")))
+dat_orig <- r4ss::SS_readdat_3.30(here::here(asmnt_yr, 'rsch', 'cseries', new_base.6, paste0("GOAPcod2024", dat_day, "_old.dat")))
 dat_orig$agecomp[dat_orig$agecomp$fleet == 4, 'month'] = 7
 r4ss::SS_writedat_3.30(dat_orig,
                        here::here(asmnt_yr, 'rsch', 'cseries', new_base.6, paste0("GOAPcod2024", dat_day, "_old.dat")), overwrite = TRUE)

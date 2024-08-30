@@ -1,19 +1,19 @@
 $par
-[1] 1960.9835044 1984.1860788 2021.7153739 2023.9426835    0.9146806
+[1] 1959.2498657 1986.3971584 2021.7142704 2023.9290281    0.9168226
 
 $objective
-[1] 0.2021206
+[1] 0.2388124
 
 $convergence
 [1] 0
 
 $iterations
-[1] 37
+[1] 36
 
 $evaluations
 function gradient 
-      45      203 
+      42      206 
 
 $message
-[1] "X-convergence (3)"
+[1] "both X-convergence and relative convergence (5)"
 
