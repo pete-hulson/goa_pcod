@@ -614,55 +614,85 @@ r4ss::SSplotComparisons(data_summ_cseries,
 ### one at a time ----
 # 2019.1c
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,2),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c'))
+                                         '2019.1c'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c')
 
 # 2019.1c.1
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,3),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.1-LLSrvSD'))
+                                         '2019.1c.1-LLSrvSD'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c1')
 # 2019.1c.2
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,4),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.2-LLSrvLCompBin'))
+                                         '2019.1c.2-LLSrvLCompBin'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c2')
 # 2019.1c.3
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,5),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.3-LLSrvLCompMonth'))
+                                         '2019.1c.3-LLSrvLCompMonth'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c3')
 # 2019.1c.4
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,6),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.4-FishISS'))
+                                         '2019.1c.4-FishISS'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c4')
 # 2019.1c.5
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,7),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.5-104cm'))
+                                         '2019.1c.5-104cm'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c5')
 # 2019.1c.6
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,8),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.6-TwlSrvCAAL'))
+                                         '2019.1c.6-TwlSrvCAAL'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c6')
 # 2019.1c.7
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,9),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.7-ForeRec'))
+                                         '2019.1c.7-ForeRec'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c7')
 # 2019.1c.8
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,10),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.8-LatAmin'))
+                                         '2019.1c.8-LatAmin'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c8')
 # 2019.1c.9
 r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
                         models = c(1,11),
                         legendlabels = c(base_mdl_update, 
-                                         '2019.1c.9-start_logit'))
+                                         '2019.1c.9-start_logit'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c9')
 
 ## likes & abc ----
 vroom::vroom_write(data_summ_cseries$likelihoods %>% 
