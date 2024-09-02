@@ -18,7 +18,7 @@ lapply(libs, library, character.only = TRUE)
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # day data pulled
-dat_day <- "Aug30"
+dat_day <- "Sep02"
 
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
@@ -27,58 +27,6 @@ source(here::here(asmnt_yr, "R", "utils.r"))
 
 # create c series folder
 dir.create(here::here(asmnt_yr, 'rsch', 'cseries'), recursive = TRUE)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2019.1b: updated base model ----
-base_mdl <- "2019.1b-2023" # 2023 accepted model
-# includes updated GAP tables and length-weight relationship
-base_mdl_update <- "2019.1b-2024"
-
-# only run model if it doesn't exist
-if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update))){
-  ## copy ss input files ----
-  if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update, 'ss3.exe'))){
-    start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
-                  to = here::here(asmnt_yr, 'rsch', base_mdl_update))
-  }
-  
-  # set up forecast file (with generic blocks for years so won't need to update in the future)
-  forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, 'rsch', base_mdl_update, 'forecast.ss'))
-  forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
-  forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
-  r4ss::SS_writeforecast(mylist = forecast,
-                         dir = here::here(asmnt_yr, 'rsch', base_mdl_update),
-                         overwrite = TRUE)
-  
-  ## update files ----
-  update_ss3_files(asmnt_yr, 
-                   folder = 'rsch',
-                   mdl = base_mdl_update, 
-                   dat_filename = paste0("GOAPcod2024", dat_day, "_old.dat"),
-                   ctl_in = "Model19_1b.ctl",
-                   ctl_out = "Model19_1b.ctl")
-  
-  ## run model ----
-  run_ss3_model(asmnt_yr, 
-                folder = 'rsch',
-                mdl = base_mdl_update,
-                ctl_filename = "Model19_1b.ctl")
-  
-  
-  ## get and plot model output ----
-  # get output
-  update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
-  # if exists, delete plot folder
-  if(file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update, 'plots'))){
-    unlink(here::here(asmnt_yr, 'rsch', base_mdl_update, 'plots'), recursive = TRUE)
-  }
-  # plot results
-  r4ss::SS_plots(update_base_res,
-                 printfolder = "",
-                 dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
-} else{
-  update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
-}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2019.1c.1 ----
@@ -521,6 +469,58 @@ r4ss::SS_plots(new_base.9_res,
                dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.9, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2019.1b: updated base model ----
+base_mdl <- "2019.1b-2023" # 2023 accepted model
+# includes updated GAP tables and length-weight relationship
+base_mdl_update <- "2019.1b-2024"
+
+# only run model if it doesn't exist
+if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update))){
+  ## copy ss input files ----
+  if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update, 'ss3.exe'))){
+    start_ss_fldr(from = here::here(asmnt_yr - 1, 'mgmt', base_mdl),
+                  to = here::here(asmnt_yr, 'rsch', base_mdl_update))
+  }
+  
+  # set up forecast file (with generic blocks for years so won't need to update in the future)
+  forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, 'rsch', base_mdl_update, 'forecast.ss'))
+  forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
+  forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
+  r4ss::SS_writeforecast(mylist = forecast,
+                         dir = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                         overwrite = TRUE)
+  
+  ## update files ----
+  update_ss3_files(asmnt_yr, 
+                   folder = 'rsch',
+                   mdl = base_mdl_update, 
+                   dat_filename = paste0("GOAPcod2024", dat_day, "_old.dat"),
+                   ctl_in = "Model19_1b.ctl",
+                   ctl_out = "Model19_1b.ctl")
+  
+  ## run model ----
+  run_ss3_model(asmnt_yr, 
+                folder = 'rsch',
+                mdl = base_mdl_update,
+                ctl_filename = "Model19_1b.ctl")
+  
+  
+  ## get and plot model output ----
+  # get output
+  update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
+  # if exists, delete plot folder
+  if(file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update, 'plots'))){
+    unlink(here::here(asmnt_yr, 'rsch', base_mdl_update, 'plots'), recursive = TRUE)
+  }
+  # plot results
+  r4ss::SS_plots(update_base_res,
+                 printfolder = "",
+                 dir = here::here(asmnt_yr, 'rsch', base_mdl_update, "plots"))
+} else{
+  update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
+}
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2019.1c: new base model ----
 # includes:
 # .1 corrected ll survey sd
@@ -535,43 +535,46 @@ r4ss::SS_plots(new_base.9_res,
 
 new_base <- "2019.1c-2024"
 
-## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base, 'ss3.exe'))){
-  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
-                to = here::here(asmnt_yr, 'rsch', new_base))
-}
-
-## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base, 
-                 dat_filename = paste0("GOAPcod2024", dat_day, ".dat"),
-                 ctl_in = "Model19_1b.ctl",
-                 ctl_out = "Model19_1c.ctl")
-
-## make 2024 changes to ctl file ----
-ctl_2024(asmnt_yr, 
-         folder = 'rsch',
-         mdl = new_base, 
-         ctl_filename = 'Model19_1c.ctl')
-
-## run model ----
-run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base,
-              ctl_filename = "Model19_1c.ctl")
-
-## get and plot model output ----
-# get output
-new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
-# if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base, 'plots'), recursive = TRUE)
-}
-# plot results
-r4ss::SS_plots(new_base_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
+# only run model if it doesn't exist
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base))){
+  ## copy ss input files ----
+  if(!file.exists(here::here(asmnt_yr, 'rsch', new_base, 'ss3.exe'))){
+    start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                  to = here::here(asmnt_yr, 'rsch', new_base))
+  }
+  
+  ## update files ----
+  update_ss3_files(asmnt_yr, 
+                   folder = 'rsch',
+                   mdl = new_base, 
+                   dat_filename = paste0("GOAPcod2024", dat_day, ".dat"),
+                   ctl_in = "Model19_1b.ctl",
+                   ctl_out = "Model19_1c.ctl")
+  
+  ## make 2024 changes to ctl file ----
+  ctl_2024(asmnt_yr, 
+           folder = 'rsch',
+           mdl = new_base, 
+           ctl_filename = 'Model19_1c.ctl')
+  
+  ## run model ----
+  run_ss3_model(asmnt_yr, 
+                folder = 'rsch',
+                mdl = new_base,
+                ctl_filename = "Model19_1c.ctl")
+  
+  ## get and plot model output ----
+  # get output
+  new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
+  # if exists, delete plot folder
+  if(file.exists(here::here(asmnt_yr, 'rsch', new_base, 'plots'))){
+    unlink(here::here(asmnt_yr, 'rsch', new_base, 'plots'), recursive = TRUE)
+  }
+  # plot results
+  r4ss::SS_plots(new_base_res,
+                 printfolder = "",
+                 dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
+} else{new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))}
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot comparisons ----

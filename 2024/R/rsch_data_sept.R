@@ -18,7 +18,7 @@ lapply(libs, library, character.only = TRUE)
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # day data pulled
-dat_day <- "Aug28"
+dat_day <- "Sep02"
 
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
