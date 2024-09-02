@@ -175,10 +175,6 @@ ctl_2024(asmnt_yr,
          mdl = new_base_ae, 
          ctl_filename = 'Model19_1d.ctl')
 
-r4ss::run(dir = here::here(asmnt_yr, 'rsch', new_base_ae),
-          skipfinished = FALSE,
-          show_in_console = TRUE)
-
 ## run model ----
 run_ss3_model(asmnt_yr, 
               folder = 'rsch',
@@ -196,10 +192,6 @@ if(file.exists(here::here(asmnt_yr, 'rsch', new_base_ae, 'plots'))){
 r4ss::SS_plots(new_base_ae_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
-
-new_base_ae_res$parameters[99,]
-
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2019.1e: new fishery length comps ----
