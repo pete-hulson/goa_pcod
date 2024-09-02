@@ -287,7 +287,7 @@ r4ss::SS_plots(new_base_lcomp_bin2_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin2, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2019.1d.5: new fishery length comps at 5 cm bin ----
+# 2019.1e.5: new fishery length comps at 5 cm bin ----
 new_base_lcomp_bin5 <- "2019.1e.5cm-2024"
 
 ## copy ss input files ----
@@ -329,220 +329,111 @@ r4ss::SS_plots(new_base_lcomp_bin5_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin5, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2019.1f: fix maturity ----
+new_base_mat <- "2019.1f-2024"
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_mat, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', new_base_lcomp_bin5),
+                to = here::here(asmnt_yr, 'rsch', new_base_mat))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = new_base_mat, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "Model19_1f.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch',
+         mdl = new_base_mat, 
+         ctl_filename = 'Model19_1f.ctl')
+
+## fix maturity in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_mat, 'Model19_1f.ctl'))
+
+# fix maturity
+ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
+
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch', new_base_mat, 'Model19_1f.ctl'),
+                       overwrite = TRUE)
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = new_base_mat,
+              ctl_filename = "Model19_1f.ctl")
+
+## get and plot model output ----
+# get output
+new_base_mat_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_mat))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch', new_base_mat, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch', new_base_mat, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(new_base_mat_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', new_base_mat, "plots"))
+
+## run management scens ----
+update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_mat_res),
+                                            CYR = asmnt_yr,
+                                            FLEETS = c(1:3),
+                                            do_fig = FALSE,
+                                            do_mark = FALSE)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot data comparisons ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_c'))){
-  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_c'), recursive = TRUE)
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'), recursive = TRUE)
 }
-if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'))){
-  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'), recursive = TRUE)
-}
-if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cd'))){
-  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cd'), recursive = TRUE)
-}
-if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_d'))){
-  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_d'), recursive = TRUE)
-}
-
-
-## base compared to 2019.1c ----
-data_summ_c <- r4ss::SSsummarize(list(base_res_23,
-                                      update_base_res, 
-                                      new_base_res))
-
-r4ss::SSplotComparisons(data_summ_c,
-                        print = TRUE,
-                        legendlabels = c(base_mdl, 
-                                         base_mdl_update, 
-                                         new_base),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_c'))
-
-## 2019.1c model series ----
-data_summ_cseries <- r4ss::SSsummarize(list(update_base_res, 
-                                            new_base_res, 
-                                            new_base.1_res,
-                                            new_base.2_res,
-                                            new_base.3_res,
-                                            new_base.4_res,
-                                            new_base.5_res,
-                                            new_base.6_res,
-                                            new_base.7_res,
-                                            new_base.8_res,
-                                            new_base.9_res))
-r4ss::SSplotComparisons(data_summ_cseries,
-                        print = TRUE,
-                        legendlabels = c(base_mdl_update, 
-                                         new_base, 
-                                         new_base.1,
-                                         new_base.2,
-                                         new_base.3,
-                                         new_base.4,
-                                         new_base.5,
-                                         new_base.6,
-                                         new_base.7,
-                                         new_base.8,
-                                         new_base.9),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'))
-
-
-# 2019.1c
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,2),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c'))
-
-# 2019.1c.1-4
-data_summ1 <- r4ss::SSsummarize(list(update_base_res, 
-                                     new_base.1_4_res))
-r4ss::SSplotComparisons(data_summ1, subplots = 1, 
-                        models = c(1,2),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.1_4'))
-
-vroom::vroom_write(data_summ1$likelihoods_by_fleet, here::here('test.csv'), delim = ',')
-
-# 2019.1c.1
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,3),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.1-LLSrvSD'))
-# 2019.1c.2
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,4),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.2-LLSrvLComp'))
-# 2019.1c.3
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,5),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.3-FishISS'))
-# 2019.1c.4
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,6),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.4-104cm'))
-# 2019.1c.5
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,7),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.5-CVgrwth'))
-# 2019.1c.6
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,8),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.6-recfore'))
-# 2019.1c.7
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,9),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.7-LatAmin'))
-# 2019.1c.8
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,10),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.8-start_logit'))
-# 2019.1c.9
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
-                        models = c(1,11),
-                        legendlabels = c(base_mdl_update, 
-                                         '2019.1c.9-ae'))
-
-
-
-
-## base compared to 2019.1c & 1d ----
-data_summ_cd <- r4ss::SSsummarize(list(base_res_23,
-                                       update_base_res, 
-                                       new_base_res, 
-                                       new_base_lcomp_res))
-
-r4ss::SSplotComparisons(data_summ_cd,
-                        print = TRUE,
-                        legendlabels = c(base_mdl, 
-                                         base_mdl_update, 
-                                         new_base,  
-                                         new_base_lcomp),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cd'))
-
-## 2019.1d ----
-data_summ_d <- r4ss::SSsummarize(list(new_base_lcomp_res, 
-                                      new_base_lcomp_bin2_res, 
-                                      new_base_lcomp_bin5_res))
-
-r4ss::SSplotComparisons(data_summ_d,
-                        print = TRUE,
-                        legendlabels = c(new_base_lcomp, 
-                                         new_base_lcomp_bin2, 
-                                         new_base_lcomp_bin5),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_d'))
 
 ## likes & abc ----
 data_summ_all <- r4ss::SSsummarize(list(base_res_23,
                                         update_base_res, 
                                         new_base_res, 
-                                        new_base.1_res,
-                                        new_base.2_res,
-                                        new_base.3_res,
-                                        new_base.4_res,
-                                        new_base.5_res,
-                                        new_base.6_res,
-                                        new_base.7_res,
-                                        new_base.8_res,
-                                        new_base.9_res,
+                                        new_base_ae_res,
                                         new_base_lcomp_res, 
                                         new_base_lcomp_bin2_res, 
-                                        new_base_lcomp_bin5_res))
+                                        new_base_lcomp_bin5_res,
+                                        new_base_mat_res))
 
 
 vroom::vroom_write(data_summ_all$likelihoods %>% 
                      tidytable::rename('2019.1b-23' = model1,
                                        '2019.1b-24' = model2,
                                        '2019.1c' = model3,
-                                       '2019.1c.1' = model4,
-                                       '2019.1c.2' = model5,
-                                       '2019.1c.3' = model6,
-                                       '2019.1c.4' = model7,
-                                       '2019.1c.5' = model8,
-                                       '2019.1c.6' = model9,
-                                       '2019.1c.7' = model10,
-                                       '2019.1c.8' = model11,
-                                       '2019.1c.9' = model12,
-                                       '2019.1d' = model13,
-                                       '2019.1d.2' = model14,
-                                       '2019.1d.5' = model15), 
+                                       '2019.1d' = model4,
+                                       '2019.1e' = model5,
+                                       '2019.1e.2cm' = model6,
+                                       '2019.1e.5cm' = model7,
+                                       '2019.1f' = model8), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes.csv'), delim = ",")
 vroom::vroom_write(data_summ_all$likelihoods_by_fleet %>% 
                      tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-23',
                                                          model == 2 ~ '2019.1b-24',
                                                          model == 3 ~ '2019.1c',
-                                                         model == 4 ~ '2019.1c.1',
-                                                         model == 5 ~ '2019.1c.2',
-                                                         model == 6 ~ '2019.1c.3',
-                                                         model == 7 ~ '2019.1c.4',
-                                                         model == 8 ~ '2019.1c.5',
-                                                         model == 9 ~ '2019.1c.6',
-                                                         model == 10 ~ '2019.1c.7',
-                                                         model == 11 ~ '2019.1c.8',
-                                                         model == 12 ~ '2019.1c.9',
-                                                         model == 13 ~ '2019.1d',
-                                                         model == 14 ~ '2019.1d.2',
-                                                         model == 15 ~ '2019.1d.5')), 
+                                                         model == 4 ~ '2019.1d',
+                                                         model == 5 ~ '2019.1e',
+                                                         model == 6 ~ '2019.1e.2',
+                                                         model == 7 ~ '2019.1e.5',
+                                                         model == 8 ~ '2019.1f')), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_by_fleet.csv'), delim = ",")
 
 abc_comp <- data.frame(model = c(base_mdl,
                                  base_mdl_update, 
-                                 new_base, 
-                                 new_base.1,
-                                 new_base.2,
-                                 new_base.3,
-                                 new_base.4,
-                                 new_base.5,
-                                 new_base.6,
-                                 new_base.7,
-                                 new_base.8,
-                                 new_base.9,
+                                 new_base,
+                                 new_base_ae,
                                  new_base_lcomp, 
                                  new_base_lcomp_bin2, 
-                                 new_base_lcomp_bin5),
+                                 new_base_lcomp_bin5,
+                                 new_base_mat),
                        abc = c(as.numeric(base_res_23$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2024') %>% 
                                             select(Value)),
@@ -552,31 +443,7 @@ abc_comp <- data.frame(model = c(base_mdl,
                                as.numeric(new_base_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
-                               as.numeric(new_base.1_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.2_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.3_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.4_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.5_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.6_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.7_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.8_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base.9_res$derived_quants %>% 
+                               as.numeric(new_base_ae_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
                                as.numeric(new_base_lcomp_res$derived_quants %>% 
@@ -586,6 +453,9 @@ abc_comp <- data.frame(model = c(base_mdl,
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
                                as.numeric(new_base_lcomp_bin5_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base_mat_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp.csv'), delim = ",")
