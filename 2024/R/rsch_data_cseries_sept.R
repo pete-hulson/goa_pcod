@@ -20,6 +20,9 @@ asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 # day data pulled
 dat_day <- "Sep02"
 
+# base model from which to get files
+base_mdl_update <- "2019.1b-2024"
+
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
 purrr::map(here::here(asmnt_yr, "R", "assessment", source_files), source)

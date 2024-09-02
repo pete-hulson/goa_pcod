@@ -374,11 +374,14 @@ r4ss::SS_plots(new_base_mat_res,
                dir = here::here(asmnt_yr, 'rsch', new_base_mat, "plots"))
 
 ## run management scens ----
-update_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_mat_res),
-                                            CYR = asmnt_yr,
-                                            FLEETS = c(1:3),
-                                            do_fig = FALSE,
-                                            do_mark = FALSE)
+new_base_mat_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base_mat),
+                                             CYR = asmnt_yr,
+                                             FLEETS = c(1:3),
+                                             do_fig = FALSE,
+                                             do_mark = FALSE)
+
+vroom::vroom_write(new_base_mat_mscen$Two_year, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'Model2019_1f_2year.csv'), delim = ",")
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot data comparisons ----
@@ -395,6 +398,18 @@ data_summ_all <- r4ss::SSsummarize(list(base_res_23,
                                         new_base_lcomp_bin2_res, 
                                         new_base_lcomp_bin5_res,
                                         new_base_mat_res))
+
+r4ss::SSplotComparisons(data_summ_all,
+                        print = TRUE,
+                        legendlabels = c(base_mdl,
+                                         base_mdl_update, 
+                                         new_base,
+                                         new_base_ae,
+                                         new_base_lcomp, 
+                                         new_base_lcomp_bin2, 
+                                         new_base_lcomp_bin5,
+                                         new_base_mat),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'))
 
 
 vroom::vroom_write(data_summ_all$likelihoods %>% 
