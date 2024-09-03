@@ -1,3 +1,7 @@
+
+# TMB:::install.contrib("https://github.com/vtrijoulet/OSA_multivariate_dists/archive/main.zip")
+# remotes::install_github("fishfollower/compResidual/compResidual", INSTALL_opts=c("--no-multiarch"), force = TRUE)
+
 # test fishery length comps
 libs <- c("r4ss",
           "RODBC",
@@ -12,7 +16,8 @@ libs <- c("r4ss",
           "tidyverse",
           "tidytable",
           "vroom",
-          "here")
+          "here",
+          "compResidual")
 
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
@@ -26,6 +31,8 @@ new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # source functions ----
 source_files <- list.files(here::here(new_year, "R", "get_data"), "*.r$")
 purrr::map(here::here(new_year, "R", "get_data", source_files), source)
+source_files <- list.files(here::here(new_year, "R", "assessment"), "*.r$")
+purrr::map(here::here(new_year, "R", "assessment", source_files), source)
 source(here::here(new_year, "R", "utils.r"))
 
 
@@ -164,10 +171,14 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap(~ gear, nrow = 3,
              strip.position = 'top') +
-  labs(y = "Aggregated length composition", x = "Length (cm)") +
+  labs(y = "Aggregated length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
   scale_fill_manual(values = c('blue', 'green')) -> agg_plot
 
@@ -190,9 +201,13 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Trawl length composition", x = "Length (cm)") +
+  labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
   scale_fill_manual(values = c('blue', 'green')) -> trawl
 
@@ -216,9 +231,13 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Longline length composition", x = "Length (cm)") +
+  labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
   scale_fill_manual(values = c('blue', 'green')) -> longline
 
@@ -241,9 +260,13 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Pot length composition", x = "Length (cm)") +
+  labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
   scale_fill_manual(values = c('blue', 'green')) -> pot
 
@@ -272,7 +295,10 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
   geom_area(aes(fill = name2),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = 'none') +
+  theme(legend.position = "none",
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ name2, ncol = 1) +
   labs(y = "Pot length composition", x = "Length (cm)", fill = "Data treatment:", color = "Data treatment:") +
   scale_color_manual(values = c('green', 'red', 'blue')) +
@@ -317,9 +343,13 @@ ggplot(data = dat %>% tidytable::filter(gear == 'pot'),
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top",
-        axis.text.y = element_blank()) +
+        axis.text.y = element_blank(),
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Pot length composition", x = "Length (cm)") +
+  labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red' , 'green')) -> bin_pot
 
@@ -336,9 +366,13 @@ ggplot(data = dat %>% tidytable::filter(gear == 'trawl'),
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top",
-        axis.text.y = element_blank()) +
+        axis.text.y = element_blank(),
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Trawl length composition", x = "Length (cm)") +
+  labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_trawl
 
@@ -355,9 +389,13 @@ ggplot(data = dat %>% tidytable::filter(gear == 'longline'),
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top",
-        axis.text.y = element_blank()) +
+        axis.text.y = element_blank(),
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Longline length composition", x = "Length (cm)") +
+  labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll
 
@@ -414,9 +452,13 @@ ggplot(data = dat,
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top",
-        axis.text.y = element_blank()) +
+        axis.text.y = element_blank(),
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Trawl survey length composition", x = "Length (cm)") +
+  labs(y = "Trawl survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_twl_srv
 
@@ -467,9 +509,13 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
             alpha = 0.3777,
             position = 'identity') +
   theme(legend.position = "top",
-        axis.text.y = element_blank()) +
+        axis.text.y = element_blank(),
+        legend.text = element_text(size = 14),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        strip.text = element_text(size = 14)) +
   facet_wrap( ~ year) +
-  labs(y = "Longline survey length composition", x = "Length (cm)") +
+  labs(y = "Longline survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll_srv
 
@@ -612,3 +658,158 @@ ggplot(data = dat, aes(x = as.numeric(age), y = value, group = name)) +
 suppressWarnings(ggplot2::ggsave(ll_age,
                                  file = here::here(new_year, "plots", 'other','acomp_compare_pot.png'),
                                  width = 7, height = 7, unit = 'in', dpi = 520))
+
+
+
+## osa plots ----
+
+new_base <- "2019.1c-2024"
+new_base_ae <- "2019.1d-2024"
+new_base_lcomp <- "2019.1e-2024"
+new_base_lcomp_bin2 <- "2019.1e.2cm-2024"
+new_base_lcomp_bin5 <- "2019.1e.5cm-2024"
+ 
+model = here::here(new_year, 'rsch', new_base)
+fleet = 1
+sx = 1
+lengths = seq(0.5, 116.5, by = 1)
+N = 100
+
+# OSA_run_SS_length()
+library(compResidual)
+mods1 <- r4ss::SSgetoutput(dirvec = model)
+
+age <- data.table::data.table(mods1[[1]]$lendbase[,c(1,6,13,16:19)])[Bin%in%lengths & Fleet == fleet & Sex == sx]
+age <- data.table::data.table(melt(age, c('Yr', 'Fleet', 'Sex', 'Bin')))
+o <- age[variable == 'Obs']
+o <- maditr::dcast(o, Yr ~ Bin)
+p <- age[variable == 'Exp']
+p <- maditr::dcast(p, Yr ~ Bin)
+pearson <- age[variable == 'Pearson']
+pearson <- maditr::dcast(pearson, Yr ~ Bin)
+yrs <- o$Yr
+obs <- as.matrix(o[,-1])
+pred <- as.matrix(p[,-1])
+pearson <- as.matrix(pearson[,-1])
+Neff <- round(data.table::data.table(mods1[[1]]$lendbase)[Bin == lengths[1] & Fleet == fleet & Sex == sx]$effN)
+
+# plot_osa_comps2()
+
+o1 <- round(Neff * obs / rowSums(obs), 0)
+p <- pred / rowSums(pred)
+## default output
+res1 <- list()
+sdnr1 <- list()
+for(i in 1:N){
+  res1[[i]] <- resMulti(t(o1), t(p))
+  sdnr1[[i]] <- sd(res1[[i]])
+}
+sdnr <- data.table(do.call(rbind, sdnr1))
+names(sdnr) = "sdnr"
+sdnr$ID <- 1:nrow(sdnr)
+sdnr <- sdnr[order(sdnr),]
+
+HCI <- sqrt(qchisq(.975, (length(res1[[1]]) - 1)) / (length(res1[[1]]) - 1))
+LCI <- sqrt(qchisq(.025, (length(res1[[1]]) - 1)) / (length(res1[[1]]) - 1))
+n = 1
+if(N > 1){n = trunc(N / 2)}
+
+res = res1[[sdnr$ID[n]]]
+
+# plot_res2()
+
+
+
+
+plot_res2(x=res,o=obs,e=p,pr=pearson,yr=years,inde=index)
+dev.off()
+
+print(psdnr)
+windows(width=20,height=12)
+plot_res2(x=res,o=obs,e=p,pr=pearson,yr=years,inde=index)
+  
+
+library(compResidual) 
+library(ggplot2)
+library(ggpubr)
+
+Neff <- colSums(o)
+ehat <- Neff*e
+V <- Neff*e*(1-e)
+
+nbins <- nrow(o)
+nyrs<-nrow(e)
+pearson<-pr
+if(!all(is.finite(x))){
+  ind <- (!is.finite(x))
+  message("the following  were not finite")
+  message("observed counts= ", paste(o[-nbins,][ind], collapse=' '))
+  message("expected counts= ", paste(round(ehat[-nbins,][ind],2), collapse=' '))
+  message("Pearson resid= ", paste(round(pearson[-nbins,][ind],2), collapse=' '))
+  message("OSA resid= ", paste(round(x[ind],2), collapse=' '))
+  stop('non-finite residuals')
+  pearson[2,17]
+  pearson[!is.finite(x)]
+  pearson[ind]
+  x[ind]
+  o[-nbins,][ind]
+  ehat[-nbins,][ind]
+  pearson[-nbins,][ind]
+}
+pearson=t(pearson)
+
+o_tab<-data.table(t(matrix(x,nrow=length(inde)-1)))
+names(o_tab)<-paste(inde[1:(length(inde)-1)])
+o_tab$yr=yr
+
+o_tab<-melt(o_tab,"yr")
+names(o_tab)<-c("Year","Index","Value")
+o_tab$Sign<-"<0"
+o_tab[Value>0]$Sign<-">0"
+
+bubble_osa<-ggplot(data=o_tab,aes(y=Index,x=Year,color=Sign,size=abs(Value),alpha=abs(Value)))+
+  geom_point()+theme_bw(base_size=12)+scale_color_manual(values=c("blue","red"))+
+  labs(color="resid",sign="resid",size="resid",alpha="resid", title="OSA residuals")
+
+p_tab<-data.table(t(pearson))
+p_tab$yr<-yr
+p_tab<-melt(p_tab,"yr")
+names(p_tab)<-c("Year","Index","Value")
+p_tab$Sign<-"<0"
+p_tab[Value>0]$Sign<-">0"
+bubble_pear<-ggplot(data=p_tab,aes(y=Index,x=Year,color=Sign,size=abs(Value),alpha=abs(Value)))+
+  geom_point()+theme_bw(base_size=12)+scale_color_manual(values=c("blue","red"))+
+  labs(color="resid",sign="resid",size="resid",alpha="resid", title="Pearson residuals")
+
+pfram<-data.frame(y=c(pearson))
+o_tab1<-data.table(t(matrix(x,nrow=length(inde)-1)))
+o_val<-melt(o_tab1)$value
+ofram<-data.frame(y=c(o_val))
+ofram$type="OSA"
+pfram$type="Pearson"
+fram<-rbind(ofram,pfram)
+
+o_sdnr<-sd(subset(fram,type=="OSA")$y)
+p_sdnr<-sd(subset(fram,type=="Pearson")$y)
+
+qq_p<-ggplot(fram,aes(sample=y,shape=type,color=type))+stat_qq(size=2)+scale_color_manual(values=c("blue","red"))+
+  theme_bw(base_size=12)+scale_shape_manual(values=c(16,1))+geom_abline()+
+  labs(color="Residual type",shape='Residual type', title="QQ plots",x="",y="")+
+  annotate("text",label=paste0("OSA SDNR = ",round(o_sdnr,3)),x=0,y=min(fram$y)+(1-(min(fram$y)/8)),hjust="left")+
+  annotate("text",label=paste0("Pearson SDNR = ",round(p_sdnr,3)),x=0,y = min(fram$y)+1,hjust="left")
+
+
+oagg <- colSums(o)/sum(o)
+eagg <- colSums(e)/sum(e)
+tab1<-data.table(Index=inde,Obs=oagg,Exp=eagg)
+
+agg_plot<-ggplot(data=tab1)+geom_bar(aes(x=Index,y=Obs),stat='identity',color="blue",fill='blue')+
+  geom_line(aes(x=Index,y=Exp),color='red')+theme_bw(base_size=16)+
+  labs(title="Aggregated fits",y="Proportion",x="Index")
+
+
+
+plotg<-ggpubr::ggarrange(bubble_pear, bubble_osa,qq_p,agg_plot,ncol=2,nrow=2,heights=c(1,1),widths=c(1,1),align = c("h"),
+                         common.legend = F, legend = "bottom")
+print(plotg)
+

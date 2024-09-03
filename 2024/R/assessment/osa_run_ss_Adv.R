@@ -47,25 +47,25 @@ OSA_run_SS_age<-function(model=mods[1],ages=0:12, fleet=2, sx=1, N1=100, stck='E
 ## OSA_run_SS_length(model=mods[1],lengths=seq(4.5,119.5,by=5),fleet=2, sx=1, N1=100, stck='EBS_COD',surv='EBSSHELF')
 
 
-  OSA_run_SS_length<-function(model=mods[1],lengths=seq(4.5,119.5,by=5), fleet=2, sx=1, stck='EBS_COD',surv='EBSSHELF',N1=100){
-   library(compResidual)
-   mods1<-r4ss::SSgetoutput(dirvec=model)
-   age<-data.table::data.table(mods1[[1]]$lendbase[,c(1,6,13,16:19)])[Bin%in%lengths & Fleet==fleet &Sex==sx]
-   age<-data.table::data.table(melt(age,c('Yr','Fleet','Sex','Bin')))
-   o<-age[variable=='Obs']
-   o<-maditr::dcast(o,Yr~Bin)
-   p<-age[variable=='Exp']
-   p<-maditr::dcast(p,Yr~Bin)
-   pearson<-age[variable=='Pearson']
-   pearson<-maditr::dcast(pearson,Yr~Bin)
-   yrs<-o$Yr
-   o <- as.matrix(o[,-1])
-   p <- as.matrix(p[,-1])
-   pearson <- as.matrix(pearson[,-1])
-   Neff<-round(data.table::data.table(mods1[[1]]$lendbase)[Bin==lengths[1]& Fleet==fleet & Sex==sx]$effN)
-   plot_osa_comps2(o,p, pearson, index=lengths, index_label=paste0(model,'_length bin'), years=yrs, Neff=Neff, 
-   stock=paste("L_sex=",sx,stck,model,sep="_"), survey=surv,N=N1)
-  }
+OSA_run_SS_length<-function(model=mods[1],lengths=seq(4.5,119.5,by=5), fleet=2, sx=1, stck='EBS_COD',surv='EBSSHELF',N1=100){
+  library(compResidual)
+  mods1<-r4ss::SSgetoutput(dirvec=model)
+  age<-data.table::data.table(mods1[[1]]$lendbase[,c(1,6,13,16:19)])[Bin%in%lengths & Fleet==fleet &Sex==sx]
+  age<-data.table::data.table(melt(age,c('Yr','Fleet','Sex','Bin')))
+  o<-age[variable=='Obs']
+  o<-maditr::dcast(o,Yr~Bin)
+  p<-age[variable=='Exp']
+  p<-maditr::dcast(p,Yr~Bin)
+  pearson<-age[variable=='Pearson']
+  pearson<-maditr::dcast(pearson,Yr~Bin)
+  yrs<-o$Yr
+  o <- as.matrix(o[,-1])
+  p <- as.matrix(p[,-1])
+  pearson <- as.matrix(pearson[,-1])
+  Neff<-round(data.table::data.table(mods1[[1]]$lendbase)[Bin==lengths[1]& Fleet==fleet & Sex==sx]$effN)
+  plot_osa_comps2(o,p, pearson, index=lengths, index_label=paste0(model,'_length bin'), years=yrs, Neff=Neff, 
+                  stock=paste("L_sex=",sx,stck,model,sep="_"), survey=surv,N=N1)
+}
 
 
 #' Explore OSA residuals for multinomial composition data and

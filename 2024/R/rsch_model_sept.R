@@ -549,7 +549,20 @@ abc_comp <- data.frame(model = c(base_mdl,
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_abc_comp.csv'), delim = ",")
 
 
-
+# plot model comparisons ----
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'), recursive = TRUE)
+}
+# all
+mdl_summ_24 <- r4ss::SSsummarize(list(update_base_res, 
+                                      new_base_res, 
+                                      new_base_twlsel_res))
+r4ss::SSplotComparisons(mdl_summ_24,
+                        print = TRUE,
+                        legendlabels = c(base_mdl_update, 
+                                         new_base,
+                                         '2024.0'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'))
 
 
 

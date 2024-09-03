@@ -33,7 +33,7 @@ ctl_2024 <- function(asmnt_yr = NULL,
   ctl$MG_parms$PHASE[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 1
 
   # fix trawl survey start_logit param
-  ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -1007.5
+  ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -1012.5
   ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -2
   ctl$size_selex_parms$Block[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = 0
   ctl$size_selex_parms$Block_Fxn[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = 0

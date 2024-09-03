@@ -410,6 +410,65 @@ r4ss::SSplotComparisons(data_summ_bcd, subplots = 2,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
                         filenameprefix = 'ae')
 
+## d & e comparison ----
+
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_debin'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_debin'), recursive = TRUE)
+}
+data_summ_debin <- r4ss::SSsummarize(list(new_base_lcomp_res, 
+                                          new_base_lcomp_bin2_res, 
+                                          new_base_lcomp_bin5_res))
+
+r4ss::SSplotComparisons(data_summ_debin, 
+                        print = TRUE,
+                        legendlabels = c(new_base_lcomp, 
+                                         new_base_lcomp_bin2, 
+                                         new_base_lcomp_bin5), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_debin'))
+
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'), recursive = TRUE)
+}
+data_summ_de <- r4ss::SSsummarize(list(new_base_ae_res,
+                                          new_base_lcomp_res))
+
+r4ss::SSplotComparisons(data_summ_de, 
+                        print = TRUE,
+                        legendlabels = c(new_base_ae,
+                                         new_base_lcomp), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'))
+
+
+## b & f comparison ----
+
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_mat'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_mat'), recursive = TRUE)
+}
+data_summ_mat <- r4ss::SSsummarize(list(update_base_res, 
+                                        new_base_mat_res))
+
+r4ss::SSplotComparisons(data_summ_mat, 
+                        print = TRUE,
+                        legendlabels = c(base_mdl_update,
+                                         new_base_mat), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_mat'))
+
+if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'))){
+  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'), recursive = TRUE)
+}
+
+## d & e comparison ----
+data_summ_de <- r4ss::SSsummarize(list(new_base_ae_res,
+                                       new_base_lcomp_res))
+
+r4ss::SSplotComparisons(data_summ_de, 
+                        print = TRUE,
+                        legendlabels = c(new_base_ae,
+                                         new_base_lcomp), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_de'))
+
+
+
 ## likes & abc ----
 data_summ_all <- r4ss::SSsummarize(list(base_res_23,
                                         update_base_res, 
