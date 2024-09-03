@@ -389,6 +389,27 @@ if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots')
   dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'), recursive = TRUE)
 }
 
+## b, c, d comparison ----
+
+data_summ_bcd <- r4ss::SSsummarize(list(update_base_res, 
+                                        new_base_res, 
+                                        new_base_ae_res))
+
+
+vroom::vroom_write(data_summ_bcd$likelihoods %>% 
+                     tidytable::rename('2019.1b' = model1,
+                                       '2019.1c' = model2,
+                                       '2019.1d' = model3), 
+                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_bcd.csv'), delim = ",")
+
+r4ss::SSplotComparisons(data_summ_bcd, subplots = 2, 
+                        print = TRUE,
+                        legendlabels = c(base_mdl_update,
+                                         new_base, 
+                                         new_base_ae), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'ae')
+
 ## likes & abc ----
 data_summ_all <- r4ss::SSsummarize(list(base_res_23,
                                         update_base_res, 
