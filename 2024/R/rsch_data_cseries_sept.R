@@ -577,7 +577,9 @@ if(!file.exists(here::here(asmnt_yr, 'rsch', new_base))){
   r4ss::SS_plots(new_base_res,
                  printfolder = "",
                  dir = here::here(asmnt_yr, 'rsch', new_base, "plots"))
-} else{new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))}
+} else{
+  new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
+  }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot comparisons ----
@@ -771,3 +773,37 @@ abc_comp <- data.frame(model = c(base_mdl_update,
                                             select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp_cseries.csv'), delim = ",")
 
+# % diff in ssb and abs
+
+data_summ_cseries$SpawnBio %>% 
+  tidytable::pivot_longer(cols = c(model1, 
+                                   model2, 
+                                   model3, 
+                                   model4, 
+                                   model5, 
+                                   model6, 
+                                   model7, 
+                                   model8, 
+                                   model9, 
+                                   model10, 
+                                   model11),
+                          names_to = 'model', values_to = 'ssb') %>% 
+  tidytable::select(-Label) %>% 
+  tidytable::filter(Yr >= 1977, Yr <= 2024, model != 'model1') %>% 
+  tidytable::mutate(model = case_when(model == 'model2' ~ '2019.1c',
+                                      model == 'model3' ~ '2019.1c.1',
+                                      model == 'model4' ~ '2019.1c.2',
+                                      model == 'model5' ~ '2019.1c.3',
+                                      model == 'model6' ~ '2019.1c.4',
+                                      model == 'model7' ~ '2019.1c.5',
+                                      model == 'model8' ~ '2019.1c.6',
+                                      model == 'model9' ~ '2019.1c.7',
+                                      model == 'model10' ~ '2019.1c.8',
+                                      model == 'model11' ~ '2019.1c.9')) %>% 
+  tidytable::left_join(data_summ_cseries$SpawnBio %>% 
+                         tidytable::select(Yr, model1) %>% 
+                         tidytable::filter(Yr >= 1977, Yr <= 2024)) %>% 
+  tidytable::mutate(perdiff = (ssb - model1) / model1) %>% 
+  tidytable::summarise(perdiff_ssb = mean(perdiff), .by = model) -> ssb_comp
+
+vroom::vroom_write(ssb_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_ssb_comp_cseries.csv'), delim = ",")
