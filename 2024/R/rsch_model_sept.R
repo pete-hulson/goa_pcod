@@ -453,6 +453,32 @@ if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'
   dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'), recursive = TRUE)
 }
 
+
+# 23 vs 24
+mdl_summ_23v24 <- r4ss::SSsummarize(list(base_res_23, 
+                                         update_base_res))
+
+r4ss::SSplotComparisons(mdl_summ_23v24, subplots = 2, 
+                        print = TRUE,
+                        legendlabels = c(base_mdl, 
+                                         base_mdl_update),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = '23v24')
+
+# 23 vs 24
+mdl_summ_newbase <- r4ss::SSsummarize(list(base_res_23, 
+                                         update_base_res, 
+                                         new_base_res))
+
+r4ss::SSplotComparisons(mdl_summ_newbase, subplots = 2, 
+                        print = TRUE,
+                        legendlabels = c(base_mdl, 
+                                         base_mdl_update,
+                                         new_base), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'newbase')
+
+# all
 mdl_summ <- r4ss::SSsummarize(list(base_res_23, 
                                    update_base_res, 
                                    new_base_res, 
@@ -460,7 +486,6 @@ mdl_summ <- r4ss::SSsummarize(list(base_res_23,
                                    new_base_twlsel_res, 
                                    new_base_selex_res, 
                                    new_base_selex2_res))
-
 r4ss::SSplotComparisons(mdl_summ,
                         print = TRUE,
                         legendlabels = c(base_mdl, 
