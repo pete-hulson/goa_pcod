@@ -31,6 +31,16 @@ source(here::here(new_year, "R", "utils.r"))
 
 # fishery comp filtering analysis ----
 
+vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
+  # filter to years post-1991
+  tidytable::filter(year >= 1991) %>% 
+  # unique cruise-permit-haul description
+  tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
+  tidytable::summarise(tfreq = sum(freq), .by = c(year, gear, haul1)) %>% 
+  tidytable::summarise(mufreq = mean(tfreq), .by = c(year, gear)) %>% 
+  tidytable::pivot_wider(names_from = gear, values_from = mufreq) %>% 
+  vroom::vroom_write(., here::here(new_year, 'output', 'fed_mean_hls.csv'), delim = ",")
+
 ## federal > 10 per haul ----
 fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
   # filter to years post-1991
