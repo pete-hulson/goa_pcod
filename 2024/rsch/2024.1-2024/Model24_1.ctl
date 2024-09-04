@@ -62,7 +62,7 @@
     0	      20	    7.42895	     0	    0	0	 10	0	0	0	0	0	0	0	#_CV_old_Fem_GP_1    
   -99	      99	2.77574e-06	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_1_Fem_GP_1   
   -99	      99	    3.33181	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_2_Fem_GP_1   
-  -99	      99	       57.3	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1    
+  -99	      99	       53.7	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1    
   -99	      99	  -0.273657	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat_slope_Fem_GP_1 
   -99	      99	          1	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_alpha_Fem_GP_1
   -99	      99	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_beta_Fem_GP_1 
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 -1 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.27178418711 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1990.00000000023 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2018.67227724692 #_last_yr_fullbias_adj_in_MPD
-2034.3702484034 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.903365877704294 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1961.26041178846 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1989.67020148469 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2018.60345484748 #_last_yr_fullbias_adj_in_MPD
+2034.52861134837 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.902905663160948 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -200,18 +200,18 @@
     0	     10	   4.0558	 10	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_4_FshPot(3)  
 -1000	2.71828	     -999	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_FshPot(3)  
   -10	     10	 0.284913	 10	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_FshPot(3)  
-   10	     90	  60.2246	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_Srv(4)     
-  -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_Srv(4)     
-  -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_3_Srv(4)     
-    0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	0	0	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	  -1007.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
-  -10	     10	       10	 10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_Srv(4)     
+   10	     90	  60.2246	 50	0	0	 1	0	0	   0	   0	0	1	2	#_SizeSel_P_1_Srv(4)     
+  -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_2_Srv(4)     
+  -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_3_Srv(4)     
+    0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_4_Srv(4)     
+  -10	2.71828	  -1012.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
+  -10	     10	 -0.66555	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_LLSrv(5)   
   -10	     10	  4.68122	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_3_LLSrv(5)   
     0	     10	  4.64978	 10	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_4_LLSrv(5)   
 -1000	2.71828	     -999	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_LLSrv(5)   
-  -10	     10	-0.466947	 10	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_LLSrv(5)   
+  -10	     10	       10	 10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_LLSrv(5)   
 #_AgeSelex
 #_No age_selex_parm
 # timevary selex parameters 
@@ -261,6 +261,16 @@
    10	  90	  75.9646	 50	  0	0	 1	#_SizeSel_P_1_FshPot(3)_BLK3repl_2017  
   -20	  10	  2.80531	  0	  0	0	 2	#_SizeSel_P_2_FshPot(3)_BLK3repl_2017  
   -10	  10	  5.47946	  0	  0	0	 2	#_SizeSel_P_3_FshPot(3)_BLK3repl_2017  
+   10	  90	   59.965	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_1996     
+   10	  90	  56.5473	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_2006     
+  -20	  10	 -4.15407	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_1996     
+  -20	  10	 -3.73717	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_2006     
+  -10	  10	   5.4719	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_1996     
+  -10	  10	  5.09389	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_2006     
+    0	  10	  4.21246	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_1996     
+    0	  10	    4.195	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_2006     
+    0	  10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_1996     
+    0	  10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_2006     
 # info on dev vectors created for selex parms are reported with other devs after tag parameter section
 #
 0 #  use 2D_AR1 selectivity(0/1):  experimental feature

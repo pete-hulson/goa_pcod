@@ -62,7 +62,7 @@
     0	      20	    7.42895	     0	    0	0	 10	0	0	0	0	0	0	0	#_CV_old_Fem_GP_1    
   -99	      99	2.77574e-06	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_1_Fem_GP_1   
   -99	      99	    3.33181	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_2_Fem_GP_1   
-  -99	      99	       57.3	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1    
+  -99	      99	       53.7	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1    
   -99	      99	  -0.273657	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat_slope_Fem_GP_1 
   -99	      99	          1	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_alpha_Fem_GP_1
   -99	      99	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_beta_Fem_GP_1 
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 -1 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1961.52599893197 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1989.54050704277 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2018.65107313847 #_last_yr_fullbias_adj_in_MPD
-2034.0248375533 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.904713541462535 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1961.46656205987 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1989.57298296338 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2018.60102763035 #_last_yr_fullbias_adj_in_MPD
+2034.45829698282 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.904121262228165 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -204,7 +204,7 @@
   -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_Srv(4)     
   -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_3_Srv(4)     
     0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	0	0	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	  -1007.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
+  -10	2.71828	  -1012.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
   -10	     10	       10	 10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_LLSrv(5)   
