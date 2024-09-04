@@ -472,6 +472,55 @@ r4ss::SS_plots(new_base.9_res,
                dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.9, "plots"))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2019.1c.10 ----
+# includes:
+# .10 add prior to descend_se param for survey selex
+
+new_base.10 <- "2019.1c.10-2024"
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                to = here::here(asmnt_yr, 'rsch', 'cseries', new_base.10))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/cseries',
+                 mdl = new_base.10, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_old.dat"),
+                 ctl_in = "Model19_1b.ctl",
+                 ctl_out = "Model19_1c.ctl")
+
+## add prior to descend_sd for twl survey ----
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, "Model19_1c.ctl"))
+ctl$size_selex_parms$PRIOR[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 4
+ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 0.2
+ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 0
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, "Model19_1c.ctl"),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/cseries',
+              mdl = new_base.10,
+              ctl_filename = "Model19_1c.ctl")
+
+## get and plot model output ----
+# get output
+new_base.10_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.10))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(new_base.10_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch', 'cseries', new_base.10, "plots"))
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2019.1b: updated base model ----
 base_mdl <- "2019.1b-2023" # 2023 accepted model
 # includes updated GAP tables and length-weight relationship
@@ -507,7 +556,6 @@ if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update))){
                 mdl = base_mdl_update,
                 ctl_filename = "Model19_1b.ctl")
   
-  
   ## get and plot model output ----
   # get output
   update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
@@ -535,6 +583,7 @@ if(!file.exists(here::here(asmnt_yr, 'rsch', base_mdl_update))){
 # .7 turn off recr forecase phase
 # .8 add prior to Lmin
 # .9 turn off start_logit param for survey selex
+# .10 add prior to descend_se param for survey selex
 
 new_base <- "2019.1c-2024"
 
@@ -600,7 +649,8 @@ data_summ_cseries <- r4ss::SSsummarize(list(update_base_res,
                                             new_base.6_res,
                                             new_base.7_res,
                                             new_base.8_res,
-                                            new_base.9_res))
+                                            new_base.9_res,
+                                            new_base.10_res))
 r4ss::SSplotComparisons(data_summ_cseries,
                         print = TRUE,
                         legendlabels = c(base_mdl_update, 
@@ -613,7 +663,8 @@ r4ss::SSplotComparisons(data_summ_cseries,
                                          new_base.6,
                                          new_base.7,
                                          new_base.8,
-                                         new_base.9),
+                                         new_base.9,
+                                         new_base.10),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'))
 
 ### one at a time ----
@@ -699,6 +750,15 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c9')
 
+# 2019.1c.10
+r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+                        print = TRUE,
+                        models = c(1,12),
+                        legendlabels = c(base_mdl_update, 
+                                         '2019.1c.10-descend_se'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
+                        filenameprefix = 'c10')
+
 ## likes & abc ----
 vroom::vroom_write(data_summ_cseries$likelihoods %>% 
                      tidytable::rename('2019.1b-24' = model1,
@@ -711,7 +771,8 @@ vroom::vroom_write(data_summ_cseries$likelihoods %>%
                                        '2019.1c.6' = model8,
                                        '2019.1c.7' = model9,
                                        '2019.1c.8' = model10,
-                                       '2019.1c.9' = model11), 
+                                       '2019.1c.9' = model11,
+                                       '2019.1c.10' = model12), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_cseries.csv'), delim = ",")
 vroom::vroom_write(data_summ_cseries$likelihoods_by_fleet %>% 
                      tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-24',
@@ -724,7 +785,8 @@ vroom::vroom_write(data_summ_cseries$likelihoods_by_fleet %>%
                                                          model == 8 ~ '2019.1c.6',
                                                          model == 9 ~ '2019.1c.7',
                                                          model == 10 ~ '2019.1c.8',
-                                                         model == 11 ~ '2019.1c.9')), 
+                                                         model == 11 ~ '2019.1c.9',
+                                                         model == 12 ~ '2019.1c.10')), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_summ_likes_by_fleet_cseries.csv'), delim = ",")
 
 abc_comp <- data.frame(model = c(base_mdl_update, 
@@ -737,7 +799,8 @@ abc_comp <- data.frame(model = c(base_mdl_update,
                                  new_base.6,
                                  new_base.7,
                                  new_base.8,
-                                 new_base.9),
+                                 new_base.9,
+                                 new_base.10),
                        abc = c(as.numeric(update_base_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
@@ -770,11 +833,13 @@ abc_comp <- data.frame(model = c(base_mdl_update,
                                             select(Value)),
                                as.numeric(new_base.9_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
+                                            select(Value)),
+                               as.numeric(new_base.10_res$derived_quants %>% 
+                                            filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp_cseries.csv'), delim = ",")
 
 # % diff in ssb and abs
-
 data_summ_cseries$SpawnBio %>% 
   tidytable::pivot_longer(cols = c(model1, 
                                    model2, 
@@ -786,7 +851,8 @@ data_summ_cseries$SpawnBio %>%
                                    model8, 
                                    model9, 
                                    model10, 
-                                   model11),
+                                   model11, 
+                                   model12),
                           names_to = 'model', values_to = 'ssb') %>% 
   tidytable::select(-Label) %>% 
   tidytable::filter(Yr >= 1977, Yr <= 2024, model != 'model1') %>% 
@@ -799,7 +865,8 @@ data_summ_cseries$SpawnBio %>%
                                       model == 'model8' ~ '2019.1c.6',
                                       model == 'model9' ~ '2019.1c.7',
                                       model == 'model10' ~ '2019.1c.8',
-                                      model == 'model11' ~ '2019.1c.9')) %>% 
+                                      model == 'model11' ~ '2019.1c.9',
+                                      model == 'model12' ~ '2019.1c.10')) %>% 
   tidytable::left_join(data_summ_cseries$SpawnBio %>% 
                          tidytable::select(Yr, model1) %>% 
                          tidytable::filter(Yr >= 1977, Yr <= 2024)) %>% 
