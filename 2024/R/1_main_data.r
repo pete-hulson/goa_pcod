@@ -228,14 +228,16 @@ r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        overwrite = TRUE)
 
 # update ageing error parameters
-ae <- vroom::vroom(here::here(new_dat_year, 'data', 'ageing_error', 'ResultsGOA_Linear', 'Pcod SS3_format_Reader1.csv')) %>% 
-  tidytable::filter(...1 == 'SD') %>% 
-  tidytable::pivot_longer() %>% 
-  tidytable::select(value)
-
+# these are from AgeingError package using both EBS and GOA data combined
+# ageing error sds
 old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"), 3] <- 1
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"), 3] <- as.numeric(ae[2])
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"), 3] <- as.numeric(ae[length(ae$value)])
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"), 3] <- 0.11
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"), 3] <- 1.13
+# bias
+old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"), 3] <- 0.24
+old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"), 7] <- -1
+old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"), 3] <- 2
+old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"), 7] <- -1
 
 # write base model ctl with updated ageing error
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
