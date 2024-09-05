@@ -40,7 +40,7 @@ base_mdl_update <- "2019.1b-2024"
 update_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', base_mdl_update))
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2019.1f: new base model ----
+# 2019.1e.5cm: new base model ----
 new_base <- "2019.1e.5cm-2024"
 
 new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
@@ -164,145 +164,145 @@ if(file.exists(here::here(asmnt_yr, 'rsch', new_base_llsel, 'plots'))){
 r4ss::SS_plots(new_base_llsel_res,
                printfolder = "",
                dir = here::here(asmnt_yr, 'rsch', new_base_llsel, "plots"))
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2024.2: logistic & time-invariant survey selex ----
-new_base_selex <- "2024.2-2024"
-copy_mdl <- new_base
-
-## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'ss3.exe'))){
-  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-                to = here::here(asmnt_yr, 'rsch', new_base_selex))
-}
-
-## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_selex, 
-                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_2.ctl")
-
-## make 2024 changes to ctl file ----
-ctl_2024(asmnt_yr, 
-         folder = 'rsch',
-         mdl = new_base_selex, 
-         ctl_filename = 'Model24_2.ctl')
-
-## change selex in ctl ----
-# read ctl file
-ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'))
-# fix maturity
-# ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
-# freeze ll srv to logistic
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
-# set blocks to 0
-ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-                               which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-                                   which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# remove from tv section
-ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
-                                                        length(rownames(ctl$size_selex_parms_tv))),]
-# freeze twl srv to logistic
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
-# write new ctl file
-r4ss::SS_writectl_3.30(ctllist = ctl,
-                       outfile = here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'),
-                       overwrite = TRUE)
-
-## run model ----
-run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_selex,
-              ctl_filename = "Model24_2.ctl")
-
-## get and plot model output ----
-# get output
-new_base_selex_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex))
-# if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'), recursive = TRUE)
-}
-# plot results
-r4ss::SS_plots(new_base_selex_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_selex, "plots"))
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2024.3: logistic twl surv & prior on ll surv selex ----
-new_base_selex2 <- "2024.3-2024"
-copy_mdl <- new_base
-
-## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'ss3.exe'))){
-  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-                to = here::here(asmnt_yr, 'rsch', new_base_selex2))
-}
-
-## update files ----
-update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_selex2, 
-                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
-                 ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_3.ctl")
-
-## make 2024 changes to ctl file ----
-ctl_2024(asmnt_yr, 
-         folder = 'rsch',
-         mdl = new_base_selex2, 
-         ctl_filename = 'Model24_3.ctl')
-
-## change selex in ctl ----
-# read ctl file
-ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'))
-# fix maturity
-# ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
-# penalize ll srv
-ctl$size_selex_parms$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
-ctl$size_selex_parms$PRIOR[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
-ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0.5
-ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 6
-# set blocks to 0
-ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-                               which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-                                   which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# remove from tv section
-ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
-                                                        length(rownames(ctl$size_selex_parms_tv))),]
-# freeze twl srv to logistic
-ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
-ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
-# write new ctl file
-r4ss::SS_writectl_3.30(ctllist = ctl,
-                       outfile = here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'),
-                       overwrite = TRUE)
-
-## run model ----
-run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_selex2,
-              ctl_filename = "Model24_3.ctl")
-
-## get and plot model output ----
-# get output
-new_base_selex2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex2))
-# if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'), recursive = TRUE)
-}
-# plot results
-r4ss::SS_plots(new_base_selex2_res,
-               printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_selex2, "plots"))
-
-
+# 
+# # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # 2024.2: logistic & time-invariant survey selex ----
+# new_base_selex <- "2024.2-2024"
+# copy_mdl <- new_base
+# 
+# ## copy ss input files ----
+# if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'ss3.exe'))){
+#   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+#                 to = here::here(asmnt_yr, 'rsch', new_base_selex))
+# }
+# 
+# ## update files ----
+# update_ss3_files(asmnt_yr, 
+#                  folder = 'rsch',
+#                  mdl = new_base_selex, 
+#                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+#                  ctl_in = "updated_ae.ctl",
+#                  ctl_out = "Model24_2.ctl")
+# 
+# ## make 2024 changes to ctl file ----
+# ctl_2024(asmnt_yr, 
+#          folder = 'rsch',
+#          mdl = new_base_selex, 
+#          ctl_filename = 'Model24_2.ctl')
+# 
+# ## change selex in ctl ----
+# # read ctl file
+# ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'))
+# # fix maturity
+# # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
+# # freeze ll srv to logistic
+# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
+# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
+# # set blocks to 0
+# ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
+#                                which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
+# ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
+#                                    which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
+# # remove from tv section
+# ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
+#                                                         length(rownames(ctl$size_selex_parms_tv))),]
+# # freeze twl srv to logistic
+# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
+# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
+# # write new ctl file
+# r4ss::SS_writectl_3.30(ctllist = ctl,
+#                        outfile = here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'),
+#                        overwrite = TRUE)
+# 
+# ## run model ----
+# run_ss3_model(asmnt_yr, 
+#               folder = 'rsch',
+#               mdl = new_base_selex,
+#               ctl_filename = "Model24_2.ctl")
+# 
+# ## get and plot model output ----
+# # get output
+# new_base_selex_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex))
+# # if exists, delete plot folder
+# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'))){
+#   unlink(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'), recursive = TRUE)
+# }
+# # plot results
+# r4ss::SS_plots(new_base_selex_res,
+#                printfolder = "",
+#                dir = here::here(asmnt_yr, 'rsch', new_base_selex, "plots"))
+# 
+# # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # 2024.3: logistic twl surv & prior on ll surv selex ----
+# new_base_selex2 <- "2024.3-2024"
+# copy_mdl <- new_base
+# 
+# ## copy ss input files ----
+# if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'ss3.exe'))){
+#   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+#                 to = here::here(asmnt_yr, 'rsch', new_base_selex2))
+# }
+# 
+# ## update files ----
+# update_ss3_files(asmnt_yr, 
+#                  folder = 'rsch',
+#                  mdl = new_base_selex2, 
+#                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+#                  ctl_in = "updated_ae.ctl",
+#                  ctl_out = "Model24_3.ctl")
+# 
+# ## make 2024 changes to ctl file ----
+# ctl_2024(asmnt_yr, 
+#          folder = 'rsch',
+#          mdl = new_base_selex2, 
+#          ctl_filename = 'Model24_3.ctl')
+# 
+# ## change selex in ctl ----
+# # read ctl file
+# ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'))
+# # fix maturity
+# # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
+# # penalize ll srv
+# ctl$size_selex_parms$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0
+# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
+# ctl$size_selex_parms$PRIOR[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
+# ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0.5
+# ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 6
+# # set blocks to 0
+# ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
+#                                which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
+# ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
+#                                    which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
+# # remove from tv section
+# ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
+#                                                         length(rownames(ctl$size_selex_parms_tv))),]
+# # freeze twl srv to logistic
+# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
+# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
+# # write new ctl file
+# r4ss::SS_writectl_3.30(ctllist = ctl,
+#                        outfile = here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'),
+#                        overwrite = TRUE)
+# 
+# ## run model ----
+# run_ss3_model(asmnt_yr, 
+#               folder = 'rsch',
+#               mdl = new_base_selex2,
+#               ctl_filename = "Model24_3.ctl")
+# 
+# ## get and plot model output ----
+# # get output
+# new_base_selex2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex2))
+# # if exists, delete plot folder
+# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'))){
+#   unlink(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'), recursive = TRUE)
+# }
+# # plot results
+# r4ss::SS_plots(new_base_selex2_res,
+#                printfolder = "",
+#                dir = here::here(asmnt_yr, 'rsch', new_base_selex2, "plots"))
+# 
+# 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2024.3: logistic & time-invariant survey selex, full t-v for fishery (2024.3) ----
 # new_selex <- "2024.3-2024"
@@ -454,7 +454,7 @@ if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'
 }
 
 
-# 23 vs 24
+## 23 vs 24 ----
 mdl_summ_23v24 <- r4ss::SSsummarize(list(base_res_23, 
                                          update_base_res))
 
@@ -465,7 +465,7 @@ r4ss::SSplotComparisons(mdl_summ_23v24, subplots = 2,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
                         filenameprefix = '23v24')
 
-# 23 vs 24
+## 23 vs 24 and new base model ----
 mdl_summ_newbase <- r4ss::SSsummarize(list(base_res_23, 
                                            update_base_res, 
                                            new_base_res))
@@ -478,52 +478,58 @@ r4ss::SSplotComparisons(mdl_summ_newbase, subplots = 2,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
                         filenameprefix = 'newbase')
 
-# all
+## all base with asymp twl survey selex ----
+mdl_summ <- r4ss::SSsummarize(list(base_res_23, 
+                                   update_base_res, 
+                                   new_base_res, 
+                                   new_base_twlsel_res))
+r4ss::SSplotComparisons(mdl_summ,
+                        print = TRUE,
+                        legendlabels = c(base_mdl, 
+                                         base_mdl_update, 
+                                         new_base,
+                                         new_base_twlsel),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'twlsel')
+
+
+## all base with asymp twl survey selex & ll survey selex ----
 mdl_summ <- r4ss::SSsummarize(list(base_res_23, 
                                    update_base_res, 
                                    new_base_res, 
                                    new_base_twlsel_res, 
-                                   new_base_llsel_res,
-                                   new_base_selex_res, 
-                                   new_base_selex2_res))
+                                   new_base_llsel_res))
 r4ss::SSplotComparisons(mdl_summ,
                         print = TRUE,
                         legendlabels = c(base_mdl, 
                                          base_mdl_update, 
                                          new_base,
                                          new_base_twlsel, 
-                                         new_base_llsel, 
-                                         new_base_selex, 
-                                         new_base_selex2),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'))
+                                         new_base_llsel),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'llsel')
 
-
+## likes & abc ----
 vroom::vroom_write(mdl_summ$likelihoods %>% 
                      tidytable::rename('2019.1b-23' = model1,
                                        '2019.1b-24' = model2,
                                        '2019.1e.5cm' = model3,
                                        '2024.0' = model4,
-                                       '2024.1' = model5,
-                                       '2024.2' = model6,
-                                       '2024.3' = model7), 
+                                       '2024.1' = model5), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_summ_likes.csv'), delim = ",")
 vroom::vroom_write(mdl_summ$likelihoods_by_fleet %>% 
                      tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-23',
                                                          model == 2 ~ '2019.1b-24',
                                                          model == 3 ~ '2019.1e.5cm',
                                                          model == 4 ~ '2024.0',
-                                                         model == 5 ~ '2024.1',
-                                                         model == 6 ~ '2024.2',
-                                                         model == 7 ~ '2024.3')), 
+                                                         model == 5 ~ '2024.1')), 
                    here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_summ_likes_by_fleet.csv'), delim = ",")
 
 abc_comp <- data.frame(model = c(base_mdl, 
                                  base_mdl_update, 
                                  new_base,
                                  new_base_twlsel, 
-                                 new_base_llsel, 
-                                 new_base_selex, 
-                                 new_base_selex2),
+                                 new_base_llsel),
                        abc = c(as.numeric(base_res_23$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2024') %>% 
                                             select(Value)),
@@ -538,34 +544,8 @@ abc_comp <- data.frame(model = c(base_mdl,
                                             select(Value)),
                                as.numeric(new_base_llsel_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base_selex_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
-                                            select(Value)),
-                               as.numeric(new_base_selex2_res$derived_quants %>% 
-                                            filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value))))
 
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_abc_comp.csv'), delim = ",")
-
-
-# plot model comparisons ----
-if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'))){
-  dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'), recursive = TRUE)
-}
-# all
-mdl_summ_24 <- r4ss::SSsummarize(list(update_base_res, 
-                                      new_base_res, 
-                                      new_base_twlsel_res))
-r4ss::SSplotComparisons(mdl_summ_24,
-                        print = TRUE,
-                        legendlabels = c(base_mdl_update, 
-                                         new_base,
-                                         new_base_twlsel),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots_24'))
-
-
-
-
 
 
