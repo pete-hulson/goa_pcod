@@ -147,3 +147,25 @@ ggplot(dat, aes(x = true_age, y = bias)) +
 
 dat %>% 
   tidytable::mutate(est_bias = -0.274 + 0.249 * original_age)
+
+
+
+# steve code
+data2<-AgeingError:::CreateData("dataREREADS.dat", NDataSet = 1, verbose = TRUE, EchoFile = "data_echo.out")
+
+PCOD2_spc <- AgeingError:::CreateSpecs("control3.spc", DataSpecs = data2,verbose = TRUE)
+
+
+PCOD2_mod <- AgeingError::DoApplyAgeError(
+  Species = "Pcod",
+  DataSpecs = data2,
+  ModelSpecsInp = PCOD2_spc,
+  AprobWght = 1e-06,
+  SlopeWght = 0.01,
+  SaveDir = "ResultsREREADS",
+  verbose = TRUE
+)
+
+
+
+PCOD2_out <- AgeingError:::ProcessResults(Species = "Pcod", SaveDir = "ResultsREREADS", CalcEff = TRUE, verbose = FALSE)
