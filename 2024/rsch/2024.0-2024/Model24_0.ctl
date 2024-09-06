@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-09-02 10:07:26.92643
+#C file write time: 2024-09-05 11:01:55.272071
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -71,15 +71,15 @@
   -10	      10	          0	     0	    0	0	-10	0	0	0	0	0	6	2	#_AgeKeyParm2        
   -10	      10	          0	     0	    0	0	-10	0	0	0	0	0	6	2	#_AgeKeyParm3        
   -10	      10	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm4        
-  -10	      10	   0.109465	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm5        
-  -10	      10	    1.09465	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm6        
+  -10	      10	       0.11	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm5        
+  -10	      10	       1.13	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm6        
   -10	      10	          0	     0	    0	0	 -1	0	0	0	0	0	0	0	#_AgeKeyParm7        
 1e-06	0.999999	        0.5	   0.5	  0.5	0	-99	0	0	0	0	0	0	0	#_FracFemale_GP_1    
 #_timevary MG parameters
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE
-0.1	2	 0.874837	-0.81	0.41	3	6	#_NatM_p_1_Fem_GP_1_BLK4repl_2014
- -9	9	 0.391521	    0	   0	0	9	#_AgeKeyParm2_BLK6repl_1976      
- -9	9	-0.184608	    0	   0	0	9	#_AgeKeyParm3_BLK6repl_1976      
+0.1	2	0.874837	-0.81	0.41	3	 6	#_NatM_p_1_Fem_GP_1_BLK4repl_2014
+ -9	9	    0.24	    0	   0	0	-1	#_AgeKeyParm2_BLK6repl_1976      
+ -9	9	       2	    0	   0	0	-1	#_AgeKeyParm3_BLK6repl_1976      
 # info on dev vectors created for MGparms are reported with other devs after tag parameter section
 #
 #_seasonal_effects_on_biology_parms
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 -1 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.18820647823 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1990.03137116265 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2018.62397456817 #_last_yr_fullbias_adj_in_MPD
-2034.80551036045 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.902695773077407 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1960.6515290133 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1989.67503495747 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2018.59256444622 #_last_yr_fullbias_adj_in_MPD
+2034.51852596149 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.907196132623426 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -203,8 +203,8 @@
    10	     90	  60.2246	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_Srv(4)     
   -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_Srv(4)     
   -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_3_Srv(4)     
-    0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	0	0	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	  -1012.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
+    0	     10	   3.9945	  4	0	0	 5	0	0	   0	   0	0	0	0	#_SizeSel_P_4_Srv(4)     
+  -10	2.71828	 -3.10266	-10	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
   -10	     10	       10	 10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_LLSrv(5)   

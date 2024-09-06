@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-09-02 10:07:26.54918
+#C file write time: 2024-09-05 11:01:55.241733
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1959.30252374032 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1986.28034352136 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.71955328273 #_last_yr_fullbias_adj_in_MPD
-2023.889820235 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.917842614721959 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1959.30385855745 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1986.31930302919 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2021.71812094509 #_last_yr_fullbias_adj_in_MPD
+2023.90508264599 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.917448861709508 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -204,7 +204,7 @@
   -20	     10	 -11.9482	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_2_Srv(4)     
   -10	     10	  5.54831	  0	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_3_Srv(4)     
     0	     10	   3.9945	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_4_Srv(4)     
-  -10	2.71828	  -1007.5	-10	0	0	-2	0	0	   0	   0	0	0	0	#_SizeSel_P_5_Srv(4)     
+  -10	2.71828	 -3.10266	-10	0	0	 2	0	0	   0	   0	0	1	2	#_SizeSel_P_5_Srv(4)     
   -10	     10	 -0.66555	 10	0	0	 5	0	0	   0	   0	0	1	2	#_SizeSel_P_6_Srv(4)     
    10	     90	  65.5449	 50	0	0	 1	0	0	   0	   0	0	0	0	#_SizeSel_P_1_LLSrv(5)   
   -20	     10	  -12.478	  0	0	0	 2	0	0	   0	   0	0	0	0	#_SizeSel_P_2_LLSrv(5)   
@@ -216,61 +216,63 @@
 #_No age_selex_parm
 # timevary selex parameters 
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE
-   10	  90	  78.6311	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_1990
-   10	 100	  94.5791	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2005
-   10	  90	  79.9048	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2007
-   10	  90	  77.2556	 50	  0	0	-1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2017
-1e-04	   2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_1_FshTrawl(1)_dev_se       
--0.99	0.99	        0	  0	0.5	6	-6	#_SizeSel_P_1_FshTrawl(1)_dev_autocorr 
-  -20	  10	 0.434816	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_1990
-  -20	  10	 -4.93158	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2005
-  -20	  10	 -4.75885	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2007
-  -20	  10	 -4.88944	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2017
-  -10	  10	  6.02471	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_1990
-  -10	  10	  6.26352	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2005
-  -10	  10	  6.24936	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2007
-  -10	  10	  6.29422	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2017
-1e-04	   2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_3_FshTrawl(1)_dev_se       
--0.99	0.99	        0	  0	0.5	6	-6	#_SizeSel_P_3_FshTrawl(1)_dev_autocorr 
-    0	  10	  5.10604	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_1990
-    0	  10	  5.15973	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2005
-    0	  10	  5.79906	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2007
-    0	  10	  5.26328	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2017
-1e-04	   2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_4_FshTrawl(1)_dev_se       
--0.99	0.99	        0	  0	0.5	6	-6	#_SizeSel_P_4_FshTrawl(1)_dev_autocorr 
-   10	  90	  71.8699	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_1990   
-   10	  90	  68.4629	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2005   
-   10	  90	  72.5472	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2007   
-   10	  90	  71.9494	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2017   
-1e-04	   2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_1_FshLL(2)_dev_se          
--0.99	0.99	        0	  0	0.5	6	-6	#_SizeSel_P_1_FshLL(2)_dev_autocorr    
-  -20	  10	-0.224231	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_1990   
-  -20	  10	 -5.10633	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2005   
-  -20	  10	  -5.1146	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2007   
-  -20	  10	 -4.69045	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2017   
-  -10	  10	  5.36118	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_1990   
-  -10	  10	  5.25191	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2005   
-  -10	  10	  5.44255	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2007   
-  -10	  10	  5.35388	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2017   
-1e-04	   2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_3_FshLL(2)_dev_se          
--0.99	0.99	        0	  0	0.5	6	-6	#_SizeSel_P_3_FshLL(2)_dev_autocorr    
-    0	  10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_1990   
-    0	  10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2005   
-    0	  10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2007   
-    0	  10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2017   
-   10	  90	  75.9646	 50	  0	0	 1	#_SizeSel_P_1_FshPot(3)_BLK3repl_2017  
-  -20	  10	  2.80531	  0	  0	0	 2	#_SizeSel_P_2_FshPot(3)_BLK3repl_2017  
-  -10	  10	  5.47946	  0	  0	0	 2	#_SizeSel_P_3_FshPot(3)_BLK3repl_2017  
-   10	  90	   59.965	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_1996     
-   10	  90	  56.5473	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_2006     
-  -20	  10	 -4.15407	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_1996     
-  -20	  10	 -3.73717	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_2006     
-  -10	  10	   5.4719	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_1996     
-  -10	  10	  5.09389	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_2006     
-    0	  10	  4.21246	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_1996     
-    0	  10	    4.195	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_2006     
-    0	  10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_1996     
-    0	  10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_2006     
+   10	     90	  78.6311	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_1990
+   10	    100	  94.5791	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2005
+   10	     90	  79.9048	 50	  0	0	 1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2007
+   10	     90	  77.2556	 50	  0	0	-1	#_SizeSel_P_1_FshTrawl(1)_BLK2repl_2017
+1e-04	      2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_1_FshTrawl(1)_dev_se       
+-0.99	   0.99	        0	  0	0.5	6	-6	#_SizeSel_P_1_FshTrawl(1)_dev_autocorr 
+  -20	     10	 0.434816	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_1990
+  -20	     10	 -4.93158	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2005
+  -20	     10	 -4.75885	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2007
+  -20	     10	 -4.88944	  0	  0	0	 2	#_SizeSel_P_2_FshTrawl(1)_BLK2repl_2017
+  -10	     10	  6.02471	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_1990
+  -10	     10	  6.26352	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2005
+  -10	     10	  6.24936	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2007
+  -10	     10	  6.29422	  0	  0	0	 2	#_SizeSel_P_3_FshTrawl(1)_BLK2repl_2017
+1e-04	      2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_3_FshTrawl(1)_dev_se       
+-0.99	   0.99	        0	  0	0.5	6	-6	#_SizeSel_P_3_FshTrawl(1)_dev_autocorr 
+    0	     10	  5.10604	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_1990
+    0	     10	  5.15973	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2005
+    0	     10	  5.79906	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2007
+    0	     10	  5.26328	 10	  0	0	 2	#_SizeSel_P_4_FshTrawl(1)_BLK2repl_2017
+1e-04	      2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_4_FshTrawl(1)_dev_se       
+-0.99	   0.99	        0	  0	0.5	6	-6	#_SizeSel_P_4_FshTrawl(1)_dev_autocorr 
+   10	     90	  71.8699	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_1990   
+   10	     90	  68.4629	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2005   
+   10	     90	  72.5472	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2007   
+   10	     90	  71.9494	 50	  0	0	 1	#_SizeSel_P_1_FshLL(2)_BLK2repl_2017   
+1e-04	      2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_1_FshLL(2)_dev_se          
+-0.99	   0.99	        0	  0	0.5	6	-6	#_SizeSel_P_1_FshLL(2)_dev_autocorr    
+  -20	     10	-0.224231	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_1990   
+  -20	     10	 -5.10633	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2005   
+  -20	     10	  -5.1146	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2007   
+  -20	     10	 -4.69045	  0	  0	0	 2	#_SizeSel_P_2_FshLL(2)_BLK2repl_2017   
+  -10	     10	  5.36118	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_1990   
+  -10	     10	  5.25191	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2005   
+  -10	     10	  5.44255	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2007   
+  -10	     10	  5.35388	  0	  0	0	 2	#_SizeSel_P_3_FshLL(2)_BLK2repl_2017   
+1e-04	      2	      0.2	0.2	0.5	6	-5	#_SizeSel_P_3_FshLL(2)_dev_se          
+-0.99	   0.99	        0	  0	0.5	6	-6	#_SizeSel_P_3_FshLL(2)_dev_autocorr    
+    0	     10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_1990   
+    0	     10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2005   
+    0	     10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2007   
+    0	     10	       10	 10	  0	0	-2	#_SizeSel_P_4_FshLL(2)_BLK2repl_2017   
+   10	     90	  75.9646	 50	  0	0	 1	#_SizeSel_P_1_FshPot(3)_BLK3repl_2017  
+  -20	     10	  2.80531	  0	  0	0	 2	#_SizeSel_P_2_FshPot(3)_BLK3repl_2017  
+  -10	     10	  5.47946	  0	  0	0	 2	#_SizeSel_P_3_FshPot(3)_BLK3repl_2017  
+   10	     90	   59.965	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_1996     
+   10	     90	  56.5473	 50	  0	0	 1	#_SizeSel_P_1_Srv(4)_BLK1repl_2006     
+  -20	     10	 -4.15407	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_1996     
+  -20	     10	 -3.73717	  0	  0	0	 2	#_SizeSel_P_2_Srv(4)_BLK1repl_2006     
+  -10	     10	   5.4719	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_1996     
+  -10	     10	  5.09389	  0	  0	0	 2	#_SizeSel_P_3_Srv(4)_BLK1repl_2006     
+    0	     10	  4.21246	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_1996     
+    0	     10	    4.195	 10	  0	0	 5	#_SizeSel_P_4_Srv(4)_BLK1repl_2006     
+  -10	2.71828	  -1007.5	-10	  0	0	-2	#_SizeSel_P_5_Srv(4)_BLK1repl_1996     
+  -10	2.71828	  -1007.5	-10	  0	0	-2	#_SizeSel_P_5_Srv(4)_BLK1repl_2006     
+    0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_1996     
+    0	     10	       10	 10	  0	0	-5	#_SizeSel_P_6_Srv(4)_BLK1repl_2006     
 # info on dev vectors created for selex parms are reported with other devs after tag parameter section
 #
 0 #  use 2D_AR1 selectivity(0/1):  experimental feature
