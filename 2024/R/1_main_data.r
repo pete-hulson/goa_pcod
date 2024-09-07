@@ -200,12 +200,14 @@ old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_Seine(9)"), 3] <- 0
 old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "Q_power_Seine(9)"), 3] <- 0
 
 # reset selex patterns for surveys not fit to 0
-old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 1] <- 0
-old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "IPHCLL"), 4] <- 0
-old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 1] <- 0
-old_ctl$size_selex_types[which(rownames(old_ctl$size_selex_types) == "ADFG"), 4] <- 0
-old_ctl$age_selex_types[, 1] <- 0
-old_ctl$age_selex_types[, 4] <- 0
+old_ctl$size_selex_types$Pattern[which(rownames(old_ctl$size_selex_types) == "IPHCLL")] <- 0
+old_ctl$size_selex_types$Special[which(rownames(old_ctl$size_selex_types) == "IPHCLL")] <- 0
+old_ctl$size_selex_types$Pattern[which(rownames(old_ctl$size_selex_types) == "ADFG")] <- 0
+old_ctl$size_selex_types$Special[which(rownames(old_ctl$size_selex_types) == "ADFG")] <- 0
+old_ctl$age_selex_types$Pattern[which(rownames(old_ctl$age_selex_types) == "IPHCLL")] <- 0
+old_ctl$age_selex_types$Pattern[which(rownames(old_ctl$age_selex_types) == "ADFG")] <- 0
+
+# set max bound for selex params to 100 cm
 old_ctl$size_selex_parms$HI[which(old_ctl$size_selex_parms$HI > 100)] = 100
 
 ## reset params annually ----
