@@ -1,6 +1,6 @@
 #V3.30
 #C file created using the SS_writectl function in the R package r4ss
-#C file write time: 2024-09-05 11:01:55.241733
+#C file write time: 2024-09-07 09:17:10.351337
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -60,8 +60,8 @@
     0	       1	   0.188842	0.1966	 0.03	6	  1	0	0	0	0	0	0	0	#_VonBert_K_Fem_GP_1 
     0	      10	    3.82037	     0	    0	0	 10	0	0	0	0	0	0	0	#_CV_young_Fem_GP_1  
     0	      20	    7.42895	     0	    0	0	 10	0	0	0	0	0	0	0	#_CV_old_Fem_GP_1    
-  -99	      99	2.77574e-06	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_1_Fem_GP_1   
-  -99	      99	    3.33181	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_2_Fem_GP_1   
+  -99	      99	5.63096e-06	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_1_Fem_GP_1   
+  -99	      99	     3.1306	     0	    0	0	 -3	0	0	0	0	0	0	0	#_Wtlen_2_Fem_GP_1   
   -99	      99	       53.7	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1    
   -99	      99	  -0.273657	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Mat_slope_Fem_GP_1 
   -99	      99	          1	     0	    0	0	 -1	0	0	0	0	0	0	0	#_Eggs_alpha_Fem_GP_1
@@ -108,11 +108,11 @@
 2 #_recdev_early_phase
 0 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1959.24580523034 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1986.57702294542 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.71662227952 #_last_yr_fullbias_adj_in_MPD
-2023.93007082082 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.915516557784877 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1959.34671318699 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1986.56781998828 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2021.78349511576 #_last_yr_fullbias_adj_in_MPD
+2023.5329138717 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.917298337644804 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev
@@ -170,15 +170,15 @@
 #
 #_age_selex_patterns
 #_Pattern	Discard	Male	Special
-0	0	0	0	#_1 FshTrawl
-0	0	0	0	#_2 FshLL   
-0	0	0	0	#_3 FshPot  
-0	0	0	0	#_4 Srv     
-0	0	0	0	#_5 LLSrv   
-0	0	0	0	#_6 IPHCLL  
-0	0	0	0	#_7 ADFG    
-0	0	0	0	#_8 SPAWN   
-0	0	0	0	#_9 Seine   
+10	0	0	0	#_1 FshTrawl
+10	0	0	0	#_2 FshLL   
+10	0	0	0	#_3 FshPot  
+10	0	0	0	#_4 Srv     
+10	0	0	0	#_5 LLSrv   
+ 0	0	0	0	#_6 IPHCLL  
+ 0	0	0	0	#_7 ADFG    
+ 0	0	0	0	#_8 SPAWN   
+ 0	0	0	0	#_9 Seine   
 #
 #_SizeSelex
 #_LO	HI	INIT	PRIOR	PR_SD	PR_type	PHASE	env-var	use_dev	dev_mnyr	dev_mxyr	dev_PH	Block	Blk_Fxn  #  parm_name
