@@ -18,7 +18,7 @@ lapply(libs, library, character.only = TRUE)
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # day data pulled
-dat_day <- "Sep02"
+dat_day <- "Sep07"
 
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
@@ -108,8 +108,6 @@ r4ss::SS_plots(update_base_res,
 # .5 plus length bin set at 104 cm
 # .6 correct season for twl survey caal
 # .7 turn off recr forecase phase
-# .8 add prior to Lmin
-# .9 turn off start_logit param for survey selex
 
 new_base <- "2019.1c-2024"
 
@@ -128,9 +126,9 @@ update_ss3_files(asmnt_yr,
                  ctl_out = "Model19_1c.ctl")
 
 ## make 2024 changes to ctl file ----
-ctl_2024(asmnt_yr, 
+ctl_2024(asmnt_yr,
          folder = 'rsch',
-         mdl = new_base, 
+         mdl = new_base,
          ctl_filename = 'Model19_1c.ctl')
 
 ## run model ----
@@ -363,6 +361,26 @@ r4ss::SSplotComparisons(data_summ_debin,
                                          new_base_lcomp_bin5), 
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'),
                         filenameprefix = 'ebin')
+
+
+## plot b & e.5cm comparison ----
+data_summ_be <- r4ss::SSsummarize(list(base_res_23,
+                                       update_base_res,  
+                                       new_base_lcomp_bin5_res))
+
+r4ss::SSplotComparisons(data_summ_be,
+                        print = TRUE,
+                        legendlabels = c(base_mdl,
+                                         base_mdl_update,
+                                         new_base_lcomp_bin5), 
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots'),
+                        filenameprefix = 'be')
+
+vroom::vroom_write(data_summ_be$pars %>% 
+                     tidytable::rename('2019.1b-23' = model1,
+                                       '2019.1b-24' = model2,
+                                       '2019.1e.5cm' = model3), 
+                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'par_comp.csv'), delim = ",")
 
 
 ## plot all ----
