@@ -220,9 +220,10 @@ old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_dat_year
 old_ctl$MainRdevYrLast <- new_dat_year - 2
 
 # update weight-length parameters
-wtlen <- wt_len(new_dat_year)
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
+# note to come back to this in 2025
+# wtlen <- wt_len(new_dat_year)
+# old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
+# old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
 
 # write base model ctl
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
