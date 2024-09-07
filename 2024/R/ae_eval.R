@@ -136,14 +136,66 @@ reread %>%
                        .by = reread) %>% 
   tidytable::mutate(bias = mean_og - reread) %>% 
   tidytable::rename(true_age = reread) %>% 
-  tidytable::filter(true_age <= 7) -> dat
+  tidytable::filter(true_age <= 8) -> dat
 
 
-ggplot(dat, aes(x = true_age, y = bias)) +
+ggplot(dat, aes(x = true_age, y = mean_og)) +
   geom_point() +
+  geom_errorbar(aes(ymin = lci, ymax = uci), width=.2) +
+  labs(x = "'True' age (2018 read)", y = "Pre-2007 age") +
+  theme_bw() +
+  geom_abline(slope = 1, color = "grey", linewidth = 1.25) +
+  scale_x_continuous(breaks = seq(1,10), labels = seq(1,10)) +
+  scale_y_continuous(breaks = seq(1,10), labels = seq(1,10)) +
+  geom_segment(aes(x = 1, y = 1.286, xend = 10, yend = 12))
+  
+
+
+
+reread %>% 
+  tidytable::uncount(n) %>% 
+  tidytable::summarise(mean_og = mean(original),
+                       n = .N,
+                       uci = quantile(original, probs = 0.975),
+                       lci = quantile(original, probs = 0.025),
+                       .by = reread) %>% 
+  tidytable::mutate(bias = mean_og - reread) %>% 
+  tidytable::rename(true_age = reread) %>% 
+  tidytable::filter(true_age <= 8) -> dat
+
+
+ggplot(reread, aes(x = reread, y = original, size = n)) +
+  geom_abline(slope = 1, color = "grey", linewidth = 1.25) +
+  geom_point(alpha = 0.5) +
+  labs(x = "'True' age (2018 read)", y = "Pre-2007 age") +
+  geom_segment(aes(x = 1, y = 1.286, xend = 8.74, yend = 10.5), , size = 1, color = "blue") +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(1,10), labels = seq(1,10)) +
+  scale_y_continuous(breaks = seq(1,10), labels = seq(1,10)) +
+  theme(panel.grid.minor = element_blank()) -> ae_plot
+
+
+suppressWarnings(ggplot2::ggsave(ae_plot,
+                                 file = here::here(curr_year, 'data', 'ageing_error','age_bias.png'),
+                                 width = 7, height = 5, unit = 'in', dpi = 520))
+
+
+
+
+
+
+
+
+
+
   stat_poly_line() +
   stat_poly_eq(use_label(c("eq", "R2"))) 
 
+  
+  0.286
+  
+  2
+  
 
 dat %>% 
   tidytable::mutate(est_bias = -0.274 + 0.249 * original_age)
