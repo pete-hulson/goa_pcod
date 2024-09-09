@@ -193,6 +193,45 @@ knitr::kable(apport_out$parameter_estimates)
 
 knitr::kable(apport_out7$parameter_estimates)
 
+
+compare_apport <- rema::compare_rema_models(list(apport_mdl,apport_mdl5, apport_mdl6, apport_mdl7, apport_mdl8),
+                                            biomass_ylab = 'Biomass (t)',
+                                            cpue_ylab = 'Relative Population Weights')
+
+compare_apport$output$proportion_biomass_by_strata %>% 
+  tidytable::filter(year == 2023) %>% 
+  tidytable::select(-year) %>% 
+  tidytable::left_join(compare_apport$output$proportion_biomass_by_strata %>% 
+                         tidytable::filter(year >= 2019) %>% 
+                         tidytable::summarise(c_cv = sd(central) / mean(central),
+                                              e_cv = sd(eastern) / mean(eastern),
+                                              w_cv = sd(western) / mean(western),
+                                              .by = model_name)) %>% 
+  vroom::vroom_write(., here::here(new_year, 'rsch', 'output', 'compare', 'apport.csv'), delim = ',')
+
+compare_plots <- rema::plot_rema(tidy_rema = apport_out7, 
+                                 biomass_ylab = 'Trawl Biomass (t)',
+                                 cpue_ylab = 'LL RPW')
+
+
+ggplot2::ggsave(compare_plots$cpue_by_strata + theme(legend.position = 'none'),
+                file = here::here(new_year, "plots", 'other','llrpw.png'),
+                width = 12, height = 7, unit = 'in', dpi = 520)
+
+
+
+suppressWarnings(ggplot2::ggsave(cowplot::plot_grid(compare_plots$biomass_by_strata + theme(legend.position = 'none'),
+                                                    compare_plots$cpue_by_strata + theme(legend.position = 'none'),
+                                                    ncol = 1, rel_widths = c(0.65, 0.35)),
+                                 file = here::here(new_year, "plots", 'other','llrpw.png'),
+                                 width = 12, height = 9, unit = 'in', dpi = 520))
+
+
+
+
+
+compare_plots$cpue_by_strata + theme(legend.position = 'none')
+
 ## compare base with selected models ----
 
 compare_base <- rema::compare_rema_models(list(apport_mdl, apport_mdl7),

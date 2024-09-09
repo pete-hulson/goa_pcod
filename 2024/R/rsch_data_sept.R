@@ -453,3 +453,26 @@ abc_comp <- data.frame(model = c(base_mdl,
                                             select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp.csv'), delim = ",")
 
+## key params ----
+
+data_summ <- r4ss::SSsummarize(list(base_res_23,
+                                    update_base_res, 
+                                    new_base_res, 
+                                    new_base_ae_res,
+                                    new_base_lcomp_bin5_res))
+
+data_summ$pars %>% 
+  dplyr::rename('2019.1b-23' = model1,
+                '2019.1b-24' = model2,
+                '2019.1c' = model3,
+                '2019.1d' = model4,
+                '2019.1e.5cm' = model5) %>% 
+  dplyr::filter(Label %in% c('NatM_uniform_Fem_GP_1', 'NatM_uniform_Fem_GP_1_BLK4repl_2014', 'SR_LN(R0)', 'LnQ_base_Srv(4)', 'LnQ_base_LLSrv(5)', 'LnQ_base_LLSrv(5)_ENV_mult')) %>% 
+  dplyr::select(-Yr, -recdev, -Label) %>% 
+  dplyr::mutate(Parameter = c('NatM', 'NatM: 14-16', 'lnR', 'q_twl', 'q_ll', 'q_llenv')) %>% 
+  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'compare', 'par_comp.csv'), delim = ",")
+
+
+
+
+
