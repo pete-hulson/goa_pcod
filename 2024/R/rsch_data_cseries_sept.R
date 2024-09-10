@@ -509,6 +509,22 @@ r4ss::SSplotComparisons(data_summ_cseries,
                                          new_base.6,
                                          new_base.7),
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'))
+data_summ_cseries$pars %>% 
+  dplyr::rename('2019.1b-24' = model1,
+                '2019.1c' = model2,
+                '2019.1c.1' = model3,
+                '2019.1c.2' = model4,
+                '2019.1c.3' = model5,
+                '2019.1c.4' = model6,
+                '2019.1c.5' = model7,
+                '2019.1c.6' = model8,
+                '2019.1c.7' = model9) %>% 
+  dplyr::filter(Label %in% c('NatM_uniform_Fem_GP_1', 'NatM_uniform_Fem_GP_1_BLK4repl_2014', 'SR_LN(R0)', 'LnQ_base_Srv(4)', 'LnQ_base_LLSrv(5)', 'LnQ_base_LLSrv(5)_ENV_mult')) %>% 
+  dplyr::select(-Yr, -recdev, -Label) %>% 
+  dplyr::mutate(Parameter = c('NatM', 'NatM: 14-16', 'lnR', 'q_twl', 'q_ll', 'q_llenv')) %>% 
+  vroom::vroom_write(., here::here(asmnt_yr, 'rsch', 'output', 'compare', 'par_comp_cseries.csv'), delim = ",")
+
+
 
 ### one at a time ----
 # 2019.1c
