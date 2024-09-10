@@ -137,6 +137,13 @@ lcomp_new <- get_fsh_len_post91_new(new_year,
                                     ss3_frmt = FALSE) %>% 
   tidytable::rename(new_lencomp = lencomp)
 
+# new way at month level
+lcomp_new_mon <- get_fsh_len_post91_new(new_year,
+                                        bins = len_bins,
+                                        ss3_frmt = FALSE,
+                                        time = 'month') %>% 
+  tidytable::rename(new_lencomp_mon = lencomp)
+
 # new way with new bins
 # 2 cm
 lcomp_new_bin2 <- get_fsh_len_post91_new(new_year,
@@ -283,10 +290,13 @@ lcomp_old %>%
   tidytable::bind_rows(lcomp_new %>% 
                          tidytable::mutate(name = 'New aggregated T-A-G, merged state, no filter') %>% 
                          tidytable::rename(lencomp = new_lencomp)) %>% 
+  tidytable::bind_rows(lcomp_new_mon %>% 
+                         tidytable::mutate(name = 'New aggregated M-A-G, merged state, no filter') %>% 
+                         tidytable::rename(lencomp = new_lencomp_mon)) %>% 
   tidytable::mutate(length = ceiling(length)) %>% 
   tidytable::filter(year == 2022,
                     gear == 'pot') %>% 
-  tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated T-A-G, merged state, no filter'))) -> dat
+  tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated T-A-G, merged state, no filter', 'New aggregated M-A-G, merged state, no filter'))) -> dat
 
 
 ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
@@ -301,8 +311,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
         strip.text = element_text(size = 14)) +
   facet_wrap( ~ name2, ncol = 1) +
   labs(y = "Pot length composition", x = "Length (cm)", fill = "Data treatment:", color = "Data treatment:") +
-  scale_color_manual(values = c('green', 'red', 'blue')) +
-  scale_fill_manual(values = c('green', 'red', 'blue')) -> pot_22
+  scale_color_manual(values = c('green', 'red', 'blue', "orange")) +
+  scale_fill_manual(values = c('green', 'red', 'blue', "orange")) -> pot_22
 
 
 suppressWarnings(ggplot2::ggsave(pot_22,
@@ -813,3 +823,87 @@ plotg<-ggpubr::ggarrange(bubble_pear, bubble_osa,qq_p,agg_plot,ncol=2,nrow=2,hei
                          common.legend = F, legend = "bottom")
 print(plotg)
 
+## ageing error ----
+
+both_lin <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Linear', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+both_spl <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Spline', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+
+ebs_lin <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBS10_Linear', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+ebs_spl <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBS10_Spline', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+
+goa_lin <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsGOA_Linear', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+goa_spl <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsGOA_Spline', 'Pcod SS3_format_Reader1.csv'), delim = ',')
+
+both_lin %>% 
+  tidytable::filter(...1 %in% c('True_Age')) %>% 
+  tidytable::select(-...1, -'Age 0') %>% 
+  tidytable::pivot_longer(values_to = 'age') %>% 
+  tidytable::left_join(both_lin %>% 
+                         tidytable::filter(...1 %in% c('SD')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'sd')) %>% 
+  tidytable::mutate(region = 'both',
+                    type = 'linear') %>% 
+  tidytable::bind_rows(both_spl %>% 
+                         tidytable::filter(...1 %in% c('True_Age')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'age') %>% 
+                         tidytable::left_join(both_spl %>% 
+                                                tidytable::filter(...1 %in% c('SD')) %>% 
+                                                tidytable::select(-...1, -'Age 0') %>% 
+                                                tidytable::pivot_longer(values_to = 'sd')) %>% 
+                         tidytable::mutate(region = 'both',
+                                           type = 'spline')) %>% 
+  tidytable::bind_rows(ebs_lin %>% 
+                         tidytable::filter(...1 %in% c('True_Age')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'age') %>% 
+                         tidytable::left_join(ebs_lin %>% 
+                                                tidytable::filter(...1 %in% c('SD')) %>% 
+                                                tidytable::select(-...1, -'Age 0') %>% 
+                                                tidytable::pivot_longer(values_to = 'sd')) %>% 
+                         tidytable::mutate(region = 'ebs',
+                                           type = 'linear')) %>% 
+  tidytable::bind_rows(ebs_spl %>% 
+                         tidytable::filter(...1 %in% c('True_Age')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'age') %>% 
+                         tidytable::left_join(ebs_spl %>% 
+                                                tidytable::filter(...1 %in% c('SD')) %>% 
+                                                tidytable::select(-...1, -'Age 0') %>% 
+                                                tidytable::pivot_longer(values_to = 'sd')) %>% 
+                         tidytable::mutate(region = 'ebs',
+                                           type = 'spline')) %>% 
+  tidytable::bind_rows(goa_lin %>% 
+                         tidytable::filter(...1 %in% c('True_Age')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'age') %>% 
+                         tidytable::left_join(goa_lin %>% 
+                                                tidytable::filter(...1 %in% c('SD')) %>% 
+                                                tidytable::select(-...1, -'Age 0') %>% 
+                                                tidytable::pivot_longer(values_to = 'sd')) %>% 
+                         tidytable::mutate(region = 'goa',
+                                           type = 'linear')) %>% 
+  tidytable::bind_rows(goa_spl %>% 
+                         tidytable::filter(...1 %in% c('True_Age')) %>% 
+                         tidytable::select(-...1, -'Age 0') %>% 
+                         tidytable::pivot_longer(values_to = 'age') %>% 
+                         tidytable::left_join(goa_spl %>% 
+                                                tidytable::filter(...1 %in% c('SD')) %>% 
+                                                tidytable::select(-...1, -'Age 0') %>% 
+                                                tidytable::pivot_longer(values_to = 'sd')) %>% 
+                         tidytable::mutate(region = 'goa',
+                                           type = 'spline')) %>% 
+  tidytable::select(-name) -> dat
+
+ggplot(data = dat, aes(x = age, y = sd, colour = region, linetype = type)) +
+  geom_line(linewidth = 1.25) +
+  # geom_point(size = 2.5) +
+  # facet_grid(~type) +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(1,10), labels = seq(1,10)) +
+  theme(panel.grid.minor = element_blank()) -> age_err
+
+suppressWarnings(ggplot2::ggsave(age_err,
+                                 file = here::here(new_year, "plots", 'other','age_err.png'),
+                                 width = 7, height = 7, unit = 'in', dpi = 520))

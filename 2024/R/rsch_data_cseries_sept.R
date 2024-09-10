@@ -528,7 +528,9 @@ data_summ_cseries$pars %>%
 
 ### one at a time ----
 # 2019.1c
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+data_summ_c <- r4ss::SSsummarize(list(update_base_res, 
+                                      new_base_res))
+r4ss::SSplotComparisons(data_summ_c, 
                         print = TRUE,
                         models = c(1,2),
                         legendlabels = c(base_mdl_update, 
@@ -537,7 +539,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         filenameprefix = 'c')
 
 # 2019.1c.1
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,3),
                         legendlabels = c(base_mdl_update, 
@@ -545,7 +547,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c1')
 # 2019.1c.2
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,4),
                         legendlabels = c(base_mdl_update, 
@@ -553,7 +555,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c2')
 # 2019.1c.3
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,5),
                         legendlabels = c(base_mdl_update, 
@@ -561,7 +563,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c3')
 # 2019.1c.4
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,6),
                         legendlabels = c(base_mdl_update, 
@@ -569,7 +571,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c4')
 # 2019.1c.5
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,7),
                         legendlabels = c(base_mdl_update, 
@@ -577,7 +579,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c5')
 # 2019.1c.6
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,8),
                         legendlabels = c(base_mdl_update, 
@@ -585,7 +587,7 @@ r4ss::SSplotComparisons(data_summ_cseries, subplots = 1,
                         plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_plots_cseries'),
                         filenameprefix = 'c6')
 # 2019.1c.7
-r4ss::SSplotComparisons(data_summ_cseries, subplots = 1, 
+r4ss::SSplotComparisons(data_summ_cseries, subplots = c(1, 9), 
                         print = TRUE,
                         models = c(1,9),
                         legendlabels = c(base_mdl_update, 
@@ -655,7 +657,7 @@ abc_comp <- data.frame(model = c(base_mdl_update,
                                             select(Value))))
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_abc_comp_cseries.csv'), delim = ",")
 
-# % diff in ssb and abs
+## % diff in ssb and rec ----
 data_summ_cseries$SpawnBio %>% 
   tidytable::pivot_longer(cols = c(model1, 
                                    model2, 
@@ -684,3 +686,34 @@ data_summ_cseries$SpawnBio %>%
   tidytable::summarise(perdiff_ssb = mean(perdiff), .by = model) -> ssb_comp
 
 vroom::vroom_write(ssb_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_ssb_comp_cseries.csv'), delim = ",")
+
+data_summ_cseries$recruits %>% 
+  tidytable::pivot_longer(cols = c(model1, 
+                                   model2, 
+                                   model3, 
+                                   model4, 
+                                   model5, 
+                                   model6, 
+                                   model7, 
+                                   model8, 
+                                   model9),
+                          names_to = 'model', values_to = 'rec') %>% 
+  tidytable::select(-Label) %>% 
+  tidytable::filter(Yr >= 1977, Yr <= 2024, model != 'model1') %>% 
+  tidytable::mutate(model = case_when(model == 'model2' ~ '2019.1c',
+                                      model == 'model3' ~ '2019.1c.1',
+                                      model == 'model4' ~ '2019.1c.2',
+                                      model == 'model5' ~ '2019.1c.3',
+                                      model == 'model6' ~ '2019.1c.4',
+                                      model == 'model7' ~ '2019.1c.5',
+                                      model == 'model8' ~ '2019.1c.6',
+                                      model == 'model9' ~ '2019.1c.7')) %>% 
+  tidytable::left_join(data_summ_cseries$recruits %>% 
+                         tidytable::select(Yr, model1) %>% 
+                         tidytable::filter(Yr >= 1977, Yr <= 2024)) %>% 
+  tidytable::mutate(perdiff = (rec - model1) / model1) %>% 
+  tidytable::summarise(perdiff_rec = mean(perdiff), .by = model) -> rec_comp
+
+vroom::vroom_write(rec_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'data_rec_comp_cseries.csv'), delim = ",")
+
+
