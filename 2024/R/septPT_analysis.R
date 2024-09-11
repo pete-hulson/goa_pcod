@@ -134,7 +134,8 @@ lcomp_old_fltr <- get_fsh_len_post91(new_year,
 # get new way of doing comps
 lcomp_new <- get_fsh_len_post91_new(new_year,
                                     bins = len_bins,
-                                    ss3_frmt = FALSE) %>% 
+                                    ss3_frmt = FALSE,
+                                    time = 'trimester') %>% 
   tidytable::rename(new_lencomp = lencomp)
 
 # new way at month level
@@ -298,6 +299,10 @@ lcomp_old %>%
                     gear == 'pot') %>% 
   tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated T-A-G, merged state, no filter', 'New aggregated M-A-G, merged state, no filter'))) -> dat
 
+lcomp_new %>% 
+  left_join(lcomp_new_mon) %>% 
+  filter(new_lencomp != 0) %>% 
+  print(n=150)
 
 ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
   geom_line(aes(color = name2))  +

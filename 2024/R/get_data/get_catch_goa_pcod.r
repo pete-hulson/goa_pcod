@@ -9,7 +9,7 @@ get_catch_goa_pcod <- function(new_year = 9999){
 
   # read in data files ----
   
-  fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fsh_catch_data.csv"))
+  fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"))
   adfg_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'))
   
   # current catch ----

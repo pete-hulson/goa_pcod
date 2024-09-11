@@ -1,11 +1,11 @@
 #' Expand fishery length frequency for goa pcod post-1991
 #' 
 #' @param new_year current assessment year
-#' @param time time period, either month or trimester, from which length comps are expanded (default = trimester)
+#' @param time time period (month/trimester) from which length comps are expanded (default = NULL)
 #' 
 
 expand_fsh_len <- function(new_year = 9999,
-                           time = 'trimester'){
+                           time = NULL){
   
   # expand from trimester ----
   if(time == 'trimester'){
@@ -35,7 +35,7 @@ expand_fsh_len <- function(new_year = 9999,
       tidytable::select(year, area, gear = gear1, trimester, sex, length, freq)
     
     ## catch data ----
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>%
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
       tidytable::mutate(month = lubridate::month(week_end_date),
                         trimester = tidytable::case_when(month <= 4 ~ 1,
                                                          month %in% c(5, 6, 7, 8) ~ 2,
@@ -132,7 +132,7 @@ expand_fsh_len <- function(new_year = 9999,
       tidytable::select(year, area, gear = gear1, month, sex, length, freq)
     
     ## catch data ----
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>%
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
       tidytable::mutate(month = lubridate::month(week_end_date),
                         trimester = tidytable::case_when(month <= 4 ~ 1,
                                                          month %in% c(5, 6, 7, 8) ~ 2,
@@ -212,16 +212,17 @@ expand_fsh_len <- function(new_year = 9999,
 #' @param new_year current assessment year
 #' @param bins specified length bins (default = NULL)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
-#' @param time time period from which length comps are expanded (default = trimester)
+#' @param time time period (month/trimester) from which length comps are expanded (default = NULL)
 #' 
 
 get_fsh_len_post91_new <- function(new_year = 9999,
                                    bins = NULL,
                                    ss3_frmt = TRUE,
-                                   time = 'trimester'){
+                                   time = NULL){
   
   # expand length frequencies  ----
-  lcomp_c <- expand_fsh_len(new_year)
+  lcomp_c <- expand_fsh_len(new_year,
+                            time)
 
   # compute comps ----
   tidytable::expand_grid(year = sort(unique(lcomp_c$year)),
@@ -294,17 +295,20 @@ get_fsh_len_post91_new <- function(new_year = 9999,
 #' @param max_age max age for age comps (i.e., plus group, default = 10)
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param fit whether to fit age comps in model (default = FALSE)
+#' @param time time period (month/trimester) from which length comps are expanded (default = NULL)
 #' 
 
 get_fsh_age_new <- function(new_year = 9999,
                             st_yr = 2007,
                             max_age = 10,
                             ss3_frmt = TRUE,
-                            fit = FALSE){
+                            fit = FALSE,
+                            time = NULL){
   
   # get data ----
   ## expanded length comps ----
-  fsh_len_exp <- expand_fsh_len(new_year) %>% 
+  fsh_len_exp <- expand_fsh_len(new_year,
+                                time) %>% 
     # filter to years post-2007 (as default)
     tidytable::filter(year > st_yr)
   

@@ -17,6 +17,7 @@
 #' @param len_bins user-defined length bins for length comps (default = NULL)
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
 #' @param new_lcomp use old or new method for computing fishery length comps (default = FALSE)
+#' @param time time period (month/trimester) from which length comps are expanded (default = trimester)
 #' @param update_ae switch to update ageing error
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size comes from surveyISS package (TRUE) or not (FALSE)
@@ -40,6 +41,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                               len_bins = NULL,
                               fltr = TRUE,
                               new_lcomp = FALSE,
+                              time = 'trimester',
                               update_ae = FALSE,
                               ss3_frmt = TRUE,
                               iss = FALSE,
@@ -136,7 +138,8 @@ get_data_goa_pcod <- function(new_data = new_data,
   if(isTRUE(new_lcomp)){
     post_fsh_lcomp <- get_fsh_len_post91_new(new_year = new_year,
                                              bins = len_bins,
-                                             ss3_frmt = ss3_frmt)
+                                             ss3_frmt = ss3_frmt,
+                                             time = time)
   } else{
     post_fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
                                          fltr = fltr,
@@ -175,7 +178,8 @@ get_data_goa_pcod <- function(new_data = new_data,
                                      st_yr = fsh_age_st_yr,
                                      max_age = max_age,
                                      ss3_frmt = ss3_frmt,
-                                     fit = FALSE)
+                                     fit = FALSE,
+                                     time = time)
   } else{
   ss3_fsh_acomp <- get_fsh_age(new_year = new_year,
                                st_yr = fsh_age_st_yr,
