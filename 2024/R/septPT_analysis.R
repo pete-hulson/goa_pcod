@@ -321,10 +321,24 @@ lcomp_new %>%
                                                    name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
                                                    name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
   tidytable::filter(year <= 2023,
-                    year >= 2018) -> dat
+                    year >= 2021) -> dat
 
 ### pot ----
-ggplot(data = dat %>% tidytable::filter(gear == 'pot'), 
+dat %>% 
+  tidytable::filter(gear == 'pot') %>% 
+  tidytable::select(year, gear, length, lencomp, name) %>% 
+  tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin2')) %>% 
+  tidytable::mutate(comp = paste0(year, '_2cm')) %>% 
+  tidytable::bind_rows(dat %>% 
+                         tidytable::filter(gear == 'pot') %>% 
+                         tidytable::select(year, gear, length, lencomp, name) %>% 
+                         tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin5')) %>% 
+                         tidytable::mutate(comp = paste0(year, '_5cm'))) %>% 
+  tidytable::mutate(name = case_when(name == 'lcomp_new' ~ '1cm',
+                                     name == 'lcomp_new_bin2' ~ '2cm',
+                                     name == 'lcomp_new_bin5' ~ '5cm')) -> plot_dat
+
+ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
@@ -333,17 +347,31 @@ ggplot(data = dat %>% tidytable::filter(gear == 'pot'),
             position = 'identity') +
   theme_bw(base_size = 14) +
   theme(legend.position = "top") +
-  facet_wrap( ~ year) +
+  facet_wrap( ~ comp, ncol = 2) +
   labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red' , 'green')) -> bin_pot
 
 suppressWarnings(ggplot2::ggsave(bin_pot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_pot.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 10, height = 12, unit = 'in', dpi = 520))
 
 ### trawl ----
-ggplot(data = dat %>% tidytable::filter(gear == 'trawl'), 
+dat %>% 
+  tidytable::filter(gear == 'trawl') %>% 
+  tidytable::select(year, gear, length, lencomp, name) %>% 
+  tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin2')) %>% 
+  tidytable::mutate(comp = paste0(year, '_2cm')) %>% 
+  tidytable::bind_rows(dat %>% 
+                         tidytable::filter(gear == 'trawl') %>% 
+                         tidytable::select(year, gear, length, lencomp, name) %>% 
+                         tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin5')) %>% 
+                         tidytable::mutate(comp = paste0(year, '_5cm'))) %>% 
+  tidytable::mutate(name = case_when(name == 'lcomp_new' ~ '1cm',
+                                     name == 'lcomp_new_bin2' ~ '2cm',
+                                     name == 'lcomp_new_bin5' ~ '5cm')) -> plot_dat
+
+ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
@@ -352,17 +380,31 @@ ggplot(data = dat %>% tidytable::filter(gear == 'trawl'),
             position = 'identity') +
   theme_bw(base_size = 14) +
   theme(legend.position = "top") +
-  facet_wrap( ~ year) +
+  facet_wrap( ~ comp, ncol = 2) +
   labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_trawl
 
 suppressWarnings(ggplot2::ggsave(bin_trawl,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_twl.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 10, height =12, unit = 'in', dpi = 520))
 
 ### longline ----
-ggplot(data = dat %>% tidytable::filter(gear == 'longline'), 
+dat %>% 
+  tidytable::filter(gear == 'longline') %>% 
+  tidytable::select(year, gear, length, lencomp, name) %>% 
+  tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin2')) %>% 
+  tidytable::mutate(comp = paste0(year, '_2cm')) %>% 
+  tidytable::bind_rows(dat %>% 
+                         tidytable::filter(gear == 'longline') %>% 
+                         tidytable::select(year, gear, length, lencomp, name) %>% 
+                         tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin5')) %>% 
+                         tidytable::mutate(comp = paste0(year, '_5cm'))) %>% 
+  tidytable::mutate(name = case_when(name == 'lcomp_new' ~ '1cm',
+                                     name == 'lcomp_new_bin2' ~ '2cm',
+                                     name == 'lcomp_new_bin5' ~ '5cm')) -> plot_dat
+
+ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
@@ -371,14 +413,14 @@ ggplot(data = dat %>% tidytable::filter(gear == 'longline'),
             position = 'identity') +
   theme_bw(base_size = 14) +
   theme(legend.position = "top") +
-  facet_wrap( ~ year) +
+  facet_wrap( ~ comp, ncol = 2) +
   labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll
 
 suppressWarnings(ggplot2::ggsave(bin_ll,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_ll.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 10, height = 12, unit = 'in', dpi = 520))
 
 ### trawl survey ----
 # get new way of doing comps
@@ -418,10 +460,22 @@ lcomp_srv %>%
                                                    name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
                                                    name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
   tidytable::filter(year <= 2023,
-                    year >= 2018) -> dat
+                    year >= 2019) -> dat
+
+dat %>% 
+  tidytable::select(year, length, lencomp, name) %>% 
+  tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin2')) %>% 
+  tidytable::mutate(comp = paste0(year, '_2cm')) %>% 
+  tidytable::bind_rows(dat %>% 
+                         tidytable::select(year, length, lencomp, name) %>% 
+                         tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin5')) %>% 
+                         tidytable::mutate(comp = paste0(year, '_5cm'))) %>% 
+  tidytable::mutate(name = case_when(name == 'lcomp_new' ~ '1cm',
+                                     name == 'lcomp_new_bin2' ~ '2cm',
+                                     name == 'lcomp_new_bin5' ~ '5cm')) -> plot_dat
 
 
-ggplot(data = dat, 
+ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
@@ -430,14 +484,14 @@ ggplot(data = dat,
             position = 'identity') +
   theme_bw(base_size = 18) +
   theme(legend.position = "top") +
-  facet_wrap( ~ year) +
+  facet_wrap( ~ comp, ncol = 2) +
   labs(y = "Trawl survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_twl_srv
 
 suppressWarnings(ggplot2::ggsave(bin_twl_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_tsrv.png'),
-                                 width = 12, height = 12, unit = 'in', dpi = 520))
+                                 width = 10, height = 12, unit = 'in', dpi = 520))
 
 ### longline survey ----
 
@@ -473,9 +527,22 @@ lcomp_srv %>%
                                                    name == 'lcomp_new_bin2' ~ -1 * lencomp * max_og / max_bin2,
                                                    name == 'lcomp_new_bin5' ~ -1 * lencomp * max_og / max_bin5)) %>% 
   tidytable::filter(year <= 2023,
-                    year >= 2018) -> dat
+                    year >= 2021) -> dat
 
-ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
+
+dat %>% 
+  tidytable::select(year, length, lencomp, name) %>% 
+  tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin2')) %>% 
+  tidytable::mutate(comp = paste0(year, '_2cm')) %>% 
+  tidytable::bind_rows(dat %>% 
+                         tidytable::select(year, length, lencomp, name) %>% 
+                         tidytable::filter(name %in% c('lcomp_new', 'lcomp_new_bin5')) %>% 
+                         tidytable::mutate(comp = paste0(year, '_5cm'))) %>% 
+  tidytable::mutate(name = case_when(name == 'lcomp_new' ~ '1cm',
+                                     name == 'lcomp_new_bin2' ~ '2cm',
+                                     name == 'lcomp_new_bin5' ~ '5cm')) -> plot_dat
+
+ggplot(data = plot_dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
   geom_point(aes(color = name)) +
   geom_area(aes(fill = name),
@@ -483,14 +550,14 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
             position = 'identity') +
   theme_bw(base_size = 14) +
   theme(legend.position = "top") +
-  facet_wrap( ~ year) +
+  facet_wrap( ~ comp, ncol = 2) +
   labs(y = "Longline survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll_srv
 
 suppressWarnings(ggplot2::ggsave(bin_ll_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_llsrv.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 10, height = 12, unit = 'in', dpi = 520))
 
 
 
