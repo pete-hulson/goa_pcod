@@ -428,7 +428,7 @@ ggplot(data = dat,
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 14) +
+  theme_bw(base_size = 18) +
   theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Trawl survey length composition", x = "Length (cm)", color = "", fill = "") +
@@ -437,7 +437,7 @@ ggplot(data = dat,
 
 suppressWarnings(ggplot2::ggsave(bin_twl_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_tsrv.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 12, height = 12, unit = 'in', dpi = 520))
 
 ### longline survey ----
 
