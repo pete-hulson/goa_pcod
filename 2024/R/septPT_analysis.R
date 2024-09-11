@@ -135,26 +135,22 @@ lcomp_old_fltr <- get_fsh_len_post91(new_year,
 lcomp_new <- get_fsh_len_post91_new(new_year,
                                     bins = len_bins,
                                     ss3_frmt = FALSE,
-                                    time = 'trimester') %>% 
+                                    time = 'month') %>% 
   tidytable::rename(new_lencomp = lencomp)
 
-# new way at month level
-lcomp_new_mon <- get_fsh_len_post91_new(new_year,
-                                        bins = len_bins,
-                                        ss3_frmt = FALSE,
-                                        time = 'month') %>% 
-  tidytable::rename(new_lencomp_mon = lencomp)
 
 # new way with new bins
 # 2 cm
 lcomp_new_bin2 <- get_fsh_len_post91_new(new_year,
                                          bins = len_bins2,
-                                         ss3_frmt = FALSE) %>% 
+                                         ss3_frmt = FALSE,
+                                         time = 'month') %>% 
   tidytable::rename(bin_lencomp = lencomp)
 # 5 cm
 lcomp_new_bin5 <- get_fsh_len_post91_new(new_year,
                                          bins = len_bins5,
-                                         ss3_frmt = FALSE) %>% 
+                                         ss3_frmt = FALSE,
+                                         time = 'month') %>% 
   tidytable::rename(bin_lencomp = lencomp)
 
 ## compare old vs new ----
@@ -179,11 +175,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap(~ gear, nrow = 3,
              strip.position = 'top') +
   labs(y = "Aggregated length composition", x = "Length (cm)", color = "", fill = "") +
@@ -209,11 +202,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
@@ -239,11 +229,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
@@ -268,11 +255,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'green')) +
@@ -289,20 +273,12 @@ lcomp_old %>%
   tidytable::bind_rows(lcomp_old_fltr %>% 
                          tidytable::mutate(name = 'Original, no filter')) %>% 
   tidytable::bind_rows(lcomp_new %>% 
-                         tidytable::mutate(name = 'New aggregated T-A-G, merged state, no filter') %>% 
-                         tidytable::rename(lencomp = new_lencomp)) %>% 
-  tidytable::bind_rows(lcomp_new_mon %>% 
                          tidytable::mutate(name = 'New aggregated M-A-G, merged state, no filter') %>% 
-                         tidytable::rename(lencomp = new_lencomp_mon)) %>% 
+                         tidytable::rename(lencomp = new_lencomp)) %>% 
   tidytable::mutate(length = ceiling(length)) %>% 
   tidytable::filter(year == 2022,
                     gear == 'pot') %>% 
-  tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated T-A-G, merged state, no filter', 'New aggregated M-A-G, merged state, no filter'))) -> dat
-
-lcomp_new %>% 
-  left_join(lcomp_new_mon) %>% 
-  filter(new_lencomp != 0) %>% 
-  print(n=150)
+  tidytable::mutate(name2 = factor(name, levels = c('Original', 'Original, no filter', 'New aggregated M-A-G, merged state, no filter'))) -> dat
 
 ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
   geom_line(aes(color = name2))  +
@@ -310,14 +286,12 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
   geom_area(aes(fill = name2),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "none",
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none") +
   facet_wrap( ~ name2, ncol = 1) +
   labs(y = "Pot length composition", x = "Length (cm)", fill = "Data treatment:", color = "Data treatment:") +
-  scale_color_manual(values = c('green', 'red', 'blue', "orange")) +
-  scale_fill_manual(values = c('green', 'red', 'blue', "orange")) -> pot_22
+  scale_color_manual(values = c('green', 'red', 'blue')) +
+  scale_fill_manual(values = c('green', 'red', 'blue')) -> pot_22
 
 
 suppressWarnings(ggplot2::ggsave(pot_22,
@@ -357,12 +331,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'pot'),
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
@@ -380,12 +350,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'trawl'),
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
@@ -403,12 +369,8 @@ ggplot(data = dat %>% tidytable::filter(gear == 'longline'),
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
@@ -466,12 +428,8 @@ ggplot(data = dat,
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Trawl survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
@@ -523,12 +481,8 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        legend.text = element_text(size = 14),
-        axis.text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        strip.text = element_text(size = 14)) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Longline survey length composition", x = "Length (cm)", color = "", fill = "") +
   scale_color_manual(values = c('blue', 'red', 'green')) +

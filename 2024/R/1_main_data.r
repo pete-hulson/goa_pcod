@@ -155,7 +155,8 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins,
-                              new_lcomp = TRUE)
+                              new_lcomp = TRUE,
+                              time = 'month')
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", 
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
@@ -167,7 +168,8 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins2,
-                              new_lcomp = TRUE)
+                              new_lcomp = TRUE,
+                              time = 'month')
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin2.dat")), overwrite = TRUE)
@@ -179,7 +181,8 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins5,
-                              new_lcomp = TRUE)
+                              new_lcomp = TRUE,
+                              time = 'month')
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin5.dat")), overwrite = TRUE)
