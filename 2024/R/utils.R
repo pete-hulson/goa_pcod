@@ -170,22 +170,21 @@ wt_len <- function(new_year = NULL){
   
   # summarise weight data (mean & sd) by year and length
   summ_data <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv')) %>% 
+    tidytable::select(year, length, weight) %>% 
+    tidytable::bind_rows(vroom::vroom(here::here(new_year, 'data', 'raw', 'beachseine_lw.csv'))) %>% 
     tidytable::drop_na() %>% 
     tidytable::summarise(wt = mean(weight, na.rm = TRUE),
-                         wt_sd = sd(weight, na.rm = TRUE),
                          n = .N,
-                         .by = c(year, length)) %>% 
-    tidytable::drop_na() %>% 
-    tidytable::filter(wt_sd > 0)
-  
+                         .by = c(year, length))
+
   # define optimizing function
   ests <- function(pars, summ_data){
     summ_data %>% 
     tidytable::mutate(est_wt = pars[1] * length ^ pars[2],
-                      rss = (wt - est_wt) ^ 2 / wt_sd) %>% 
+                      rss = n * (wt - est_wt) ^ 2) %>% 
     tidytable::summarise(obj = sum(rss))
   }
-  
+
   # fit model
   fit <- stats::optim(par = c(3e-06, 3), 
                       fn = ests,
