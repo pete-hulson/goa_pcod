@@ -346,9 +346,10 @@ ggplot(data = plot_dat,
             alpha = 0.3777,
             position = 'identity') +
   theme_bw(base_size = 14) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
-  labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
+  labs(y = "", x = "Length (cm)", color = "Pot", fill = "Pot") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red' , 'green')) -> bin_pot
 
@@ -379,9 +380,10 @@ ggplot(data = plot_dat,
             alpha = 0.3777,
             position = 'identity') +
   theme_bw(base_size = 14) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
-  labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
+  labs(y = "", x = "Length (cm)", color = "Trawl", fill = "Trawl") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_trawl
 
@@ -412,9 +414,10 @@ ggplot(data = plot_dat,
             alpha = 0.3777,
             position = 'identity') +
   theme_bw(base_size = 14) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
-  labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
+  labs(y = "", x = "Length (cm)", color = "Longline", fill = "Longline") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll
 
@@ -483,9 +486,10 @@ ggplot(data = plot_dat,
             alpha = 0.3777,
             position = 'identity') +
   theme_bw(base_size = 18) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
-  labs(y = "Trawl survey length composition", x = "Length (cm)", color = "", fill = "") +
+  labs(y = "", x = "Length (cm)", color = "Trawl survey", fill = "Trawl survey") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_twl_srv
 
@@ -549,9 +553,10 @@ ggplot(data = plot_dat, aes(x = as.numeric(length), y = lencomp, group = name)) 
             alpha = 0.3777,
             position = 'identity') +
   theme_bw(base_size = 14) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top",
+        axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
-  labs(y = "Longline survey length composition", x = "Length (cm)", color = "", fill = "") +
+  labs(y = "", x = "Length (cm)", color = "Longline survey", fill = "Longline survey") +
   scale_color_manual(values = c('blue', 'red', 'green')) +
   scale_fill_manual(values = c('blue', 'red', 'green')) -> bin_ll_srv
 
