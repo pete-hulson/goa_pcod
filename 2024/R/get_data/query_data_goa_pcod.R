@@ -17,42 +17,11 @@ query_goa_pcod <- function(new_year = 9999,
                            srv_sp = 21720,
                            area = 'goa'){
   
-  # akfin database queries ----
   # get connected
   db = 'akfin'
   conn = afscdata::connect(db)  
   
-  ## catch data ----
-  cat("\u231b", crayon::blue("working on catch query..."), "\n")
-  # query catch data and write raw data to folder 
-  afscdata::q_catch(year = new_year,
-                    species = fsh_sp,
-                    area = fsh_subarea,
-                    db = conn,
-                    add_fields = "akr_state_fishery_flag")
-  # query ADF&G data from 1997-2002 and write raw data to folder 
-  dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    dplyr::select(akfin_year,
-                  fmp_area,
-                  adfg_i_species_code,
-                  adfg_i_harvest_code,
-                  fmp_gear,
-                  cfec_whole_pounds) %>% 
-    dplyr::filter(akfin_year >= 1997,
-                  akfin_year <= 2002,
-                  adfg_i_species_code == 110,
-                  adfg_i_harvest_code == 80,
-                  fmp_area == 'GOA') %>% 
-    dplyr::summarise(catch_mt = sum(cfec_whole_pounds) / 2204.622, 
-                     .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) -> adfg_q
-  
-  dplyr::collect(adfg_q) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
-  capture.output(dplyr::show_query(adfg_q), 
-                 file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  # survey data ----
   
   ## trawl survey index data ----
   cat("\u231b", crayon::blue("working on trawl survey index query..."), "\n")
@@ -90,40 +59,6 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  ## longline survey index data ----
-  cat("\u231b", crayon::blue("working on longline survey index query..."), "\n")
-  afscdata::q_lls_rpn(year = new_year,
-                      species = srv_sp,
-                      area = area,
-                      by = 'geoarea',
-                      use_historical = FALSE,
-                      db = conn)
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  ## iphc survey index data ----
-  cat("\u231b", crayon::blue("working on iphc survey index query..."), "\n")
-  dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    dplyr::filter(species %in% c('Pacific cod'),
-                  fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
-    dplyr::select(year = survey_year, 
-                  fmp_sub_area, 
-                  species, 
-                  strata = rpn_strata, 
-                  strata_rpn, 
-                  boot_sd, 
-                  boot_bias,
-                  n_stations,
-                  n_pos_catch) -> iphc_q
-  
-  dplyr::collect(iphc_q) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
-  capture.output(dplyr::show_query(iphc_q), 
-                 file = here::here(new_year, "data", "sql", "iphc_srvy_index_sql.txt"))
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
   ## trawl survey length pop'n data ----
   cat("\u231b", crayon::blue("working on trawl survey length pop'n query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_sizecomp')) %>% 
@@ -155,71 +90,6 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "twl_srvy_lpop_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length pop'n query"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  ## longline survey length data ----
-  cat("\u231b", crayon::blue("working on longline survey length rpn query..."), "\n")
-  afscdata::q_lls_rpn_length(year = new_year,
-                             species = srv_sp,
-                             area = area,
-                             db = conn)
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  ## domestic fishery length data ----
-  cat("\u231b", crayon::blue("working on domestic fishery length query..."), "\n")
-  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
-                        dplyr::filter(SPECIES == fsh_sp_code),
-                      by = c('HAUL_JOIN')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_length_mv')) %>% 
-                        dplyr::filter(SPECIES == fsh_sp_code),
-                      by = c('HAUL_JOIN')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    dplyr::select(gear,
-                  haul_join,
-                  numb = extrapolated_number,
-                  cruise = cruise.x,
-                  permit = permit.y,
-                  haul = haul.x,
-                  weight = extrapolated_weight,
-                  sex = sex.y,
-                  length,
-                  freq = frequency,
-                  lon = londd_end.x,
-                  lat = latdd_end.x,
-                  hday = haul_date.x,
-                  area = nmfs_area.x) %>% 
-    dplyr::filter(area >= 600,
-                  area <= 699,
-                  area != 670) -> akfin_len 
-  
-  dplyr::collect(akfin_len) %>% 
-    dplyr::mutate(haul_join = paste0('H', haul_join),
-                  weight = weight / 1000,
-                  year = lubridate::year(hday),
-                  month = lubridate::month(hday),
-                  season = dplyr::case_when(month <= 2 ~ 1,
-                                            month %in% c(3, 4) ~ 2,
-                                            month %in% c(5, 6, 7, 8) ~ 3,
-                                            month %in% c(9, 10) ~ 4,
-                                            month >= 11 ~ 5),
-                  quarter = dplyr::case_when(month <= 3 ~ 1,
-                                             month %in% c(4, 5, 6) ~ 2,
-                                             month %in% c(7, 8, 9) ~ 3,
-                                             month >= 10 ~ 4),
-                  trimester = dplyr::case_when(month <= 4 ~ 1,
-                                               month %in% c(5, 6, 7, 8) ~ 2,
-                                               month >= 9 ~ 3),
-                  gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
-                                          gear == 6 ~ 'pot',
-                                          gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>%  
-    dplyr::filter(year <= new_year) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv'), delim = ",")
-  
-  capture.output(dplyr::show_query(akfin_len), 
-                 file = here::here(new_year, "data", "sql", "fsh_lfreq_sql.txt"))
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## trawl survey age pop'n data ----
   cat("\u231b", crayon::blue("working on trawl survey age pop'n query..."), "\n")
@@ -332,7 +202,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "twl_srvy_haul_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey haul data query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## trawl survey catch query ----
   cat("\u231b", crayon::blue("working on trawl survey catch data query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
@@ -390,7 +260,7 @@ query_goa_pcod <- function(new_year = 9999,
                   frequency) %>% 
     dplyr::filter(survey_definition_id %in% twl_srvy,
                   species_code %in% srv_sp) %>% 
-    dplyr::mutate(length = length_mm / 100) %>% 
+    dplyr::mutate(length = length_mm / 10) %>% 
     dplyr::select(year, 
                   survey = survey_definition_id,
                   stratum,
@@ -411,21 +281,185 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length freq data query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  # afsc database queries ----
-  # get connected
-  db = 'afsc'
-  conn = afscdata::connect(db)  
-  
-  ## foreign fishery length data ----
-  cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
+  ## trawl sruvey strata data ----
+  cat("\u231b", crayon::blue("working on trawl survey strata data query..."), "\n")
+  # strata with area sizes
+  dplyr::tbl(conn, dplyr::sql('gap_products.akfin_area')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(survey_definition_id %in% twl_srvy,
+                  area_type == 'STRATUM') %>% 
+    dplyr::select(survey = survey_definition_id,
+                  design_year,
+                  stratum = area_id,
+                  area = area_km2) %>% 
+    dplyr::collect() -> st_area
+  # subregion level with description (e.g., wgoa, etc)
+  dplyr::tbl(conn, dplyr::sql('gap_products.akfin_area')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(survey_definition_id %in% twl_srvy,
+                  area_type == 'REGULATORY AREA') %>% 
+    dplyr::select(area_id,
+                  subarea_name = description,
+                  design_year) %>% 
+    dplyr::collect() -> subreg
+  # strata within subregions
+  dplyr::tbl(conn, dplyr::sql('gap_products.akfin_stratum_groups')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(survey_definition_id %in% twl_srvy) %>% 
+    dplyr::select(stratum, 
+                  area_id) %>% 
+    dplyr::collect() -> st_subreg
+  # join all to get strata with area sizes and subregion ids
+  st_area %>% 
+    tidytable::left_join(st_subreg %>% 
+                           tidytable::left_join(subreg) %>% 
+                           tidytable::drop_na()) %>%
+    tidytable::filter(design_year == max(design_year), .by = c(stratum)) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_strata.csv'), delim = ",")
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey strata data query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
+  ## longline survey index data ----
+  cat("\u231b", crayon::blue("working on longline survey index query..."), "\n")
+  afscdata::q_lls_rpn(year = new_year,
+                      species = srv_sp,
+                      area = area,
+                      by = 'geoarea',
+                      use_historical = FALSE,
+                      db = conn)
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  # query data 
-  dplyr::tbl(conn, dplyr::sql('norpac.foreign_haul')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.foreign_spcomp')) %>% 
+  ## longline survey length data ----
+  cat("\u231b", crayon::blue("working on longline survey length rpn query..."), "\n")
+  afscdata::q_lls_rpn_length(year = new_year,
+                             species = srv_sp,
+                             area = area,
+                             db = conn)
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  ## iphc survey index data ----
+  cat("\u231b", crayon::blue("working on iphc survey index query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(species %in% c('Pacific cod'),
+                  fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
+    dplyr::select(year = survey_year, 
+                  fmp_sub_area, 
+                  species, 
+                  strata = rpn_strata, 
+                  strata_rpn, 
+                  boot_sd, 
+                  boot_bias,
+                  n_stations,
+                  n_pos_catch) -> iphc_q
+  
+  dplyr::collect(iphc_q) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
+  capture.output(dplyr::show_query(iphc_q), 
+                 file = here::here(new_year, "data", "sql", "iphc_srvy_index_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  # fishery data ----
+  
+  ## catch data ----
+  cat("\u231b", crayon::blue("working on catch query..."), "\n")
+  # query catch data and write raw data to folder 
+  afscdata::q_catch(year = new_year,
+                    species = fsh_sp,
+                    area = fsh_subarea,
+                    db = conn,
+                    add_fields = "akr_state_fishery_flag")
+  # query ADF&G data from 1997-2002 and write raw data to folder 
+  dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(akfin_year,
+                  fmp_area,
+                  adfg_i_species_code,
+                  adfg_i_harvest_code,
+                  fmp_gear,
+                  cfec_whole_pounds) %>% 
+    dplyr::filter(akfin_year >= 1997,
+                  akfin_year <= 2002,
+                  adfg_i_species_code == 110,
+                  adfg_i_harvest_code == 80,
+                  fmp_area == 'GOA') %>% 
+    dplyr::summarise(catch_mt = sum(cfec_whole_pounds) / 2204.622, 
+                     .by = c(adfg_i_harvest_code, fmp_area, fmp_gear, akfin_year)) -> adfg_q
+  
+  dplyr::collect(adfg_q) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
+  capture.output(dplyr::show_query(adfg_q), 
+                 file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  ## domestic fishery length data ----
+  cat("\u231b", crayon::blue("working on domestic fishery length query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
                         dplyr::filter(SPECIES == fsh_sp_code),
                       by = c('HAUL_JOIN')) %>% 
-    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.foreign_length')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_length_mv')) %>% 
+                        dplyr::filter(SPECIES == fsh_sp_code),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(gear,
+                  haul_join,
+                  numb = extrapolated_number,
+                  cruise = cruise.x,
+                  permit = permit.y,
+                  haul = haul.x,
+                  weight = extrapolated_weight,
+                  sex = sex.y,
+                  length,
+                  freq = frequency,
+                  lon = londd_end.x,
+                  lat = latdd_end.x,
+                  hday = haul_date.x,
+                  area = nmfs_area.x) %>% 
+    dplyr::filter(area >= 600,
+                  area <= 699,
+                  area != 670) -> akfin_len 
+  
+  dplyr::collect(akfin_len) %>% 
+    dplyr::mutate(haul_join = paste0('H', haul_join),
+                  weight = weight / 1000,
+                  year = lubridate::year(hday),
+                  month = lubridate::month(hday),
+                  season = dplyr::case_when(month <= 2 ~ 1,
+                                            month %in% c(3, 4) ~ 2,
+                                            month %in% c(5, 6, 7, 8) ~ 3,
+                                            month %in% c(9, 10) ~ 4,
+                                            month >= 11 ~ 5),
+                  quarter = dplyr::case_when(month <= 3 ~ 1,
+                                             month %in% c(4, 5, 6) ~ 2,
+                                             month %in% c(7, 8, 9) ~ 3,
+                                             month >= 10 ~ 4),
+                  trimester = dplyr::case_when(month <= 4 ~ 1,
+                                               month %in% c(5, 6, 7, 8) ~ 2,
+                                               month >= 9 ~ 3),
+                  gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
+                                          gear == 6 ~ 'pot',
+                                          gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>%  
+    dplyr::filter(year <= new_year) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv'), delim = ",")
+  
+  capture.output(dplyr::show_query(akfin_len), 
+                 file = here::here(new_year, "data", "sql", "fsh_lfreq_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+
+  ## foreign fishery length data ----
+  cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('pre1991.foreign_haul')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('pre1991.foreign_spcomp')) %>% 
+                        dplyr::filter(SPECIES == fsh_sp_code),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('pre1991.foreign_length')) %>% 
                         dplyr::filter(SPECIES == fsh_sp_code),
                       by = c('HAUL_JOIN')) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -442,7 +476,7 @@ query_goa_pcod <- function(new_year = 9999,
                   area <= 699,
                   area != 670) %>% 
     dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
-  
+
   dplyr::collect(afsc_len) %>% 
     dplyr::mutate(weight = weight / 1000,
                   year = lubridate::year(dt),
@@ -457,15 +491,14 @@ query_goa_pcod <- function(new_year = 9999,
                                           !is.na(num_skates) ~ 'longline')) %>% 
     dplyr::select(year, gear, haul_join, month, season, numb, weight, length, freq) %>% 
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_lfreq_foreign.csv'), delim = ",")
-  
   capture.output(dplyr::show_query(afsc_len), 
-                 file = here::here(new_year, "data", "sql", "fsh_lfreq_foreign_afsc_sql.txt"))
+                 file = here::here(new_year, "data", "sql", "fsh_lfreq_foreign_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("foreign fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## domestic fishery age data ----
   cat("\u231b", crayon::blue("working on fishery age query..."), "\n")
-  dplyr::tbl(conn, dplyr::sql('obsint.debriefed_age')) %>% 
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_age')) %>% 
     dplyr::filter(SPECIES == fsh_sp_code) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(year,
@@ -485,17 +518,15 @@ query_goa_pcod <- function(new_year = 9999,
                   area != 670) %>% 
     dplyr::mutate(haul_join = paste0('H', haul_join),
                   port_join = paste0('P', port_join)) -> afsc_age
-  
   dplyr::collect(afsc_age) %>% 
     dplyr::filter(!is.na(age)) %>% 
     dplyr::mutate(gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
                                           gear == 6 ~ 'pot',
                                           gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>% 
     dplyr::filter(!is.na(gear)) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv'), delim = ",")
-  
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_age_domestic_test.csv'), delim = ",")
   capture.output(dplyr::show_query(afsc_age), 
-                 file = here::here(new_year, "data", "sql", "fsh_age_domestic_afsc_sql.txt"))
+                 file = here::here(new_year, "data", "sql", "fsh_age_domestic_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
