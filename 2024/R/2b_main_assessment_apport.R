@@ -238,6 +238,10 @@ compare_base <- rema::compare_rema_models(list(apport_mdl, apport_mdl7),
                                          biomass_ylab = 'Biomass (t)',
                                          cpue_ylab = 'Relative Population Weights')
 
+compare_base$plots$proportion_biomass_by_strata + theme(legend.position = 'top')
+
+
+
 suppressWarnings(ggplot2::ggsave(compare_base$plots$total_predicted_biomass + theme(legend.position = 'top'),
                                  file = here::here(new_year, "plots", 'other','biom_compare.png'),
                                  width = 12, height = 7, unit = 'in', dpi = 520))
@@ -252,6 +256,19 @@ base_plots <- rema::plot_rema(tidy_rema = apport_out,
 new_plots <- rema::plot_rema(tidy_rema = apport_out7, 
                              biomass_ylab = 'Biomass (t): Trawl and Longline',
                              cpue_ylab = 'Relative Population Weights')
+
+
+
+
+
+cowplot::plot_grid(base_plots$proportion_biomass_by_strata + theme(legend.position = 'top'),
+                   new_plots$proportion_biomass_by_strata + theme(legend.position = 'none'),
+                   labels = c('Trawl only', 'Trawl and Longline'),
+                   label_x = 0.7,
+                   ncol = 1, rel_widths = c(0.65, 0.35))
+
+
+
 
 cowplot::plot_grid(base_plots$biomass_by_strata + theme(legend.position = 'top'),
                    new_plots$biomass_by_strata + theme(legend.position = 'none'),
