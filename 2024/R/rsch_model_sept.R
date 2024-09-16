@@ -45,34 +45,41 @@ new_base <- "2019.1e.5cm-2024"
 
 new_base_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base))
 
+## run management scens ----
+new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_base),
+                                         CYR = asmnt_yr,
+                                         FLEETS = c(1:3),
+                                         do_fig = FALSE,
+                                         do_mark = FALSE)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2024.0: time-invariant & logistic trawl survey selex ----
-new_base_twlsel <- "2024.0-2024"
+# time-invariant/logistic trawl survey selex ----
+twlsel <- "twl_sel"
 copy_mdl <- new_base
 
 ## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'ss3.exe'))){
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', twlsel, 'ss3.exe'))){
   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-                to = here::here(asmnt_yr, 'rsch', new_base_twlsel))
+                to = here::here(asmnt_yr, 'rsch/extra_models', twlsel))
 }
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_twlsel, 
+                 folder = 'rsch/extra_models',
+                 mdl = twlsel, 
                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
                  ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_0.ctl")
+                 ctl_out = "test_model.ctl")
 
 ## make 2024 changes to ctl file ----
 ctl_2024(asmnt_yr, 
-         folder = 'rsch',
-         mdl = new_base_twlsel, 
-         ctl_filename = 'Model24_0.ctl')
+         folder = 'rsch/extra_models',
+         mdl = twlsel, 
+         ctl_filename = 'test_model.ctl')
 
 ## change selex in ctl ----
 # read ctl file
-ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'Model24_0.ctl'))
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', twlsel, 'test_model.ctl'))
 # set blocks to 0
 ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
                                which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
@@ -89,363 +96,493 @@ ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_
 ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 0
 # write new ctl file
 r4ss::SS_writectl_3.30(ctllist = ctl,
-                       outfile = here::here(asmnt_yr, 'rsch', new_base_twlsel, 'Model24_0.ctl'),
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', twlsel, 'test_model.ctl'),
                        overwrite = TRUE)
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_twlsel,
-              ctl_filename = "Model24_0.ctl")
+              folder = 'rsch/extra_models',
+              mdl = twlsel,
+              ctl_filename = "test_model.ctl")
 
 ## get and plot model output ----
 # get output
-new_base_twlsel_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_twlsel))
+twlsel_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', twlsel))
 # if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_twlsel, 'plots'), recursive = TRUE)
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', twlsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', twlsel, 'plots'), recursive = TRUE)
 }
 # plot results
-r4ss::SS_plots(new_base_twlsel_res,
+r4ss::SS_plots(twlsel_res,
                printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_twlsel, "plots"))
+               dir = here::here(asmnt_yr, 'rsch/extra_models', twlsel, "plots"))
+
+## run management scens ----
+twlsel_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch/extra_models', twlsel),
+                                       CYR = asmnt_yr,
+                                       FLEETS = c(1:3),
+                                       do_fig = FALSE,
+                                       do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2024.1: logistic ll survey selex ----
-new_base_llsel <- "2024.1-2024"
+# logistic ll survey selex ----
+llsel <- "ll_sel"
 copy_mdl <- new_base
 
 ## copy ss input files ----
-if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_llsel, 'ss3.exe'))){
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-                to = here::here(asmnt_yr, 'rsch', new_base_llsel))
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
 }
 
 ## update files ----
 update_ss3_files(asmnt_yr, 
-                 folder = 'rsch',
-                 mdl = new_base_llsel, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
                  ctl_in = "updated_ae.ctl",
-                 ctl_out = "Model24_1.ctl")
+                 ctl_out = "test_model.ctl")
 
 ## make 2024 changes to ctl file ----
 ctl_2024(asmnt_yr, 
-         folder = 'rsch',
-         mdl = new_base_llsel, 
-         ctl_filename = 'Model24_1.ctl')
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
 
 ## change selex in ctl ----
 # read ctl file
-ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_llsel, 'Model24_1.ctl'))
-# fix maturity
-# ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
 # freeze ll srv to logistic
 ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
 ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
 # write new ctl file
 r4ss::SS_writectl_3.30(ctllist = ctl,
-                       outfile = here::here(asmnt_yr, 'rsch', new_base_llsel, 'Model24_1.ctl'),
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
                        overwrite = TRUE)
 
 ## run model ----
 run_ss3_model(asmnt_yr, 
-              folder = 'rsch',
-              mdl = new_base_llsel,
-              ctl_filename = "Model24_1.ctl")
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
 
 ## get and plot model output ----
 # get output
-new_base_llsel_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_llsel))
+llsel_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
 # if exists, delete plot folder
-if(file.exists(here::here(asmnt_yr, 'rsch', new_base_llsel, 'plots'))){
-  unlink(here::here(asmnt_yr, 'rsch', new_base_llsel, 'plots'), recursive = TRUE)
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
 }
 # plot results
-r4ss::SS_plots(new_base_llsel_res,
+r4ss::SS_plots(llsel_res,
                printfolder = "",
-               dir = here::here(asmnt_yr, 'rsch', new_base_llsel, "plots"))
-# 
-# # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# # 2024.2: logistic & time-invariant survey selex ----
-# new_base_selex <- "2024.2-2024"
-# copy_mdl <- new_base
-# 
-# ## copy ss input files ----
-# if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'ss3.exe'))){
-#   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-#                 to = here::here(asmnt_yr, 'rsch', new_base_selex))
-# }
-# 
-# ## update files ----
-# update_ss3_files(asmnt_yr, 
-#                  folder = 'rsch',
-#                  mdl = new_base_selex, 
-#                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
-#                  ctl_in = "updated_ae.ctl",
-#                  ctl_out = "Model24_2.ctl")
-# 
-# ## make 2024 changes to ctl file ----
-# ctl_2024(asmnt_yr, 
-#          folder = 'rsch',
-#          mdl = new_base_selex, 
-#          ctl_filename = 'Model24_2.ctl')
-# 
-# ## change selex in ctl ----
-# # read ctl file
-# ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'))
-# # fix maturity
-# # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
-# # freeze ll srv to logistic
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
-# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
-# # set blocks to 0
-# ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-#                                which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-#                                    which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# # remove from tv section
-# ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
-#                                                         length(rownames(ctl$size_selex_parms_tv))),]
-# # freeze twl srv to logistic
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
-# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
-# # write new ctl file
-# r4ss::SS_writectl_3.30(ctllist = ctl,
-#                        outfile = here::here(asmnt_yr, 'rsch', new_base_selex, 'Model24_2.ctl'),
-#                        overwrite = TRUE)
-# 
-# ## run model ----
-# run_ss3_model(asmnt_yr, 
-#               folder = 'rsch',
-#               mdl = new_base_selex,
-#               ctl_filename = "Model24_2.ctl")
-# 
-# ## get and plot model output ----
-# # get output
-# new_base_selex_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex))
-# # if exists, delete plot folder
-# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'))){
-#   unlink(here::here(asmnt_yr, 'rsch', new_base_selex, 'plots'), recursive = TRUE)
-# }
-# # plot results
-# r4ss::SS_plots(new_base_selex_res,
-#                printfolder = "",
-#                dir = here::here(asmnt_yr, 'rsch', new_base_selex, "plots"))
-# 
-# # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# # 2024.3: logistic twl surv & prior on ll surv selex ----
-# new_base_selex2 <- "2024.3-2024"
-# copy_mdl <- new_base
-# 
-# ## copy ss input files ----
-# if(!file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'ss3.exe'))){
-#   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-#                 to = here::here(asmnt_yr, 'rsch', new_base_selex2))
-# }
-# 
-# ## update files ----
-# update_ss3_files(asmnt_yr, 
-#                  folder = 'rsch',
-#                  mdl = new_base_selex2, 
-#                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
-#                  ctl_in = "updated_ae.ctl",
-#                  ctl_out = "Model24_3.ctl")
-# 
-# ## make 2024 changes to ctl file ----
-# ctl_2024(asmnt_yr, 
-#          folder = 'rsch',
-#          mdl = new_base_selex2, 
-#          ctl_filename = 'Model24_3.ctl')
-# 
-# ## change selex in ctl ----
-# # read ctl file
-# ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'))
-# # fix maturity
-# # ctl$MG_parms$INIT[which(rownames(ctl$MG_parms) == 'Mat50%_Fem_GP_1')] = 57.3
-# # penalize ll srv
-# ctl$size_selex_parms$LO[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
-# ctl$size_selex_parms$PRIOR[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 5
-# ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 0.5
-# ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 6
-# # set blocks to 0
-# ctl$size_selex_parms$Block[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-#                                which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# ctl$size_selex_parms$Block_Fxn[seq(which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_Srv(4)'),
-#                                    which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)'))] <- 0
-# # remove from tv section
-# ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
-#                                                         length(rownames(ctl$size_selex_parms_tv))),]
-# # freeze twl srv to logistic
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
-# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
-# # write new ctl file
-# r4ss::SS_writectl_3.30(ctllist = ctl,
-#                        outfile = here::here(asmnt_yr, 'rsch', new_base_selex2, 'Model24_3.ctl'),
-#                        overwrite = TRUE)
-# 
-# ## run model ----
-# run_ss3_model(asmnt_yr, 
-#               folder = 'rsch',
-#               mdl = new_base_selex2,
-#               ctl_filename = "Model24_3.ctl")
-# 
-# ## get and plot model output ----
-# # get output
-# new_base_selex2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_selex2))
-# # if exists, delete plot folder
-# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'))){
-#   unlink(here::here(asmnt_yr, 'rsch', new_base_selex2, 'plots'), recursive = TRUE)
-# }
-# # plot results
-# r4ss::SS_plots(new_base_selex2_res,
-#                printfolder = "",
-#                dir = here::here(asmnt_yr, 'rsch', new_base_selex2, "plots"))
-# 
-# 
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
+
+## run management scens ----
+llsel_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch/extra_models', llsel),
+                                       CYR = asmnt_yr,
+                                       FLEETS = c(1:3),
+                                       do_fig = FALSE,
+                                       do_mark = FALSE)
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2024.3: logistic & time-invariant survey selex, full t-v for fishery (2024.3) ----
-# new_selex <- "2024.3-2024"
-# copy_mdl <- new_base_lcomp_bin5
-# copy_mdl_res <- new_base_lcomp_bin5_res
-# 
-# ## copy ss input files ----
-# if(!file.exists(here::here(asmnt_yr, 'rsch', new_selex, 'ss3.exe'))){
-#   start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
-#                 to = here::here(asmnt_yr, 'rsch', new_selex))
-# }
-# 
-# ## update files ----
-# update_ss3_files(asmnt_yr, 
-#                  folder = 'rsch',
-#                  mdl = new_selex, 
-#                  dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
-#                  ctl_in = "updated_ae.ctl",
-#                  ctl_out = "Model24_3.ctl")
-# 
-# ## make 2024 changes to ctl file ----
-# ctl_2024(asmnt_yr, 
-#          folder = 'rsch',
-#          mdl = new_selex, 
-#          ctl_filename = 'Model24_3.ctl')
-# 
-# ## change selex in ctl ----
-# # read ctl file
-# ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch', new_selex, 'Model24_3.ctl'))
-# 
-# # freeze ll srv to logistic
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- 10
-# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] <- -2
-# # set blocks to 0
-# ctl$size_selex_parms$Block = 0
-# ctl$size_selex_parms$Block_Fxn = 0
-# # remove from tv section
-# ctl$size_selex_parms_tv <- ctl$size_selex_parms_tv[-seq(which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_Srv(4)_BLK1repl_1996'),
-#                                                         length(rownames(ctl$size_selex_parms_tv))),]
-# # freeze twl srv to logistic
-# ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- 10
-# ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_Srv(4)')] <- -2
-# # twl fishery
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshTrawl(1)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_FshTrawl(1)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshTrawl(1)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_FshTrawl(1)')] = asmnt_yr
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshTrawl(1)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshTrawl(1)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshTrawl(1)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshTrawl(1)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshTrawl(1)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshTrawl(1)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshTrawl(1)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshTrawl(1)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshTrawl(1)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshTrawl(1)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshTrawl(1)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshTrawl(1)_BLK2repl_2017'),]
-# # ll fishery
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshLL(2)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_FshLL(2)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshLL(2)')] = asmnt_yr
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshLL(2)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshLL(2)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshLL(2)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshLL(2)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshLL(2)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshLL(2)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshLL(2)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshLL(2)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshLL(2)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshLL(2)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshLL(2)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshLL(2)_BLK2repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshLL(2)_BLK2repl_1990'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshLL(2)_BLK2repl_2005'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshLL(2)_BLK2repl_2007'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_4_FshLL(2)_BLK2repl_2017'),]
-# # pot fishery
-# ctl$size_selex_parms$dev_link[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshPot(3)')] = 1
-# ctl$size_selex_parms$dev_link[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshPot(3)')] = 1
-# ctl$size_selex_parms$dev_link[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_FshPot(3)')] = 1
-# ctl$size_selex_parms$dev_minyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshPot(3)')] = 1991
-# ctl$size_selex_parms$dev_minyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshPot(3)')] = 1991
-# ctl$size_selex_parms$dev_minyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_FshPot(3)')] = 1991
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshPot(3)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshPot(3)')] = asmnt_yr
-# ctl$size_selex_parms$dev_maxyr[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_FshPot(3)')] = asmnt_yr
-# ctl$size_selex_parms$dev_PH[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_FshPot(3)')] = 3
-# ctl$size_selex_parms$dev_PH[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_FshPot(3)')] = 3
-# ctl$size_selex_parms$dev_PH[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_FshPot(3)')] = 3
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshPot(3)_BLK3repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_2_FshPot(3)_BLK3repl_2017'),]
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_3_FshPot(3)_BLK3repl_2017'),]
-# t1 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_se'),]
-# rownames(t1) = 'SizeSel_P_1_FshPot(3)_dev_se'
-# t2 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_autocorr'),]
-# rownames(t2) = 'SizeSel_P_1_FshPot(3)_dev_autocorr'
-# t3 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_se'),]
-# rownames(t3) = 'SizeSel_P_3_FshPot(3)_dev_se'
-# t4 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_autocorr'),]
-# rownames(t4) = 'SizeSel_P_3_FshPot(3)_dev_autocorr'
-# t5 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_se'),]
-# rownames(t5) = 'SizeSel_P_6_FshPot(3)_dev_se'
-# t6 = ctl$size_selex_parms_tv[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_1_FshTrawl(1)_dev_autocorr'),]
-# rownames(t6) = 'SizeSel_P_6_FshPot(3)_dev_autocorr'
-# ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
-#   dplyr::bind_rows(t1) %>% 
-#   dplyr::bind_rows(t2) %>% 
-#   dplyr::bind_rows(t3) %>% 
-#   dplyr::bind_rows(t4) %>% 
-#   dplyr::bind_rows(t5) %>% 
-#   dplyr::bind_rows(t6)
-# # write new ctl file
-# r4ss::SS_writectl_3.30(ctllist = ctl,
-#                        outfile = here::here(asmnt_yr, 'rsch', new_selex, 'Model24_3.ctl'),
-#                        overwrite = TRUE)
-# 
-# ## run model ----
-# run_ss3_model(asmnt_yr, 
-#               folder = 'rsch',
-#               mdl = new_selex,
-#               ctl_filename = "Model24_3.ctl")
-# 
-# ## get and plot model output ----
-# # get output
-# new_selex_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_selex))
-# # if exists, delete plot folder
-# if(file.exists(here::here(asmnt_yr, 'rsch', new_selex, 'plots'))){
-#   unlink(here::here(asmnt_yr, 'rsch', new_selex, 'plots'), recursive = TRUE)
-# }
-# # plot results
-# r4ss::SS_plots(new_selex_res,
-#                printfolder = "",
-#                dir = here::here(asmnt_yr, 'rsch', new_selex, "plots"))
+# ll survey selex env param 1 ----
+llsel <- "ll_sel_p1"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# remove env link from q
+ctl$Q_parms$`env_var&link`[which(rownames(ctl$Q_parms) == 'LnQ_base_LLSrv(5)')] = 0
+ctl$Q_parms_tv = NULL
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_LLSrv(5)_ENV_add"
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_p1_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_p1_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ll survey selex env param 1 ----
+llsel <- "ll_sel_p2"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# remove env link from q
+ctl$Q_parms$`env_var&link`[which(rownames(ctl$Q_parms) == 'LnQ_base_LLSrv(5)')] = 0
+ctl$Q_parms_tv = NULL
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_2_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_LLSrv(5)_ENV_add"
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_p2_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_p2_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ll survey selex env param 3 ----
+llsel <- "ll_sel_p3"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# remove env link from q
+ctl$Q_parms$`env_var&link`[which(rownames(ctl$Q_parms) == 'LnQ_base_LLSrv(5)')] = 0
+ctl$Q_parms_tv = NULL
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_LLSrv(5)_ENV_add"
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_p3_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_p3_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ll survey selex env param 4 ----
+llsel <- "ll_sel_p4"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# remove env link from q
+ctl$Q_parms$`env_var&link`[which(rownames(ctl$Q_parms) == 'LnQ_base_LLSrv(5)')] = 0
+ctl$Q_parms_tv = NULL
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_LLSrv(5)_ENV_add"
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_p4_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_p4_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ll survey selex env param 6 ----
+llsel <- "ll_sel_p6"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# remove env link from q
+ctl$Q_parms$`env_var&link`[which(rownames(ctl$Q_parms) == 'LnQ_base_LLSrv(5)')] = 0
+ctl$Q_parms_tv = NULL
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_6_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_LLSrv(5)_ENV_add"
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_p6_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_p6_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ll survey selex env combined ----
+llsel <- "ll_sel_comb"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = llsel, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_lcomp_bin5.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = llsel, 
+         ctl_filename = 'test_model.ctl')
+
+## change selex in ctl ----
+# read ctl file
+ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'))
+# add env link to selex param
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_1_LLSrv(5)')] = 101
+ctl$size_selex_parms$`env_var&link`[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_3_LLSrv(5)')] = 101
+ctl$size_selex_parms_tv = ctl$size_selex_parms_tv %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5)) %>% 
+  dplyr::bind_rows(data.frame(LO = -10, 
+                              HI = 10, 
+                              INIT = 0, 
+                              PRIOR = 0, 
+                              PR_SD = 99, 
+                              PR_type = 0, 
+                              PHASE = 5))
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...58')] <- "SizeSel_P1_LLSrv(5)_ENV_add"
+rownames(ctl$size_selex_parms_tv)[which(rownames(ctl$size_selex_parms_tv) == '...59')] <- "SizeSel_P2_LLSrv(5)_ENV_add"
+
+# write new ctl file
+r4ss::SS_writectl_3.30(ctllist = ctl,
+                       outfile = here::here(asmnt_yr, 'rsch/extra_models', llsel, 'test_model.ctl'),
+                       overwrite = TRUE)
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = llsel,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+llsel_comb_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', llsel))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', llsel, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(llsel_comb_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', llsel, "plots"))
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -454,83 +591,27 @@ if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'
   dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'), recursive = TRUE)
 }
 
-
-## 23 vs 24 ----
-mdl_summ_23v24 <- r4ss::SSsummarize(list(base_res_23, 
-                                         update_base_res))
-
-r4ss::SSplotComparisons(mdl_summ_23v24, subplots = 2, 
-                        print = TRUE,
-                        legendlabels = c(base_mdl, 
-                                         base_mdl_update),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
-                        filenameprefix = '23v24')
-
-## 23 vs 24 and new base model ----
-mdl_summ_newbase <- r4ss::SSsummarize(list(base_res_23, 
-                                           update_base_res, 
-                                           new_base_res))
-
-r4ss::SSplotComparisons(mdl_summ_newbase, subplots = 2, 
-                        print = TRUE,
-                        legendlabels = c(base_mdl, 
-                                         base_mdl_update,
-                                         new_base), 
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
-                        filenameprefix = 'newbase')
-
-## all base with asymp twl survey selex ----
-mdl_summ <- r4ss::SSsummarize(list(base_res_23, 
-                                   update_base_res, 
-                                   new_base_res, 
-                                   new_base_twlsel_res))
-r4ss::SSplotComparisons(mdl_summ,
-                        print = TRUE,
-                        legendlabels = c(base_mdl, 
-                                         base_mdl_update, 
-                                         new_base,
-                                         new_base_twlsel),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
-                        filenameprefix = 'twlsel')
-
-
 ## all base with asymp twl survey selex & ll survey selex ----
 mdl_summ <- r4ss::SSsummarize(list(base_res_23, 
                                    update_base_res, 
                                    new_base_res, 
-                                   new_base_twlsel_res, 
-                                   new_base_llsel_res))
+                                   twlsel_res, 
+                                   llsel_res))
 r4ss::SSplotComparisons(mdl_summ,
                         print = TRUE,
                         legendlabels = c(base_mdl, 
                                          base_mdl_update, 
                                          new_base,
-                                         new_base_twlsel, 
-                                         new_base_llsel),
-                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
-                        filenameprefix = 'llsel')
+                                         "Twl selex", 
+                                         "LL selex"),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'))
 
 ## likes & abc ----
-vroom::vroom_write(mdl_summ$likelihoods %>% 
-                     tidytable::rename('2019.1b-23' = model1,
-                                       '2019.1b-24' = model2,
-                                       '2019.1e.5cm' = model3,
-                                       '2024.0' = model4,
-                                       '2024.1' = model5), 
-                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_summ_likes.csv'), delim = ",")
-vroom::vroom_write(mdl_summ$likelihoods_by_fleet %>% 
-                     tidytable::mutate(model = case_when(model == 1 ~ '2019.1b-23',
-                                                         model == 2 ~ '2019.1b-24',
-                                                         model == 3 ~ '2019.1e.5cm',
-                                                         model == 4 ~ '2024.0',
-                                                         model == 5 ~ '2024.1')), 
-                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_summ_likes_by_fleet.csv'), delim = ",")
-
 abc_comp <- data.frame(model = c(base_mdl, 
                                  base_mdl_update, 
                                  new_base,
-                                 new_base_twlsel, 
-                                 new_base_llsel),
+                                 twlsel, 
+                                 llsel),
                        abc = c(as.numeric(base_res_23$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2024') %>% 
                                             select(Value)),
@@ -540,13 +621,62 @@ abc_comp <- data.frame(model = c(base_mdl,
                                as.numeric(new_base_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
-                               as.numeric(new_base_twlsel_res$derived_quants %>% 
+                               as.numeric(twlsel_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value)),
-                               as.numeric(new_base_llsel_res$derived_quants %>% 
+                               as.numeric(llsel_res$derived_quants %>% 
                                             filter(Label == 'ForeCatch_2025') %>% 
                                             select(Value))))
 
 vroom::vroom_write(abc_comp, here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_abc_comp.csv'), delim = ",")
 
+vroom::vroom_write(mdl_summ$likelihoods %>% 
+                     tidytable::rename('2019.1b-23' = model1,
+                                       '2019.1b-24' = model2,
+                                       '2019.1e.5cm-2024' = model3,
+                                       'twlsel' = model4,
+                                       'llsel' = model5), 
+                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_summ_likes.csv'), delim = ",")
 
+
+vroom::vroom_write(new_base_mscen$Two_year %>% 
+                     tidytable::mutate(model = new_base) %>% 
+                     tidytable::bind_rows(twlsel_mscen$Two_year %>% 
+                                            tidytable::mutate(model = 'twlsel')) %>% 
+                     tidytable::bind_rows(llsel_mscen$Two_year %>% 
+                                            tidytable::mutate(model = 'llsel')),
+                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_2yr.csv'), delim = ",")
+
+## compare longline survey models ----
+
+mdl_ll <- r4ss::SSsummarize(list(new_base_res,
+                                 llsel_p1_res,
+                                 llsel_p2_res,
+                                 llsel_p3_res,
+                                 llsel_p4_res,
+                                 llsel_p6_res,
+                                 llsel_comb_res))
+
+vroom::vroom_write(mdl_ll$likelihoods %>% 
+                     tidytable::rename('2019.1e.5cm-2024' = model1,
+                                       'peak' = model2,
+                                       'top_logit' = model3,
+                                       'ascend_se' = model4,
+                                       'descend_se' = model5,
+                                       'start_logit' = model6,
+                                       'combined' = model7), 
+                   here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_ll_likes.csv'), delim = ",")
+
+r4ss::SSplotComparisons(mdl_ll,
+                        print = TRUE,
+                        legendlabels = c(new_base,
+                                         'peak',
+                                         'top_logit',
+                                         'ascend_se',
+                                         'descend_se',
+                                         'start_logit',
+                                         'combined'),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'llsrv_')
+
+mdl_ll$npars
