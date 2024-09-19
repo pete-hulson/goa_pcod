@@ -53,6 +53,49 @@ new_base_mscen <- Do_AK_TIER_3_Scenarios(DIR = here::here(asmnt_yr, 'rsch', new_
                                          do_mark = FALSE)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# surveyISS ----
+srvyiss <- "srvyISS"
+copy_mdl <- new_base
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch/extra_models', srvyiss, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', copy_mdl),
+                to = here::here(asmnt_yr, 'rsch/extra_models', srvyiss))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch/extra_models',
+                 mdl = srvyiss, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_srvyiss.dat"),
+                 ctl_in = "updated_ae.ctl",
+                 ctl_out = "test_model.ctl")
+
+## make 2024 changes to ctl file ----
+ctl_2024(asmnt_yr, 
+         folder = 'rsch/extra_models',
+         mdl = srvyiss, 
+         ctl_filename = 'test_model.ctl')
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch/extra_models',
+              mdl = srvyiss,
+              ctl_filename = "test_model.ctl")
+
+## get and plot model output ----
+# get output
+srvyiss_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch/extra_models', srvyiss))
+# if exists, delete plot folder
+if(file.exists(here::here(asmnt_yr, 'rsch/extra_models', srvyiss, 'plots'))){
+  unlink(here::here(asmnt_yr, 'rsch/extra_models', srvyiss, 'plots'), recursive = TRUE)
+}
+# plot results
+r4ss::SS_plots(srvyiss_res,
+               printfolder = "",
+               dir = here::here(asmnt_yr, 'rsch/extra_models', srvyiss, "plots"))
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # time-invariant/logistic trawl survey selex ----
 twlsel <- "twl_sel"
 copy_mdl <- new_base
@@ -590,6 +633,16 @@ r4ss::SS_plots(llsel_comb_res,
 if (!file.exists(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'))){
   dir.create(here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'), recursive = TRUE)
 }
+
+## base vs srvyISS ----
+iss_summ <- r4ss::SSsummarize(list(new_base_res, 
+                                   srvyiss_res))
+r4ss::SSplotComparisons(iss_summ,
+                        print = TRUE,
+                        legendlabels = c(new_base,
+                                         "SurveyISS"),
+                        plotdir = here::here(asmnt_yr, 'rsch', 'output', 'compare', 'model_plots'),
+                        filenameprefix = 'srvyISS_')
 
 ## all base with asymp twl survey selex & ll survey selex ----
 mdl_summ <- r4ss::SSsummarize(list(base_res_23, 

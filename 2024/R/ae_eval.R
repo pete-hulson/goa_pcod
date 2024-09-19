@@ -168,16 +168,17 @@ ggplot(reread, aes(x = reread, y = original, size = n)) +
   geom_abline(slope = 1, color = "grey", linewidth = 1.25) +
   geom_point(alpha = 0.5) +
   labs(x = "'True' age (2018 read)", y = "Pre-2007 age") +
-  geom_segment(aes(x = 1, y = 1.286, xend = 8.74, yend = 10.5), , size = 1, color = "blue") +
-  theme_bw() +
+  geom_segment(aes(x = 1, y = 1.286, xend = 8.74, yend = 10.5), size = 1, color = "blue") +
+  theme_bw(base_size = 15) +
+  theme(legend.position = 'top') +
   scale_x_continuous(breaks = seq(1,10), labels = seq(1,10)) +
   scale_y_continuous(breaks = seq(1,10), labels = seq(1,10)) +
   theme(panel.grid.minor = element_blank()) -> ae_plot
 
 
 suppressWarnings(ggplot2::ggsave(ae_plot,
-                                 file = here::here(curr_year, 'data', 'ageing_error','age_bias.png'),
-                                 width = 7, height = 5, unit = 'in', dpi = 520))
+                                 file = here::here(new_year, "plots", 'other','age_bias.png'),
+                                 width = 6.5, height = 5.5, unit = 'in', dpi = 520))
 
 
 

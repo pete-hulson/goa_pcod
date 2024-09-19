@@ -124,7 +124,74 @@ plot <- plot_temdep(dat)
 
 suppressWarnings(ggplot2::ggsave(plot,
                                  file = here::here(new_year, "plots", 'other','temp_depth.png'),
-                                 width = 9, height = 4, unit = 'in', dpi = 520))
+                                 width = 11.5, height = 5, unit = 'in', dpi = 520))
+
+
+
+
+# 1st plot
+
+ggplot(data = dat, aes(x = mtemp, y = -1 * mdepth, group = label, shape = Subarea, color = regi, fill = regi)) +
+  facet_wrap(~ label) +
+  theme_test(base_size = 15) +
+  xlab("") +
+  ylab("") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank()) +
+  xlim(2, 8) -> plot
+
+suppressWarnings(ggplot2::ggsave(plot,
+                                 file = here::here(new_year, "plots", 'other','temp_depth1.png'),
+                                 width = 11, height = 4.5, unit = 'in', dpi = 520))
+
+
+
+# 2nd plot
+
+ggplot(data = dat, aes(x = mtemp, y = -1 * mdepth, group = label, shape = Subarea, color = regi, fill = regi)) +
+  facet_wrap(~ label) +
+  theme_test(base_size = 15) +
+  xlab(expression("Temperature ("* degree * C *")")) +
+  ylab("Depth (m)") +
+  xlim(2, 8) -> plot
+
+suppressWarnings(ggplot2::ggsave(plot,
+                                 file = here::here(new_year, "plots", 'other','temp_depth2.png'),
+                                 width = 11.5, height = 5, unit = 'in', dpi = 520))
+
+
+
+# 3rd plot
+
+ggplot(data = dat, aes(x = mtemp, y = -1 * mdepth, group = label, shape = Subarea, color = regi, fill = regi)) +
+  geom_point() +
+  facet_wrap(~ label) +
+  scale_colour_manual(name = "Shelf temp.", values = c("blue","darkgrey","red")) +
+  scale_fill_manual(name = "Shelf temp.", values = c("blue","darkgrey","red")) +
+  geom_pointrange(data = dat, aes(y = -1 * mdepth, x = mtemp,
+                                  ymax = -1 * (mdepth + sd_depth), 
+                                  ymin = -1 * (mdepth - sd_depth),
+                                  color = regi),
+                  linewidth = 0.25) +
+  geom_errorbarh(data = dat, aes(xmax = mtemp - sd_temp, 
+                                 xmin = mtemp + sd_temp,
+                                 color = regi),
+                 linewidth = 0.25) +
+  theme_test(base_size = 15) +
+  theme(legend.position = 'top') +
+  xlab(expression("Temperature ("* degree * C *")")) +
+  ylab("Depth (m)") +
+  geom_point(data = dat %>% 
+               tidytable::summarise(mtemp = mean(mtemp),
+                                    mdepth = mean(mdepth),
+                                    .by = c(bin, label, regi)),
+             aes(x = mtemp, y = -1 * mdepth), 
+             size = 3, shape = 23, color = "black", stroke = 1.5) +
+  xlim(2, 8) -> plot
+
+suppressWarnings(ggplot2::ggsave(plot,
+                                 file = here::here(new_year, "plots", 'other','temp_depth3.png'),
+                                 width = 11.5, height = 5, unit = 'in', dpi = 520))
 
 
 # getting proportion of hatchi at depth

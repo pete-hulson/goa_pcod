@@ -175,7 +175,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 14) +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "top") +
   facet_wrap(~ gear, nrow = 3,
              strip.position = 'top') +
@@ -185,7 +185,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
 
 suppressWarnings(ggplot2::ggsave(agg_plot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_agg.png'),
-                                 width = 12, height = 7, unit = 'in', dpi = 520))
+                                 width = 9, height = 4.5, unit = 'in', dpi = 520))
 
 ### annual plot (trawl) ----
 lcomp_old %>% 
@@ -202,7 +202,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 14) +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Trawl length composition", x = "Length (cm)", color = "", fill = "") +
@@ -211,7 +211,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
 
 suppressWarnings(ggplot2::ggsave(trawl,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_twl.png'),
-                                 width = 7, height = 7, unit = 'in', dpi = 520))
+                                 width = 6.5, height = 7, unit = 'in', dpi = 520))
 
 
 ### annual plot (longline) ----
@@ -229,7 +229,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 14) +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Longline length composition", x = "Length (cm)", color = "", fill = "") +
@@ -238,7 +238,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
 
 suppressWarnings(ggplot2::ggsave(longline,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_ll.png'),
-                                 width = 7, height = 7, unit = 'in', dpi = 520))
+                                 width = 6.5, height = 7, unit = 'in', dpi = 520))
 
 ### annual plot (pot) ----
 lcomp_old %>% 
@@ -255,7 +255,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 14) +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "top") +
   facet_wrap( ~ year) +
   labs(y = "Pot length composition", x = "Length (cm)", color = "", fill = "") +
@@ -264,7 +264,7 @@ ggplot(data = dat, aes(x = as.numeric(length), y = value, group = name)) +
 
 suppressWarnings(ggplot2::ggsave(pot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_pot.png'),
-                                 width = 7, height = 7, unit = 'in', dpi = 520))
+                                 width = 6.5, height = 7, unit = 'in', dpi = 520))
 
 ### 2022 pot ----
 
@@ -290,13 +290,13 @@ ggplot(data = dat, aes(x = as.numeric(length), y = lencomp, group = name2)) +
   theme(legend.position = "none") +
   facet_wrap( ~ name2, ncol = 1) +
   labs(y = "Pot length composition", x = "Length (cm)", fill = "Data treatment:", color = "Data treatment:") +
-  scale_color_manual(values = c('green', 'red', 'blue')) +
-  scale_fill_manual(values = c('green', 'red', 'blue')) -> pot_22
+  scale_color_manual(values = c('green', 'orange', 'blue')) +
+  scale_fill_manual(values = c('green', 'orange', 'blue')) -> pot_22
 
 
 suppressWarnings(ggplot2::ggsave(pot_22,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_pot_22.png'),
-                                 width = 7, height = 7, unit = 'in', dpi = 520))
+                                 width = 7, height = 5, unit = 'in', dpi = 520))
 
 ## compare bins ----
 lcomp_new %>% 
@@ -341,7 +341,7 @@ dat %>%
 ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name)) +
+  geom_point(aes(color = name), size = 0.5) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -355,7 +355,7 @@ ggplot(data = plot_dat,
 
 suppressWarnings(ggplot2::ggsave(bin_pot,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_pot.png'),
-                                 width = 10, height = 12, unit = 'in', dpi = 520))
+                                 width = 4, height = 6, unit = 'in', dpi = 520))
 
 ### trawl ----
 dat %>% 
@@ -375,7 +375,7 @@ dat %>%
 ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name)) +
+  geom_point(aes(color = name), size = 0.5) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -389,7 +389,7 @@ ggplot(data = plot_dat,
 
 suppressWarnings(ggplot2::ggsave(bin_trawl,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_twl.png'),
-                                 width = 10, height =12, unit = 'in', dpi = 520))
+                                 width = 4, height =6, unit = 'in', dpi = 520))
 
 ### longline ----
 dat %>% 
@@ -409,7 +409,7 @@ dat %>%
 ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name)) +
+  geom_point(aes(color = name), size = 0.5) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -423,7 +423,7 @@ ggplot(data = plot_dat,
 
 suppressWarnings(ggplot2::ggsave(bin_ll,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_ll.png'),
-                                 width = 10, height = 12, unit = 'in', dpi = 520))
+                                 width = 4, height = 6, unit = 'in', dpi = 520))
 
 ### trawl survey ----
 # get new way of doing comps
@@ -481,11 +481,11 @@ dat %>%
 ggplot(data = plot_dat, 
        aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name)) +
+  geom_point(aes(color = name), size = 0.5) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
-  theme_bw(base_size = 18) +
+  theme_bw(base_size = 14) +
   theme(legend.position = "top",
         axis.text.y = element_blank()) +
   facet_wrap( ~ comp, ncol = 2) +
@@ -495,7 +495,7 @@ ggplot(data = plot_dat,
 
 suppressWarnings(ggplot2::ggsave(bin_twl_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_tsrv.png'),
-                                 width = 10, height = 12, unit = 'in', dpi = 520))
+                                 width = 4, height = 6, unit = 'in', dpi = 520))
 
 ### longline survey ----
 
@@ -548,7 +548,7 @@ dat %>%
 
 ggplot(data = plot_dat, aes(x = as.numeric(length), y = lencomp, group = name)) +
   geom_line(aes(color = name))  +
-  geom_point(aes(color = name)) +
+  geom_point(aes(color = name), size = 0.5) +
   geom_area(aes(fill = name),
             alpha = 0.3777,
             position = 'identity') +
@@ -562,7 +562,7 @@ ggplot(data = plot_dat, aes(x = as.numeric(length), y = lencomp, group = name)) 
 
 suppressWarnings(ggplot2::ggsave(bin_ll_srv,
                                  file = here::here(new_year, "plots", 'other','lcomp_compare_bin_llsrv.png'),
-                                 width = 10, height = 12, unit = 'in', dpi = 520))
+                                 width = 4, height = 6, unit = 'in', dpi = 520))
 
 
 
@@ -925,16 +925,23 @@ both_lin %>%
                                                 tidytable::pivot_longer(values_to = 'sd')) %>% 
                          tidytable::mutate(region = 'goa',
                                            type = 'spline')) %>% 
-  tidytable::select(-name) -> dat
+  tidytable::select(-name) %>% 
+  tidytable::rename(Model = type) -> dat
 
-ggplot(data = dat, aes(x = age, y = sd, colour = region, linetype = type)) +
+ggplot(data = dat, aes(x = age, y = sd, colour = region, linetype = Model)) +
   geom_line(linewidth = 1.25) +
   # geom_point(size = 2.5) +
   # facet_grid(~type) +
-  theme_bw() +
+  theme_bw(base_size = 15) +
+  # theme(legend.position = 'top') +
+  xlab("Age") +
+  ylab("SD(Age)") +
+  scale_colour_manual(name = "Region", values = c("black","red","blue")) +
   scale_x_continuous(breaks = seq(1,10), labels = seq(1,10)) +
   theme(panel.grid.minor = element_blank()) -> age_err
 
+
+
 suppressWarnings(ggplot2::ggsave(age_err,
                                  file = here::here(new_year, "plots", 'other','age_err.png'),
-                                 width = 7, height = 7, unit = 'in', dpi = 520))
+                                 width = 6, height = 5, unit = 'in', dpi = 520))

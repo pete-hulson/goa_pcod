@@ -187,6 +187,25 @@ r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin5.dat")), overwrite = TRUE)
 
+## new len comps at 5 cm bins with survey iss ----
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_dat_year,
+                              query = FALSE,
+                              run_glm = run_glm,
+                              len_bins = len_bins5,
+                              new_lcomp = TRUE,
+                              time = 'month',
+                              iss = TRUE,
+                              bin_iss = 'bin')
+
+new_data$agecomp <- new_data$agecomp %>% 
+  filter(!is.na(nsamp))
+
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_srvyiss.dat")), overwrite = TRUE)
+
 # get ss3 ctl file ----
 
 # read in previous assessment ss3 ctl
