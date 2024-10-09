@@ -81,7 +81,7 @@ update_ss3_files <- function(asmnt_yr = NULL,
     file.remove(here::here(asmnt_yr, folder, mdl, list.files(here::here(asmnt_yr, folder, mdl), pattern = "GOAPcod")))
   }
   # copy new data file
-  file.copy(here::here(asmnt_yr, 'output', dat_filename),
+  file.copy(here::here(asmnt_yr, 'output', 'mdl_input', dat_filename),
             here::here(asmnt_yr, folder, mdl, dat_filename))
   
   # update ctl file
@@ -90,7 +90,7 @@ update_ss3_files <- function(asmnt_yr = NULL,
     file.remove(here::here(asmnt_yr, folder, mdl, list.files(here::here(asmnt_yr, folder, mdl), pattern = ".ctl")))
   }
   # copy new ctl file
-  file.copy(here::here(asmnt_yr, 'output', ctl_in),
+  file.copy(here::here(asmnt_yr, 'output', 'mdl_input', ctl_in),
             here::here(asmnt_yr, folder, mdl, ctl_out))
   
   # set up starter file
