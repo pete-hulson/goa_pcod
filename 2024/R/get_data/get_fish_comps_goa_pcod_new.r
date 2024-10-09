@@ -16,7 +16,7 @@ expand_fsh_len <- function(new_year = 9999){
     tidytable::mutate(area = trunc(area / 10) * 10)
   
   ### state ----
-  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
     dplyr::rename_all(tolower) %>% 
     #filter to positive lengths
     tidytable::filter(length > 0) %>% 

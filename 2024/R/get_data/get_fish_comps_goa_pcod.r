@@ -194,7 +194,7 @@ get_fsh_len_post91 <- function(new_year = 9999,
   }
   
   ### state ----
-  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
     dplyr::rename_all(tolower) %>% 
     #filter to positive lengths
     tidytable::filter(length > 0) %>% 
@@ -452,7 +452,7 @@ get_fsh_len4age <- function(new_year = 9999,
   }
   
   ### state ----
-  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
     dplyr::rename_all(tolower) %>% 
     #filter to positive lengths
     tidytable::filter(length > 0) %>% 
