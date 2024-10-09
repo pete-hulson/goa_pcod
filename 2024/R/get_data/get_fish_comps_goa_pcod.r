@@ -476,7 +476,7 @@ get_fsh_len4age <- function(new_year = 9999,
     tidytable::select(year, area, gear = gear1, month, trimester, quarter, sex, length, freq)
   
   ## catch data ----
-  vroom::vroom(here::here(new_year, 'data', 'raw', 'fsh_catch_data.csv')) %>% 
+  vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>% 
     tidytable::mutate(month = lubridate::month(week_end_date),
                       trimester = tidytable::case_when(month <= 4 ~ 1,
                                                        month %in% c(5, 6, 7, 8) ~ 2,
