@@ -1,206 +1,104 @@
 #' Expand fishery length frequency for goa pcod post-1991
 #' 
 #' @param new_year current assessment year
-#' @param time time period (month/trimester) from which length comps are expanded (default = NULL)
 #' 
 
-expand_fsh_len <- function(new_year = 9999,
-                           time = NULL){
+expand_fsh_len <- function(new_year = 9999){
+
+  ## length freq data ----
+  ### federal ----
+  fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
+    # filter to years post-1991
+    tidytable::filter(year >= 1991) %>% 
+    # unique cruise-permit-haul description
+    tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
+    # truncate area to nearest 10 (e.g., 649 becomes 640)
+    tidytable::mutate(area = trunc(area / 10) * 10)
   
-  # expand from trimester ----
-  if(time == 'trimester'){
-    ## length freq data ----
-    ### federal ----
-    fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
-      # filter to years post-1991
-      tidytable::filter(year >= 1991) %>% 
-      # unique cruise-permit-haul description
-      tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
-      # truncate area to nearest 10 (e.g., 649 becomes 640)
-      tidytable::mutate(area = trunc(area / 10) * 10)
-    
-    ### state ----
-    fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
-      dplyr::rename_all(tolower) %>% 
-      #filter to positive lengths
-      tidytable::filter(length > 0) %>% 
-      # define area, gear, plus length, trimester
-      tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
-                        gear1 = tidytable::case_when(gear == 91 ~ 'pot',
-                                                     gear %in% c(5, 26, 61) ~ 'longline',
-                                                     .default = 'trawl'), # define gears
-                        trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
-                                                         month >= 9 ~ 3,
-                                                         .default = 1)) %>% 
-      tidytable::select(year, area, gear = gear1, trimester, sex, length, freq)
-    
-    ## catch data ----
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
-      tidytable::mutate(month = lubridate::month(week_end_date),
-                        trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                         month %in% c(5, 6, 7, 8) ~ 2,
-                                                         month >= 9 ~ 3)) %>%
-      # define gear type, and truncate area to nearest 10
-      tidytable::mutate(gear = tidytable::case_when(fmp_gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
-                                                    fmp_gear == 'POT' ~ 'pot',
-                                                    fmp_gear %in% c('HAL', 'JIG') ~ 'longline'),
-                        area = trunc(reporting_area_code / 10) * 10) %>%
-      # compute proportion of annual catch by week-area-gear
-      tidytable::summarise(tons = sum(weight_posted), .by = c(year, trimester, area, gear)) %>%
-      tidytable::mutate(total = sum(tons), .by = year) %>%
-      tidytable::mutate(catch_prop = tons / total) -> catch_p
-    
-    # compute comps: fed merged with state ----
-    
-    # start with federal length frequencies
-    fsh_len_f %>% 
-      # length frequency by trimester-area-gear
-      tidytable::summarise(freq = sum(freq),
-                           .by = c(year, trimester, area, gear, length)) %>% 
-      # join state comps
-      tidytable::bind_rows(fsh_len_s %>% 
-                             # length freq obs by trimester-area-gear
-                             tidytable::summarise(freq = sum(freq), .by = c(year, trimester, area, gear, length))) %>% 
-      # summarise combined comps to trimester-area-gear
-      tidytable::summarise(freq = sum(freq),
-                           .by = c(year, trimester, area, gear, length)) %>% 
-      tidytable::mutate(tfreq = sum(freq), 
-                        .by = c(year, trimester, area, gear)) %>% 
-      # join number of total fish caught per trimester-area-gear (using fed observer data as proxy)
-      tidytable::left_join(fsh_len_f %>% 
-                             tidytable::summarise(n1 = min(numb),
-                                                  .by = c(year, trimester, area, gear, haul1)) %>% 
-                             tidytable::summarise(n1 = sum(n1),
-                                                  .by = c(year, trimester, area, gear))) %>% 
-      # if total fish caught missing for trimester-area-gear, use avg for year-gear
-      tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year, gear)) %>% 
-      tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
-                                                  .default = n1)) %>% 
-      tidytable::select(-mean_n1) %>% 
-      # if total fish caught missing for year-gear, use avg for year
-      tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year)) %>%
-      tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
-                                                  .default = n1)) %>% 
-      tidytable::select(-mean_n1) %>% 
-      # join number of total fish sampled over the year (using fed observer data as proxy)
-      tidytable::left_join(fsh_len_f %>% 
-                             tidytable::summarise(n1 = min(numb),
-                                                  .by = c(year, trimester, area, gear, haul1)) %>% 
-                             tidytable::summarise(n2 = sum(n1),
-                                                  .by = year)) %>% 
-      # expand the trimester-area-gear length composition by numbers observed across all hauls
-      tidytable::mutate(prop = ((freq / tfreq) * n1) / n2) %>%
-      # join length comp with catch proportion and compute catch weighted length comp by year, trimester, area, and gear
-      tidytable::left_join(catch_p) %>% 
-      tidytable::select(year, trimester, area, gear, length, prop, catch_prop) %>% 
-      # if total catch_prop missing for trimester-area-gear, use avg for year-gear
-      tidytable::mutate(mean_cp = mean(catch_prop, na.rm = TRUE), .by = c(year, gear)) %>% 
-      tidytable::mutate(catch_prop = tidytable::case_when(is.na(catch_prop) ~ mean_cp,
-                                                          .default = catch_prop)) %>% 
-      tidytable::select(-mean_cp) %>% 
-      # weight length comp by proportion of catch
-      tidytable::mutate(prop1 = prop * catch_prop) %>% 
-      # summarise to year-gear level
-      tidytable::summarise(prop = sum(prop1), 
-                           .by = c(year, gear, length)) -> lcomp_c
-  }
-  # expand from month ----
-  if(time == 'month'){
-    ## length freq data ----
-    ### federal ----
-    fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
-      # filter to years post-1991
-      tidytable::filter(year >= 1991) %>% 
-      # unique cruise-permit-haul description
-      tidytable::mutate(haul1 = paste(cruise, permit, haul, sep = "_")) %>% 
-      # truncate area to nearest 10 (e.g., 649 becomes 640)
-      tidytable::mutate(area = trunc(area / 10) * 10)
-    
-    ### state ----
-    fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
-      dplyr::rename_all(tolower) %>% 
-      #filter to positive lengths
-      tidytable::filter(length > 0) %>% 
-      # define area, gear, plus length, trimester
-      tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
-                        gear1 = tidytable::case_when(gear == 91 ~ 'pot',
-                                                     gear %in% c(5, 26, 61) ~ 'longline',
-                                                     .default = 'trawl'), # define gears
-                        trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
-                                                         month >= 9 ~ 3,
-                                                         .default = 1)) %>% 
-      tidytable::select(year, area, gear = gear1, month, sex, length, freq)
-    
-    ## catch data ----
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
-      tidytable::mutate(month = lubridate::month(week_end_date),
-                        trimester = tidytable::case_when(month <= 4 ~ 1,
-                                                         month %in% c(5, 6, 7, 8) ~ 2,
-                                                         month >= 9 ~ 3)) %>%
-      # define gear type, and truncate area to nearest 10
-      tidytable::mutate(gear = tidytable::case_when(fmp_gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
-                                                    fmp_gear == 'POT' ~ 'pot',
-                                                    fmp_gear %in% c('HAL', 'JIG') ~ 'longline'),
-                        area = trunc(reporting_area_code / 10) * 10) %>%
-      # compute proportion of annual catch by week-area-gear
-      tidytable::summarise(tons = sum(weight_posted), .by = c(year, month, area, gear)) %>%
-      tidytable::mutate(total = sum(tons), .by = year) %>%
-      tidytable::mutate(catch_prop = tons / total) -> catch_p
-    
-    # compute comps: fed merged with state ----
-    
-    # start with federal length frequencies
-    fsh_len_f %>% 
-      # length frequency by month-area-gear
-      tidytable::summarise(freq = sum(freq),
-                           .by = c(year, month, area, gear, length)) %>% 
-      # join state comps
-      tidytable::bind_rows(fsh_len_s %>% 
-                             # length freq obs by month-area-gear
-                             tidytable::summarise(freq = sum(freq), .by = c(year, month, area, gear, length))) %>% 
-      # summarise combined comps to month-area-gear
-      tidytable::summarise(freq = sum(freq),
-                           .by = c(year, month, area, gear, length)) %>% 
-      tidytable::mutate(tfreq = sum(freq), 
-                        .by = c(year, month, area, gear)) %>% 
-      # join number of total fish caught per month-area-gear (using fed observer data as proxy)
-      tidytable::left_join(fsh_len_f %>% 
-                             tidytable::summarise(n1 = min(numb),
-                                                  .by = c(year, month, area, gear, haul1)) %>% 
-                             tidytable::summarise(n1 = sum(n1),
-                                                  .by = c(year, month, area, gear))) %>% 
-      # if total fish caught missing for month-area-gear, use avg for year-gear
-      tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year, gear)) %>% 
-      tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
-                                                  .default = n1)) %>% 
-      tidytable::select(-mean_n1) %>% 
-      # if total fish caught missing for year-gear, use avg for year
-      tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year)) %>%
-      tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
-                                                  .default = n1)) %>% 
-      tidytable::select(-mean_n1) %>% 
-      # join number of total fish sampled over the year (using fed observer data as proxy)
-      tidytable::left_join(fsh_len_f %>% 
-                             tidytable::summarise(n1 = min(numb),
-                                                  .by = c(year, month, area, gear, haul1)) %>% 
-                             tidytable::summarise(n2 = sum(n1),
-                                                  .by = year)) %>% 
-      # expand the month-area-gear length composition by numbers observed across all hauls
-      tidytable::mutate(prop = ((freq / tfreq) * n1) / n2) %>%
-      # join length comp with catch proportion and compute catch weighted length comp by year, month, area, and gear
-      tidytable::left_join(catch_p) %>% 
-      tidytable::select(year, month, area, gear, length, prop, catch_prop) %>% 
-      # if total catch_prop missing for month-area-gear, use avg for year-gear
-      tidytable::mutate(mean_cp = mean(catch_prop, na.rm = TRUE), .by = c(year, gear)) %>% 
-      tidytable::mutate(catch_prop = tidytable::case_when(is.na(catch_prop) ~ mean_cp,
-                                                          .default = catch_prop)) %>% 
-      tidytable::select(-mean_cp) %>% 
-      # weight length comp by proportion of catch
-      tidytable::mutate(prop1 = prop * catch_prop) %>% 
-      # summarise to year-gear level
-      tidytable::summarise(prop = sum(prop1), 
-                           .by = c(year, gear, length)) -> lcomp_c
-  }
+  ### state ----
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    #filter to positive lengths
+    tidytable::filter(length > 0) %>% 
+    # define area, gear, plus length, trimester
+    tidytable::mutate(area = trunc(area / 10) * 10, # truncate area to nearest 10 (e.g., 649 becomes 640)
+                      gear1 = tidytable::case_when(gear == 91 ~ 'pot',
+                                                   gear %in% c(5, 26, 61) ~ 'longline',
+                                                   .default = 'trawl'), # define gears
+                      trimester = tidytable::case_when(month %in% seq(5, 8) ~ 2,
+                                                       month >= 9 ~ 3,
+                                                       .default = 1)) %>% 
+    tidytable::select(year, area, gear = gear1, month, sex, length, freq)
+  
+  ## catch data ----
+  vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
+    tidytable::mutate(month = lubridate::month(week_end_date),
+                      trimester = tidytable::case_when(month <= 4 ~ 1,
+                                                       month %in% c(5, 6, 7, 8) ~ 2,
+                                                       month >= 9 ~ 3)) %>%
+    # define gear type, and truncate area to nearest 10
+    tidytable::mutate(gear = tidytable::case_when(fmp_gear %in% c('TRW', 'GLN', 'OTH') ~ 'trawl',
+                                                  fmp_gear == 'POT' ~ 'pot',
+                                                  fmp_gear %in% c('HAL', 'JIG') ~ 'longline'),
+                      area = trunc(reporting_area_code / 10) * 10) %>%
+    # compute proportion of annual catch by week-area-gear
+    tidytable::summarise(tons = sum(weight_posted), .by = c(year, month, area, gear)) %>%
+    tidytable::mutate(total = sum(tons), .by = year) %>%
+    tidytable::mutate(catch_prop = tons / total) -> catch_p
+  
+  # compute comps: fed merged with state ----
+  
+  # start with federal length frequencies
+  fsh_len_f %>% 
+    # length frequency by month-area-gear
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, month, area, gear, length)) %>% 
+    # join state comps
+    tidytable::bind_rows(fsh_len_s %>% 
+                           # length freq obs by month-area-gear
+                           tidytable::summarise(freq = sum(freq), .by = c(year, month, area, gear, length))) %>% 
+    # summarise combined comps to month-area-gear
+    tidytable::summarise(freq = sum(freq),
+                         .by = c(year, month, area, gear, length)) %>% 
+    tidytable::mutate(tfreq = sum(freq), 
+                      .by = c(year, month, area, gear)) %>% 
+    # join number of total fish caught per month-area-gear (using fed observer data as proxy)
+    tidytable::left_join(fsh_len_f %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                .by = c(year, month, area, gear, haul1)) %>% 
+                           tidytable::summarise(n1 = sum(n1),
+                                                .by = c(year, month, area, gear))) %>% 
+    # if total fish caught missing for month-area-gear, use avg for year-gear
+    tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year, gear)) %>% 
+    tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
+                                                .default = n1)) %>% 
+    tidytable::select(-mean_n1) %>% 
+    # if total fish caught missing for year-gear, use avg for year
+    tidytable::mutate(mean_n1 = mean(n1, na.rm = TRUE), .by = c(year)) %>%
+    tidytable::mutate(n1 = tidytable::case_when(is.na(n1) ~ mean_n1,
+                                                .default = n1)) %>% 
+    tidytable::select(-mean_n1) %>% 
+    # join number of total fish sampled over the year (using fed observer data as proxy)
+    tidytable::left_join(fsh_len_f %>% 
+                           tidytable::summarise(n1 = min(numb),
+                                                .by = c(year, month, area, gear, haul1)) %>% 
+                           tidytable::summarise(n2 = sum(n1),
+                                                .by = year)) %>% 
+    # expand the month-area-gear length composition by numbers observed across all hauls
+    tidytable::mutate(prop = ((freq / tfreq) * n1) / n2) %>%
+    # join length comp with catch proportion and compute catch weighted length comp by year, month, area, and gear
+    tidytable::left_join(catch_p) %>% 
+    tidytable::select(year, month, area, gear, length, prop, catch_prop) %>% 
+    # if total catch_prop missing for month-area-gear, use avg for year-gear
+    tidytable::mutate(mean_cp = mean(catch_prop, na.rm = TRUE), .by = c(year, gear)) %>% 
+    tidytable::mutate(catch_prop = tidytable::case_when(is.na(catch_prop) ~ mean_cp,
+                                                        .default = catch_prop)) %>% 
+    tidytable::select(-mean_cp) %>% 
+    # weight length comp by proportion of catch
+    tidytable::mutate(prop1 = prop * catch_prop) %>% 
+    # summarise to year-gear level
+    tidytable::summarise(prop = sum(prop1), 
+                         .by = c(year, gear, length)) -> lcomp_c
 
   lcomp_c
 }
@@ -217,12 +115,10 @@ expand_fsh_len <- function(new_year = 9999,
 
 get_fsh_len_post91_new <- function(new_year = 9999,
                                    bins = NULL,
-                                   ss3_frmt = TRUE,
-                                   time = NULL){
+                                   ss3_frmt = TRUE){
   
   # expand length frequencies  ----
-  lcomp_c <- expand_fsh_len(new_year,
-                            time)
+  lcomp_c <- expand_fsh_len(new_year)
 
   # compute comps ----
   tidytable::expand_grid(year = sort(unique(lcomp_c$year)),
@@ -302,13 +198,11 @@ get_fsh_age_new <- function(new_year = 9999,
                             st_yr = 2007,
                             max_age = 10,
                             ss3_frmt = TRUE,
-                            fit = FALSE,
-                            time = NULL){
+                            fit = FALSE){
   
   # get data ----
   ## expanded length comps ----
-  fsh_len_exp <- expand_fsh_len(new_year,
-                                time) %>% 
+  fsh_len_exp <- expand_fsh_len(new_year) %>% 
     # filter to years post-2007 (as default)
     tidytable::filter(year > st_yr)
   
