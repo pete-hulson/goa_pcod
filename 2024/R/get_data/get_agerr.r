@@ -4,9 +4,9 @@
 #' @param type type of input file format (either dat or ctl, default = 'ctl)
 #' @param max_age user defined maximum age (default = 10)
 #' 
-get_ageerr <- function(new_year,
-                       type = 'ctl',
-                       max_age = 10){
+get_agerr <- function(new_year,
+                      type = 'ctl',
+                      max_age = 10){
   
   # get ageing error stats ----
   ## format reader-tester data ----
@@ -57,7 +57,7 @@ get_ageerr <- function(new_year,
                                            SaveDir = here::here(new_year, 'data', 'ageing_error', 'agerr_res'), 
                                            CalcEff = TRUE, 
                                            verbose = FALSE)
-
+  
   
   # get ageing bias stats ----
   ## format reread data ----
@@ -72,7 +72,7 @@ get_ageerr <- function(new_year,
     tidytable::summarise(num_reread = .N,
                          .by = c(reread_age, original_age)) %>% 
     tidytable::arrange(original_age) -> reread
-
+  
   c("Range_of_ages",
     paste(min(c(reread$reread_age, reread$original_age)), max(c(reread$reread_age, reread$original_age))),
     "Data_set_1",
