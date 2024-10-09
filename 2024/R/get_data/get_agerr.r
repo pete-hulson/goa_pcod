@@ -109,7 +109,7 @@ get_agerr <- function(new_year,
                here::here(new_year, 'output', 'ageing_error', 'agebias.spc'))
   
   spc_bias <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agebias.spc'), 
-                                       DataSpecs = data,
+                                       DataSpecs = data_bias,
                                        verbose = TRUE)
   
   ## run model ----
