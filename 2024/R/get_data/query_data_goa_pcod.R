@@ -172,6 +172,44 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age specimen query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
+  ## trawl survey age specimen data for age bias ----
+  dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_cruise')),
+                      by = c('CRUISEJOIN')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_specimen')),
+                      by = c('HAULJOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(survey_definition_id,
+                  species_code,
+                  cruise,
+                  vessel_id,
+                  haul,
+                  specimen_id,
+                  sex,
+                  length_mm,
+                  weight_g,
+                  age) %>% 
+    dplyr::filter(survey_definition_id %in% c(47, 98),
+                  species_code %in% srv_sp,
+                  cruise %in% 200301,
+                  vessel_id %in% c(88, 89, 147)) %>% 
+    dplyr::rename(survey = survey_definition_id,
+                  specimen = specimen_id,
+                  vessel = vessel_id,
+                  length = length_mm,
+                  weight = weight_g,
+                  original_age = age) -> twl_q
+  
+  dplyr::collect(twl_q) %>% 
+    tidytable::filter(original_age > 0) %>% 
+    tidytable::mutate(length = length / 10,
+                      weight = weight / 1000) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_age_bias.csv'), delim = ",")
+  capture.output(dplyr::show_query(twl_q), 
+                 file = here::here(new_year, "data", "sql", "twl_srvy_age_bias_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age specimen for age bias query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
   ## trawl survey haul info query ----
   cat("\u231b", crayon::blue("working on trawl survey haul data query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
