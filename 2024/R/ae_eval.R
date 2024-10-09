@@ -225,3 +225,118 @@ PCOD2_out <- AgeingError:::ProcessResults(Species = "Pcod", SaveDir = "ResultsRE
 
 
 
+
+# get ageing error stats ----
+## format reader-tester data ----
+read_test %>% 
+  tidytable::filter(species_code == 21720) %>%  
+  tidytable::summarise(n = .N, .by = c(age, test_age)) -> r_t
+
+c("Range_of_ages",
+  paste(min(c(r_t$age, r_t$test_age)), max(c(r_t$age, r_t$test_age))),
+  "Data_set_1",
+  paste(nrow(r_t), "# number of lines"),
+  "2 # number of readers",
+  "0 10 1 # minus group; plus group; reference age",
+  "1 2",
+  "",
+  paste(r_t$n, r_t$age, r_t$test_age),
+  "-999 -999 -999") %>% 
+  writeLines(.,
+             here::here(new_year, 'data', 'ageing_error', 'agerr.dat'))
+
+data <- AgeingError:::CreateData(here::here(new_year, 'data', 'ageing_error', 'agerr.dat'), 
+                                 NDataSet = 1, 
+                                 verbose = FALSE, 
+                                 EchoFile = "")
+
+## format specifications file ----
+
+# cv by age (1 param)
+c("# reader BiasOpt SigmaOpt",
+  "1 0 1",
+  "2 0 -1",
+  "Sigma_Pars (low high init, on/off)",
+  "0.001 5 0.5 1") %>% 
+  writeLines(.,
+             here::here(new_year, 'data', 'ageing_error', 'agerr_cv.spc'))
+spc_cv <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agerr_cv.spc'), 
+                                   DataSpecs = data,
+                                   verbose = TRUE)
+
+# sd by age (2 param)
+c("# reader BiasOpt SigmaOpt",
+  "1 0 7",
+  "2 0 -1",
+  "Sigma_Pars (low high init, on/off)",
+  "0 1 0.1 1",
+  "1 3 1 1") %>% 
+  writeLines(.,
+             here::here(new_year, 'data', 'ageing_error', 'agerr_sd.spc'))
+spc_sd <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agerr_sd.spc'), 
+                                   DataSpecs = data,
+                                   verbose = TRUE)
+
+# spline (5 knots ala steve)
+c("# reader BiasOpt SigmaOpt",
+  "1 0 5",
+  "2 0 -1",
+  "# Spline specifications",
+  "5",
+  "2 4 6 8 10", 
+  "Sigma_Pars (low high init, on/off)",
+  "-10 40 0 1",
+  "-10 40 0 1",
+  "-10 40 0 1",
+  "-10 40 0 1",
+  "-10 40 0 1") %>% 
+  writeLines(.,
+             here::here(new_year, 'data', 'ageing_error', 'agerr_spl5.spc'))
+spc_spl5 <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agerr_spl5.spc'), 
+                                     DataSpecs = data,
+                                     verbose = TRUE)
+
+
+
+## run models ----
+
+# cv by age
+agerr_mod_cv <- AgeingError::DoApplyAgeError(Species = "Pcod",
+                                             DataSpecs = data,
+                                             ModelSpecsInp = spc_cv,
+                                             AprobWght = 1e-06,
+                                             SlopeWght = 0.01,
+                                             SaveDir = here::here(new_year, 'data', 'ageing_error', 'cv_res'),
+                                             verbose = TRUE)
+cv_out <- AgeingError::ProcessResults(Species = "Pcod", 
+                                      SaveDir = here::here(new_year, 'data', 'ageing_error', 'cv_res'), 
+                                      CalcEff = TRUE, 
+                                      verbose = FALSE)
+
+# sd by age
+agerr_mod_sd <- AgeingError::DoApplyAgeError(Species = "Pcod",
+                                             DataSpecs = data,
+                                             ModelSpecsInp = spc_sd,
+                                             AprobWght = 1e-06,
+                                             SlopeWght = 0.01,
+                                             SaveDir = here::here(new_year, 'data', 'ageing_error', 'sd_res'),
+                                             verbose = TRUE)
+sd_out <- AgeingError::ProcessResults(Species = "Pcod", 
+                                      SaveDir = here::here(new_year, 'data', 'ageing_error', 'sd_res'), 
+                                      CalcEff = TRUE, 
+                                      verbose = FALSE)
+
+# spline 5 knots
+agerr_mod_spl5 <- AgeingError::DoApplyAgeError(Species = "Pcod",
+                                               DataSpecs = data,
+                                               ModelSpecsInp = spc_spl5,
+                                               AprobWght = 1e-06,
+                                               SlopeWght = 0.01,
+                                               SaveDir = here::here(new_year, 'data', 'ageing_error', 'spl5_res'),
+                                               verbose = TRUE)
+spl5_out <- AgeingError::ProcessResults(Species = "Pcod", 
+                                        SaveDir = here::here(new_year, 'data', 'ageing_error', 'spl5_res'), 
+                                        CalcEff = TRUE, 
+                                        verbose = FALSE)
+
+
