@@ -48,7 +48,7 @@ get_agerr <- function(new_year,
                here::here(new_year, 'output', 'ageing_error', 'agerr.spc'))
   
   spc_ae <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agerr.spc'), 
-                                     DataSpecs = data,
+                                     DataSpecs = data_ae,
                                      verbose = TRUE)
   
   ## run model ----
