@@ -235,12 +235,13 @@ get_data_goa_pcod <- function(new_data = new_data,
   new_data$agebin_vector = seq(1, max_age, 1)
   
   if(isTRUE(update_ae)){
-    # update with new reader-tester data and reread data for bias
+    # update with new reader-tester data and reread data for bias within the dat file
     age_error <- get_agerr(new_year,
                            type = 'dat',
                            max_age)
     new_data$N_ageerror_definitions <- 2
     new_data$ageerror <- age_error
+    new_data$agecomp[which(new_data$agecomp$year >= 2007),'ageerr'] = 2
   } else{
     # turn off and read through ctl instead
     age_error <- data.frame(rbind(rep(-1, max_age),
