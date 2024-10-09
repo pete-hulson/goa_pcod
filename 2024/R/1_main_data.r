@@ -1,4 +1,4 @@
-## Get SS# data file for GOA Pacific cod
+## Get SS3 data file for GOA Pacific cod
 ## adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot ZTA, 2021-10-07, R version 4.05.01 64 bit
 ## Altered in 2022 by Pete Hulson
 ## Completely re-developed in 2024 by Pete Hulson
@@ -6,29 +6,51 @@
 
 # install packages (if not installed) ----
 
-# devtools::install_github("afsc-assessments/afscdata", force = TRUE)
-# devtools::install_github("afsc-assessments/afscISS", force = TRUE)
-# devtools::install_github("r4ss/r4ss", force = TRUE)
 
-# load necessary libraries ----
-libs <- c("r4ss",
-          "data.table",
-          "FSA",
-          "lubridate",
-          "afscdata",
-          "tidyverse",
-          "vroom",
-          "here",
-          "afscISS",
-          "tictoc")
+# load necessary packages ----
+## cran packages ----
+pkg_cran <- c("data.table",
+              "FSA",
+              "lubridate",
+              "tidyverse",
+              "vroom",
+              "here",
+              "tictoc")
 
-if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
-  install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])
+# if not installed, then install
+if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
+  install.packages(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE)])
 }
 
-lapply(libs, library, character.only = TRUE)
+# load packages
+lapply(pkg_cran, library, character.only = TRUE)
 
-tictoc::tic()
+## github packages ----
+pkg_git <- c("r4ss",
+             "afscdata",
+             "afscISS",
+             "surveyISS",
+             "AgeingError")
+
+# if not installed, then install
+if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
+  devtools::install_github("r4ss/r4ss", force = TRUE)
+}
+if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
+  devtools::install_github("afsc-assessments/afscdata", force = TRUE)
+}
+if(!isTRUE("afscISS" %in% rownames(installed.packages()))) {
+  devtools::install_github("afsc-assessments/afscISS", force = TRUE)
+}
+if(!isTRUE("surveyISS" %in% rownames(installed.packages()))) {
+  devtools::install_github("BenWilliams-NOAA/surveyISS", force = TRUE)
+}
+if(!isTRUE("AgeingError" %in% rownames(installed.packages()))) {
+  devtools::install_github("pfmc-assessments/AgeingError", force = TRUE)
+}
+
+# load packages
+lapply(pkg_git, library, character.only = TRUE)
 
 # user-defined function arguments ----
 
@@ -70,31 +92,25 @@ bin_width <- 1
 min_size <- 0.5
 max_size <- 104.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
 len_bins <- seq(min_size, max_size, bin_width)
-len_bins2 <- seq(min_size, max_size, 2)
 len_bins5 <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
-len_bins0 <- seq(min_size, 116.5, bin_width)
 
 # set up needed folders ----
 
-# Make folders for output and plots
+# Make folders for data queries, raw data, and model input files
 if (!file.exists(here::here(new_dat_year, "data", "raw"))){
   dir.create(here::here(new_dat_year, "data", "raw"))
 }
 if (!file.exists(here::here(new_dat_year, "data", "sql"))){
   dir.create(here::here(new_dat_year, "data", "sql"))
 }
-if (!file.exists(here::here(new_dat_year, "output"))){
-  dir.create(here::here(new_dat_year, "output"))
-}
-if (!file.exists(here::here(new_dat_year, "plots"))){
-  dir.create(here::here(new_dat_year, "plots", "assessment"), recursive = TRUE)
-  dir.create(here::here(new_dat_year, "plots", "nonSS"), recursive = TRUE)
+if (!file.exists(here::here(new_dat_year, "output", "mdl_input"))){
+  dir.create(here::here(new_dat_year, "output", "mdl_input"))
 }
 
 # Remove previous dat files from output folder
 if(isTRUE(remove_dat)){
-  if(file.exists(here::here(new_dat_year, "output")) & length(setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))) > 0) {
-    file.remove(here::here(new_dat_year, "output", setdiff(list.files(here::here(new_dat_year, "output"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output"), pattern = "_old"))))
+  if(file.exists(here::here(new_dat_year, "output", "mdl_input")) & length(setdiff(list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "_old"))) > 0) {
+    file.remove(here::here(new_dat_year, "output", "mdl_input", setdiff(list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "_old"))))
   }
 }
 
@@ -103,7 +119,7 @@ source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
 purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
 source(here::here(new_dat_year, "R", "utils.r"))
 
-# get ss3 data file ----
+# get ss3 data files ----
 
 # read in previous assessment ss3 datafile
 old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
@@ -124,19 +140,12 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
 
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_dat_year, "output", paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1c.dat")), overwrite = TRUE)
+
 tictoc::toc()
 
-## data file to investigate c series ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              run_glm = run_glm,
-                              len_bins = len_bins0)
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_new.dat")), overwrite = TRUE)
-
-## with spline ageing error ----
+## with updated ageing error ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_dat_year,
@@ -147,6 +156,9 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_dat_year, "output",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
+
+
+
 
 ## with new fish len comps ----
 new_data <- get_data_goa_pcod(new_data = old_data,
