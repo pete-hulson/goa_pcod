@@ -30,9 +30,9 @@ get_agerr <- function(new_year,
     paste(r_t$n, r_t$read_age, r_t$test_age),
     "-999 -999 -999") %>% 
     writeLines(.,
-               here::here(new_year, 'data', 'ageing_error', 'agerr.dat'))
+               here::here(new_year, 'output', 'ageing_error', 'agerr.dat'))
   
-  data_ae <- AgeingError:::CreateData(here::here(new_year, 'data', 'ageing_error', 'agerr.dat'), 
+  data_ae <- AgeingError:::CreateData(here::here(new_year, 'output', 'ageing_error', 'agerr.dat'), 
                                       NDataSet = 1, 
                                       verbose = FALSE, 
                                       EchoFile = "")
@@ -45,9 +45,9 @@ get_agerr <- function(new_year,
     "Sigma_Pars (low high init, on/off)",
     "0.001 5 0.5 1") %>% 
     writeLines(.,
-               here::here(new_year, 'data', 'ageing_error', 'agerr.spc'))
+               here::here(new_year, 'output', 'ageing_error', 'agerr.spc'))
   
-  spc_ae <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agerr.spc'), 
+  spc_ae <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agerr.spc'), 
                                      DataSpecs = data,
                                      verbose = TRUE)
   
@@ -57,11 +57,11 @@ get_agerr <- function(new_year,
                                             ModelSpecsInp = spc_ae,
                                             AprobWght = 1e-06,
                                             SlopeWght = 0.01,
-                                            SaveDir = here::here(new_year, 'data', 'ageing_error', 'agerr_res'),
+                                            SaveDir = here::here(new_year, 'output', 'ageing_error', 'agerr_res'),
                                             verbose = TRUE)
   
   agerr_out <- AgeingError::ProcessResults(Species = "Pcod", 
-                                           SaveDir = here::here(new_year, 'data', 'ageing_error', 'agerr_res'), 
+                                           SaveDir = here::here(new_year, 'output', 'ageing_error', 'agerr_res'), 
                                            CalcEff = TRUE, 
                                            verbose = FALSE)
   
@@ -90,9 +90,9 @@ get_agerr <- function(new_year,
     paste(reread$num_reread, reread$original_age, reread$reread_age),
     "-999 -999 -999") %>% 
     writeLines(.,
-               here::here(new_year, 'data', 'ageing_error', 'agebias.dat'))
+               here::here(new_year, 'output', 'ageing_error', 'agebias.dat'))
   
-  data_bias <- AgeingError:::CreateData(here::here(new_year, 'data', 'ageing_error', 'agebias.dat'), 
+  data_bias <- AgeingError:::CreateData(here::here(new_year, 'output', 'ageing_error', 'agebias.dat'), 
                                         NDataSet = 1, 
                                         verbose = FALSE, 
                                         EchoFile = "")
@@ -106,9 +106,9 @@ get_agerr <- function(new_year,
     "Sigma_Pars (low high init, on/off)",
     "0.001 5 0.5 1") %>% 
     writeLines(.,
-               here::here(new_year, 'data', 'ageing_error', 'agebias.spc'))
+               here::here(new_year, 'output', 'ageing_error', 'agebias.spc'))
   
-  spc_bias <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agebias.spc'), 
+  spc_bias <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agebias.spc'), 
                                        DataSpecs = data,
                                        verbose = TRUE)
   
@@ -118,11 +118,11 @@ get_agerr <- function(new_year,
                                               ModelSpecsInp = spc_bias,
                                               AprobWght = 1e-06,
                                               SlopeWght = 0.01,
-                                              SaveDir = here::here(new_year, 'data', 'ageing_error', 'agebias_res'),
+                                              SaveDir = here::here(new_year, 'output', 'ageing_error', 'agebias_res'),
                                               verbose = TRUE)
   
   agebias_out <- AgeingError::ProcessResults(Species = "Pcod", 
-                                             SaveDir = here::here(new_year, 'data', 'ageing_error', 'agebias_res'), 
+                                             SaveDir = here::here(new_year, 'output', 'ageing_error', 'agebias_res'), 
                                              CalcEff = TRUE, 
                                              verbose = FALSE)
   
