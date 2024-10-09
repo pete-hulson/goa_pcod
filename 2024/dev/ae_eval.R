@@ -228,19 +228,24 @@ PCOD2_out <- AgeingError:::ProcessResults(Species = "Pcod", SaveDir = "ResultsRE
 
 # get ageing error stats ----
 ## format reader-tester data ----
-read_test %>% 
-  tidytable::filter(species_code == 21720) %>%  
-  tidytable::summarise(n = .N, .by = c(age, test_age)) -> r_t
+vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'reader_tester.csv'), delim = ',') %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::filter(species == 202,
+                    region != 'AI') %>% 
+  tidytable::mutate(year = as.numeric(substr(date_read, start = nchar(date_read) - 3, stop = nchar(date_read)))) %>% 
+  tidytable::select(region, year, read_age, test_age) %>% 
+  filter(year >= 2000) %>%  
+  tidytable::summarise(n = .N, .by = c(read_age, test_age)) -> r_t
 
 c("Range_of_ages",
-  paste(min(c(r_t$age, r_t$test_age)), max(c(r_t$age, r_t$test_age))),
+  paste(min(c(r_t$read_age, r_t$test_age)), max(c(r_t$read_age, r_t$test_age))),
   "Data_set_1",
   paste(nrow(r_t), "# number of lines"),
   "2 # number of readers",
   "0 10 1 # minus group; plus group; reference age",
-  "1 2",
+  "1 2 # which readers",
   "",
-  paste(r_t$n, r_t$age, r_t$test_age),
+  paste(r_t$n, r_t$read_age, r_t$test_age),
   "-999 -999 -999") %>% 
   writeLines(.,
              here::here(new_year, 'data', 'ageing_error', 'agerr.dat'))
@@ -339,4 +344,9 @@ spl5_out <- AgeingError::ProcessResults(Species = "Pcod",
                                         CalcEff = TRUE, 
                                         verbose = FALSE)
 
+
+
+cv_out$ModelSelection$AICc
+sd_out$ModelSelection$AICc
+spl5_out$ModelSelection$AICc
 

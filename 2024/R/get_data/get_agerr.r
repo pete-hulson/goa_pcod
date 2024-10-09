@@ -10,19 +10,24 @@ get_agerr <- function(new_year,
   
   # get ageing error stats ----
   ## format reader-tester data ----
-  read_test %>% 
-    tidytable::filter(species_code == 21720) %>%  
-    tidytable::summarise(n = .N, .by = c(age, test_age)) -> r_t
+  vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'reader_tester.csv'), delim = ',') %>% 
+    dplyr::rename_all(tolower) %>% 
+    tidytable::filter(species == 202,
+                      region != 'AI') %>% 
+    tidytable::mutate(year = as.numeric(substr(date_read, start = nchar(date_read) - 3, stop = nchar(date_read)))) %>% 
+    tidytable::select(region, year, read_age, test_age) %>% 
+    filter(year >= 2000) %>%  
+    tidytable::summarise(n = .N, .by = c(read_age, test_age)) -> r_t
   
   c("Range_of_ages",
-    paste(min(c(r_t$age, r_t$test_age)), max(c(r_t$age, r_t$test_age))),
+    paste(min(c(r_t$read_age, r_t$test_age)), max(c(r_t$read_age, r_t$test_age))),
     "Data_set_1",
     paste(nrow(r_t), "# number of lines"),
     "2 # number of readers",
     "0 10 1 # minus group; plus group; reference age",
     "1 2 # which readers",
     "",
-    paste(r_t$n, r_t$age, r_t$test_age),
+    paste(r_t$n, r_t$read_age, r_t$test_age),
     "-999 -999 -999") %>% 
     writeLines(.,
                here::here(new_year, 'data', 'ageing_error', 'agerr.dat'))
@@ -41,6 +46,7 @@ get_agerr <- function(new_year,
     "0.001 5 0.5 1") %>% 
     writeLines(.,
                here::here(new_year, 'data', 'ageing_error', 'agerr.spc'))
+  
   spc_ae <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agerr.spc'), 
                                      DataSpecs = data,
                                      verbose = TRUE)
@@ -53,26 +59,26 @@ get_agerr <- function(new_year,
                                             SlopeWght = 0.01,
                                             SaveDir = here::here(new_year, 'data', 'ageing_error', 'agerr_res'),
                                             verbose = TRUE)
+  
   agerr_out <- AgeingError::ProcessResults(Species = "Pcod", 
                                            SaveDir = here::here(new_year, 'data', 'ageing_error', 'agerr_res'), 
                                            CalcEff = TRUE, 
                                            verbose = FALSE)
   
-  
   # get ageing bias stats ----
   ## format reread data ----
   vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age_bias.csv'), delim = ',') %>% 
-    tidytable::left_join(vroom::vroom(here::here(new_year, 'data', 'reread_2017.csv'), delim = ',') %>% 
-                           tidytable::filter(age > 0) %>% 
-                           tidytable::select(vessel, cruise, haul, sex, length, specimen, weight, age) %>% 
-                           tidytable::mutate(length = length / 10,
-                                             weight = weight / 1000) %>% 
+    tidytable::select(vessel, haul, specimen, sex, length, original_age) %>% 
+    tidytable::full_join(vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'reread_2017.csv'), delim = ',') %>% 
+                           tidytable::select(vessel, haul, specimen, sex, length, age) %>% 
+                           tidytable::mutate(length = length / 10) %>% 
                            tidytable::rename(reread_age = age)) %>% 
-    tidytable::drop_na(reread_age) %>% 
+    tidytable::filter(!is.na(original_age),
+                      !is.na(reread_age)) %>% 
     tidytable::summarise(num_reread = .N,
                          .by = c(reread_age, original_age)) %>% 
     tidytable::arrange(original_age) -> reread
-  
+
   c("Range_of_ages",
     paste(min(c(reread$reread_age, reread$original_age)), max(c(reread$reread_age, reread$original_age))),
     "Data_set_1",
@@ -101,6 +107,7 @@ get_agerr <- function(new_year,
     "0.001 5 0.5 1") %>% 
     writeLines(.,
                here::here(new_year, 'data', 'ageing_error', 'agebias.spc'))
+  
   spc_bias <- AgeingError::CreateSpecs(here::here(new_year, 'data', 'ageing_error', 'agebias.spc'), 
                                        DataSpecs = data,
                                        verbose = TRUE)
@@ -113,6 +120,7 @@ get_agerr <- function(new_year,
                                               SlopeWght = 0.01,
                                               SaveDir = here::here(new_year, 'data', 'ageing_error', 'agebias_res'),
                                               verbose = TRUE)
+  
   agebias_out <- AgeingError::ProcessResults(Species = "Pcod", 
                                              SaveDir = here::here(new_year, 'data', 'ageing_error', 'agebias_res'), 
                                              CalcEff = TRUE, 
