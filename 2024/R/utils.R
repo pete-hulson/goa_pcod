@@ -1,50 +1,6 @@
 #' utility fcns
 #' 
 #' 
-#' #' function to make 2024 changes to ctl file
-#' @param asmnt_yr year of assessment (default = NULL)
-#' @param folder root foloder containing models (default = NULL)
-#' @param mdl name of model to run (default = NULL)
-#' @param ctl_filename name of ctl file in which to adjust recruitment ramp parameters (default = NULL)
-#' @param iters the number of iters to run for rec ramp (default = 2)
-#' 
-ctl_2024 <- function(asmnt_yr = NULL, 
-                     folder = NULL,
-                     mdl = NULL, 
-                     ctl_filename = NULL){
-  # read ctl file
-  ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
-  
-  # turn off forecast rec phase
-  ctl$Fcast_recr_phase = -1
-
-  # # add prior to L_at_Amin (with CV = 5%)
-  # ctl$MG_parms$PR_SD[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 0.3
-  # ctl$MG_parms$PR_type[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 6
-  # ctl$MG_parms$PHASE[which(rownames(ctl$MG_parms) == 'L_at_Amin_Fem_GP_1')] = 1
-  # 
-  # # add prior to descend_sd for twl survey
-  # ctl$size_selex_parms$PRIOR[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 4
-  # ctl$size_selex_parms$PR_SD[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 0.2
-  # ctl$size_selex_parms$PR_type[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_4_Srv(4)')] = 6
-  # 
-  # # fix trawl survey start_logit param for recent blocks
-  # ctl$size_selex_parms$INIT[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -1007.5
-  # ctl$size_selex_parms$PHASE[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = -2
-  # ctl$size_selex_parms$Block[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = 0
-  # ctl$size_selex_parms$Block_Fxn[which(rownames(ctl$size_selex_parms) == 'SizeSel_P_5_Srv(4)')] = 0
-  # ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_1996'),]
-  # ctl$size_selex_parms_tv = ctl$size_selex_parms_tv[-which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_2006'),]
-  # ctl$size_selex_parms_tv$INIT[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_1996')] = -1007.5
-  # ctl$size_selex_parms_tv$INIT[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_2006')] = -1007.5
-  # ctl$size_selex_parms_tv$PHASE[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_1996')] = -2
-  # ctl$size_selex_parms_tv$PHASE[which(rownames(ctl$size_selex_parms_tv) == 'SizeSel_P_5_Srv(4)_BLK1repl_2006')] = -2
-  
-  # write new ctl file
-  r4ss::SS_writectl_3.30(ctllist = ctl,
-                         outfile = here::here(asmnt_yr, folder, mdl, ctl_filename),
-                         overwrite = TRUE)
-}
 #' function to run ss3 model with recruitment bias ramp adjustment
 #' @param asmnt_yr year of assessment (default = NULL)
 #' @param folder root foloder containing models (default = NULL)
