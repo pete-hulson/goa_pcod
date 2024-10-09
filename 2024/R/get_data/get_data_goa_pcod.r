@@ -237,19 +237,21 @@ get_data_goa_pcod <- function(new_data = new_data,
 
   # ageing error ----
   new_data$agebin_vector = seq(1, max_age, 1)
-  error <- matrix(ncol = (max_age + 1), nrow = 2)
+  
   if(isTRUE(update_ae)){
-    ae <- vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'ResultsBoth_Spline', 'Pcod SS3_format_Reader1.csv')) %>% 
-      tidytable::filter(...1 == 'SD') %>% 
-      tidytable::pivot_longer() %>% 
-      tidytable::select(value)
-    error[1, ] <- seq(0.5, max_age + 0.5)
-    error[2, ] <- as.numeric(ae$value[2:length(ae$value)])
+    # update with new reader-tester data and reread data for bias
+    age_error <- get_agerr(new_year,
+                           type = 'dat',
+                           max_age)
+    new_data$N_ageerror_definitions <- 2
+    new_data$ageerror <- age_error
   } else{
-    error[1, ] <- rep(-1, max_age + 1)
-    error[2, ] <- rep(-0.001, max_age + 1)
+    # turn off and read through ctl instead
+    age_error <- data.frame(rbind(rep(-1, max_age),
+                                  rep(-0.001, max_age)))
+    colnames(age_error) <- paste0("age", seq(1, max_age))
+    new_data$ageerror <- age_error
   }
-  new_data$ageerror <- data.frame(error)
   cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # length bins ----
