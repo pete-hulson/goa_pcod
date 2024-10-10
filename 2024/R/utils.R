@@ -120,6 +120,11 @@ update_ss3_files <- function(asmnt_yr = NULL,
 #' @param to destination folder for ss3 files (default = NULL)
 #' 
 start_ss_fldr <- function(from, to){
+  
+  # set up folder
+  if(!dir.exists(to)){
+    dir.create(to, recursive = TRUE)
+  }
   # get model input files
   r4ss::copy_SS_inputs(dir.old = from, 
                        dir.new = to,
@@ -129,6 +134,7 @@ start_ss_fldr <- function(from, to){
             paste0(to, '/data_echo.ss_new'))
   # get exe
   r4ss::get_ss3_exe(dir = to)
+  
 }
 #' function to get weight-length parameters (from survey data)
 #' @param new_year year of assessment, to get data file (default = NULL)
