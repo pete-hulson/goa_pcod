@@ -103,13 +103,13 @@ update_ss3_files <- function(asmnt_yr = NULL,
                         overwrite = TRUE)
   
   # set up forecast file
-  old_forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, folder, mdl, 'forecast.ss'))
+  forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, folder, mdl, 'forecast.ss'))
   # set generic blocks for benchmark/forecast years so won't need to update in the future
   forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
   forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
   # change forecast recruitment option
-  old_forecast$fcast_rec_option <- 3
-  r4ss::SS_writeforecast(mylist = old_forecast,
+  forecast$fcast_rec_option <- 3
+  r4ss::SS_writeforecast(mylist = forecast,
                          dir = here::here(asmnt_yr, folder, mdl),
                          overwrite = TRUE)
   
