@@ -102,6 +102,13 @@ update_ss3_files <- function(asmnt_yr = NULL,
                         dir = here::here(asmnt_yr, folder, mdl),
                         overwrite = TRUE)
   
+  # change forecast recruitment option in forecast file
+  old_forecast <- r4ss::SS_readforecast(file = here::here(asmnt_yr, folder, mdl, 'forecast.ss'))
+  old_forecast$fcast_rec_option <- 3
+  r4ss::SS_writeforecast(mylist = old_forecast,
+                         dir = here::here(asmnt_yr, folder, mdl),
+                         overwrite = TRUE)
+  
 }
 
 #' function to set up folder with ss3 model files and exe
