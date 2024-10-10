@@ -4,8 +4,30 @@
 ## Completely re-developed in 2024 by Pete Hulson
 ## Sections denoted with ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< need to be updated at the start of each assessment cycle
 
-# install packages (if not installed) ----
+# user-defined function arguments ----
 
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+
+# previous ss3 dat filename
+# note: need to copy in the following files into the 'data' folder:
+# 1. accepted model dat file from previous assessment
+# 2. accepted model ctl file from previous assessment
+# 3. data_echo.ss_new file from accepted model
+old_dat_filename <- "GOAPcod2023Oct16.dat"
+old_ctl_filename <- "Model19_1b.ctl"
+
+# run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
+query = FALSE
+
+# run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
+run_glm = FALSE
+
+# do you want to remove previous dat files
+remove_dat = TRUE
+
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # load necessary packages ----
 ## cran packages ----
@@ -29,7 +51,6 @@ lapply(pkg_cran, library, character.only = TRUE)
 pkg_git <- c("r4ss",
              "afscdata",
              "afscISS",
-             "surveyISS",
              "AgeingError")
 
 # if not installed, then install
@@ -42,38 +63,12 @@ if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
 if(!isTRUE("afscISS" %in% rownames(installed.packages()))) {
   devtools::install_github("afsc-assessments/afscISS", force = TRUE)
 }
-if(!isTRUE("surveyISS" %in% rownames(installed.packages()))) {
-  devtools::install_github("BenWilliams-NOAA/surveyISS", force = TRUE)
-}
 if(!isTRUE("AgeingError" %in% rownames(installed.packages()))) {
   devtools::install_github("pfmc-assessments/AgeingError", force = TRUE)
 }
 
 # load packages
 lapply(pkg_git, library, character.only = TRUE)
-
-# user-defined function arguments ----
-
-## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
-
-# previous ss3 dat filename
-# note: need to copy in the following files into the 'data' folder:
-# 1. accepted model dat file from previous assessment
-# 2. accepted model ctl file from previous assessment
-# 3. data_echo.ss_new file from accepted model
-old_dat_filename <- "GOAPcod2023Oct16.dat"
-old_ctl_filename <- "Model19_1b.ctl"
-
-# run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
-
-# run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
-run_glm = FALSE
-
-# do you want to remove previous dat files
-remove_dat = TRUE
-
-## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # automated function arguments ----
 
@@ -84,7 +79,7 @@ new_dat_filename <- paste0("GOAPcod",
                               ".dat")
 
 # Current assessment year
-new_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 ## comp data arguments ----
 # length bins to use for length comp data
@@ -97,32 +92,38 @@ len_bins5 <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 5
 # set up needed folders ----
 
 # Make folders for data queries, raw data, and model input files
-if (!file.exists(here::here(new_dat_year, "data", "raw"))){
-  dir.create(here::here(new_dat_year, "data", "raw"))
+if (!file.exists(here::here(new_year, "data", "raw"))){
+  dir.create(here::here(new_year, "data", "raw"))
 }
-if (!file.exists(here::here(new_dat_year, "data", "sql"))){
-  dir.create(here::here(new_dat_year, "data", "sql"))
+if (!file.exists(here::here(new_year, "data", "sql"))){
+  dir.create(here::here(new_year, "data", "sql"))
 }
-if (!file.exists(here::here(new_dat_year, "output", "mdl_input"))){
-  dir.create(here::here(new_dat_year, "output", "mdl_input"))
+if (!file.exists(here::here(new_year, "output", "mdl_input"))){
+  dir.create(here::here(new_year, "output", "mdl_input"))
+}
+if (!file.exists(here::here(new_year, "output", "ageing_error"))){
+  dir.create(here::here(new_year, "output", "ageing_error"))
 }
 
 # Remove previous dat files from output folder
 if(isTRUE(remove_dat)){
-  if(file.exists(here::here(new_dat_year, "output", "mdl_input")) & length(setdiff(list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "_old"))) > 0) {
-    file.remove(here::here(new_dat_year, "output", "mdl_input", setdiff(list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_dat_year, "output", "mdl_input"), pattern = "_old"))))
+  if(file.exists(here::here(new_year, "output", "mdl_input")) & length(setdiff(list.files(here::here(new_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_year, "output", "mdl_input"), pattern = "_old"))) > 0) {
+    file.remove(here::here(new_year, "output", "mdl_input", setdiff(list.files(here::here(new_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_year, "output", "mdl_input"), pattern = "_old"))))
+  }
+  if(file.exists(here::here(new_year, "output", "mdl_input")) & length(list.files(here::here(new_year, "output", "mdl_input"), pattern = ".ctl")) > 0) {
+    file.remove(here::here(new_year, "output", "mdl_input", list.files(here::here(new_year, "output", "mdl_input"), pattern = ".ctl")))
   }
 }
 
 # source functions ----
-source_files <- list.files(here::here(new_dat_year, "R", "get_data"), "*.r$")
-purrr::map(here::here(new_dat_year, "R", "get_data", source_files), source)
-source(here::here(new_dat_year, "R", "utils.r"))
+source_files <- list.files(here::here(new_year, "R", "get_data"), "*.r$")
+purrr::map(here::here(new_year, "R", "get_data", source_files), source)
+source(here::here(new_year, "R", "utils.r"))
 
 # get ss3 data files ----
 
 # read in previous assessment ss3 datafile
-old_data <- r4ss::SS_readdat_3.30(here::here(new_dat_year, "data", old_dat_filename))
+old_data <- r4ss::SS_readdat_3.30(here::here(new_year, "data", old_dat_filename))
 
 # fix survey timing
 old_data$fleetinfo = old_data$fleetinfo %>% 
@@ -133,95 +134,57 @@ old_data$surveytiming[old_data$surveytiming == 1007] = 1
 ## file with all c series changes ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
-                              new_year = new_dat_year,
+                              new_year = new_year,
                               query = query,
                               run_glm = run_glm,
                               len_bins = len_bins)
 r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", new_dat_filename), overwrite = TRUE)
-
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1c.dat")), overwrite = TRUE)
-
-tictoc::toc()
+                       here::here(new_year, "output", "mdl_input", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1c.dat")), overwrite = TRUE)
 
 ## with updated ageing error ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
-                              new_year = new_dat_year,
+                              new_year = new_year,
                               query = FALSE,
-                              run_glm = run_glm,
+                              run_glm = FALSE,
                               len_bins = len_bins,
                               update_ae = TRUE)
 r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_ae.dat")), overwrite = TRUE)
-
-
-
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1d.dat")), overwrite = TRUE)
 
 ## with new fish len comps ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
-                              new_year = new_dat_year,
+                              new_year = new_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins,
-                              new_lcomp = TRUE,
-                              time = 'month')
+                              update_ae = TRUE,
+                              new_lcomp = TRUE)
 r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp.dat")), overwrite = TRUE)
-
-## new len comps at 2 cm bins ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              run_glm = run_glm,
-                              len_bins = len_bins2,
-                              new_lcomp = TRUE,
-                              time = 'month')
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin2.dat")), overwrite = TRUE)
+                       here::here(new_year, "output", "mdl_input", 
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1e.dat")), overwrite = TRUE)
 
 ## new len comps at 5 cm bins ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
-                              new_year = new_dat_year,
+                              new_year = new_year,
                               query = FALSE,
                               run_glm = run_glm,
                               len_bins = len_bins5,
-                              new_lcomp = TRUE,
-                              time = 'month')
+                              update_ae = TRUE,
+                              new_lcomp = TRUE)
 r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_lcomp_bin5.dat")), overwrite = TRUE)
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1e_5cm.dat")), overwrite = TRUE)
 
-## new len comps at 5 cm bins with survey iss ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_dat_year,
-                              query = FALSE,
-                              run_glm = run_glm,
-                              len_bins = len_bins5,
-                              new_lcomp = TRUE,
-                              time = 'month',
-                              iss = TRUE,
-                              bin_iss = 'bin')
 
-new_data$agecomp <- new_data$agecomp %>% 
-  filter(!is.na(nsamp))
-
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_dat_year, "output",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_srvyiss.dat")), overwrite = TRUE)
-
-# get ss3 ctl file ----
+# get ss3 ctl files ----
 
 # read in previous assessment ss3 ctl
-old_ctl <- r4ss::SS_readctl_3.30(here::here(new_dat_year, "data", old_ctl_filename))
+old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
 
 ## reset params this one time ----
 # reset F ballpark to 0
@@ -246,37 +209,52 @@ old_ctl$size_selex_parms$HI[which(old_ctl$size_selex_parms$HI > 100)] = 100
 
 ## reset params annually ----
 # reset end year in block designs
-old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- new_dat_year
-old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- new_dat_year
-old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_dat_year
+old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- new_year
+old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- new_year
+old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
 
 # reset end year for recr_devs
-old_ctl$MainRdevYrLast <- new_dat_year - 2
+old_ctl$MainRdevYrLast <- new_year - 2
 
+## write model 2019.1b ctl ----
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_year, "output", "mdl_input", old_ctl_filename),
+                       overwrite = TRUE)
+
+
+## write model 2019.1c ctl ----
+# turn off forecast rec phase
+old_ctl$Fcast_recr_phase = -1
 # update weight-length parameters
-# note to come back to this in 2025
-# wtlen <- wt_len(new_dat_year)
-# old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
-# old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
-
-# write base model ctl
+wtlen <- wt_len(new_year)
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
+old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
+# write ctl
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_dat_year, "output", old_ctl_filename),
+                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1c.ctl"),
                        overwrite = TRUE)
 
-# update ageing error parameters
-# these are from AgeingError package using both EBS and GOA data combined
-# ageing error sds
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"), 3] <- 1
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"), 3] <- 0.11
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"), 3] <- 1.13
-# bias
-old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"), 3] <- 0.24
-old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"), 7] <- -1
-old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"), 3] <- 2
-old_ctl$MG_parms_tv[which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"), 7] <- -1
-
-# write base model ctl with updated ageing error
+## write model 2019.1d ctl ----
+# remove ageing error sds
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm2"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm3"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm4"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"),]
+old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm7"),]
+# remove bias
+old_ctl$MG_parms_tv <- old_ctl$MG_parms_tv[-which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"),]
+old_ctl$MG_parms_tv <- old_ctl$MG_parms_tv[-which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"),]
+# write ctl
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_dat_year, "output", "updated_ae.ctl"),
+                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1d.ctl"),
                        overwrite = TRUE)
+
+
+
+
+
+
+
+
