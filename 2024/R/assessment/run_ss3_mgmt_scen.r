@@ -1,12 +1,8 @@
-
 #' ALASKA PROJECTION SCENARIOS FOR STOCK SYNTHESIS 3 FOR TIER 3 MODELS WITH PARALLEL COMPUTING
 #' Version JAN 11, 2024
 #' Created by Steve Barbeaux E-mail: steve.barbeaux@noaa.gov  Phone: (206) 729-0871 3
 #' Redeveloped without markdown option by P Hulson
 #' 
-#' Note: In the starter.ss file you should change it to read from the converged .par file 
-#'   1 # 0=use init values in control file; 1=use ss.par
-
 #' @param dir is the model directory (default = NULL)
 #' @param cyr is the model current year (default = NULL)
 #' @param syr is the start year for the model (default = 1977)
@@ -19,7 +15,6 @@
 #' @param s4_F is the F for scenario 4, defaults to 0.75, should be 0.65 for some species (check your requirements)
 #' @param do_fig whether to plot figures (default = TRUE)
 #'
-
 run_ss3_mgmnt_scen <- function(dir = NULL,
                                cyr = NULL,
                                syr = 1977,
@@ -142,14 +137,86 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 
 	# Run scenarios
 	foreach::foreach(scenario = scenarios) %dopar% {
-	  run_scenario(dir, 
-	               scenario, 
-	               cyr,
-	               fleets,
-	               Scenario2,
-	               s2_F, 
-	               s4_F, 
-	               exe_name)
+
+	  # read forecast file
+	  scenario_C <- r4ss::SS_readforecast(file = here::here(dir, "mscen", "scenario_1", "forecast.ss"))
+	  
+	  # Create a directory for the scenario
+	  dir.create(here::here(dir, "mscen", scenario), recursive = TRUE, showWarnings = FALSE)
+	  R.utils::copyDirectory(dir, here::here(dir, "mscen", scenario), recursive = FALSE)
+	  
+	  # Modify the scenario attributes based on the scenario number
+	  if (scenario == 'scenario_2') {
+	    # scenario 2 options
+	    if(Scenario2 == 2){
+	      # set F at specified s2_F value
+	      Fyear <- paste0("F_", cyr + 1)
+	      years <- seq(cyr + 1, cyr + 15, 1)
+	      f2 <- s2_F * data.table::data.table(rep1$derived_quants)[Label == Fyear]$Value
+	      newF <- data.table::data.table(Year = years, Seas = 1, Fleet = fleets, F = f2)
+	      scenario_C$Forecast <- 4
+	      scenario_C$BforconstantF <- 0.001  ## cluge to get rid of control rule of ave. F
+	      scenario_C$BfornoF <- 0.0001      ## cluge to get rid of control rule scaling of ave. F
+	      scenario_C$InputBasis <- 99
+	      scenario_C$ForeCatch <- newF
+	    }
+	    if(Scenario2 == 3){
+	      # read in specified future catch
+	      scenario_C$ForeCatch <- read.csv("Scenario2_catch.csv", header = TRUE)
+	    }
+	  } else if (scenario == 'scenario_3') {
+	    # scenario 3
+	    scenario_C$Forecast <- 4
+	    scenario_C$BforconstantF <- 0.001  ## cluge to get rid of control rule of ave. F
+	    scenario_C$BfornoF <- 0.0001      ## cluge to get rid of control rule scaling of ave. F
+	    scenario_C$Fcast_years[c(3,4)] <- c(cyr - 5, cyr - 1)
+	  } else if (scenario == 'scenario_4') {
+	    # scenario 4
+	    scenario_C$Flimitfraction <- s4_F
+	  } else if (scenario == 'scenario_5') {
+	    # scenario 5
+	    catch <- expand.grid(Year = c((cyr + 1):(cyr + fcasty)), Seas = 1, Fleet = fleets, Catch_or_F = 0)
+	    names(catch) <- names(scenario_C$ForeCatch)
+	    scenario_C$ForeCatch <- rbind(scenario_C$ForeCatch,catch)
+	  } else if (scenario == 'scenario_6') {
+	    # scenario 6
+	    scenario_C$Btarget <- 0.35
+	    scenario_C$SPRtarget <- 0.35
+	    scenario_C$Flimitfraction <- 1.0
+	  } else if (scenario == 'scenario_7') {
+	    # scenario 7
+	    scenario_C$Btarget <- 0.35
+	    scenario_C$SPRtarget <- 0.35
+	    scenario_C$Flimitfraction <- 1.0
+	    x <- r4ss::SS_output(dir = here::here(dir, "mscen", "scenario_1"))
+	    scenario_C$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = cyr:(cyr + 2))
+	  } else if (scenario == 'scenario_8') {
+	    # scenario 8
+	    scenario_C$Btarget   <- 0.35
+	    scenario_C$SPRtarget <- 0.35
+	    scenario_C$Flimitfraction <- 1.0
+	    x <- r4ss::SS_output(dir = here::here(dir, "mscen", "scenario_1"))
+	    scenario_C$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = cyr:(cyr + 1))
+	  }
+	  # Write the modified scenario to the scenario directory
+	  r4ss::SS_writeforecast(scenario_C, 
+	                         dir = here::here(dir, "mscen", scenario), 
+	                         file = "forecast.ss", 
+	                         writeAll = TRUE, 
+	                         overwrite = TRUE)
+	  # set starter to start at params
+	  mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", scenario, "starter.ss"))
+	  mdl_starter$init_values_src = 1
+	  r4ss::SS_writestarter(mdl_starter, 
+	                        dir = here::here(dir, "mscen", scenario),
+	                        overwrite = TRUE)
+	  
+	  # Run the scenario
+	  r4ss::run(dir = here::here(dir, "mscen", scenario),
+	            exe = exe_name,
+	            skipfinished = FALSE, 
+	            verbose = TRUE,
+	            show_in_console = TRUE)
 	}
 	
 	# Stop parallel computing
@@ -409,149 +476,3 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	
 	return(output)
 }
-
-
-
-
-#' function to run a specified management scenario
-#'
-#' @param dir is the model directory (default = NULL)
-#' @param scenario specified management scenario (default = NULL)
-#' @param cyr is the model current year (default = NULL)
-#' @param fleets the fleet number in SS for your fisheries (default = c(1:3) for GOA, would be 1 for EBS/AI)
-#' @param Scenario2 see description on run_ss3_mgmnt_scen fcn (default = 1)
-#' @param s2_F F for scenario 2 (default = 0.4)
-#' @param s4_F is the F for scenario 4, defaults to 0.75, should be 0.65 for some species (check your requirements)
-#' @param exe_name name of ss3 executable to run (default = NULL)
-#'
-run_scenario <- function(dir = NULL, 
-                         scenario = NULL, 
-                         cyr = NULL,
-                         fleets = c(1:3), 
-                         Scenario2 = 1,
-                         s2_F = 0.4, 
-                         s4_F = 0.75, 
-                         exe_name = NULL) {
-  
-  # read forecast file
-  scenario_C <- r4ss::SS_readforecast(file = here::here(dir, "mscen", "scenario_1", "forecast.ss"))
-  
-  # Create a directory for the scenario
-  dir.create(here::here(dir, "mscen", scenario), recursive = TRUE, showWarnings = FALSE)
-  R.utils::copyDirectory(dir, here::here(dir, "mscen", scenario), recursive = FALSE)
-  
-  # Modify the scenario attributes based on the scenario number
-  if (scenario == 'scenario_2') {
-    # scenario 2 options
-    if(Scenario2 == 2){
-      # set F at specified s2_F value
-      Fyear <- paste0("F_", cyr + 1)
-      years <- seq(cyr + 1, cyr + 15, 1)
-      f2 <- s2_F * data.table::data.table(rep1$derived_quants)[Label == Fyear]$Value
-      newF <- data.table::data.table(Year = years, Seas = 1, Fleet = fleets, F = f2)
-      scenario_C$Forecast <- 4
-      scenario_C$BforconstantF <- 0.001  ## cluge to get rid of control rule of ave. F
-      scenario_C$BfornoF <- 0.0001      ## cluge to get rid of control rule scaling of ave. F
-      scenario_C$InputBasis <- 99
-      scenario_C$ForeCatch <- newF
-    }
-    if(Scenario2 == 3){
-      # read in specified future catch
-      scenario_C$ForeCatch <- read.csv("Scenario2_catch.csv", header = TRUE)
-    }
-  } else if (scenario == 'scenario_3') {
-    # scenario 3
-    scenario_C$Forecast <- 4
-    scenario_C$BforconstantF <- 0.001  ## cluge to get rid of control rule of ave. F
-    scenario_C$BfornoF <- 0.0001      ## cluge to get rid of control rule scaling of ave. F
-    scenario_C$Fcast_years[c(3,4)] <- c(cyr - 5, cyr - 1)
-  } else if (scenario == 'scenario_4') {
-    # scenario 4
-    scenario_C$Flimitfraction <- s4_F
-  } else if (scenario == 'scenario_5') {
-    # scenario 5
-    catch <- expand.grid(Year = c((cyr + 1):(cyr + fcasty)), Seas = 1, Fleet = fleets, Catch_or_F = 0)
-    names(catch) <- names(scenario_C$ForeCatch)
-    scenario_C$ForeCatch <- rbind(scenario_C$ForeCatch,catch)
-  } else if (scenario == 'scenario_6') {
-    # scenario 6
-    scenario_C$Btarget <- 0.35
-    scenario_C$SPRtarget <- 0.35
-    scenario_C$Flimitfraction <- 1.0
-  } else if (scenario == 'scenario_7') {
-    # scenario 7
-    scenario_C$Btarget <- 0.35
-    scenario_C$SPRtarget <- 0.35
-    scenario_C$Flimitfraction <- 1.0
-    x <- r4ss::SS_output(dir = here::here(dir, "mscen", "scenario_1"))
-    scenario_C$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = cyr:(cyr + 2))
-  } else if (scenario == 'scenario_8') {
-    # scenario 8
-    scenario_C$Btarget   <- 0.35
-    scenario_C$SPRtarget <- 0.35
-    scenario_C$Flimitfraction <- 1.0
-    x <- r4ss::SS_output(dir = here::here(dir, "mscen", "scenario_1"))
-    scenario_C$ForeCatch <- r4ss::SS_ForeCatch(x, yrs = cyr:(cyr + 1))
-  }
-  # Write the modified scenario to the scenario directory
-  r4ss::SS_writeforecast(scenario_C, 
-                         dir = here::here(dir, "mscen", scenario), 
-                         file = "forecast.ss", 
-                         writeAll = TRUE, 
-                         overwrite = TRUE)
-  # set starter to start at params
-  mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", scenario, "starter.ss"))
-  mdl_starter$init_values_src = 1
-  r4ss::SS_writestarter(mdl_starter, 
-                        dir = here::here(dir, "mscen", scenario),
-                        overwrite = TRUE)
-  
-  # Run the scenario
-  r4ss::run(dir = here::here(dir, "mscen", scenario),
-            exe = exe_name,
-            skipfinished = FALSE, 
-            verbose = TRUE,
-            show_in_console = TRUE)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
