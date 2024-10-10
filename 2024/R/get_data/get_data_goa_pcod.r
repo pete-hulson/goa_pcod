@@ -245,7 +245,7 @@ get_data_goa_pcod <- function(new_data = new_data,
   } else{
     # turn off and read through ctl instead
     age_error <- data.frame(rbind(rep(-1, max_age + 1),
-                                  rep(-0.001, max_age) + 1))
+                                  rep(-0.001, max_age + 1)))
     colnames(age_error) <- paste0("age", seq(0, max_age))
     new_data$ageerror <- age_error
   }
