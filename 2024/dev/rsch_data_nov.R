@@ -18,18 +18,108 @@ lapply(libs, library, character.only = TRUE)
 asmnt_yr <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # day data pulled
-dat_day <- "Sep07"
+dat_day <- "Oct09"
 
 # source functions
 source_files <- list.files(here::here(asmnt_yr, "R", "assessment"), "*.r$")
 purrr::map(here::here(asmnt_yr, "R", "assessment", source_files), source)
 source(here::here(asmnt_yr, "R", "utils.r"))
 
-# run models? if not just get results
-run_mdl = FALSE
-run_retro = FALSE
-# ret_yr <- 2 # For testing
-ret_yr <- 10 # For full
+base_mdl_update <- "2019.1b-2024"
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2019.1d: update ageing error in ctl ----
+ae_ctl <- "2019.1d-2024-ctl"
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch', ae_ctl, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                to = here::here(asmnt_yr, 'rsch', ae_ctl))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = ae_ctl, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_1c.dat"),
+                 ctl_in = "Model19_1d_ctl.ctl",
+                 ctl_out = "Model19_1d.ctl")
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = ae_ctl,
+              ctl_filename = "Model19_1d.ctl")
+
+# ## get and plot model output ----
+# # get output
+# new_base_ae_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_ae))
+# # if exists, delete plot folder
+# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_ae, 'plots'))){
+#   unlink(here::here(asmnt_yr, 'rsch', new_base_ae, 'plots'), recursive = TRUE)
+# }
+# # plot results
+# r4ss::SS_plots(new_base_ae_res,
+#                printfolder = "",
+#                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 2019.1d: update ageing error in dat file ----
+ae_dat <- "2019.1d-2024-dat"
+
+## copy ss input files ----
+if(!file.exists(here::here(asmnt_yr, 'rsch', ae_dat, 'ss3.exe'))){
+  start_ss_fldr(from = here::here(asmnt_yr, 'rsch', base_mdl_update),
+                to = here::here(asmnt_yr, 'rsch', ae_dat))
+}
+
+## update files ----
+update_ss3_files(asmnt_yr, 
+                 folder = 'rsch',
+                 mdl = ae_dat, 
+                 dat_filename = paste0("GOAPcod2024", dat_day, "_1d_dat.dat"),
+                 ctl_in = "Model19_1d_dat.ctl",
+                 ctl_out = "Model19_1d.ctl")
+
+## run model ----
+run_ss3_model(asmnt_yr, 
+              folder = 'rsch',
+              mdl = ae_dat,
+              ctl_filename = "Model19_1d.ctl")
+
+# ## get and plot model output ----
+# # get output
+# new_base_ae_res <- r4ss::SS_output(dir = here::here(asmnt_yr, 'rsch', new_base_ae))
+# # if exists, delete plot folder
+# if(file.exists(here::here(asmnt_yr, 'rsch', new_base_ae, 'plots'))){
+#   unlink(here::here(asmnt_yr, 'rsch', new_base_ae, 'plots'), recursive = TRUE)
+# }
+# # plot results
+# r4ss::SS_plots(new_base_ae_res,
+#                printfolder = "",
+#                dir = here::here(asmnt_yr, 'rsch', new_base_ae, "plots"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 2019.1b-2023: 2023 base model ----
