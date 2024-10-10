@@ -130,11 +130,11 @@ get_agerr <- function(new_year,
   # format for ss3 ----
   # for ageing error in the dat file
   if(type == 'dat'){
-    rbind(agebias_out$ErrorAndBiasArray[,,1][5, 2:(max_age + 1)],
-          agerr_out$ErrorAndBiasArray[,,1][4, 2:(max_age + 1)],
+    rbind(agebias_out$ErrorAndBiasArray[,,1][5, 1:(max_age + 1)],
+          agerr_out$ErrorAndBiasArray[,,1][4, 1:(max_age + 1)],
           rep(-1, length.out = max_age),
-          agerr_out$ErrorAndBiasArray[,,1][4, 2:(max_age + 1)]) -> ae_mtx
-    colnames(ae_mtx) <- paste0("age", seq(1, max_age))
+          agerr_out$ErrorAndBiasArray[,,1][4, 1:(max_age + 1)]) -> ae_mtx
+    colnames(ae_mtx) <- paste0("age", seq(0, max_age))
     ae_info <- data.table(ae_mtx)
   } else{
     # for ageing error in the ctl

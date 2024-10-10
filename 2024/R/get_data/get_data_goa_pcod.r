@@ -244,9 +244,9 @@ get_data_goa_pcod <- function(new_data = new_data,
     new_data$agecomp[which(new_data$agecomp$year >= 2007),'ageerr'] = 2
   } else{
     # turn off and read through ctl instead
-    age_error <- data.frame(rbind(rep(-1, max_age),
-                                  rep(-0.001, max_age)))
-    colnames(age_error) <- paste0("age", seq(1, max_age))
+    age_error <- data.frame(rbind(rep(-1, max_age + 1),
+                                  rep(-0.001, max_age) + 1))
+    colnames(age_error) <- paste0("age", seq(0, max_age))
     new_data$ageerror <- age_error
   }
   cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
