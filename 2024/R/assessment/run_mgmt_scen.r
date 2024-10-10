@@ -28,8 +28,10 @@
 #' @init_dir is the director of the AK_SCENARIOS_FOR_SS files.
 ##
 
+#DIR = "Model_23.1.0.d_e_5cm/PROJ"; CYR = 2023; SYR = 1977;  SEXES = 1; FLEETS = 1; Scenario2 = 1; S2_F = 0.4; s4_F = 0.75; do_fig = TRUE; do_mark=TRUE;URL="https://apps-afsc.fisheries.noaa.gov/Plan_Team/2022/EBSpcod.pdf";pdf_tab=1; init_dir="C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS"
 
-Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR = 1977,  SEXES = 1, FLEETS = 1, Scenario2 = 1, 
+
+Do_AK_TIER_3_Scenarios <- function(DIR = "Model_23.1.0.d_e_5cm/PROJ", CYR = 2023, SYR = 1977,  SEXES = 1, FLEETS = 1, Scenario2 = 1, 
 				   S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=TRUE,URL="https://apps-afsc.fisheries.noaa.gov/Plan_Team/2022/EBSpcod.pdf", 
 				   pdf_tab=1, init_dir="C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS") {
 
@@ -65,9 +67,13 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
   		}
 	}
 
+
+  parent_dir<-getwd()
 	.DIR <- DIR
-    setwd(DIR) ## folder with converged modelinit
-   scenario_1 <- SS_readforecast(file = "forecast.ss")
+    #setwd(DIR) ## folder with converged modelinit
+   scenario_1 <- SS_readforecast(file = file.path(DIR,"forecast.ss"))
+   
+   rep1<-SS_output(dir=DIR)
 #   # Define the list of scenarios
 
  	copyDirectory(DIR,file.path(DIR,"scenario_1"),recursive=FALSE)
@@ -81,10 +87,13 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
    setwd(file.path(DIR,"scenario_1"))
 
 ## have to run scenario 1 first to get the forecast parameters for scenarios 6 and 7
-   r4ss::run(exe = "ss3", skipfinished = FALSE, verbose = TRUE)
+   r4ss::run(exe = "ss", skipfinished = FALSE, verbose = TRUE)
 
 ## setting up parallel computing    
 	# Get the number of available cores
+	
+	setwd(parent_dir)
+
 	num_cores <- detectCores()
 	if(num_cores>8)num_cores=8
 	
@@ -113,17 +122,35 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
   		if (scenario == 'scenario_2') {
 	
     		if(Scenario2==2){
-    			scenario_C$SPRtarget <- S2_F
+
+    			   Fyear<-paste0("F_",CYR+1)
+    			   years<-seq(CYR+1,CYR+15,1)
+
+
+    			   f2<-S2_F*data.table::data.table(rep1$derived_quants)[Label==Fyear]$Value
+    			   newF<-data.table::data.table(Year=years,Seas=1,Fleet=1,F=f2)
+
+    				scenario_C$Forecast<-4
+    				scenario_C$BforconstantF<-0.001  ## cluge to get rid of control rule of ave. F
+    				scenario_C$BfornoF<-0.0001      ## cluge to get rid of control rule scaling of ave. F
+            
+            scenario_C$InputBasis<-99
+            scenario_C$ForeCatch<-newF
+
     		}
 			if(Scenario2==3){
 				scenario_C$ForeCatch <- read.csv("Scenario2_catch.csv",header=T)
     		}
   		} else if (scenario == 'scenario_3') {
     		scenario_C$Forecast<-4
+    		scenario_C$BforconstantF<-0.001  ## cluge to get rid of control rule of ave. F
+    		scenario_C$BfornoF<-0.0001      ## cluge to get rid of control rule scaling of ave. F
 			scenario_C$Fcast_years [c(3,4)]<-c(CYR-5, CYR-1)
   		} else if (scenario == 'scenario_4') {
-			scenario_C$Btarget <- s4_F
-			scenario_C$SPRtarget <- s4_F
+  		#scenario_C$Forecast <- 5
+			scenario_C$Flimitfraction <- s4_F
+			#scenario_C$SPRtarget <- s4_F
+
   		} else if (scenario == 'scenario_5') {
 			catch <- expand.grid(Year=c((CYR+1):(CYR+FCASTY)),Seas=1,Fleet=FLEETS,Catch_or_F=0)
 			names(catch)<-names(scenario_C$ForeCatch)
@@ -190,14 +217,17 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
 	
 	setwd(DIR)
 	scenarios <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8")
-	mods1<-r4ss::SSgetoutput(dirvec=scenarios[1:8])
+	mods1<-SSgetoutput(dirvec=scenarios[1:8])
+
+	kluge1<-data.table(mods1[[1]]$sprseries)$F_report[1]  ## kluge to deal with column name change between versions
+ 
 
 # Calculate the year index for the summary statistics
 	EYR<- CYR+FCASTY
 	yr1<- EYR-SYR+3
 
     
-   	# Calculate summary statistics for each scenario
+   # Calculate summary statistics for each scenario
 	summ <- lapply(seq_along(mods1), function(i) {
 		mod <- mods1[[i]]
   		Yrs <- SYR:EYR
@@ -205,7 +235,11 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
   		SUMM <- data.table(mod$timeseries)[Yr %in% Yrs]$Bio_smry
   		SSB <- data.table(mod$timeseries)[Yr %in% Yrs]$SpawnBio / sex
   		std <- data.table(mod$stdtable)[name %like% "SSB"][3:yr1, ]$std / sex
-  		F <- data.table(mod$sprseries)[Yr %in% Yrs]$maxF_1
+  		if(!is.null(kluge1)){
+  			F <- data.table(mod$sprseries)[Yr %in% Yrs]$F_report
+  			} else { 
+  				F <- data.table(mod$sprseries)[Yr %in% Yrs]$F_std
+  			}
   		Catch <- data.table(mod$sprseries)[Yr %in% Yrs]$Enc_Catch
   		SSB_unfished <- data.table(mod$derived_quants)[Label == "SSB_unfished"]$Value / sex
   		model <- scenarios[i]
@@ -400,7 +434,7 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model23.1.0.d/PROJ", CYR = 2023, SYR =
 		Figs_Catch <- list()
 
 		Figs_Catch[['ALL']]<- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[1:9]], aes(x = Yr, y = Catch, linewidth = model, color = model, linetype = model)) +
-  			geom_line() + lims(y=c(0,max(Pcatch2$UCI)),x=c(CYR,EYR))+
+  			geom_line() + lims(y=c(0,max(Pcatch2$UCI)),x=c((CYR+1),EYR))+
   			theme_bw(base_size = 12) +
   			labs(x = "Year", y = "Catch (t)", title = "Projections") +
   			scale_linetype_manual(values=c(rep(1,2),2:8),name="Scenarios")+
@@ -419,7 +453,7 @@ for (i in 1:length(scenarios_P)){
   			plot_data <- Pcatch2[model %in% scenarios_P3]
 			
 		plot <- ggplot(plot_data, aes(x = Yr, y = Catch, linewidth = model, fill = model, color = model, linetype = model)) +
-  			geom_line() + lims(y=c(0,max(Pcatch2$UCI)),x=c(CYR,EYR))+
+  			geom_line() + lims(y=c(0,max(Pcatch2$UCI)),x=c((CYR+1),EYR))+
 			geom_ribbon(aes(ymin=LCI, ymax=UCI), alpha=0.2,color=NA)+
   			theme_bw(base_size = 12) +
   			labs(x = "Year", y = "Catch (t)", title = "Projections") +
