@@ -153,7 +153,7 @@ get_fsh_len_post91_new <- function(new_year = 9999,
       tidytable::summarise(nsamp_f = length(unique(haul1)),
                            .by = c(year, gear)) -> nsamp_f
     # state data
-    vroom::vroom(here::here(new_year, 'data', 'fish_lfreq_state.csv')) %>% 
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
       dplyr::rename_all(tolower) %>% 
       #filter to positive lengths
       tidytable::filter(length > 0) %>% 
