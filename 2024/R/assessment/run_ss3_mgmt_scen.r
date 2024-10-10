@@ -97,20 +97,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   
   # load packages
   lapply(pkg_git, library, character.only = TRUE)
-  
-  
-  
-	
-	
-	
-	
-	############ testing
-	dir = here::here(new_year, "rsch", "2019.1b-2024")
-	
-	
-	
 
-	
 	# set up and run scenario 1 ----
 	
 	# set up scenario 1 model folder
@@ -426,7 +413,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 
 
 
-#' function to run a specified scenario
+#' function to run a specified management scenario
 #'
 #' @param dir is the model directory (default = NULL)
 #' @param scenario specified management scenario (default = NULL)
