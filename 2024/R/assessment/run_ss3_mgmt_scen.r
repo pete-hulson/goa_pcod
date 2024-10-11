@@ -30,68 +30,8 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
     dir.create(here::here(dir, "mscen"), recursive = TRUE)
   }
   
-  # Get the operating system information ----
-  os_info <- Sys.info()
-  
-  # Check the operating system
-  supported_os <- c("Windows", "Darwin")
-  if (os_info["sysname"] %in% supported_os) {
-    # Code to execute if the operating system is supported
-    print(paste(os_info["sysname"], "operating system detected and supported."))
-  } else {
-    # Code to execute if the operating system is unknown or unsupported
-    print("Unknown or unsupported operating system.")
-    stop()
-  }
-	
-	# figure out the ss3 executable name to run ----
-  # list the possible exes
-  executables <- list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx"))
-  # set the exe name
-  if (os_info["sysname"] %in% names(executables)) {
-    # Get the list of executables for the detected operating system
-    os_executables <- executables[[os_info["sysname"]]]
-    # Check if any of the executables exist
-    existing_executables <- os_executables[file.exists(here::here(dir, os_executables))]
-    if (length(existing_executables) > 0) {
-      # set the name of the executable
-      exe_name = existing_executables[1]
-    } else {
-      print("No executable found for the operating system.")
-      stop()
-    }
-  }
-  
-  # Specify the packages to load ----
-  
-  ## cran packages ----
-  pkg_cran <- c("data.table",
-                "tidyverse",
-                "flextable", 
-                "R.utils", 
-                "parallel", 
-                "doParallel", 
-                "foreach",
-                "here")
-  
-  # if not installed, then install
-  if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
-    install.packages(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE)])
-  }
-  
-  # load packages
-  lapply(pkg_cran, library, character.only = TRUE)
-  
-  ## github packages ----
-  pkg_git <- c("r4ss")
-  
-  # if not installed, then install
-  if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
-    devtools::install_github("r4ss/r4ss", force = TRUE)
-  }
-  
-  # load packages
-  lapply(pkg_git, library, character.only = TRUE)
+  # get model executable name
+  exe_name <- ss3_exename()
 
 	# set up and run scenario 1 ----
 	
