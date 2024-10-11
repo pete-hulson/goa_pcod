@@ -128,6 +128,27 @@ r4ss::SS_plots(model_run_new,
                printfolder = "",
                dir = here::here(new_SS_dat_year, "plots", "r4ss"))
 
+
+
+# plot ssb and stuff ----
+# Get ssb and index fit for spreadsheets with figures
+model_run_new$timeseries$Yr %>% 
+  bind_cols(model_run_new$timeseries$SpawnBio / 2) %>% 
+  rename(year = ...1, ssb = ...2) %>% 
+  filter(year >= 1977,
+         year <= new_year + 1) -> ssb_pred
+
+model_run_new$timeseries$Yr %>% 
+  bind_cols(model_run_new$timeseries$Bio_all) %>% 
+  rename(year = ...1, biom = ...2) %>% 
+  filter(year >= 1984,
+         year <= new_year + 1) -> tot_trwl_pred
+
+
+
+
+
+
 ## Plot retrospective analysis ----
 
 load(here::here(new_SS_dat_year, "output", "retroSummary.RData"))
