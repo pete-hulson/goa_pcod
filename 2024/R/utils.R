@@ -1,6 +1,50 @@
 #' utility fcns
 #' 
 #' 
+#' function to get systems ss3 exe name
+#' @param supported_os supported operting systems (default = c("Windows", "Darwin"))
+#' @param executables list of possible ss3 exe names by operating system (default = list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx")))
+#' 
+ss3_exename <- function(dir,
+                        supported_os = c("Windows", "Darwin"), 
+                        executables = list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx"))){
+  
+  # Get the operating system information ----
+  os_info <- Sys.info()
+  
+  # Check the operating system
+  supported_os <- c("Windows", "Darwin")
+  if (os_info["sysname"] %in% supported_os) {
+    # Code to execute if the operating system is supported
+    print(paste(os_info["sysname"], "operating system detected and supported."))
+  } else {
+    # Code to execute if the operating system is unknown or unsupported
+    print("Unknown or unsupported operating system.")
+    stop()
+  }
+  
+  # figure out the ss3 executable name to run ----
+  # list the possible exes
+  executables <- list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx"))
+  # set the exe name
+  if (os_info["sysname"] %in% names(executables)) {
+    # Get the list of executables for the detected operating system
+    os_executables <- executables[[os_info["sysname"]]]
+    # Check if any of the executables exist
+    existing_executables <- os_executables[file.exists(here::here(dir, os_executables))]
+    if (length(existing_executables) > 0) {
+      # set the name of the executable
+      exe_name = existing_executables[1]
+    } else {
+      print("No executable found for the operating system.")
+      stop()
+    }
+  }
+  
+  exe_name
+
+}
+
 #' function to run ss3 model with recruitment bias ramp adjustment
 #' @param asmnt_yr year of assessment (default = NULL)
 #' @param folder root foloder containing models (default = NULL)
@@ -36,6 +80,7 @@ run_ss3_model <- function(asmnt_yr = NULL,
                         dir = here::here(asmnt_yr, folder, mdl),
                         overwrite = TRUE)
 }
+
 # function to get recruitment ramp
 #' @param asmnt_yr year of assessment (default = NULL)
 #' @param folder root foloder containing models (default = NULL)
@@ -60,6 +105,7 @@ get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
             skipfinished = FALSE,
             show_in_console = TRUE)
 }
+
 #' function to update ss3 model dat, ctl, and starter files
 #' @param asmnt_yr year of assessment (default = NULL)
 #' @param folder root foloder containing models (default = NULL)
@@ -167,6 +213,7 @@ wt_len <- function(new_year = NULL){
   fit$par
   
 }
+
 #' function to bin length data to custom length bins 
 #' @param data length data to bin (default = NULL)
 #' @param bins user-defined length bins (default = NULL)
@@ -220,6 +267,7 @@ ss3_len_com <- function(data = NULL,
   
   data.frame(ss3_lcomp)
 }
+
 #' function to format fishery length comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
@@ -245,6 +293,7 @@ ss3_len_com_fsh <- function(data = NULL,
   
   data.frame(ss3_lcomp)
 }
+
 #' function to format survey age comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
@@ -281,6 +330,7 @@ ss3_age_com <- function(data = NULL,
   
   data.frame(ss3_acomp)
 }
+
 #' function to format fishery age comp data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
@@ -337,6 +387,7 @@ ss3_age_com_fsh <- function(data = NULL,
   
   data.frame(ss3_acomp)
 }
+
 #' function to format survey conditional age-at-length data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
@@ -359,6 +410,7 @@ ss3_caal <- function(data = NULL,
                                  caal = round(caal, digits = 5)) %>% 
                tidytable::pivot_wider(names_from = age, values_from = caal))
 }
+
 #' function to format fishery conditional age-at-length data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)
@@ -384,6 +436,7 @@ ss3_caal_fsh <- function(data = NULL,
                tidytable::pivot_wider(names_from = age, values_from = caal) %>% 
                tidytable::arrange(fltsrv, year))
 }
+
 #' function to format growth data for ss3 data file
 #' @param data data to format for ss3 (default = NULL)
 #' @param ss3_args arguments for ss3 data file (i.e., fltsrv, gender, etc; default = NULL)

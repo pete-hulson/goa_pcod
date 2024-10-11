@@ -1,72 +1,87 @@
 #' Function to perform Leave-One-Out analysis
-#' Originally written by Steve Barbeaux, altered by Pete Hulson in 2022 and 2023
+#' Originally written by Steve Barbeaux, altered by Pete Hulson in 2022, 2023, and 2024
 #' 
-#' @param model_name name of folder in which model is to be run (default = NULL)
-#' @param newsubdir subfolder for results (default = "loo")
+#' @param dir is the model directory (default = NULL)
 #' @param years years over which to run analysis (default = 0:-10)
-#' @param datafilename name of datafile to remove data from (default = NULL)
 #' @param cyr current year (default = NULL)
-#' @param run_models boolean, whether to run models or just pull results (default = FALSE)
 #' 
-year_loo <- function(model_name = NULL,
-                     newsubdir = "loo", 
+year_loo <- function(dir = NULL,
                      years = 0:-10,
-                     datafilename = NULL,
-                     cyr = NULL,
-                     run_models = FALSE){
+                     cyr = NULL){
   
-  # Set up LOO necessities
-  if (!file.exists(here::here(cyr, "mgmt", model_name, newsubdir, "year"))) 
-    dir.create(here::here(cyr, "mgmt", model_name, newsubdir, "year"))
   
-  subdirnames <- paste0("LOO", years)
-  
-  datafile <- r4ss::SS_readdat(file = here::here(cyr, "mgmt", model_name, datafilename))
-
-  # Loop thru LOO years
-  if(isTRUE(run_models)){
-    for (iyr in 1:length(years)) {
-      
-      # Write SS files
-      r4ss::copy_SS_inputs(dir.old = here::here(cyr, "mgmt", model_name), 
-                           dir.new = here::here(cyr, "mgmt", model_name, newsubdir, subdirnames[iyr]),
-                           copy_par = TRUE,
-                           copy_exe = TRUE,
-                           overwrite = TRUE)
-      
-      # Change up data file for LOO
-      CPUE <- data.table(datafile$CPUE)
-      agecomp <- data.table(datafile$agecomp)
-      lencomp <- data.table(datafile$lencomp)
-      yr <- cyr + years[iyr]
-      
-      CPUE[year == yr & index > 0]$index <- CPUE[year == yr & index > 0]$index * -1
-      agecomp[Yr == yr & FltSvy > 0]$FltSvy <- agecomp[Yr == yr & FltSvy > 0]$FltSvy * -1
-      lencomp[Yr == yr & FltSvy > 0]$FltSvy <- lencomp[Yr == yr & FltSvy > 0]$FltSvy * -1
-      
-      datafile2 <- datafile
-      datafile2$CPUE <- data.frame(CPUE)
-      datafile2$agecomp <- data.frame(agecomp)
-      datafile2$lencomp <- data.frame(lencomp)
-      
-      # Write out data script
-      r4ss::SS_writedat_3.30(datafile2,
-                             here::here(cyr, "mgmt", model_name, newsubdir, subdirnames[iyr], datafilename),
-                             overwrite = TRUE)
-      
-      # Run model
-      r4ss::run(dir = here::here(cyr, "mgmt", model_name, newsubdir, subdirnames[iyr]),
-                skipfinished = FALSE,
-                show_in_console = FALSE)
-      
-      
-      
-      # End loop
-    }
+  # check if the directory for leave-one-out exists, if it doesn't, create it
+  if (!dir.exists(here::here(dir, "loo", "year"))) {
+    dir.create(here::here(dir, "loo", "year"), recursive = TRUE)
   }
- 
-  ### Compile output
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(cyr, "mgmt", model_name, newsubdir, subdirnames))
+  
+  # run models in parallel ---- 
+  
+  ## get needed stuff ----
+  # get model executable name
+  exe_name <- ss3_exename(dir)
+  # set up an index vector defining which year is being left-out
+  idx = seq(1, length(years))
+  # define the list of loo models
+  loo_mdls <- paste0("loo", years)
+  # define datafile name
+  datafilename <- list.files(dir, pattern = "GOAPcod")
+  # get datafile input
+  datafile <- r4ss::SS_readdat_3.30(here::here(dir, datafilename))
+
+  ## prep models ----
+  for(i in idx){
+    # Write SS files
+    r4ss::copy_SS_inputs(dir.old = dir, 
+                         dir.new = here::here(dir, "loo", "year", loo_mdls[i]),
+                         copy_par = TRUE,
+                         copy_exe = TRUE,
+                         overwrite = TRUE)
+    
+    # Change up data file for LOO
+    cpue <- data.table::data.table(datafile$CPUE)
+    agecomp <- data.table::data.table(datafile$agecomp)
+    lencomp <- data.table::data.table(datafile$lencomp)
+    yr <- cyr + years[i]
+    
+    cpue[year == yr & index > 0]$index <- cpue[year == yr & index > 0]$index * -1
+    agecomp[year == yr & fleet > 0]$fleet <- agecomp[year == yr & fleet > 0]$fleet * -1
+    lencomp[year == yr & fleet > 0]$fleet <- lencomp[year == yr & fleet > 0]$fleet * -1
+    
+    datafile2 <- datafile
+    datafile2$CPUE <- data.frame(cpue)
+    datafile2$agecomp <- data.frame(agecomp)
+    datafile2$lencomp <- data.frame(lencomp)
+    
+    # Write out data script
+    r4ss::SS_writedat_3.30(datafile2,
+                           here::here(dir, "loo", "year", loo_mdls[i], datafilename),
+                           overwrite = TRUE)
+  }
+  
+  ## Run scenarios ----
+  # Get the number of available cores
+  num_cores <- parallel::detectCores()
+  if(num_cores > length(loo_mdls)) num_cores = length(loo_mdls)
+  # Set the number of cores to be used for parallel computing
+  doParallel::registerDoParallel(cores = num_cores)
+  
+  foreach::foreach(loo_mdl = loo_mdls) %dopar% {
+    
+    # Run the scenario
+    r4ss::run(dir = here::here(dir, "loo", "year", loo_mdl),
+              exe = exe_name,
+              skipfinished = FALSE, 
+              verbose = FALSE,
+              show_in_console = FALSE)
+    
+  }
+  
+  # Stop parallel computing
+  doParallel::stopImplicitCluster()
+  
+  # Compile output ----
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "year", loo_mdls))
   
   Nat_M <- array()
   Q <- array()
@@ -80,7 +95,7 @@ year_loo <- function(model_name = NULL,
   SSBfore_SD <- array()
   ABCfore <- array()
   ABCfore_SD <- array()
-
+  
   for(i in 1:length(years)){
     x <- data.table(LOO_mods[[i]]$parameters)
     y <- data.table(LOO_mods[[i]]$derived_quants)
@@ -97,9 +112,9 @@ year_loo <- function(model_name = NULL,
     ABCfore[i] <- y[Label == paste0('ForeCatch_', cyr + 1)]$Value
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', cyr + 1)]$StdDev
   }
-
-  mods0 <- r4ss::SSgetoutput(dirvec = here::here(cyr, "mgmt", model_name))
-
+  
+  mods0 <- r4ss::SSgetoutput(dirvec = dir)
+  
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)
   annF_Btgt0 <- y0[Label == 'annF_Btgt']$Value
@@ -114,7 +129,7 @@ year_loo <- function(model_name = NULL,
   SSBfore_SD0 <- y0[Label == paste0('SSB_', cyr + 1)]$StdDev
   ABCfore0 <- y0[Label == paste0('ForeCatch_', cyr + 1)]$Value
   ABCfore_SD0 <- y0[Label == paste0('ForeCatch_', cyr + 1)]$StdDev
-
+  
   x0 <- data.table(LOO = 0,
                    Nat_M = Nat_M0, 
                    Nat_M_SD = Nat_M_SD0,
@@ -150,7 +165,7 @@ year_loo <- function(model_name = NULL,
   x3$SD <- x4$value
   x3$Year <- cyr - x3$LOO + 1
   
-  # Plot LOO analysis
+  ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
               aes(x = Year,y = value)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
@@ -165,14 +180,14 @@ year_loo <- function(model_name = NULL,
     scale_x_continuous(limits = c(min(x3[LOO != 0]$Year) - 0.5, max(x3[LOO != 0]$Year) + 0.5), 
                        breaks = seq(min(x3[LOO != 0]$Year), max(x3[LOO != 0]$Year), by = 1)) +
     theme(axis.text.x = element_text(vjust = 0.5, angle = 90))
-
-  # Table of LOO analysis
+  
+  ## Table of LOO analysis ----
   x3 <- data.table(Nat_M = x$Nat_M,
-                  annF_Btgt = x$annF_Btgt,
-                  Q = x$Q,
-                  SSB_UN = x$SSB_UN,
-                  SSBfore = x$SSBfore,
-                  ABCfore = x$ABCfore )
+                   annF_Btgt = x$annF_Btgt,
+                   Q = x$Q,
+                   SSB_UN = x$SSB_UN,
+                   SSBfore = x$SSBfore,
+                   ABCfore = x$ABCfore )
   x4 <- x3[1, ]
   x4 <- data.table(Nat_M = rep(x4$Nat_M, length(years) + 1),
                    annF_Btgt = rep(x4$annF_Btgt, length(years) + 1),
@@ -182,14 +197,13 @@ year_loo <- function(model_name = NULL,
                    ABCfore = rep(x4$ABCfore, length(years) + 1))
   x4 <- x3[2:(1 + length(years)), ] - x4[2:(1 + length(years)), ]
   x4$LOO <- c(1:length(years))
-
+  
   x4 <- melt(x4, 'LOO')
   
   x4 %>% 
-    dplyr::group_by(variable) %>% 
-    dplyr::summarise(bias = mean(value)) %>% 
-    dplyr::mutate(p = bias / t(x3[1, ])) -> BIAS
-
+    tidytable::summarise(bias = mean(value), .by = variable) %>% 
+    tidytable::mutate(p = bias / t(x3[1, ])) -> BIAS
+  
   output <- list(BIAS, d)
   
   output
@@ -197,46 +211,163 @@ year_loo <- function(model_name = NULL,
 }
 
 #' function to run L-O-O for most recent year of data
-#' added in 2022 by p hulson
+#' added in 2022 by p hulson, redeveloped in 2024
 #' 
-#' @param model_name name of folder in which model is to be run (default = NULL)
-#' @param newsubdir subfolder for results (default = "LeaveOneOut")
+#' @param dir is the model directory (default = NULL)
 #' @param cyr current year (default = NULL)
-#' @param run_models boolean, whether to run models or just pull results (default = FALSE)
-#'
-SS_doLOO_cyr <- function (model_name = NULL,
-                          newsubdir = "LeaveOneOut",
-                          cyr = NULL,
-                          run_models = FALSE){
+#' 
+data_loo <- function(dir = NULL,
+                     cyr = NULL){
   
-  # Set up sub directory names for each individual data
-  subdirnames <- c('Fish_CAAL_LL', 
-                   'Fish_CAAL_POT',
-                   'Fish_CAAL_TWL', 
-                   'Fish_LC_LL', 
-                   'Fish_LC_POT',
-                   'Fish_LC_TWL',
-                   'LLsurv_Indx',
-                   'LLsurv_LC',
-                   'BTsurv_Indx',
-                   'BTsurv_LC')
-
-  # Loop thru added data
-  if(isTRUE(run_models)){
-    for (i in 1:length(subdirnames)) {
-      
-      # Run model
-      r4ss::run(dir = here::here(cyr, "mgmt", model_name, newsubdir, 'LOO-2023', subdirnames[i]),
-                skipfinished = FALSE,
-                show_in_console = FALSE)
-      
-      # End loop
-    }
+  # check if the directory for leave-one-out exists, if it doesn't, create it
+  if (!dir.exists(here::here(dir, "loo", "data"))) {
+    dir.create(here::here(dir, "loo", "data"), recursive = TRUE)
   }
   
+  # determine which data is new ----
   
-  ### Compile output
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(cyr, "mgmt", model_name, newsubdir, 'LOO-2023', subdirnames))
+  # read in previous assessment ss3 datafile
+  old_datafilename <- list.files(here::here(cyr, "data"), pattern = "GOAPcod")
+  old_datafile <- r4ss::SS_readdat_3.30(here::here(cyr, "data", old_datafilename))
+  # read in current assessment ss3 datafile
+  new_datafilename <- list.files(dir, pattern = "GOAPcod")
+  new_datafile <- r4ss::SS_readdat_3.30(here::here(dir, new_datafilename))
+  # find added cpue data
+  new_datafile$CPUE %>% 
+    tidytable::select(year, index) %>% 
+    tidytable::anti_join(old_datafile$CPUE %>% 
+                           tidytable::select(year, index)) %>% 
+    tidytable::filter(index > 0) %>% 
+    tidytable::distinct(year, index) %>% 
+    tidytable::mutate(dataset = case_when(index == 4 ~ 'BTsurv_Indx',
+                                          index == 5 ~ 'LLsurv_Indx')) -> cpue_diff
+  # find added agecomp data
+  new_datafile$agecomp %>% 
+    tidytable::select(year, fleet) %>% 
+    tidytable::anti_join(old_datafile$agecomp %>% 
+                           tidytable::select(year, fleet)) %>% 
+    tidytable::filter(fleet > 0) %>% 
+    tidytable::distinct(year, fleet) %>% 
+    tidytable::mutate(dataset = case_when(fleet == 1 ~ 'Fish_CAAL_TWL',
+                                          fleet == 2 ~ 'Fish_CAAL_LL',
+                                          fleet == 3 ~ 'Fish_CAAL_POT',
+                                          fleet == 4 ~ 'BTsurv_CAAL')) -> agecomp_diff
+  # find added lencomp data
+  new_datafile$lencomp %>% 
+    tidytable::select(year, fleet) %>% 
+    tidytable::anti_join(old_datafile$lencomp %>% 
+                           tidytable::select(year, fleet)) %>% 
+    tidytable::filter(fleet > 0) %>% 
+    tidytable::distinct(year, fleet) %>% 
+    tidytable::mutate(dataset = case_when(fleet == 1 ~ 'Fish_LC_TWL',
+                                          fleet == 2 ~ 'Fish_LC_LL',
+                                          fleet == 3 ~ 'Fish_LC_POT',
+                                          fleet == 4 ~ 'BTsurv_LC',
+                                          fleet == 5 ~ 'LLsurv_LC')) -> lencomp_diff
+  # bind new data
+  cpue_diff %>% 
+    tidytable::bind_rows(agecomp_diff %>% 
+                           tidytable::rename(index = fleet)) %>% 
+    tidytable::bind_rows(lencomp_diff %>% 
+                           tidytable::rename(index = fleet)) -> data_diff
+  
+  
+  # run models in parallel ---- 
+  
+  ## get needed stuff ----
+  # get model executable name
+  exe_name <- ss3_exename(dir)
+  # set up an index vector defining which data is being left-out
+  idx = seq(1, length(data_diff$dataset))
+  # define the list of loo models
+  loo_mdls <- data_diff$dataset
+  # define datafile name
+  datafilename <- list.files(dir, pattern = "GOAPcod")
+  # Get the number of available cores
+  num_cores <- parallel::detectCores()
+  if(num_cores > length(loo_mdls)) num_cores = length(loo_mdls)
+  # Set the number of cores to be used for parallel computing
+  doParallel::registerDoParallel(cores = num_cores)
+  
+  ## prep models ----
+  for(i in idx){
+    # Write SS files
+    r4ss::copy_SS_inputs(dir.old = dir, 
+                         dir.new = here::here(dir, "loo", "data", loo_mdls[i]),
+                         copy_par = TRUE,
+                         copy_exe = TRUE,
+                         overwrite = TRUE)
+    
+    # Change up data file for LOO
+    cpue <- data.table::data.table(new_datafile$CPUE)
+    agecomp <- data.table::data.table(new_datafile$agecomp)
+    lencomp <- data.table::data.table(new_datafile$lencomp)
+    # cpue data
+    if(data_diff$dataset[i] == 'BTsurv_Indx'){
+      cpue[year == data_diff$year[i] & index == 4]$index <- cpue[year == data_diff$year[i] & index == 4]$index * -1
+    }
+    if(data_diff$dataset[i] == 'LLsurv_Indx'){
+      cpue[year == data_diff$year[i] & index == 5]$index <- cpue[year == data_diff$year[i] & index == 5]$index * -1
+    }
+    # caal data
+    if(data_diff$dataset[i] == 'Fish_CAAL_TWL'){
+      agecomp[year == data_diff$year[i] & fleet == 1]$fleet <- agecomp[year == data_diff$year[i] & fleet == 1]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'Fish_CAAL_LL'){
+      agecomp[year == data_diff$year[i] & fleet == 2]$fleet <- agecomp[year == data_diff$year[i] & fleet == 2]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'Fish_CAAL_POT'){
+      agecomp[year == data_diff$year[i] & fleet == 3]$fleet <- agecomp[year == data_diff$year[i] & fleet == 3]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'BTsurv_CAAL'){
+      agecomp[year == data_diff$year[i] & fleet == 4]$fleet <- agecomp[year == data_diff$year[i] & fleet == 4]$fleet * -1
+    }
+    # length comp
+    if(data_diff$dataset[i] == 'Fish_LC_TWL'){
+      lencomp[year == data_diff$year[i] & fleet == 1]$fleet <- lencomp[year == data_diff$year[i] & fleet == 1]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'Fish_LC_LL'){
+      lencomp[year == data_diff$year[i] & fleet == 2]$fleet <- lencomp[year == data_diff$year[i] & fleet == 2]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'Fish_LC_POT'){
+      lencomp[year == data_diff$year[i] & fleet == 3]$fleet <- lencomp[year == data_diff$year[i] & fleet == 3]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'BTsurv_LC'){
+      lencomp[year == data_diff$year[i] & fleet == 4]$fleet <- lencomp[year == data_diff$year[i] & fleet == 4]$fleet * -1
+    }
+    if(data_diff$dataset[i] == 'LLsurv_LC'){
+      lencomp[year == data_diff$year[i] & fleet == 5]$fleet <- lencomp[year == data_diff$year[i] & fleet == 5]$fleet * -1
+    }
+    
+    datafile2 <- new_datafile
+    datafile2$CPUE <- data.frame(cpue)
+    datafile2$agecomp <- data.frame(agecomp)
+    datafile2$lencomp <- data.frame(lencomp)
+    
+    # Write out data script
+    r4ss::SS_writedat_3.30(datafile2,
+                           here::here(dir, "loo", "data", loo_mdls[i], datafilename),
+                           overwrite = TRUE)
+  }
+  
+  ## Run scenarios ----
+  foreach::foreach(loo_mdl = loo_mdls) %dopar% {
+    
+    # Run the scenario
+    r4ss::run(dir = here::here(dir, "loo", "data", loo_mdl),
+              exe = exe_name,
+              skipfinished = FALSE, 
+              verbose = FALSE,
+              show_in_console = FALSE)
+    
+  }
+  
+  # Stop parallel computing
+  doParallel::stopImplicitCluster()
+  
+  
+  # Compile output ----
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "data", loo_mdls))
   
   Nat_M <- array()
   Q <- array()
@@ -320,7 +451,7 @@ SS_doLOO_cyr <- function (model_name = NULL,
   x3$SD <- x4$value
   x3$Data <- rep(c('Base', subdirnames), times = 6)
   
-  # Plot LOO analysis
+  ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
               aes(x = Data, y = value)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +

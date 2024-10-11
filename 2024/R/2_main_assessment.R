@@ -8,7 +8,12 @@ pkg_cran <- c("data.table",
               "vroom",
               "here",
               "tictoc",
-              "adnuts")
+              "adnuts",
+              "flextable", 
+              "R.utils", 
+              "parallel", 
+              "doParallel", 
+              "foreach")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
@@ -233,35 +238,27 @@ save(retrosumm_1b, file = here::here(new_year, "output", "retro", "retrosumm_1b.
 save(retrosumm_1e5cm, file = here::here(new_year, "output", "retro", "retrosumm_1e5cm.RData"))
 
 
-# run leave-one-out Analysis ----
+# run leave-one-out analysis ----
 
 ## across time ----
 # Define how many LOO years you want to go back
-# loo_yr <- 1 # For testing
-loo_yr <- 10 # For full
-
-datname <- list.files(here::here(new_year, "mgmt", new_base_lcomp_bin5), pattern = "GOAPcod")
-
-LOO <- SS_doLOO(Model_name = new_base_lcomp_bin5,
-                newsubdir = "LeaveOneOut", 
-                years = 0:-loo_yr,
-                datafilename = datname,
-                CYR = new_year,
-                run_models = TRUE)
-
-# Save output
-save(LOO, file = here::here(new_year, "output", "LOO.RData"))
-write.csv(LOO[[1]], here::here(new_year, "output", "LOO_table.csv"))
+loo_yr <- 1 # For testing
+# loo_yr <- 10 # For full
+loo_year <- year_loo(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+                     years = 0:-loo_yr,
+                     cyr = new_year)
 
 ## by new data ----
-# Run for newly added data - note that this is a hardwired function, where folders and data files must be manually changed to remove recent data
-LOO_add_data <- SS_doLOO_cyr(Model_name = Model_name_new,
-                             newsubdir = "LeaveOneOut",
-                             CYR = new_year,
-                             run_models = TRUE)
+loo_data <- data_loo(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+                     cyr = new_year)
 
-# Save output
-save(LOO_add_data, file = here::here(new_year, "output", "LOO_add_data.RData"))
+## save results ----
+if (!dir.exists(here::here(new_year, "output", "loo"))) {
+  dir.create(here::here(new_year, "output", "loo"), recursive = TRUE)
+}
+save(loo_year, file = here::here(new_year, "output", "loo", "loo_year.RData"))
+save(loo_data, file = here::here(new_year, "output", "loo", "loo_data.RData"))
+write.csv(loo_year[[1]], here::here(new_year, "output", "loo", "loo_year_table.csv"))
 
 
 # Run Jitter ----
