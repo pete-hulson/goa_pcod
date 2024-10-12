@@ -66,6 +66,9 @@ source(here::here(new_year, "R", "utils.r"))
 
 # run models ----
 
+# start timer
+tictoc::tic()
+
 ## 2019.1b: updated base model ----
 base_mdl_update <- "2019.1b-2024"
 
@@ -193,8 +196,13 @@ run_ss3_model(new_year,
               mdl = new_base_lcomp_bin5,
               ctl_filename = "Model19_1e.ctl")
 
+# end timer
+mdl_time <- tictoc::toc(quiet = TRUE)
 
 # run management scenarios ----
+
+#start timer
+tictoc::tic()
 
 ## 2019.1b ----
 base_mdl_update_mscen <- run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", base_mdl_update),
@@ -216,8 +224,12 @@ write.csv(new_base_lcomp_bin5_mscen$Tables, here::here(new_year, "output", "msce
 write.csv(new_base_lcomp_bin5_mscen$Two_year, here::here(new_year, "output", "mscen", "mgmnt_exec_summ_24.csv"))
 write.csv(base_mdl_update_mscen$Two_year, here::here(new_year, "output", "mscen", "mgmnt_exec_summ_19_1b.csv"))
 
+mscen_time <- tictoc::toc(quiet = TRUE)
 
 # run retrospective analysis ----
+
+# start timer
+tictoc::tic()
 
 # define how many retro years you want to go back
 if(isTRUE(full_run)){
@@ -248,10 +260,15 @@ if (!dir.exists(here::here(new_year, "output", "retro"))) {
 save(retrosumm_1b, file = here::here(new_year, "output", "retro", "retrosumm_1b.RData"))
 save(retrosumm_1e5cm, file = here::here(new_year, "output", "retro", "retrosumm_1e5cm.RData"))
 
+# end timer
+retro_time <- tictoc::toc(quiet = TRUE)
 
 # run leave-one-out analysis ----
 
 ## across time ----
+
+# start timer
+tictoc::tic()
 
 # define how many loo years you want to go back
 if(isTRUE(full_run)){
@@ -262,7 +279,14 @@ loo_year <- year_loo(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
                      years = 0:-loo_yr,
                      cyr = new_year)
 
+# end timer
+loo_yr_time <- tictoc::toc(quiet = TRUE)
+
 ## by new data ----
+
+# start timer
+tictoc::tic()
+
 loo_data <- data_loo(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
                      cyr = new_year)
 
@@ -274,8 +298,14 @@ save(loo_year, file = here::here(new_year, "output", "loo", "loo_year.RData"))
 save(loo_data, file = here::here(new_year, "output", "loo", "loo_data.RData"))
 write.csv(loo_year[[1]], here::here(new_year, "output", "loo", "loo_year_table.csv"))
 
+# end timer
+loo_dat_time <- tictoc::toc(quiet = TRUE)
+
 
 # run jitter ----
+
+# start timer
+tictoc::tic()
 
 # define how many jitters you want to go back
 if(isTRUE(full_run)){
@@ -283,9 +313,11 @@ if(isTRUE(full_run)){
 } else{Njitter <- 5}
 
 ## set up jitter model ----
-# define a new directory
-if (!file.exists(here::here(new_year, "mgmt", new_base_lcomp_bin5, "jitter"))) 
-  dir.create(here::here(new_year, "mgmt", new_base_lcomp_bin5, "jitter"))
+# set up folder
+if (!file.exists(here::here(new_year, "mgmt", new_base_lcomp_bin5, "jitter"))) {
+  dir.create(here::here(new_year, "mgmt", new_base_lcomp_bin5, "jitter"), recursive = TRUE)
+}
+
 # copy ss3 files
 r4ss::copy_SS_inputs(dir.old = here::here(new_year, "mgmt", new_base_lcomp_bin5), 
                      dir.new = here::here(new_year, "mgmt", new_base_lcomp_bin5, "jitter"),
@@ -303,7 +335,276 @@ jitter_loglike <- r4ss::jitter(dir = here::here(new_year, "mgmt", new_base_lcomp
                                verbose = FALSE)
 
 ## save results ----
-write.csv(jitter_loglike, here::here(new_year, "output", "jitter_table.csv"))
+if (!dir.exists(here::here(new_year, "output", "jitter"))) {
+  dir.create(here::here(new_year, "output", "jitter"), recursive = TRUE)
+}
+write.csv(jitter_loglike, here::here(new_year, "output", "jitter", "jitter_table.csv"))
+
+# end timer
+jitter_time <- tictoc::toc(quiet = TRUE)
+
+# run mcmc ----
+
+# start timer
+tictoc::tic()
+
+## set up ----
+
+# define number of iterations
+if(isTRUE(full_run)){
+  iter <- 5000000
+  thin <- 2000
+  warmup <- 250
+} else{
+  iter <-500
+  thin <- 1
+  warmup <- 100
+}
+
+# set up folder
+if (!file.exists(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"))) {
+  dir.create(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"), recursive = TRUE)
+}
+
+# copy ss3 files
+r4ss::copy_SS_inputs(dir.old = here::here(new_year, "mgmt", new_base_lcomp_bin5), 
+                     dir.new = here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"),
+                     copy_par = TRUE,
+                     copy_exe = TRUE,
+                     overwrite = TRUE)
+
+# read starter file
+starter <- r4ss::SS_readstarter(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc", "starter.ss"))
+# change init vals source
+starter$init_values_src <- 0
+# write modified starter file
+r4ss::SS_writestarter(starter, 
+                      dir = here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"), 
+                      overwrite = TRUE)
+
+
+## run sample_nuts ----
+mcmc_nut <- adnuts::sample_nuts(model = 'ss3',
+                                path = here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"),
+                                iter = iter,
+                                chains = 3,
+                                warmup = warmup,
+                                thin = thin,
+                                mceval = TRUE,
+                                control = list(metric = 'mle'),
+                                skip_optimization = FALSE)
+
+
+## save results ----
+if (!dir.exists(here::here(new_year, "output", "mcmc"))) {
+  dir.create(here::here(new_year, "output", "mcmc"), recursive = TRUE)
+}
+save(mcmc_nut, file = here::here(new_year, "output", "mcmc", "mcmc_nut.RData"))
+
+# end timer
+mcmc_time <- tictoc::toc(quiet = TRUE)
+
+
+
+# run profiles ----
+
+## mean recruitment ----
+if(isTRUE(full_run)){
+  profilevec = seq(8:18)
+} else{
+  profilevec <- c(12, 13, 14)
+}
+
+r_prof <- run_profile(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+                      mod_ctl = "Model19_1e.ctl",
+                      folder = "r",
+                      profilevec = profilevec,
+                      linenum = 85)
+
+## base m ----
+if(isTRUE(full_run)){
+  param_vec = seq(8:18)
+} else{
+  param_vec <- c(0.4, 0.5, 0.6)
+}
+
+m_prof <- run_profile(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+                      mod_ctl = "Model19_1e.ctl",
+                      folder = "m",
+                      profilevec = profilevec,
+                      linenum = 57)
+
+## m 2014-2016 ----
+if(isTRUE(full_run)){
+  param_vec = seq(8:18)
+} else{
+  param_vec <- c(0.7, 0.8, 0.9)
+}
+
+m14_prof <- run_profile(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+                        mod_ctl = "Model19_1e.ctl",
+                        folder = "m14",
+                        profilevec = profilevec,
+                        linenum = 73)
+
+## save results ----
+if (!dir.exists(here::here(new_year, "output", "profile"))) {
+  dir.create(here::here(new_year, "output", "profile"), recursive = TRUE)
+}
+save(r_prof, file = here::here(new_year, "output", "profile", "r_prof.RData"))
+save(m_prof, file = here::here(new_year, "output", "profile", "m_prof.RData"))
+save(m14_prof, file = here::here(new_year, "output", "profile", "m14_prof.RData"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if(iters < iters_full){
+  end <- tictoc::toc(quiet = TRUE)
+  runtime <- round((((as.numeric(strsplit(end$callback_msg, split = " ")[[1]][1]) / iters) * iters_full) / 60) / 60, digits = 1)
+  cat("Full run of", crayon::green$bold(iters_full), "iterations will take", crayon::red$bold$underline$italic(runtime), "hours", "\u2693","\n")
+} else{
+  cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")
+}
+
+
+
+
+
+
+
+
+
+
+
+# Current assessment year
+new_SS_dat_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+
+# Set which method of MCMC to use
+# mcmc_meth <- 'base'
+mcmc_meth <- 'nuts'
+
+# Set whether testing or doing full run
+mcmc_run <- 'test'
+# mcmc_run <- 'full'
+
+# Run base MCMC ----
+if(mcmc_meth == 'base'){
+  
+  # Write SS files in MCMC subfolder
+  mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC")
+  r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
+                       dir.new = mcmc_dir,
+                       copy_par = TRUE,
+                       copy_exe = TRUE,
+                       overwrite = TRUE)
+  
+  # Read starter file
+  starter <- r4ss::SS_readstarter(file = here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC", "starter.ss"))
+  
+  # Define burnin and length of chain
+  if(mcmc_run == 'test'){
+    starter$MCMCburn <- 100
+    chain <- 1000
+    save <- 2
+    st_time <- Sys.time()
+  }
+  if(mcmc_run == 'full'){
+    starter$MCMCburn <- 100
+    chain <- 1000000
+    save <- 2000
+  }
+  
+  # Run MCMC 
+  r4ss::SS_writestarter(starter,
+                        dir = mcmc_dir,
+                        file = "starter.ss",
+                        overwrite = TRUE)
+  
+  r4ss::run(dir = mcmc_dir,
+            extras = paste0("-mcmc ", chain," -mcsave ", save),
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+  
+  r4ss::run(dir = mcmc_dir,
+            extras = "-mceval",
+            skipfinished = FALSE,
+            show_in_console = TRUE)
+  
+  # Read output
+  mcmc <- r4ss::SSgetMCMC(mcmc_dir)
+  
+  # Save output
+  save(mcmc, file = here::here(new_SS_dat_year, "output", "mcmc.RData"))
+  
+  if(mcmc_run == 'test'){
+    end_time <- Sys.time()
+    (end_time - st_time) * 1000 / 60
+  }
+}
+
+# Run adnuts MCMC ----
+if(mcmc_meth == 'nuts'){
+  
+  # Write SS files in MCMC subfolder and run model
+  # mcmc_dir <- here::here(new_SS_dat_year, "mgmt", Model_name_new, "MCMC_nuts")
+  # r4ss::copy_SS_inputs(dir.old = here::here(new_SS_dat_year, "mgmt", Model_name_new), 
+  #                      dir.new = mcmc_dir,
+  #                      copy_par = TRUE,
+  #                      copy_exe = TRUE,
+  #                      overwrite = TRUE)
+  # r4ss::run(dir = mcmc_dir,
+  #           skipfinished = FALSE,
+  #           show_in_console = TRUE)
+  
+  # Define number of iterations
+  if(mcmc_run == 'test'){
+    iter <-5000
+    thin <- 2
+    st_time <- Sys.time()
+  }
+  if(mcmc_run == 'full'){
+    iter <- 5000000
+    thin <- 2000
+  }
+  
+  # Run MCMC
+  mcmc_nut <- adnuts::sample_rwm(model = 'ss3',
+                                 path = mcmc_dir,
+                                 iter = iter,
+                                 thin = thin,
+                                 skip_optimization = TRUE,
+                                 mceval = TRUE,
+                                 chains = 7)
+  
+  # Save output
+  save(mcmc_nut, file = here::here(new_SS_dat_year, "output", "mcmc_nut.RData"))
+  
+  if(mcmc_run == 'test'){
+    end_time <- Sys.time()
+    (end_time - st_time) * 1000 / 60
+  }
+  
+}
+
 
 
 
