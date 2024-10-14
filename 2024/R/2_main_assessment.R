@@ -412,6 +412,15 @@ prof_time <- tictoc::toc(quiet = TRUE)
 
 # compute full run time ----
 if(!isTRUE(full_run)){
+  test_time <- round(((as.numeric(strsplit(mdl_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(loo_yr_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60), digits = 1)
+  cat("Test time took", crayon::red$bold$underline$italic(test_time), "minutes", "\u2693","\n")
+
   runtime <- round(((as.numeric(strsplit(mdl_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
@@ -419,7 +428,6 @@ if(!isTRUE(full_run)){
                      ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
                      ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1]) * 3) / 60) / 60, digits = 1)
-  runtime <- round((((as.numeric(strsplit(end$callback_msg, split = " ")[[1]][1]) / iters) * iters_full) / 60) / 60, digits = 1)
   cat("Full run will take", crayon::red$bold$underline$italic(runtime), "hours", "\u2693","\n")
 } else{
   cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")

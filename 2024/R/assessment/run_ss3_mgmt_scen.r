@@ -31,7 +31,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   }
   
   # get model executable name
-  exe_name <- ss3_exename()
+  exe_name <- ss3_exename(dir)
 
 	# set up and run scenario 1 ----
 	

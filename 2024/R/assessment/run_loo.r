@@ -382,7 +382,7 @@ data_loo <- function(dir = NULL,
   ABCfore <- array()
   ABCfore_SD <- array()
   
-  for(i in 1:length(subdirnames)){
+  for(i in 1:length(loo_mdls)){
     x <- data.table(LOO_mods[[i]]$parameters)
     y <- data.table(LOO_mods[[i]]$derived_quants)
     annF_Btgt[i] <- y[Label == 'annF_Btgt']$Value
@@ -399,7 +399,7 @@ data_loo <- function(dir = NULL,
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', cyr + 1)]$StdDev
   }
   
-  mods0 <- r4ss::SSgetoutput(dirvec = here::here(cyr, "mgmt", model_name))
+  mods0 <- r4ss::SSgetoutput(dirvec = dir)
   
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)
@@ -430,7 +430,7 @@ data_loo <- function(dir = NULL,
                    ABCfore = ABCfore0,
                    ABCfore_SD = ABCfore_SD0)
   
-  x1<-data.table(LOO = c(1:length(subdirnames)),
+  x1<-data.table(LOO = c(1:length(loo_mdls)),
                  Nat_M = Nat_M, 
                  Nat_M_SD = Nat_M_SD, 
                  annF_Btgt = annF_Btgt, 
@@ -449,7 +449,7 @@ data_loo <- function(dir = NULL,
   x3 <- x2[!variable %like% "_SD"]
   x4 <- x2[variable %like% "_SD"]
   x3$SD <- x4$value
-  x3$Data <- rep(c('Base', subdirnames), times = 6)
+  x3$Data <- rep(c('Base', loo_mdls), times = 6)
   
   ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
