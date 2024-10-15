@@ -58,7 +58,7 @@ run_profile <- function(mdl_dir = NULL,
         dir.create(res_dir, recursive = TRUE)
       }
       # get results
-      res_prof <- r4ss::SSgetoutput(dirvec = here(mdl_dir, "profile", params[i]),
+      res_prof <- r4ss::SSgetoutput(dirvec = here::here(mdl_dir, "profile", params[i]),
                                     keyvec = 1:length(profilevec[[i]]))
       summ_prof <- r4ss::SSsummarize(res_prof)
       # write results
