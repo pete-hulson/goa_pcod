@@ -6,7 +6,7 @@
 #' @param full_run boolean, whether full run should be performed for white noise case (default = NULL)
 #' 
 llq <- function(dir = NULL,
-                years = NULL,
+                ctl_filename = NULL,
                 full_run = NULL){
 
   # check if the directory for ll q analysis exists, if it doesn't, create it

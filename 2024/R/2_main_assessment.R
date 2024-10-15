@@ -389,6 +389,30 @@ run_profile(mdl_dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
 # end timer
 prof_time <- tictoc::toc(quiet = TRUE)
 
+
+
+# run ll q analysis ----
+
+# start timer
+tictoc::tic()
+
+## run model cases ----
+llq_res <- llq(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+               ctl_filename = "Model19_1e.ctl",
+               full_run = full_run)
+
+## save results ----
+if(isTRUE(full_run)){
+  if (!dir.exists(here::here(new_year, "output", "llq"))) {
+    dir.create(here::here(new_year, "output", "llq"), recursive = TRUE)
+  }
+  save(llq_res, file = here::here(new_year, "output", "llq", "llq_res.RData"))
+}
+
+# end timer
+llq_time <- tictoc::toc(quiet = TRUE)
+
+
 # compute full run time ----
 if(!isTRUE(full_run)){
   # total test time
@@ -398,7 +422,8 @@ if(!isTRUE(full_run)){
                        ((as.numeric(strsplit(loo_yr_time$callback_msg, split = " ")[[1]][1])) / 60) +
                        ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) +
                        ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1])) / 60) +
-                       ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60), digits = 1)
+                       ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60) +
+                       ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1])) / 60), digits = 1)
   cat("Test time took", crayon::red$bold$underline$italic(test_time), "minutes", "\u2693","\n")
   # estimated run time
   runtime <- round(((as.numeric(strsplit(mdl_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
@@ -407,7 +432,8 @@ if(!isTRUE(full_run)){
                      ((as.numeric(strsplit(loo_yr_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
                      ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
-                     ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1]) * 3) / 60) / 60, digits = 1)
+                     ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1]) * 3) / 60) / 60 +
+                     ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60, digits = 1)
   cat("Full run will take", crayon::red$bold$underline$italic(runtime), "hours", "\u2693","\n")
 } else{
   cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")
