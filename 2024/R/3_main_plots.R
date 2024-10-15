@@ -359,22 +359,6 @@ dev.print(png, file = here::here(new_year, "plots", "other", "cummC_WG.png"), wi
 dev.off()
 
 
-## Plot fishery condition ----
-
-source(here::here(new_year, "R", "plots", "fisheries_condition.r"))
-
-# Fish condition
-cond_plot <- plot_fish_cond(CYR = new_year,
-                            data_query = data_query)
-
-cond_plot[[1]]
-dev.print(png, file = here::here(new_year, "plots", "other", "Cond_WGOA.png"), width = 700, height = 700)
-dev.off()
-
-cond_plot[[2]]
-dev.print(png, file = here::here(new_year, "plots", "other", "Cond_CGOA.png"), width = 700, height = 700)
-dev.off()
-
 
 ## Plot number of vessels ----
 
@@ -409,21 +393,6 @@ swf_plot
 dev.print(png, file = here::here(new_year, "plots", "other", "swf_bycatch.png"), width = 700, height = 400)
 dev.off()
 
-
-## Plot catch weighted depth and mean length ----
-
-source(here::here(new_year, "R", "plots", "mean_depth_len.r"))
-
-mean_dl <- plot_mean_dl(data_query = data_query,
-                        CYR = new_year)
-
-multiplot(mean_dl[[1]], mean_dl[[2]], cols = 1)
-dev.print(png, file = here::here(new_year, "plots", "other", "Mean_len.png"), width = 1024, height = 1000)
-dev.off()
-
-multiplot(mean_dl[[3]], mean_dl[[4]], cols = 1)
-dev.print(png, file = here::here(new_year, "plots", "other", "Mean_dep.png"), width = 1024, height = 1000)
-dev.off()
 
 
 ## Plot environmental indices ----

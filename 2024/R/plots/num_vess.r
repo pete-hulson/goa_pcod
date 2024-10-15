@@ -4,32 +4,34 @@
 num_fish_vess <- function(CYR,
                           data_query = FALSE){
 
-  if(data_query == TRUE){
-    ## data pull for fishery data from AFSC database
-    test1<-paste0("SELECT council.comprehensive_blend_ca.week_end_date,
-    TO_CHAR(council.comprehensive_blend_ca.week_end_date, 'mm') AS month,
-    council.comprehensive_blend_ca.year,
-    council.comprehensive_blend_ca.vessel_id,
-    council.comprehensive_blend_ca.trip_target_code,
-    council.comprehensive_blend_ca.fmp_subarea,
-    council.comprehensive_blend_ca.fmp_gear,
-    council.comprehensive_blend_ca.weight_posted,
-    council.comprehensive_blend_ca.species_name,
-    council.comprehensive_blend_ca.trip_target_name,
-    council.comprehensive_blend_ca.reporting_area_code,
-    council.comprehensive_blend_ca.fmp_area
-    FROM council.comprehensive_blend_ca
-    WHERE council.comprehensive_blend_ca.species_name = 'cod, Pacific (gray)'
-    AND council.comprehensive_blend_ca.fmp_area = 'GOA'")
-    
-    dataC <- data.table(sqlQuery(CHINA, test1))
-    
-    # Save output
-    save(dataC, file = here::here(CYR, "output", "num_vess.RData"))}
+  # read in catch data for this
   
-  if(data_query == FALSE){
-    load(here::here(CYR, "output", "num_vess.RData"))}
-  
+  # if(data_query == TRUE){
+  #   ## data pull for fishery data from AFSC database
+  #   test1<-paste0("SELECT council.comprehensive_blend_ca.week_end_date,
+  #   TO_CHAR(council.comprehensive_blend_ca.week_end_date, 'mm') AS month,
+  #   council.comprehensive_blend_ca.year,
+  #   council.comprehensive_blend_ca.vessel_id,
+  #   council.comprehensive_blend_ca.trip_target_code,
+  #   council.comprehensive_blend_ca.fmp_subarea,
+  #   council.comprehensive_blend_ca.fmp_gear,
+  #   council.comprehensive_blend_ca.weight_posted,
+  #   council.comprehensive_blend_ca.species_name,
+  #   council.comprehensive_blend_ca.trip_target_name,
+  #   council.comprehensive_blend_ca.reporting_area_code,
+  #   council.comprehensive_blend_ca.fmp_area
+  #   FROM council.comprehensive_blend_ca
+  #   WHERE council.comprehensive_blend_ca.species_name = 'cod, Pacific (gray)'
+  #   AND council.comprehensive_blend_ca.fmp_area = 'GOA'")
+  #   
+  #   dataC <- data.table(sqlQuery(CHINA, test1))
+  #   
+  #   # Save output
+  #   save(dataC, file = here::here(CYR, "output", "num_vess.RData"))}
+  # 
+  # if(data_query == FALSE){
+  #   load(here::here(CYR, "output", "num_vess.RData"))}
+  # 
   dataC %>% 
     filter(MONTH %in% c(1:6) & TRIP_TARGET_CODE == "C") %>% 
     group_by(YEAR, FMP_GEAR, FMP_SUBAREA) %>% 

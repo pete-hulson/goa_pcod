@@ -170,8 +170,14 @@ get_catch_goa_pcod <- function(new_year = 9999){
     tidytable::mutate(total = discarded + retained) -> dr_tbl
   
   # Write out results
-  vroom::vroom_write(juris_gr_tbl, here::here(new_year, 'output', 'juris_gr_tbl.csv'), delim = ",")
-  vroom::vroom_write(dr_tbl, here::here(new_year, 'output', 'dr_tbl.csv'), delim = ",")
+  
+  # set up folder
+  if (!file.exists(here::here(new_year, 'tables'))) {
+    dir.create(here::here(new_year, 'tables'), recursive = TRUE)
+  }
+  
+  vroom::vroom_write(juris_gr_tbl, here::here(new_year, 'tables', 'juris_gr_tbl.csv'), delim = ",")
+  vroom::vroom_write(dr_tbl, here::here(new_year, 'tables', 'dr_tbl.csv'), delim = ",")
   
   # fcn return ----
   

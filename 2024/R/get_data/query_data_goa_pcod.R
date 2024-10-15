@@ -415,7 +415,7 @@ query_goa_pcod <- function(new_year = 9999,
                     species = fsh_sp,
                     area = fsh_subarea,
                     db = conn,
-                    add_fields = "akr_state_fishery_flag")
+                    add_fields = c("akr_state_fishery_flag", "vessel_id"))
   # query ADF&G data from 1997-2002 and write raw data to folder 
   dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -568,7 +568,7 @@ query_goa_pcod <- function(new_year = 9999,
                                           gear == 6 ~ 'pot',
                                           gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>% 
     dplyr::filter(!is.na(gear)) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_age_domestic_test.csv'), delim = ",")
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv'), delim = ",")
   capture.output(dplyr::show_query(afsc_age), 
                  file = here::here(new_year, "data", "sql", "fsh_age_domestic_sql.txt"))
   # print message when done

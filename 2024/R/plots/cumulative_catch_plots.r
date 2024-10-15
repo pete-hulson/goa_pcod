@@ -5,26 +5,29 @@ plot_cumulative<-function(data_query = FALSE,
                           fmp_area = "GOA",
                           cyr = 2024){
 
-  # get data ----
-  if(isTRUE(data_query)){
-    # get connected to akfin
-    db = 'akfin'
-    conn = afscdata::connect(db)
-    
-    # pull akfin catch table
-    syr = cyr - 5
-    dplyr::tbl(conn, dplyr::sql('council.comprehensive_blend_ca')) %>% 
-      dplyr::rename_all(tolower) %>% 
-      dplyr::filter(species_group_code == species,
-                    fmp_area == fmp_area,
-                    year > syr) %>% 
-      dplyr::select(year, species_group_code, fmp_area, fmp_subarea, fmp_gear, weight_posted, week_end_date) %>% 
-      collect() -> wed_c
-    
-    # Save output
-    save(wed_c, file = here::here(cyr, "output", "cumul_c.RData"))
-  } else{
-    load(here::here(cyr, "output", "cumul_c.RData"))}
+  # read from queried raw catch data
+  
+  
+  # # get data ----
+  # if(isTRUE(data_query)){
+  #   # get connected to akfin
+  #   db = 'akfin'
+  #   conn = afscdata::connect(db)
+  #   
+  #   # pull akfin catch table
+  #   syr = cyr - 5
+  #   dplyr::tbl(conn, dplyr::sql('council.comprehensive_blend_ca')) %>% 
+  #     dplyr::rename_all(tolower) %>% 
+  #     dplyr::filter(species_group_code == species,
+  #                   fmp_area == fmp_area,
+  #                   year > syr) %>% 
+  #     dplyr::select(year, species_group_code, fmp_area, fmp_subarea, fmp_gear, weight_posted, week_end_date) %>% 
+  #     collect() -> wed_c
+  #   
+  #   # Save output
+  #   save(wed_c, file = here::here(cyr, "output", "cumul_c.RData"))
+  # } else{
+  #   load(here::here(cyr, "output", "cumul_c.RData"))}
 
   # fcns ----
   cumul_catch = function(data, subarea, cyr, curr_wk){
