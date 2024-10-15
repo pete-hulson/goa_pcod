@@ -61,12 +61,15 @@ emailed data/
 emailed_data/
 retrospectives/
 LeaveOneOut/
+loo/
 MCMC/
 MCMC_nuts/
 output/
 jitter/
 llq/
 mgmnt_scenarios/
+mscen/
+profile/
 delta_glm_1-7-2.get
 ADFGsurvcatch.csv
 ADFGsurv_length.csv
