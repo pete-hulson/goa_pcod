@@ -255,10 +255,10 @@ retro_1e5cm <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", new_base_
 retrosumm_1e5cm <- r4ss::SSsummarize(retro_1e5cm)
 
 ## save results ----
-if (!dir.exists(here::here(new_year, "output", "retro"))) {
-  dir.create(here::here(new_year, "output", "retro"), recursive = TRUE)
-}
 if(isTRUE(full_run)){
+  if (!dir.exists(here::here(new_year, "output", "retro"))) {
+    dir.create(here::here(new_year, "output", "retro"), recursive = TRUE)
+  }
   save(retrosumm_1b, file = here::here(new_year, "output", "retro", "retrosumm_1b.RData"))
   save(retrosumm_1e5cm, file = here::here(new_year, "output", "retro", "retrosumm_1e5cm.RData"))
 }
@@ -294,10 +294,10 @@ loo_data <- data_loo(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
                      cyr = new_year)
 
 ## save results ----
-if (!dir.exists(here::here(new_year, "output", "loo"))) {
-  dir.create(here::here(new_year, "output", "loo"), recursive = TRUE)
-}
 if(isTRUE(full_run)){
+  if (!dir.exists(here::here(new_year, "output", "loo"))) {
+    dir.create(here::here(new_year, "output", "loo"), recursive = TRUE)
+  }
   save(loo_year, file = here::here(new_year, "output", "loo", "loo_year.RData"))
   save(loo_data, file = here::here(new_year, "output", "loo", "loo_data.RData"))
   write.csv(loo_year[[1]], here::here(new_year, "output", "loo", "loo_year_table.csv"))
@@ -340,10 +340,10 @@ jitter_loglike <- r4ss::jitter(dir = here::here(new_year, "mgmt", new_base_lcomp
                                verbose = FALSE)
 
 ## save results ----
-if (!dir.exists(here::here(new_year, "output", "jitter"))) {
-  dir.create(here::here(new_year, "output", "jitter"), recursive = TRUE)
-}
 if(isTRUE(full_run)){
+  if (!dir.exists(here::here(new_year, "output", "jitter"))) {
+    dir.create(here::here(new_year, "output", "jitter"), recursive = TRUE)
+  }
   write.csv(jitter_loglike, here::here(new_year, "output", "jitter", "jitter_table.csv"))
 }
 
@@ -359,7 +359,7 @@ tictoc::tic()
 # names for parameters to profile over (used as folder names)
 params <- c("r", "m", "m14", "q_twl", "q_ll", "q_ll_env")
 # define line numbers for params in ctl
-linenums = c(85, 57, 73, 137, 138, 147)
+linenums = c(84, 56, 72, 136, 137, 146)
 # define parameter value vector
 if(isTRUE(full_run)){
   profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
