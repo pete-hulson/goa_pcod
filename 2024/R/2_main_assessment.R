@@ -355,63 +355,43 @@ jitter_time <- tictoc::toc(quiet = TRUE)
 # start timer
 tictoc::tic()
 
-## get needed stuff ----
-# get model executable name
-exe_name <- ss3_exename(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5))
+## define parameter specs for profiling ----
 # names for parameters to profile over (used as folder names)
-params <- c("r", "m", "m14", "q_twl")
+params <- c("r", "m", "m14", "q_twl", "q_ll", "q_ll_env")
 # define line numbers for params in ctl
-linenums = c(85, 57, 73, 137)
-# set up an index vector defining which year is being left-out
-idx = seq(1, length(params))
-# create restults folder
-if (!dir.exists(here::here(new_year, "output", "profile"))) {
-  dir.create(here::here(new_year, "output", "profile"), recursive = TRUE)
-}
+linenums = c(85, 57, 73, 137, 138, 147)
 # define parameter value vector
 if(isTRUE(full_run)){
   profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
                      m = seq(0.41, 0.57, by = 0.02),
-                     seq(0.73, 0.89, by = 0.02),
-                     seq(0.17, 0.33, by = 0.02))
+                     m14 = seq(0.73, 0.89, by = 0.02),
+                     q_twl = seq(0.17, 0.33, by = 0.02),
+                     q_ll = seq(0.07, 0.23, by = 0.02),
+                     q_ll_env = seq(0.84, 1, by = 0.02))
 } else{
   profilevec <- list(rec = c(12, 13, 14),
                      m = c(0.4, 0.5, 0.6),
                      m14 = c(0.7, 0.8, 0.9),
-                     q_twl = c(0.2, 0.25, 0.3))
+                     q_twl = c(0.2, 0.25, 0.3),
+                     q_ll = c(0.1, 0.15, 0.2),
+                     q_ll_env = c(0.8, 0.9, 1))
 }
 
-## run profiles ----
-# Get the number of available cores
-num_cores <- parallel::detectCores()
-if(num_cores > length(params)) num_cores = length(params)
-# Set the number of cores to be used for parallel computing
-doParallel::registerDoParallel(cores = num_cores)
-# run in parallel
-foreach::foreach(i = idx) %dopar% {
-  # run the profile
-  run_profile(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
-                          mod_ctl = "Model19_1e.ctl",
-                          folder = params[i],
-                          profilevec = profilevec[[i]],
-                          linenum = linenums[i])
-  ## write results ----
-  if(isTRUE(full_run)){
-    res_prof <- r4ss::SSgetoutput(dirvec = here(new_year, "mgmt", new_base_lcomp_bin5, "profile", params[i]),
-                                  keyvec = 1:length(profilevec[[i]]))
-    summ_prof <- r4ss::SSsummarize(res_prof)
-    save(summ_prof, file = here::here(new_year, "output", "profile", paste0(params[i], "_prof.RData")))
-  }
-}
-
-# Stop parallel computing
-doParallel::stopImplicitCluster()
+##run profiles in parallel ----
+run_profile(mdl_dir = here::here(new_year, "mgmt", new_base_lcomp_bin5),
+            res_dir = here::here(new_year, "output", "profile"),
+            params = params,
+            profilevec = profilevec,
+            linenum = linenums,
+            mod_ctl = "Model19_1e.ctl",
+            full_run = full_run)
 
 # end timer
 prof_time <- tictoc::toc(quiet = TRUE)
 
 # compute full run time ----
 if(!isTRUE(full_run)){
+  # total test time
   test_time <- round(((as.numeric(strsplit(mdl_time$callback_msg, split = " ")[[1]][1])) / 60) +
                        ((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) +
                        ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1])) / 60) +
@@ -420,7 +400,7 @@ if(!isTRUE(full_run)){
                        ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1])) / 60) +
                        ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60), digits = 1)
   cat("Test time took", crayon::red$bold$underline$italic(test_time), "minutes", "\u2693","\n")
-
+  # estimated run time
   runtime <- round(((as.numeric(strsplit(mdl_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                      ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
