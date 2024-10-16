@@ -21,58 +21,67 @@ llq <- function(dir = NULL,
                        dir.new = here::here(dir, "llq", "no_cov"),
                        copy_par = TRUE,
                        copy_exe = TRUE,
-                       overwrite = TRUE)
+                       overwrite = TRUE,
+                       verbose = FALSE)
   # for random covariate
   r4ss::copy_SS_inputs(dir.old = dir, 
                        dir.new = here::here(dir, "llq", "rand_cov"),
                        copy_par = TRUE,
                        copy_exe = TRUE,
-                       overwrite = TRUE)
+                       overwrite = TRUE,
+                       verbose = FALSE)
 
-  
   # run no llq covariate ----
   
   ## turn off llq covariate in ctl ----
-  ctl <- r4ss::SS_readctl_3.30(here::here(dir, ctl_filename))
+  ctl <- r4ss::SS_readctl_3.30(here::here(dir, ctl_filename),
+                               verbose = FALSE)
   ctl$Q_parms$`env_var&link` = 0
   ctl$Q_parms_tv = NULL
   r4ss::SS_writectl_3.30(ctllist = ctl,
                          outfile = here::here(dir, "llq", "no_cov",ctl_filename),
-                         overwrite = TRUE)
+                         overwrite = TRUE,
+                         verbose = FALSE)
 
   ## change starter file ----
   # read starter file
-  starter <- r4ss::SS_readstarter(here::here(dir, "llq", "no_cov", "starter.ss"))
+  starter <- r4ss::SS_readstarter(here::here(dir, "llq", "no_cov", "starter.ss"),
+                                  verbose = FALSE)
   # change init vals source
   starter$init_values_src <- 0
   # write modified starter file
   r4ss::SS_writestarter(starter, 
                         dir = here::here(dir, "llq", "no_cov"), 
-                        overwrite = TRUE)
+                        overwrite = TRUE,
+                        verbose = FALSE)
 
   ## run model ----
   r4ss::run(dir = here::here(dir, "llq", "no_cov"),
             skipfinished = FALSE,
-            show_in_console = TRUE)
+            show_in_console = FALSE,
+            verbose = FALSE)
 
   
   # white noise llq covariate ----
   
   ## change starter file ----
   # read starter file
-  starter <- r4ss::SS_readstarter(here::here(dir, "llq", "rand_cov", "starter.ss"))
+  starter <- r4ss::SS_readstarter(here::here(dir, "llq", "rand_cov", "starter.ss"),
+                                  verbose = FALSE)
   # change init vals source
   starter$init_values_src <- 0
   # write modified starter file
   r4ss::SS_writestarter(starter, 
                         dir = here::here(dir, "llq", "rand_cov"), 
-                        overwrite = TRUE)
+                        overwrite = TRUE,
+                        verbose = FALSE)
   
   ## read in ss3 data ----
   # define datafile name
   datafilename <- list.files(dir, pattern = "GOAPcod")
   # get datafile input
-  datafile <- r4ss::SS_readdat_3.30(here::here(dir, datafilename))
+  datafile <- r4ss::SS_readdat_3.30(here::here(dir, datafilename),
+                                    verbose = FALSE)
 
   ## run models ----
   # determine number of iterations
@@ -164,17 +173,18 @@ llq_rand <- function(dat = NULL,
   # write datafile
   r4ss::SS_writedat_3.30(dat,
                          here::here(dir, datafilename), 
-                         overwrite = TRUE)
+                         overwrite = TRUE,
+                         verbose = FALSE)
   # run model
   r4ss::run(dir = dir,
             skipfinished = FALSE,
-            show_in_console = TRUE)
+            show_in_console = FALSE,
+            verbose = FALSE)
   # read the model output and save
   res <- r4ss::SS_output(dir = dir,
                          verbose = FALSE,
                          printstats = FALSE)
   # format likelihood results
-  
   res$likelihoods_used %>% 
     tidytable::mutate(like_compon = rownames(res$likelihoods_used)) %>% 
     tidytable::select(like_compon, values) %>% 

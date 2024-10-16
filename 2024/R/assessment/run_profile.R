@@ -36,20 +36,23 @@ run_profile <- function(mdl_dir = NULL,
     R.utils::copyDirectory(mdl_dir, here::here(mdl_dir, "profile", params[i]), recursive = FALSE)
 
     # read starter file
-    starter <- r4ss::SS_readstarter(here::here(mdl_dir, "profile", params[i], "starter.ss"))
+    starter <- r4ss::SS_readstarter(here::here(mdl_dir, "profile", params[i], "starter.ss"),
+                                    verbose = FALSE)
     # change init vals source
     starter$init_values_src <- 0
     # write modified starter file
     r4ss::SS_writestarter(starter, 
                           dir = here::here(mdl_dir, "profile", params[i]), 
-                          overwrite = TRUE)
+                          overwrite = TRUE,
+                          verbose = FALSE)
 
     # run profile
     r4ss::profile(dir = here::here(mdl_dir, "profile", params[i]),
                   oldctlfile = mod_ctl,
                   newctlfile = mod_ctl,
                   linenum = linenum[i],
-                  profilevec = profilevec[[i]])
+                  profilevec = profilevec[[i]],
+                  verbose = FALSE)
 
     ## write results ----
     if(isTRUE(full_run)){
@@ -59,8 +62,10 @@ run_profile <- function(mdl_dir = NULL,
       }
       # get results
       res_prof <- r4ss::SSgetoutput(dirvec = here::here(mdl_dir, "profile", params[i]),
-                                    keyvec = 1:length(profilevec[[i]]))
-      summ_prof <- r4ss::SSsummarize(res_prof)
+                                    keyvec = 1:length(profilevec[[i]]),
+                                    verbose = FALSE)
+      summ_prof <- r4ss::SSsummarize(res_prof,
+                                     verbose = FALSE)
       # write results
       save(summ_prof, file = here::here(res_dir, paste0(params[i], "_prof.RData")))
     }

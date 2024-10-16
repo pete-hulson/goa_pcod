@@ -27,7 +27,8 @@ year_loo <- function(dir = NULL,
   # define datafile name
   datafilename <- list.files(dir, pattern = "GOAPcod")
   # get datafile input
-  datafile <- r4ss::SS_readdat_3.30(here::here(dir, datafilename))
+  datafile <- r4ss::SS_readdat_3.30(here::here(dir, datafilename),
+                                    verbose = FALSE)
 
   ## prep models ----
   for(i in idx){
@@ -36,7 +37,8 @@ year_loo <- function(dir = NULL,
                          dir.new = here::here(dir, "loo", "year", loo_mdls[i]),
                          copy_par = TRUE,
                          copy_exe = TRUE,
-                         overwrite = TRUE)
+                         overwrite = TRUE,
+                         verbose = FALSE)
     
     # Change up data file for LOO
     cpue <- data.table::data.table(datafile$CPUE)
@@ -56,7 +58,8 @@ year_loo <- function(dir = NULL,
     # Write out data script
     r4ss::SS_writedat_3.30(datafile2,
                            here::here(dir, "loo", "year", loo_mdls[i], datafilename),
-                           overwrite = TRUE)
+                           overwrite = TRUE,
+                           verbose = FALSE)
   }
   
   ## Run scenarios ----
@@ -81,7 +84,8 @@ year_loo <- function(dir = NULL,
   doParallel::stopImplicitCluster()
   
   # Compile output ----
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "year", loo_mdls))
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "year", loo_mdls),
+                                verbose = FALSE)
   
   Nat_M <- array()
   Q <- array()
@@ -113,7 +117,8 @@ year_loo <- function(dir = NULL,
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', cyr + 1)]$StdDev
   }
   
-  mods0 <- r4ss::SSgetoutput(dirvec = dir)
+  mods0 <- r4ss::SSgetoutput(dirvec = dir,
+                             verbose = FALSE)
   
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)
@@ -228,10 +233,12 @@ data_loo <- function(dir = NULL,
   
   # read in previous assessment ss3 datafile
   old_datafilename <- list.files(here::here(cyr, "data"), pattern = "GOAPcod")
-  old_datafile <- r4ss::SS_readdat_3.30(here::here(cyr, "data", old_datafilename))
+  old_datafile <- r4ss::SS_readdat_3.30(here::here(cyr, "data", old_datafilename),
+                                        verbose = FALSE)
   # read in current assessment ss3 datafile
   new_datafilename <- list.files(dir, pattern = "GOAPcod")
-  new_datafile <- r4ss::SS_readdat_3.30(here::here(dir, new_datafilename))
+  new_datafile <- r4ss::SS_readdat_3.30(here::here(dir, new_datafilename),
+                                        verbose = FALSE)
   # find added cpue data
   new_datafile$CPUE %>% 
     tidytable::select(year, index) %>% 
@@ -296,7 +303,8 @@ data_loo <- function(dir = NULL,
                          dir.new = here::here(dir, "loo", "data", loo_mdls[i]),
                          copy_par = TRUE,
                          copy_exe = TRUE,
-                         overwrite = TRUE)
+                         overwrite = TRUE,
+                         verbose = FALSE)
     
     # Change up data file for LOO
     cpue <- data.table::data.table(new_datafile$CPUE)
@@ -347,7 +355,8 @@ data_loo <- function(dir = NULL,
     # Write out data script
     r4ss::SS_writedat_3.30(datafile2,
                            here::here(dir, "loo", "data", loo_mdls[i], datafilename),
-                           overwrite = TRUE)
+                           overwrite = TRUE,
+                           verbose = FALSE)
   }
   
   ## Run scenarios ----
@@ -367,7 +376,8 @@ data_loo <- function(dir = NULL,
   
   
   # Compile output ----
-  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "data", loo_mdls))
+  LOO_mods <- r4ss::SSgetoutput(dirvec = here::here(dir, "loo", "data", loo_mdls),
+                                verbose = FALSE)
   
   Nat_M <- array()
   Q <- array()
@@ -399,7 +409,8 @@ data_loo <- function(dir = NULL,
     ABCfore_SD[i] <- y[Label == paste0('ForeCatch_', cyr + 1)]$StdDev
   }
   
-  mods0 <- r4ss::SSgetoutput(dirvec = dir)
+  mods0 <- r4ss::SSgetoutput(dirvec = dir,
+                             verbose = FALSE)
   
   x0 <- data.table(mods0[[1]]$parameters)
   y0 <- data.table(mods0[[1]]$derived_quants)

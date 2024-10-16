@@ -9,21 +9,10 @@ ss3_exename <- function(dir,
                         supported_os = c("Windows", "Darwin"), 
                         executables = list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx"))){
   
-  # Get the operating system information ----
+  # Get the operating system information
   os_info <- Sys.info()
-  
-  # Check the operating system
-  supported_os <- c("Windows", "Darwin")
-  if (os_info["sysname"] %in% supported_os) {
-    # Code to execute if the operating system is supported
-    print(paste(os_info["sysname"], "operating system detected and supported."))
-  } else {
-    # Code to execute if the operating system is unknown or unsupported
-    print("Unknown or unsupported operating system.")
-    stop()
-  }
-  
-  # figure out the ss3 executable name to run ----
+
+  # figure out the ss3 executable name to run
   # list the possible exes
   executables <- list("Windows" = c("ss.exe", "ss3.exe"), "Darwin" = c("ss_osx"))
   # set the exe name
@@ -58,6 +47,9 @@ run_ss3_model <- function(asmnt_yr = NULL,
                           ctl_filename = NULL,
                           iters = 2){
 
+  # load fcns
+  source(here::here(asmnt_yr, "R", "utils.R"), local = TRUE)
+  
   # set init values in starter file to 0
   mdl_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, "starter.ss"))
   mdl_starter$init_values_src = 0
@@ -68,7 +60,8 @@ run_ss3_model <- function(asmnt_yr = NULL,
   # run model
   r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
             skipfinished = FALSE,
-            show_in_console = TRUE)
+            show_in_console = FALSE,
+            verbose = FALSE)
   
   # now, iterate model iters times to settle on recruitment bias ramp
   purrr::map(1:iters, ~get_recr_ramp(asmnt_yr, folder, mdl, ctl_filename))
@@ -89,7 +82,9 @@ run_ss3_model <- function(asmnt_yr = NULL,
 #' 
 get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
   # update recruitment bias ramp ests in ctl file
-  mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl))
+  mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl),
+                             verbose = FALSE,
+                             printstats = FALSE)
   rec_ramp <- r4ss::SS_fitbiasramp(mdl_res)
   ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
   ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
@@ -103,7 +98,8 @@ get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
   # run model
   r4ss::run(dir = here::here(asmnt_yr, folder, mdl),
             skipfinished = FALSE,
-            show_in_console = TRUE)
+            show_in_console = FALSE,
+            verbose = FALSE)
 }
 
 #' function to update ss3 model dat, ctl, and starter files
@@ -111,15 +107,13 @@ get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
 #' @param folder root foloder containing models (default = NULL)
 #' @param mdl name of model to run (default = NULL)
 #' @param dat_filename name of dat file  to update (default = NULL)
-#' @param ctl_in name of ctl file in 'output' folder that has been updated (default = NULL)
-#' @param ctl_out name of ctl file to be writtin in model folder (default = NULL)
+#' @param ctl_filename name of ctl file in 'output' folder that has been updated (default = NULL)
 #' 
 update_ss3_files <- function(asmnt_yr = NULL, 
                              folder = NULL,
                              mdl = NULL, 
                              dat_filename = NULL,
-                             ctl_in = NULL,
-                             ctl_out){
+                             ctl_filename = NULL){
   
   # update dat file
   # Remove previous dat files
@@ -136,13 +130,13 @@ update_ss3_files <- function(asmnt_yr = NULL,
     file.remove(here::here(asmnt_yr, folder, mdl, list.files(here::here(asmnt_yr, folder, mdl), pattern = ".ctl")))
   }
   # copy new ctl file
-  file.copy(here::here(asmnt_yr, 'output', 'mdl_input', ctl_in),
-            here::here(asmnt_yr, folder, mdl, ctl_out))
+  file.copy(here::here(asmnt_yr, 'output', 'mdl_input', ctl_filename),
+            here::here(asmnt_yr, folder, mdl, ctl_filename))
   
   # set up starter file
   old_starter <- r4ss::SS_readstarter(file = here::here(asmnt_yr, folder, mdl, 'starter.ss'))
   old_starter$datfile <- dat_filename
-  old_starter$ctlfile <- ctl_out
+  old_starter$ctlfile <- ctl_filename
   old_starter$init_values_src = 0
   r4ss::SS_writestarter(mylist = old_starter,
                         dir = here::here(asmnt_yr, folder, mdl),

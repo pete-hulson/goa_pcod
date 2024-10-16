@@ -38,7 +38,8 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	# set up scenario 1 model folder
 	R.utils::copyDirectory(dir, here::here(dir, "mscen", "scenario_1"), recursive = FALSE)
 	# read forecast file and set scenario 1 params
-	scenario_1 <- r4ss::SS_readforecast(file = here::here(dir, "forecast.ss"))
+	scenario_1 <- r4ss::SS_readforecast(file = here::here(dir, "forecast.ss"),
+	                                    verbose = FALSE)
 	scenario_1$Btarget   <- 0.4
 	scenario_1$SPRtarget <- 0.4
 	scenario_1$Flimitfraction <- 1.0
@@ -46,23 +47,28 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	                       dir = here::here(dir, "mscen", "scenario_1"), 
 	                       file = "forecast.ss", 
 	                       writeAll = TRUE, 
-	                       overwrite = TRUE)
+	                       overwrite = TRUE,
+	                       verbose = FALSE)
 	# get number of forecast years (for tables later)
 	fcasty <- scenario_1$Nforecastyrs
 	# set starter to start at params
-	mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", "scenario_1", "starter.ss"))
+	mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", "scenario_1", "starter.ss"),
+	                                    verbose = FALSE)
 	mdl_starter$init_values_src = 1
 	r4ss::SS_writestarter(mdl_starter, 
 	                      dir = here::here(dir, "mscen", "scenario_1"),
-	                      overwrite = TRUE)
+	                      overwrite = TRUE,
+	                      verbose = FALSE)
 	# get results from report file for base model (for tables later)
-	rep1 <- r4ss::SS_output(dir = dir)
+	rep1 <- r4ss::SS_output(dir = dir,
+	                        verbose = FALSE,
+	                        printstats = FALSE)
 	# run scenario 1 first to get the forecast parameters for scenarios 6 and 7
 	r4ss::run(dir = here::here(dir, "mscen", "scenario_1"),
 	          exe = exe_name,
 	          skipfinished = FALSE, 
-	          verbose = TRUE,
-	          show_in_console = TRUE)
+	          verbose = FALSE,
+	          show_in_console = FALSE)
 
 	# run models in parallel ---- 
 	# Define the list of remaining scenarios
@@ -79,7 +85,8 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	foreach::foreach(scenario = scenarios) %dopar% {
 
 	  # read forecast file
-	  scenario_C <- r4ss::SS_readforecast(file = here::here(dir, "mscen", "scenario_1", "forecast.ss"))
+	  scenario_C <- r4ss::SS_readforecast(file = here::here(dir, "mscen", "scenario_1", "forecast.ss"),
+	                                      verbose = FALSE)
 	  
 	  # Create a directory for the scenario
 	  dir.create(here::here(dir, "mscen", scenario), recursive = TRUE, showWarnings = FALSE)
@@ -143,20 +150,23 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	                         dir = here::here(dir, "mscen", scenario), 
 	                         file = "forecast.ss", 
 	                         writeAll = TRUE, 
-	                         overwrite = TRUE)
+	                         overwrite = TRUE,
+	                         verbose = FALSE)
 	  # set starter to start at params
-	  mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", scenario, "starter.ss"))
+	  mdl_starter <- r4ss::SS_readstarter(file = here::here(dir, "mscen", scenario, "starter.ss"),
+	                                      verbose = FALSE)
 	  mdl_starter$init_values_src = 1
 	  r4ss::SS_writestarter(mdl_starter, 
 	                        dir = here::here(dir, "mscen", scenario),
-	                        overwrite = TRUE)
+	                        overwrite = TRUE,
+	                        verbose = FALSE)
 	  
 	  # Run the scenario
 	  r4ss::run(dir = here::here(dir, "mscen", scenario),
 	            exe = exe_name,
 	            skipfinished = FALSE, 
-	            verbose = TRUE,
-	            show_in_console = TRUE)
+	            verbose = FALSE,
+	            show_in_console = FALSE)
 	}
 	
 	# Stop parallel computing
@@ -169,7 +179,8 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	
 	# get model outputs
 	scenarios <- c("scenario_1", scenarios)
-	mods1 <- r4ss::SSgetoutput(dirvec = here::here(dir, "mscen", scenarios))
+	mods1 <- r4ss::SSgetoutput(dirvec = here::here(dir, "mscen", scenarios),
+	                           verbose = FALSE)
 
 	# kluge to deal with column name change between versions
 	kluge1 <- data.table(mods1[[1]]$sprseries)$F_report[1]

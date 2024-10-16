@@ -250,7 +250,9 @@ old_ctl$MG_parms_tv <- old_ctl$MG_parms_tv[-which(rownames(old_ctl$MG_parms_tv) 
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_year, "output", "mdl_input", "Model19_1d.ctl"),
                        overwrite = TRUE)
-
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1e.ctl"),
+                       overwrite = TRUE)
 
 
 
