@@ -1,18 +1,49 @@
+# script to compile tables for safe document
+# developed in 2024 by p hulson
 
 
+# load necessary packages ----
+## cran packages ----
+pkg_cran <- c("tidyverse",
+              "vroom",
+              "here")
 
+# if not installed, then install
+if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
+  install.packages(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE)])
+}
 
-# SAFE catch tables ----
+# load packages
+lapply(pkg_cran, library, character.only = TRUE)
 
+## github packages ----
+pkg_git <- c("r4ss",
+             "afscdata")
 
+# if not installed, then install
+if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
+  devtools::install_github("r4ss/r4ss", force = TRUE)
+}
+if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
+  devtools::install_github("afsc-assessments/afscdata", force = TRUE)
+}
 
+# load packages
+lapply(pkg_git, library, character.only = TRUE)
+
+# set up ----
+
+# get connected
+db = 'akfin'
+conn = afscdata::connect(db)  
+
+# Current assessment year
+new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+
+# set up directly to plop tables into
 if (!dir.exists(here::here(new_year, "tables"))) {
   dir.create(here::here(new_year, "tables"), recursive = TRUE)
 }
-
-
-
-
 
 # catch by gear type and jurisdiction ----
 
@@ -118,15 +149,29 @@ vroom::vroom_write(dr_tbl, here::here(new_year, 'tables', 'dr_tbl.csv'), delim =
 
 # bycatch table ----
 
+vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'))
+
+
+
+
+
+
+
+
+
+
+
+
+# non-target table ----
+
 afscdata::q_nontarget(year = new_year,
                       target = "c",
                       area = "goa",
                       db = conn,
-                      save = FALSE)
-
-# non-target table ----
-
-
+                      save = FALSE) %>%
+  tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
+                    across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) %>% 
+  vroom::vroom_write(., here::here(new_year, 'tables', 'nontarget.csv'), delim = ",")
 
 
 # prohib species table ----

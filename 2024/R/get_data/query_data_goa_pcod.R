@@ -410,13 +410,13 @@ query_goa_pcod <- function(new_year = 9999,
   
   ## catch data ----
   cat("\u231b", crayon::blue("working on catch query..."), "\n")
-  # query catch data and write raw data to folder 
+  ### query catch data and write raw data to folder ----
   afscdata::q_catch(year = new_year,
                     species = fsh_sp,
                     area = fsh_subarea,
                     db = conn,
                     add_fields = c("akr_state_fishery_flag", "vessel_id"))
-  # query ADF&G data from 1997-2002 and write raw data to folder 
+  ### query ADF&G data from 1997-2002 and write raw data to folder ----
   dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
     dplyr::rename_all(tolower) %>% 
     dplyr::select(akfin_year,
@@ -437,6 +437,28 @@ query_goa_pcod <- function(new_year = 9999,
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), delim = ",")
   capture.output(dplyr::show_query(adfg_q), 
                  file = here::here(new_year, "data", "sql", "adfg_catch_sql.txt"))
+  ### query bycatch in pcod target fishery ----
+  dplyr::tbl(conn, dplyr::sql('council.comprehensive_blend_ca')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(year,                   
+                  fmp_area,
+                  species_group_code,
+                  species_name,          
+                  retained_or_discarded,            
+                  trip_target_code,                 
+                  trip_target_name,                      
+                  weight_posted) %>% 
+    dplyr::filter(fmp_area == "GOA",
+                  trip_target_code == "C",
+                  species_group_code != "PCOD",
+                  year >= new_year - 4) %>% 
+    dplyr::summarise(catch = round(sum(weight_posted), digits = 2),
+                     .by = c(year, species_name, retained_or_discarded)) -> bycatch_q
+  
+  dplyr::collect(bycatch_q) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'bycatch.csv'), delim = ",")
+  capture.output(dplyr::show_query(bycatch_q), 
+                 file = here::here(new_year, "data", "sql", "bycatch_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
