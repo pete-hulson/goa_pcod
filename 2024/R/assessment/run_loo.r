@@ -468,7 +468,7 @@ data_loo <- function(dir = NULL,
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
-               aes(yintercept = value), size = 1.25, linetype = 2, color = "red") +
+               aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
     theme_bw(base_size = 16) +
     labs(x = 'Leave one out data', y = 'Parameter value') +
     theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +

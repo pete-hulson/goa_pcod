@@ -85,7 +85,8 @@ get_recr_ramp <- function(asmnt_yr, folder, mdl, ctl_filename){
   mdl_res <- r4ss::SS_output(dir = here::here(asmnt_yr, folder, mdl),
                              verbose = FALSE,
                              printstats = FALSE)
-  rec_ramp <- r4ss::SS_fitbiasramp(mdl_res)
+  rec_ramp <- r4ss::SS_fitbiasramp(mdl_res,
+                                   plot = FALSE)
   ctl <- r4ss::SS_readctl_3.30(here::here(asmnt_yr, folder, mdl, ctl_filename))
   ctl$last_early_yr_nobias_adj <- rec_ramp$newbias$par[1]
   ctl$first_yr_fullbias_adj <- rec_ramp$newbias$par[2]

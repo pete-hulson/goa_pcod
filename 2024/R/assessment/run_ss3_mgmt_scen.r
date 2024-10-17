@@ -330,7 +330,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
 	  Figs_SSB <- list()
 	  
 	  Figs_SSB[['ALL']] <- ggplot(summ2[model %in% unique(summ2$model)[1:10]], aes(x = Yr, y = SSB, color = model, linetype = model)) +
-	    geom_line(size = 1.2) +
+	    geom_line(linewidth = 1.2) +
 	    lims(y = c(0, max(summ2$UCI)), x = c(cyr - 1, eyr)) +
 	    theme_bw(base_size = 12) +
 	    labs(x = "Year", y = "Spawning biomass (t)", title = "Projections") +

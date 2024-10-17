@@ -59,8 +59,10 @@ lapply(pkg_git, library, character.only = TRUE)
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 ## load functions ----
-source(here::here(new_year, "R", "assessment", "run_mdl_vrnts.R"))
-source(here::here(new_year, "R", "assessment", "run_mdl_anlys.R"))
+source_files <- c(list.files(here::here(new_year, "R", "assessment"), pattern = "*.r$"),
+                  list.files(here::here(new_year, "R", "assessment"), pattern = "*.R$"))
+purrr::map(here::here(new_year, "R", "assessment", source_files), source)
+source(here::here(new_year, "R", "utils.R"))
 
 ## remove previous runs and results ----
 unlink(here::here(new_year, "mgmt"), recursive = TRUE)
