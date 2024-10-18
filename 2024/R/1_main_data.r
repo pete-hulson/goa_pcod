@@ -214,7 +214,10 @@ old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- new_year
 old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
 
 # reset end year for recr_devs
-old_ctl$MainRdevYrLast <- new_year - 2
+# note: when fcast_rec_option = 0 in forecast file, then use the following:
+# old_ctl$MainRdevYrLast <- new_year - 2
+# note: when fcast_rec_option = 4 in forecast file, then use the following:
+old_ctl$MainRdevYrLast <- new_year
 
 ## write model 2019.1b ctl ----
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
@@ -234,7 +237,7 @@ r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_year, "output", "mdl_input", "Model19_1c.ctl"),
                        overwrite = TRUE)
 
-## write model 2019.1d ctl ----
+## write model 2019.1d and 2019.1e ctls ----
 # remove ageing error sds
 old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"),]
 old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm2"),]

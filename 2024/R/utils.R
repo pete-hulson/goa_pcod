@@ -149,7 +149,7 @@ update_ss3_files <- function(asmnt_yr = NULL,
   forecast$Bmark_years <- c(-999, -2, -999, -2, -999, -1, -999, -2, -999, -2)
   forecast$Fcast_years <- c(2000, -2, -5, -1, -999, -2)
   # change forecast recruitment option
-  forecast$fcast_rec_option <- 3
+  forecast$fcast_rec_option <- 4
   r4ss::SS_writeforecast(mylist = forecast,
                          dir = here::here(asmnt_yr, folder, mdl),
                          overwrite = TRUE)
