@@ -1,7 +1,7 @@
 #C file created using an r4ss function
-#C file write time: 2024-10-15  12:06:48
+#C file write time: 2024-10-17  12:08:23
 #
-GOAPcod2024Oct10_1e.dat #_datfile
+GOAPcod2024Oct17_1e.dat #_datfile
 Model19_1e.ctl #_ctlfile
 1 #_init_values_src
 1 #_run_display_detail

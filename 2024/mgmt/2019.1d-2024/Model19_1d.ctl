@@ -1,5 +1,5 @@
 #C file created using an r4ss function
-#C file write time: 2024-10-15  11:54:51
+#C file write time: 2024-10-17  12:03:17
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -91,18 +91,18 @@
 -10	10	-0.523818	0	0	0	1	#_SR_regime_BLK5add_1976
 2 #do_recdev:  0=none; 1=devvector (R=F(SSB)+dev); 2=deviations (R=F(SSB)+dev); 3=deviations (R=R0*dev; dev2=R-f(SSB)); 4=like 3 with sum(dev2) adding penalty
 1978 # first year of main recr_devs; early devs can preceed this era
-2022 # last year of main recr_devs; forecast devs start in following year
+2024 # last year of main recr_devs; forecast devs start in following year
 1 #_recdev phase
 1 # (0/1) to read 13 advanced options
 1967 #_recdev_early_start (0=none; neg value makes relative to recdev_start)
 2 #_recdev_early_phase
 -1 #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
 1 #_lambda for Fcast_recr_like occurring before endyr+1
-1960.83480327847 #_last_yr_nobias_adj_in_MPD; begin of ramp
-1987.38797480994 #_first_yr_fullbias_adj_in_MPD; begin of plateau
-2021.7179883046 #_last_yr_fullbias_adj_in_MPD
-2022.92702573918 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
-0.913998942258436 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
+1961.06427751664 #_last_yr_nobias_adj_in_MPD; begin of ramp
+1987.44406388285 #_first_yr_fullbias_adj_in_MPD; begin of plateau
+2021.66924564897 #_last_yr_fullbias_adj_in_MPD
+2023.08085354522 #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS sets bias_adj to 0.0 for fcast yrs)
+0.914679615926096 #_max_bias_adj_in_MPD (-1 to override ramp and set biasadj=1.0 for all estimated recdevs)
 0 #_period of cycles in recruitment (N parms read below)
 -5 #min rec_dev
 5 #max rec_dev

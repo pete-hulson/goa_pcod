@@ -1,5 +1,5 @@
 #C file created using an r4ss function
-#C file write time: 2024-10-15  11:35:38
+#C file write time: 2024-10-17  12:06:21
 #
 0 # 0 means do not read wtatage.ss; 1 means read and usewtatage.ss and also read and use growth parameters
 1 #_N_Growth_Patterns
@@ -100,7 +100,7 @@
 -10	10	-0.523818	0	0	0	1	#_SR_regime_BLK5add_1976
 2 #do_recdev:  0=none; 1=devvector (R=F(SSB)+dev); 2=deviations (R=F(SSB)+dev); 3=deviations (R=R0*dev; dev2=R-f(SSB)); 4=like 3 with sum(dev2) adding penalty
 1978 # first year of main recr_devs; early devs can preceed this era
-2022 # last year of main recr_devs; forecast devs start in following year
+2024 # last year of main recr_devs; forecast devs start in following year
 1 #_recdev phase
 1 # (0/1) to read 13 advanced options
 1967 #_recdev_early_start (0=none; neg value makes relative to recdev_start)
