@@ -324,10 +324,10 @@ dev.off()
 
 ## Plot Leave-One-Out analysis results ----
 
-load(here::here(new_year, "output", "LOO.RData"))
+load(here::here(new_year, "output", "loo", "loo_data.RData"))
 
 # Plot parameters from Leave one out
-LOO[[2]]
+loo_data[[2]]
 dev.print(png, file = here::here(new_year, "plots", "other", "LOO.png"), width = 700, height = 700)
 dev.off()
 
