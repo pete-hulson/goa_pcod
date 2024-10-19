@@ -251,6 +251,8 @@ run_mdl_anlys <- function(new_year = NULL,
   
   # run mcmc ----
   if(isTRUE(run_mcmc)){
+    cat("\u231b", crayon::blue("working on mcmcs..."), "\n")
+    
     ## define number of iterations ----
     if(isTRUE(full_run)){
       iter <- 350000
@@ -327,7 +329,7 @@ run_mdl_anlys <- function(new_year = NULL,
       save(mcmc_adnut, file = here::here(new_year, "output", "mcmc", "mcmc_adnut.RData"))
       save(mcmc_eval, file = here::here(new_year, "output", "mcmc", "mcmc_eval.RData"))
     }
-    
+    cat(crayon::green$bold("\u2713"), crayon::blue("mcmc"), crayon::green$underline$bold$italic("DONE"), "\n")
   }
 
   # compute full run time ----

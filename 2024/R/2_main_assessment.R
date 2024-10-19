@@ -15,6 +15,9 @@ base_mdl <- "2019.1b-2023"
 # full run for retro/jitter/mcmc/etc
 full_run = FALSE
 
+# run mcmc?
+run_mcmc = TRUE
+
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
@@ -124,7 +127,8 @@ run_mdl_anlys(new_year = new_year,
               base_mdl = base_mdl_update,
               rec_mdl = new_base_lcomp_bin5,
               full_run = full_run,
-              rec_ctl = new_base_lcomp_bin5_ctl)
+              rec_ctl = new_base_lcomp_bin5_ctl,
+              run_mcmc = run_mcmc
 
 
 
