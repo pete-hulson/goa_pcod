@@ -1,0 +1,18 @@
+Parameter,Number
+Early Init Devs,10
+Early Rec Dev,1
+Main Rec Dev,47
+log(mean recruitment),1
+1976 R reg.,1
+Growth,5
+Natural Mortality,2
+Survey catchability (trawl),1
+Survey catchability (longline),2
+Trawl survey selex,16
+Longline survey selex,5
+Trawl fishery selex,19
+Trawl fishery selex devs,39
+Longline fishery selex,15
+Longline fishery selex devs,24
+Pot fishery selex,8
+Total,196

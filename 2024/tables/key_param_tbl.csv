@@ -1,0 +1,18 @@
+Name,Value
+Key parameters,--
+Catchability: longline survey,1.17
+Catchability: longline survey environmental coefficient,0.91
+Catchability: trawl survey,1.29
+Growth rate,0.19
+Length at age-0 (cm),0.22
+Length at age-10 (cm),99.46
+Natural mortality (2014-2016),0.82
+Natural mortality (all years),0.49
+log(mean recruitment),13.08
+Key derived quantities,--
+F_ABC (sum apical F),0.48
+F_MSY (sum apical F),0.65
+SSBratio 2025,0.3
+SSBratio 2026,0.28
+"Unfished SSB (1,000's t)",190.47
+Virgin recruitment (mil),480.49
