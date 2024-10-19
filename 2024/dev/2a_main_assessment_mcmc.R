@@ -57,8 +57,8 @@ new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 # define number of iterations
 if(isTRUE(full_run)){
-  iter <- 250000
-  thin <- 1750
+  iter <- 350000
+  thin <- 2450
   warmup <- 250
 } else{
   iter <-5000
@@ -77,13 +77,15 @@ R.utils::copyDirectory(here::here(new_year, "mgmt", new_base_lcomp_bin5),
                        here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"), recursive = FALSE)
 
 # read starter file
-starter <- r4ss::SS_readstarter(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc", "starter.ss"))
+starter <- r4ss::SS_readstarter(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc", "starter.ss"),
+                                verbose = FALSE)
 # change init vals source
 starter$init_values_src <- 0
 # write modified starter file
 r4ss::SS_writestarter(starter, 
                       dir = here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"), 
-                      overwrite = TRUE)
+                      overwrite = TRUE,
+                      verbose = FALSE)
 
 
 # run adnuts ----
@@ -99,7 +101,8 @@ mcmc_adnut <- adnuts::sample_rwm(model = 'ss3',
                                  thin = thin,
                                  mceval = FALSE,
                                  control = list(metric = 'mle'),
-                                 skip_optimization = FALSE)
+                                 skip_optimization = FALSE,
+                                 verbose = FALSE)
 
 # end timer
 mcmc_time <- tictoc::toc(quiet = TRUE)
@@ -113,13 +116,15 @@ tictoc::tic()
 r4ss::run(dir = here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"),
           extras = "-mceval",
           skipfinished = FALSE,
-          show_in_console = TRUE)
+          show_in_console = FALSE,
+          verbose = FALSE)
 
 # end timer
 eval_time <- tictoc::toc(quiet = TRUE)
 
 # Read output
-mcmc_eval <- r4ss::SSgetMCMC(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"))
+mcmc_eval <- r4ss::SSgetMCMC(here::here(new_year, "mgmt", new_base_lcomp_bin5, "mcmc"),
+                             verbose = FALSE)
 
 
 # save results ----
@@ -139,8 +144,8 @@ if(!isTRUE(full_run)){
                        ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1])) / 60), digits = 1)
   cat("Test time took", crayon::red$bold$underline$italic(test_time), "minutes", "\u2693","\n")
   # estimated run time
-  runtime <- round(((as.numeric(strsplit(mcmc_time$callback_msg, split = " ")[[1]][1]) * 50) / 60) / 60 +
-                     ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1]) * 50) / 60) / 60, digits = 1)
+  runtime <- round(((as.numeric(strsplit(mcmc_time$callback_msg, split = " ")[[1]][1]) * 70) / 60) / 60 +
+                     ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1]) * 70) / 60) / 60, digits = 1)
   cat("Full run will take", crayon::red$bold$underline$italic(runtime), "hours", "\u2693","\n")
 } else{
   cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")

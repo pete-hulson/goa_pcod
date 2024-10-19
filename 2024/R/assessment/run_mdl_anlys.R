@@ -6,12 +6,14 @@
 #' @param rec_mdl author recommended model (default = NULL)
 #' @param full_run boolean, whether a full analysis is to be conducted (default = NULL)
 #' @param rec_ctl name recommended model ctl file (default = NULL)
+#' @param run_mcmc boolean, whether to run mcmc or not (default = FALSE)
 #' 
 run_mdl_anlys <- function(new_year = NULL,
                           base_mdl = NULL,
                           rec_mdl = NULL,
                           full_run = NULL,
-                          rec_ctl = NULL){
+                          rec_ctl = NULL,
+                          run_mcmc = FALSE){
   
   # load functions ----
   source_files <- c(list.files(here::here(new_year, "R", "assessment"), pattern = "*.r$"),
@@ -246,6 +248,88 @@ run_mdl_anlys <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("ll q analysis"), crayon::green$underline$bold$italic("DONE"), "\n")
   llq_time <- tictoc::toc(quiet = TRUE)
   
+  
+  # run mcmc ----
+  if(isTRUE(run_mcmc)){
+    ## define number of iterations ----
+    if(isTRUE(full_run)){
+      iter <- 350000
+      thin <- 2450
+      warmup <- 250
+    } else{
+      iter <-5000
+      thin <- 5
+      warmup <- 250
+    }
+    
+    ## set up model ----
+    
+    # set up folder
+    if (!file.exists(here::here(new_year, "mgmt", rec_mdl, "mcmc"))) {
+      dir.create(here::here(new_year, "mgmt", rec_mdl, "mcmc"), recursive = TRUE)
+    }
+    # copy model files
+    R.utils::copyDirectory(here::here(new_year, "mgmt", rec_mdl), 
+                           here::here(new_year, "mgmt", rec_mdl, "mcmc"), recursive = FALSE)
+    
+    # read starter file
+    starter <- r4ss::SS_readstarter(here::here(new_year, "mgmt", rec_mdl, "mcmc", "starter.ss"),
+                                    verbose = FALSE)
+    # change init vals source
+    starter$init_values_src <- 0
+    # write modified starter file
+    r4ss::SS_writestarter(starter, 
+                          dir = here::here(new_year, "mgmt", rec_mdl, "mcmc"), 
+                          overwrite = TRUE,
+                          verbose = FALSE)
+    
+    ## run adnuts ----
+    
+    # start timer
+    tictoc::tic()
+    
+    mcmc_adnut <- adnuts::sample_rwm(model = 'ss3',
+                                     path = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
+                                     iter = iter,
+                                     chains = 7,
+                                     warmup = warmup,
+                                     thin = thin,
+                                     mceval = FALSE,
+                                     control = list(metric = 'mle'),
+                                     skip_optimization = FALSE,
+                                     verbose = FALSE)
+    
+    # end timer
+    mcmc_time <- tictoc::toc(quiet = TRUE)
+    
+    ## run mceval ----
+    
+    # start timer
+    tictoc::tic()
+    
+    r4ss::run(dir = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
+              extras = "-mceval",
+              skipfinished = FALSE,
+              show_in_console = FALSE,
+              verbose = FALSE)
+    
+    # end timer
+    eval_time <- tictoc::toc(quiet = TRUE)
+    
+    ## save results ----
+    if(isTRUE(full_run)){
+      if (!dir.exists(here::here(new_year, "output", "mcmc"))) {
+        dir.create(here::here(new_year, "output", "mcmc"), recursive = TRUE)
+      }
+      # Read output
+      mcmc_eval <- r4ss::SSgetMCMC(here::here(new_year, "mgmt", rec_mdl, "mcmc"),
+                                   verbose = FALSE)
+      save(mcmc_adnut, file = here::here(new_year, "output", "mcmc", "mcmc_adnut.RData"))
+      save(mcmc_eval, file = here::here(new_year, "output", "mcmc", "mcmc_eval.RData"))
+    }
+    
+  }
+
   # compute full run time ----
   tot_time <- round(((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
@@ -253,7 +337,9 @@ run_mdl_anlys <- function(new_year = NULL,
                       ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
-                      ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1])) / 60) / 60, digits = 1)
+                      ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
+                      ((as.numeric(strsplit(mcmc_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
+                      ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1])) / 60) / 60, digits = 1)
   if(!isTRUE(full_run)){
     # total test time
     cat("Test time took", crayon::red$bold$underline$italic(tot_time), "hours", "\u2693","\n")
@@ -264,7 +350,9 @@ run_mdl_anlys <- function(new_year = NULL,
                        ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                        ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
                        ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1]) * 3) / 60) / 60 +
-                       ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60, digits = 1)
+                       ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
+                        ((as.numeric(strsplit(mcmc_time$callback_msg, split = " ")[[1]][1]) * 70) / 60) / 60 +
+                        ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1]) * 70) / 60) / 60, digits = 1)
     cat("Full run will take", crayon::red$bold$underline$italic(run_time), "hours", "\u2693","\n")
   } else{
     cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")
