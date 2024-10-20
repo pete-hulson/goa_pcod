@@ -128,7 +128,7 @@ run_mdl_anlys(new_year = new_year,
               rec_mdl = new_base_lcomp_bin5,
               full_run = full_run,
               rec_ctl = new_base_lcomp_bin5_ctl,
-              run_mcmc = run_mcmc
+              run_mcmc = run_mcmc)
 
 
 
