@@ -1,5 +1,5 @@
 #C file created using an r4ss function
-#C file write time: 2024-10-17  12:03:30
+#C file write time: 2024-10-20  09:26:44
 #
 GOAPcod2024Oct17_1e_5cm.dat #_datfile
 Model19_1e.ctl #_ctlfile

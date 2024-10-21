@@ -256,7 +256,7 @@ run_mdl_anlys <- function(new_year = NULL,
     ## define number of iterations ----
     if(isTRUE(full_run)){
       iter <- 350000
-      thin <- 2450
+      thin <- 50
       warmup <- 250
     } else{
       iter <-5000
@@ -357,6 +357,6 @@ run_mdl_anlys <- function(new_year = NULL,
                         ((as.numeric(strsplit(eval_time$callback_msg, split = " ")[[1]][1]) * 70) / 60) / 60, digits = 1)
     cat("Full run will take", crayon::red$bold$underline$italic(run_time), "hours", "\u2693","\n")
   } else{
-    cat("All", crayon::green$bold$underline$italic('Done'), "\u2693","\n")
+    cat("All", crayon::green$bold$underline$italic('Done'), "in", tot_time, "hours", "\u2693","\n")
   }
 }

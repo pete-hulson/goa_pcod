@@ -410,7 +410,7 @@ dev.off()
 
 ## Plot MCMC ----
 
-load(here::here(new_year, "output", "mcmc.RData"))
+load(here::here(new_year, "output", "mcmc", "mcmc.RData"))
 source(here::here(new_year, "R", "plots", "mcmcplots.r"))
 
 mcmc_dir <- here::here(new_year, "mgmt", Model_name_new, "MCMC")
@@ -493,27 +493,33 @@ dev.off()
 
 # plot mcmc adnuts stuff ----
 
-load(here::here(new_year, "output", "mcmc_nut.RData"))
+load(here::here(new_year, "output", "mcmc", "mcmc_adnut.RData"))
 
-par = c('MGparm[1]', 'MGparm[2]', 'MGparm[3]', 'MGparm[4]', 'MGparm[22]', 'SR_parm[1]', 'Q_parm[1]', 'Q_parm[2]', 'Q_parm[9]')
+par = c('MGparm[1]', 'MGparm[3]', 'MGparm[4]', 'MGparm[15]', 'SR_parm[1]', 'Q_parm[1]', 'Q_parm[2]', 'Q_parm[9]')
 
-adnuts::pairs_admb(mcmc_nut, pars = par)
+mcmc_adnut
 
-mcmc_nut2 <- mcmc_nut
 
-dimnames(mcmc_nut2$samples)[[3]][1] <- "M_base"
-dimnames(mcmc_nut2$samples)[[3]][2] <- "Lmin"
-dimnames(mcmc_nut2$samples)[[3]][3] <- "Linf"
-dimnames(mcmc_nut2$samples)[[3]][4] <- "k"
-dimnames(mcmc_nut2$samples)[[3]][7] <- "M_14_16"
-dimnames(mcmc_nut2$samples)[[3]][10] <- "R0"
-dimnames(mcmc_nut2$samples)[[3]][84] <- "ln(q_BTS)"
-dimnames(mcmc_nut2$samples)[[3]][85] <- "ln(q_LL)"
-dimnames(mcmc_nut2$samples)[[3]][86] <- "q_LL_env"
+mcmc_adnut$samples
 
-par = c('M_base', 'Lmin', 'Linf', 'k', 'M_14_16', 'R0', 'ln(q_BTS)', 'ln(q_LL)', 'q_LL_env')
+names(mcmc_adnut)
 
-adnuts::pairs_admb(mcmc_nut2, pars = par, label.cex = 1)
+adnuts::pairs_admb(mcmc_adnut, pars = par)
+
+mcmc_adnut2 <- mcmc_adnut
+
+dimnames(mcmc_adnut2$samples)[[3]][1] <- "M_base"
+dimnames(mcmc_adnut2$samples)[[3]][3] <- "Linf"
+dimnames(mcmc_adnut2$samples)[[3]][4] <- "k"
+dimnames(mcmc_adnut2$samples)[[3]][7] <- "M_14_16"
+dimnames(mcmc_adnut2$samples)[[3]][8] <- "R0"
+dimnames(mcmc_adnut2$samples)[[3]][68] <- "ln(q_BTS)"
+dimnames(mcmc_adnut2$samples)[[3]][69] <- "ln(q_LL)"
+dimnames(mcmc_adnut2$samples)[[3]][70] <- "q_LL_env"
+
+par = c('M_base', 'Linf', 'k', 'M_14_16', 'R0', 'ln(q_BTS)', 'ln(q_LL)', 'q_LL_env')
+
+adnuts::pairs_admb(mcmc_adnut2, pars = par, label.cex = 1)
 dev.print(png, file = here::here(new_year, "plots", "other", "param_mcmc_nuts.png"), width = 1024, height = 1000)
 dev.off()
 
