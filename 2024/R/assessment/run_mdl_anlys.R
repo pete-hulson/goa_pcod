@@ -249,6 +249,36 @@ run_mdl_anlys <- function(new_year = NULL,
   llq_time <- tictoc::toc(quiet = TRUE)
   
   
+  # run apportionment ----
+  cat("\u231b", crayon::blue("working on apportionment..."), "\n")
+  tictoc::tic()
+  
+  
+  # get data ----
+  biomass_dat <- vroom::vroom(here::here(new_year,'data','raw','twl_srvy_index.csv'), 
+                              delim = ",", 
+                              progress = FALSE, 
+                              show_col_types = FALSE) %>%
+    tidytable::filter(strata < 99900) %>% 
+    tidytable::mutate(sd = sqrt(biom_var),
+                      cv = sd / biom) %>%
+    tidytable::select(strata = area,
+                      year,
+                      biomass = biom,
+                      cv)
+
+  # run rema model for trawl survey only ----
+  apport_in <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("pcod trawl survey"),
+                                                         biomass_dat = biomass_dat))
+  apport_mdl <- SimDesign::quiet(rema::fit_rema(apport_in))
+  apport_out <- SimDesign::quiet(rema::tidy_rema(rema_model = apport_mdl))
+  
+  ## save results ----
+  if (!dir.exists(here::here(new_year, "output", "apport"))) {
+    dir.create(here::here(new_year, "output", "apport"), recursive = TRUE)
+  }
+  save(apport_out, file = here::here(new_year, "output", "apport", "apport.RData"))
+
   # run mcmc ----
   if(isTRUE(run_mcmc)){
     cat("\u231b", crayon::blue("working on mcmcs..."), "\n")
