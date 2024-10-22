@@ -67,8 +67,8 @@ prev_2yr <- vroom::vroom(here::here(new_year - 1, 'output', 'mgmnt_exec_summ.csv
 curr_2yr <- vroom::vroom(here::here(new_year, 'output', 'mscen', 'mgmnt_exec_summ_rec.csv'))
 # mscen table
 mscen <- vroom::vroom(here::here(new_year, 'output', 'mscen', 'mgmnt_scen_table.csv'))
-
-
+# apportionment
+load(here::here(new_year, "output", "apport", "apport.Rdata"))
 
 # get connected to query
 db = 'akfin'
@@ -763,91 +763,156 @@ vroom::vroom_write(mscen_tbl, here::here(new_year, 'tables', 'mscen_tbl.csv'), d
 
 # exec summ table ----
 
-data.table(Quantity = "M (natural mortality rate)", 
-           prev1 = paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
-           prev2 = paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
-           curr1 = paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
-           curr2 = paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*")) %>% 
-  tidytable::bind_rows(data.table(Quantity = "Tier", 
-                                  prev1 = ifelse(prev_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
-                                  prev2 = ifelse(prev_2yr$SSB_PER[2] > 0.4, "3a", "3b"), 
-                                  curr1 = ifelse(curr_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
-                                  curr2 = ifelse(curr_2yr$SSB_PER[2] > 0.4, "3a", "3b"))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "Projected total (age 0+) biomass (t)", 
-                                  prev1 = format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year)], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
-                                  curr1 = format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
-                                  curr2 = format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 2)], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "Female spawning biomass(t)", 
-                                  prev1 = "", 
-                                  prev2 = "", 
-                                  curr1 = "", 
-                                  curr2 = "")) %>% 
-  tidytable::bind_rows(data.table(Quantity = "Projected", 
-                                  prev1 = format(round(prev_2yr$SSB[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$SSB[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$SSB[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$SSB[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "", 
-                                  prev1 = "", 
-                                  prev2 = "", 
-                                  curr1 = "", 
-                                  curr2 = "")) %>% 
-  tidytable::bind_rows(data.table(Quantity = "B100%", 
-                                  prev1 = format(round(prev_2yr$SB100[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$SB100[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$SB100[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "B40%", 
-                                  prev1 = format(round(prev_2yr$SB40[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$SB40[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$SB40[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$SB40[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "B35%", 
-                                  prev1 = format(round(prev_2yr$SB35[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$SB35[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$SB35[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$SB35[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "FOFL", 
-                                  prev1 = round(prev_2yr$F35[1], digits = 2),
-                                  prev2 = round(prev_2yr$F35[2], digits = 2),
-                                  curr1 = round(curr_2yr$F35[1], digits = 2),
-                                  curr2 = round(curr_2yr$F35[2], digits = 2))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "maxFABC", 
-                                  prev1 = round(prev_2yr$F40[1], digits = 2),
-                                  prev2 = round(prev_2yr$F40[2], digits = 2),
-                                  curr1 = round(curr_2yr$F40[1], digits = 2),
-                                  curr2 = round(curr_2yr$F40[2], digits = 2))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "FABC", 
-                                  prev1 = round(prev_2yr$F40[1], digits = 2),
-                                  prev2 = round(prev_2yr$F40[2], digits = 2),
-                                  curr1 = round(curr_2yr$F40[1], digits = 2),
-                                  curr2 = round(curr_2yr$F40[2], digits = 2))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "OFL (t)", 
-                                  prev1 = format(round(prev_2yr$C_OFL[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$C_OFL[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$C_OFL[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "maxABC (t)", 
-                                  prev1 = format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","))) %>% 
-  tidytable::bind_rows(data.table(Quantity = "ABC (t)", 
-                                  prev1 = format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
-                                  prev2 = format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
-                                  curr1 = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
-                                  curr2 = format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","))) -> exec_summ_tbl
-
+exec_summ_tbl <- data.table(Quantity = c("M (natural mortality rate)", 
+                                         "Tier", 
+                                         "Projected total (age 0+) biomass (t)",
+                                         "Female spawning biomass(t)",
+                                         "Projected",
+                                         "",
+                                         "B100%",
+                                         "B40%",
+                                         "B35%", 
+                                         "FOFL", 
+                                         "maxFABC",
+                                         "FABC",
+                                         "OFL (t)",
+                                         "maxABC (t)", 
+                                         "ABC (t)"),
+                            prev1 = c(paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+                                      ifelse(prev_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
+                                      format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year)], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(prev_2yr$SSB[1], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(prev_2yr$SB100[1], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$SB40[1], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$SB35[1], digits = 0), big.mark = ","),
+                                      round(prev_2yr$F35[1], digits = 2),
+                                      round(prev_2yr$F40[1], digits = 2),
+                                      round(prev_2yr$F40[1], digits = 2),
+                                      format(round(prev_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ",")),
+                            prev2 = c(paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+                                      ifelse(prev_2yr$SSB_PER[2] > 0.4, "3a", "3b"), 
+                                      format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(prev_2yr$SSB[2], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(prev_2yr$SB100[2], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$SB40[2], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$SB35[2], digits = 0), big.mark = ","),
+                                      round(prev_2yr$F35[2], digits = 2),
+                                      round(prev_2yr$F40[2], digits = 2),
+                                      round(prev_2yr$F40[2], digits = 2),
+                                      format(round(prev_2yr$C_OFL[2], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
+                                      format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ",")),
+                            curr1 = c(paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+                                      ifelse(curr_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
+                                      format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(curr_2yr$SSB[1], digits = 0), big.mark = ","),
+                                      "", 
+                                      format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$SB40[1], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$SB35[1], digits = 0), big.mark = ","),
+                                      round(curr_2yr$F35[1], digits = 2),
+                                      round(curr_2yr$F40[1], digits = 2),
+                                      round(curr_2yr$F40[1], digits = 2),
+                                      format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ",")),
+                            curr2 = c(paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"),
+                                      ifelse(curr_2yr$SSB_PER[2] > 0.4, "3a", "3b"),
+                                      format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 2)], digits = 0), big.mark = ","),
+                                      "",
+                                      format(round(curr_2yr$SSB[2], digits = 0), big.mark = ","),
+                                      "",
+                                      format(round(curr_2yr$SB100[2], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$SB40[2], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$SB35[2], digits = 0), big.mark = ","),
+                                      round(curr_2yr$F35[2], digits = 2),
+                                      round(curr_2yr$F40[2], digits = 2),
+                                      round(curr_2yr$F40[2], digits = 2),
+                                      format(round(curr_2yr$C_OFL[2], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","),
+                                      format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ",")))
 
 vroom::vroom_write(exec_summ_tbl, here::here(new_year, 'tables', 'exec_summ_tbl.csv'), delim = ",")
 
+# in-text tables ----
 
+## apportionment table ----
+apport_out$proportion_biomass_by_strata %>% 
+  tidytable::filter(year == max(year)) %>% 
+  tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
+  tidytable::select(region, apport) %>% 
+  tidytable::mutate(apport = round(apport, digits = 3),
+                    diff = 1 - sum(apport)) %>%
+  tidytable::mutate(apport_corr = case_when(max(diff) > 0 ~ case_when(region == 'western' ~ apport + diff,
+                                                                      region != 'western' ~ apport),
+                                            max(diff) == 0 ~ apport)) %>%  # if rounding error happens, add to wgoa
+  tidytable::select(region, apport_corr) %>% 
+  tidytable::rename(apport = 'apport_corr') %>% 
+  tidytable::mutate(ABC_yr1 = round(apport * curr_2yr$C_ABC[1], digits = 0),
+                    ABC_yr2 = round(apport * curr_2yr$C_ABC[2], digits = 0)) %>% 
+  tidytable::mutate(diff_y1 = round(curr_2yr$C_ABC[1], digits = 0) - sum(ABC_yr1),
+                    diff_y2 = round(curr_2yr$C_ABC[2], digits = 0) - sum(ABC_yr2)) %>%
+  tidytable::mutate(y1_corr = case_when(max(diff_y1) != 0 ~ case_when(region == 'western' ~ ABC_yr1 + diff_y1,
+                                                                      region != 'western' ~ ABC_yr1),
+                                        max(diff_y1) == 0 ~ ABC_yr1),
+                    y2_corr = case_when(max(diff_y2) != 0 ~ case_when(region == 'western' ~ ABC_yr2 + diff_y2,
+                                                                      region != 'western' ~ ABC_yr2),
+                                        max(diff_y2) == 0 ~ ABC_yr2)) %>%  # if rounding error happens, add to wgoa
+  tidytable::select(-c(ABC_yr1, ABC_yr2, diff_y1, diff_y2)) %>% 
+  tidytable::rename(ABC_yr1 = 'y1_corr',
+                    ABC_yr2 = 'y2_corr') -> abc_apport
 
+apport_tbl <- data.table(" " = c("Area apportionment", 
+                                 paste(new_year + 1, "ABC"), 
+                                 paste(new_year + 2, "ABC")),
+                         Western = c(paste0(abc_apport$apport[which(abc_apport$region == 'western')] * 100, "%"),
+                                     format(abc_apport$ABC_yr1[which(abc_apport$region == 'western')], big.mark = ","),
+                                     format(abc_apport$ABC_yr2[which(abc_apport$region == 'western')], big.mark = ",")),
+                         Central = c(paste0(abc_apport$apport[which(abc_apport$region == 'central')] * 100, "%"),
+                                     format(abc_apport$ABC_yr1[which(abc_apport$region == 'central')], big.mark = ","),
+                                     format(abc_apport$ABC_yr2[which(abc_apport$region == 'central')], big.mark = ",")),
+                         Eastern = c(paste0(abc_apport$apport[which(abc_apport$region == 'eastern')] * 100, "%"),
+                                     format(abc_apport$ABC_yr1[which(abc_apport$region == 'eastern')], big.mark = ","),
+                                     format(abc_apport$ABC_yr2[which(abc_apport$region == 'eastern')], big.mark = ",")))
 
+vroom::vroom_write(apport_tbl, here::here(new_year, 'tables', 'abc_apport_tbl.csv'), delim = ",")
 
+## new data table ----
+# work on this some other time
 
+## reference points ----
+data.table("Reference Point:" = "Spawning Biomass:", 
+           B35 = paste(format(round(prev_2yr$SB35[1], digits = 0), big.mark = ","), "t"),
+           B40 = paste(format(round(prev_2yr$SB40[2], digits = 0), big.mark = ","), "t"),
+           B100 = paste(format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","), "t")) -> ref_pts_intext
 
+vroom::vroom_write(ref_pts_intext, here::here(new_year, 'tables', 'ref_pts_intext_tbl.csv'), delim = ",")
 
+## abc/ofl table ----
+data.table(Units = c("Harvest amount",
+                     "Harvest amount",
+                     "Fishing mortality rate",
+                     "Fishing mortality rate"),
+           Year = c(new_year + 1,
+                    new_year + 2,
+                    new_year + 1,
+                    new_year + 2),
+           "Overfishing Level (OFL)" = c(format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                         format(round(curr_2yr$C_OFL[2], digits = 0), big.mark = ","),
+                                         round(curr_2yr$F35[1], digits = 2),
+                                         round(curr_2yr$F35[2], digits = 2)),
+           "Maximum Permissible ABC" = c(format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                         format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","),
+                                         round(curr_2yr$F40[1], digits = 2),
+                                         round(curr_2yr$F40[2], digits = 2))) -> abc_intext
+
+vroom::vroom_write(abc_intext, here::here(new_year, 'tables', 'abc_intext_tbl.csv'), delim = ",")
 
   
