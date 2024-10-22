@@ -6,7 +6,8 @@
 ## cran packages ----
 pkg_cran <- c("tidyverse",
               "vroom",
-              "here")
+              "here",
+              "scales")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
@@ -39,18 +40,67 @@ new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # recommended model name
 rec_model <- "2019.1e.5cm-2024"
 
+# last year's model
+prev_mdl <- "2019.1b-2023"
 
 # set up directly to plop tables into
 if (!dir.exists(here::here(new_year, "tables"))) {
   dir.create(here::here(new_year, "tables"), recursive = TRUE)
 }
 
-# catch by gear type and jurisdiction ----
+# read in/query needed results/etc ----
 
-# read in data
+# catch data
 fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"))
 adfg_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'))
+# previous abc/tac/etc
+old_abc <- vroom::vroom(here::here(new_year, 'data', 'old_abc_tac.csv'))
+# bycatch
+bycatch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'))
+# survey indices
+bts_raw <- vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_index.csv"))
+lls_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'lls_rpn_geoarea_data.csv'))
+# old ref pts
+old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'old_ref_pts.csv'))
+# abc/ofl forecast
+prev_2yr <- vroom::vroom(here::here(new_year - 1, 'output', 'mgmnt_exec_summ.csv'))
+curr_2yr <- vroom::vroom(here::here(new_year, 'output', 'mscen', 'mgmnt_exec_summ_rec.csv'))
+# mscen table
+mscen <- vroom::vroom(here::here(new_year, 'output', 'mscen', 'mgmnt_scen_table.csv'))
 
+
+
+# get connected to query
+db = 'akfin'
+conn = afscdata::connect(db)  
+# specs
+specs <- afscdata::q_specs(year = new_year,
+                           species = "PCOD",
+                           area = "GOA",
+                           db = conn,
+                           save = FALSE)
+# nontarget catch
+nontarg <- afscdata::q_nontarget(year = new_year,
+                                 target = "c",
+                                 area = "goa",
+                                 db = conn,
+                                 save = FALSE)
+# prohib species catch
+psc <- afscdata::q_psc(year = new_year,
+                       target = "c",
+                       area = "goa",
+                       db = conn,
+                       save = FALSE)
+
+# read in rec model output
+mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_model),
+                           verbose = FALSE,
+                           printstats = FALSE)
+prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
+                                verbose = FALSE,
+                                printstats = FALSE)
+
+# catch by gear type and jurisdiction ----
 
 # get federal catch by gear
 fed_raw %>% 
@@ -112,20 +162,13 @@ fed_raw %>%
 vroom::vroom_write(juris_gr_tbl, here::here(new_year, 'tables', 'juris_gr_tbl.csv'), delim = ",")
 
 # catch-tac-abc-ofl-ghl ----
-db = 'akfin'
-conn = afscdata::connect(db)  
-
-vroom::vroom(here::here(new_year, 'data', 'old_abc_tac.csv')) %>% 
+old_abc %>% 
   tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
   tidytable::mutate(ofl = case_when(ofl == "     NA" ~ "-",
                                     .default = ofl),
                     ghl = case_when(ghl == "    NA" ~ "-",
                                     .default = ghl)) %>% 
-  tidytable::bind_rows(afscdata::q_specs(year = new_year,
-                                         species = "PCOD",
-                                         area = "GOA",
-                                         db = conn,
-                                         save = FALSE) %>% 
+  tidytable::bind_rows(specs %>% 
                          tidytable::arrange(year) %>% 
                          tidytable::filter(area_label == 'GOA',
                                            year <= new_year) %>% 
@@ -160,8 +203,6 @@ fed_raw %>%
 vroom::vroom_write(dr_tbl, here::here(new_year, 'tables', 'dr_tbl.csv'), delim = ",")
 
 # bycatch table ----
-bycatch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'))
-
 bycatch %>% 
   tidytable::filter(catch > 0,
                     !(species_name %in% c("sculpin, general",
@@ -232,32 +273,18 @@ vroom::vroom_write(bycatch_tbl, here::here(new_year, 'tables', 'bycatch.csv'), d
 
 # non-target table ----
 # note for future: will need to figure out how to filter out those not included/confidential
-# get connected
-db = 'akfin'
-conn = afscdata::connect(db)  
 
-afscdata::q_nontarget(year = new_year,
-                      target = "c",
-                      area = "goa",
-                      db = conn,
-                      save = FALSE) %>%
+nontarg %>%
   tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
                     across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) %>% 
-  tidytable::rename("Species Group" = species) %>% 
-  vroom::vroom_write(., here::here(new_year, 'tables', 'nontarget.csv'), delim = ",")
+  tidytable::rename("Species Group" = species) -> nontarg_tbl
+
+vroom::vroom_write(nontarg_tbl, here::here(new_year, 'tables', 'nontarget.csv'), delim = ",")
 
 
 # prohib species table ----
 
-# get connected
-db = 'akfin'
-conn = afscdata::connect(db)  
-
-afscdata::q_psc(year = new_year,
-                target = "c",
-                area = "goa",
-                db = conn,
-                save = FALSE) %>% 
+psc %>% 
   vroom::vroom_write(., here::here(new_year, 'tables', 'psc.csv'), delim = ",")
 
 
@@ -313,9 +340,6 @@ fed_raw %>%
 
 # survey indices ----
 
-bts_raw <- vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_index.csv"))
-lls_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'lls_rpn_geoarea_data.csv'))
-
 lls_raw %>% 
   tidytable::filter(year >= 1990) %>% 
   tidytable::summarise(RPN = sum(rpn),
@@ -332,16 +356,12 @@ lls_raw %>%
                                            Abundance = paste0(format(round(Abundance / 1000, digits = 0), big.mark = ","), " (", round(sqrt(num_var) / Abundance, digits = 2), ")")) %>% 
                          tidytable::select(-biom_var, -num_var)) %>%
   tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-")))  %>% 
-  tidytable::rename(Year = year, "Biomass (t)" = Biomass) %>% 
-  vroom::vroom_write(., here::here(new_year, 'tables', 'surv_indx.csv'), delim = ",")
+  tidytable::rename(Year = year, "Biomass (t)" = Biomass) -> srv_indx_tbl
+
+vroom::vroom_write(srv_indx_tbl, here::here(new_year, 'tables', 'surv_indx.csv'), delim = ",")
 
 
 # number of parameters table ----
-
-# read in rec model output
-model_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_model),
-                             verbose = TRUE,
-                             printstats = TRUE)
 
 # set up helper fcns
 sing_param_table <- function(par_res, pattern, par_name){
@@ -367,77 +387,82 @@ dub_param_table <- function(par_res, pattern1, pattern2, par_name1, par_name2){
 
 # get table
 # early init devs
-sing_param_table(par_res = model_res$parameters, 
-                 pattern = "Early_Init", 
-                 par_name = 'Early Init Devs') %>% 
+data.frame(Parameter = "Recruitment/Initial abundance", Number = "--") %>% 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
+                                        pattern = "Early_Init", 
+                                        par_name = 'Early Init Devs')) %>% 
   # early rec dev
-  tidytable::bind_rows(sing_param_table(par_res = model_res$parameters, 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
                                         pattern = "Early_RecrDev", 
                                         par_name = 'Early Rec Dev')) %>% 
   # main rec devs
-  tidytable::bind_rows(sing_param_table(par_res = model_res$parameters, 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
                                         pattern = "Main_RecrDev", 
                                         par_name = 'Main Rec Dev')) %>% 
   # r_zero
-  tidytable::bind_rows(sing_param_table(par_res = model_res$parameters, 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
                                         pattern = "SR_LN", 
                                         par_name = 'log(mean recruitment)')) %>% 
   # 76 regime
-  tidytable::bind_rows(sing_param_table(par_res = model_res$parameters, 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
                                         pattern = "SR_regime", 
                                         par_name = '1976 R reg.')) %>% 
+  tidytable::bind_rows(data.frame(Parameter = "Biology", Number = "--")) %>% 
   # m and growth
-  tidytable::bind_rows(dub_param_table(par_res = model_res$parameters,
+  tidytable::bind_rows(dub_param_table(par_res = mdl_res$parameters,
                                        pattern1 = "Fem_GP_1",
                                        pattern2 = "NatM", 
-                                       par_name1 = 'Growth', 
+                                       par_name1 = 'Growth (LVB)', 
                                        par_name2 = 'Natural Mortality')) %>% 
+  tidytable::bind_rows(data.frame(Parameter = "Catchability/Selectivity", Number = "--")) %>% 
   # catchabilities
-  tidytable::bind_rows(dub_param_table(par_res = model_res$parameters,
+  tidytable::bind_rows(dub_param_table(par_res = mdl_res$parameters,
                                        pattern1 = "LnQ",
                                        pattern2 = "LLSrv", 
                                        par_name1 = 'Survey catchability (trawl)', 
                                        par_name2 = 'Survey catchability (longline)')) %>% 
   # survey selex
-  tidytable::bind_rows(dub_param_table(par_res = model_res$parameters,
+  tidytable::bind_rows(dub_param_table(par_res = mdl_res$parameters,
                                        pattern1 = "(?=.*Size_DblN)(?=.*Srv)",
                                        pattern2 = "(?=.*Size_DblN)(?=.*LLSrv)", 
                                        par_name1 = 'Trawl survey selex', 
                                        par_name2 = 'Longline survey selex')) %>% 
   # trawl fishery selex
-  tidytable::bind_rows(dub_param_table(par_res = model_res$parameters,
+  tidytable::bind_rows(dub_param_table(par_res = mdl_res$parameters,
                                        pattern1 = "FshTrawl",
                                        pattern2 = "DEVmult", 
                                        par_name1 = 'Trawl fishery selex', 
                                        par_name2 = 'Trawl fishery selex devs')) %>% 
   # longline fishery selex
-  tidytable::bind_rows(dub_param_table(par_res = model_res$parameters,
+  tidytable::bind_rows(dub_param_table(par_res = mdl_res$parameters,
                                        pattern1 = "FshLL",
                                        pattern2 = "DEVmult", 
                                        par_name1 = 'Longline fishery selex', 
                                        par_name2 = 'Longline fishery selex devs')) %>% 
   # pot fishery selex
-  tidytable::bind_rows(sing_param_table(par_res = model_res$parameters, 
+  tidytable::bind_rows(sing_param_table(par_res = mdl_res$parameters, 
                                         pattern = "FshPot", 
                                         par_name = 'Pot fishery selex')) -> param_tbl
 
 # add total # params line
 param_tbl %>% 
   tidytable::bind_rows(param_tbl %>% 
-                         tidytable::summarise(Number = sum(Number)) %>% 
-                         tidytable::mutate(Parameter = 'Total')) %>% 
-  vroom::vroom_write(., here::here(new_year, 'tables', 'param_tbl.csv'), delim = ",")
+                         tidytable::summarise(Number = sum(as.numeric(Number), na.rm = TRUE)) %>% 
+                         tidytable::mutate(Parameter = 'Total')) -> param_tbl
+
+vroom::vroom_write(param_tbl, here::here(new_year, 'tables', 'param_tbl.csv'), delim = ",")
 
 # likelihood and derived quants table ----
 
-model_res$likelihoods_used %>% 
+mdl_res$likelihoods_used %>% 
   tidytable::mutate(Component = rownames(.)) %>% 
   tidytable::select(Component, Value = values) %>% 
   tidytable::mutate(Value = round(Value, digits = 2)) %>% 
   tidytable::filter(Component == "TOTAL") %>% 
   tidytable::mutate(Component = "Total negative log-likelihood") %>% 
-  tidytable::bind_rows(data.frame(Component = "Survey indices", Value = "--")) %>% 
-  tidytable::bind_rows(model_res$likelihoods_by_fleet %>% 
+  tidytable::bind_rows(data.frame(Component = "Survey indices", 
+                                  Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Survey')], digits = 2))) %>% 
+  tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
                          tidytable::filter(Label == "Surv_like") %>% 
                          tidytable::select(-Label) %>% 
                          tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
@@ -446,8 +471,9 @@ model_res$likelihoods_used %>%
                          tidytable::mutate(Value = round(Value, digits = 2)) %>% 
                          tidytable::mutate(Component = c("Bottom trawl survey index", 
                                                          "Longline survey index"))) %>% 
-  tidytable::bind_rows(data.frame(Component = "Length composition", Value = "--")) %>% 
-  tidytable::bind_rows(model_res$likelihoods_by_fleet %>% 
+  tidytable::bind_rows(data.frame(Component = "Length composition", 
+                                  Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Length_comp')], digits = 2))) %>% 
+  tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
                          tidytable::filter(Label == "Length_like") %>% 
                          tidytable::select(-Label) %>% 
                          tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
@@ -459,8 +485,9 @@ model_res$likelihoods_used %>%
                                                          "Pot fishery length composition",
                                                          "Bottom trawl survey length composition",
                                                          "Longline survey length composition"))) %>% 
-  tidytable::bind_rows(data.frame(Component = "Conditional age-at-length", Value = "--")) %>% 
-  tidytable::bind_rows(model_res$likelihoods_by_fleet %>% 
+  tidytable::bind_rows(data.frame(Component = "Conditional age-at-length", 
+                                  Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Age_comp')], digits = 2))) %>% 
+  tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
                          tidytable::filter(Label == "Age_like") %>% 
                          tidytable::select(-Label) %>% 
                          tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
@@ -471,72 +498,349 @@ model_res$likelihoods_used %>%
                                                          "Longline fishery CAAL",
                                                          "Pot fishery CAAL",
                                                          "Bottom trawl survey CAAL"))) %>% 
-  tidytable::bind_rows(data.frame(Component = "Parameter deviations and priors", Value = "--")) %>% 
-  tidytable::bind_rows(model_res$likelihoods_used %>% 
+  tidytable::bind_rows(data.frame(Component = "Parameter deviations and priors", 
+                                  Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Recruitment')] +
+                                                  mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'InitEQ_Regime')] +
+                                                  mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Parm_priors')] +
+                                                  mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Parm_devs')], digits = 2))) %>% 
+  tidytable::bind_rows(mdl_res$likelihoods_used %>% 
                          tidytable::mutate(Component = rownames(.)) %>% 
                          tidytable::select(Component, Value = values) %>% 
                          tidytable::mutate(Value = round(Value, digits = 2)) %>% 
                          tidytable::filter(Component %in% c("Recruitment", "InitEQ_Regime", "Parm_priors", "Parm_devs")) %>% 
                          tidytable::mutate(Component = c("Recruitment deviations",
-                                                         "Initial abundance deviations",
+                                                         "Initial Regime (InitEQ_Regime)",
                                                          "Parameter priors",
-                                                         "Selectivity deviations"))) %>% 
-  vroom::vroom_write(., here::here(new_year, 'tables', 'likes_tbl.csv'), delim = ",")
+                                                         "Selectivity deviations"))) -> likes_tbl
+vroom::vroom_write(likes_tbl, here::here(new_year, 'tables', 'likes_tbl.csv'), delim = ",")
+
 
 # key parameter table ----
-
-data.frame(Name = "Key parameters", Value = "--") %>% 
-  tidytable::bind_rows(model_res$parameters %>% 
-                         tidytable::select(Label, Value) %>% 
-                         tidytable::filter(Label %in% c("SR_LN(R0)",
-                                                        "NatM_uniform_Fem_GP_1",
-                                                        "NatM_uniform_Fem_GP_1_BLK4repl_2014", 
-                                                        "L_at_Amin_Fem_GP_1", 
+data.frame(Name = "Biology", Value = "--", SD = "--") %>% 
+  tidytable::bind_rows(mdl_res$parameters %>% 
+                         tidytable::select(Label, Value, Parm_StDev) %>% 
+                         tidytable::filter(Label %in% c("L_at_Amin_Fem_GP_1", 
                                                         "L_at_Amax_Fem_GP_1", 
                                                         "VonBert_K_Fem_GP_1", 
-                                                        "LnQ_base_Srv(4)",
-                                                        "LnQ_base_LLSrv(5)",
-                                                        "LnQ_base_LLSrv(5)_ENV_mult")) %>% 
-                         tidytable::mutate(Name = c("Natural mortality (all years)",
-                                                    "Length at age-0 (cm)",
+                                                        "SD_young_Fem_GP_1",
+                                                        "SD_old_Fem_GP_1",
+                                                        "Wtlen_1_Fem_GP_1",
+                                                        "Wtlen_2_Fem_GP_1")) %>% 
+                         tidytable::mutate(Name = c("Length at age-0 (cm)",
                                                     "Length at age-10 (cm)",
                                                     "Growth rate",
-                                                    "Natural mortality (2014-2016)",
-                                                    "log(mean recruitment)",
-                                                    "Catchability: trawl survey",
-                                                    "Catchability: longline survey",
-                                                    "Catchability: longline survey environmental coefficient")) %>% 
-                         tidytable::mutate(Value = case_when(Name %in% c("Catchability: trawl survey", "Catchability: longline survey") ~ round(exp(Value), digits = 2),
-                                                             .default = round(Value, digits = 2))) %>% 
-                         tidytable::select(Name, Value) %>% 
-                         tidytable::arrange(Name)) %>% 
-  tidytable::bind_rows(data.frame(Name = "Key derived quantities", Value = "--")) %>% 
-  tidytable::bind_rows(model_res$derived_quants %>% 
-                         tidytable::select(Label, Value) %>% 
-                         tidytable::filter(Label %in% c("Recr_Virgin", 
-                                                        "SSB_Virgin", 
-                                                        paste0("F_", new_year + 10), 
-                                                        paste0("F_", new_year + 1), 
-                                                        paste0("SSB_", new_year + 1), 
-                                                        paste0("SSB_", new_year + 2),
-                                                        "SSB_unfished")) %>% 
-                         tidytable::mutate(Value = case_when(Label == "Recr_Virgin" ~ round(Value / 1000, digits = 2),
-                                                             Label == "SSB_Virgin" ~ round((Value / 2) / 1000, digits = 2),
-                                                             .default = round(Value, digits = 2)),
-                                           unfished = .$Value[Label == "SSB_unfished"]) %>% 
-                         tidytable::mutate(Value = case_when(Label %in% c(paste0("SSB_", new_year + 1), paste0("SSB_", new_year + 2)) ~ round(Value / unfished, digits = 2),
+                                                    "SD in age-at-length for age-0",
+                                                    "SD in age-at-length for age-10",
+                                                    "Weight-length coefficient",
+                                                    "Weight-length exponent")) %>% 
+                         tidytable::mutate(Value = case_when(Value > 0.001 ~ round(Value, digits = 2),
                                                              .default = Value)) %>% 
-                         tidytable::filter(Label != "SSB_unfished") %>% 
-                         tidytable::select(-unfished) %>% 
-                         tidytable::mutate(Name = c("Unfished SSB (1,000's t)", 
-                                                    paste("SSBratio", new_year + 1),
-                                                    paste("SSBratio", new_year + 2),
-                                                    "Virgin recruitment (mil)",
-                                                    "F_ABC (sum apical F)",
-                                                    "F_MSY (sum apical F)")) %>% 
-                         tidytable::select(Name, Value) %>% 
+                         tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
+                                                             .default = as.character(Value))) %>% 
+                         tidytable::mutate(SD = case_when(!is.na(Parm_StDev) ~ round(Parm_StDev, digits = 3),
+                                                          .default = Parm_StDev)) %>% 
+                         tidytable::mutate(SD = case_when(is.na(Parm_StDev) ~ "Fixed",
+                                                          .default = as.character(SD))) %>% 
+                         tidytable::select(Name, Value, SD) %>% 
                          tidytable::arrange(Name)) %>% 
-  vroom::vroom_write(., here::here(new_year, 'tables', 'key_param_tbl.csv'), delim = ",")
+  tidytable::bind_rows(mdl_res$parameters %>% 
+                         tidytable::select(Label, Value, Parm_StDev) %>% 
+                         tidytable::filter(Label %in% c("NatM_uniform_Fem_GP_1",
+                                                        "NatM_uniform_Fem_GP_1_BLK4repl_2014")) %>% 
+                         tidytable::mutate(Name = c("Natural mortality (all years)",
+                                                    "Natural mortality (2014-2016)")) %>% 
+                         tidytable::mutate(Value = round(Value, digits = 2))%>% 
+                         tidytable::mutate(SD = round(Parm_StDev, digits = 3)) %>% 
+                         tidytable::select(Name, Value, SD) %>% 
+                         tidytable::arrange(Name)) %>% 
+  tidytable::bind_rows(data.frame(Name = "Recruitment/Abundance", Value = "--", SD = "--")) %>% 
+  tidytable::bind_rows(mdl_res$parameters %>% 
+                         tidytable::select(Label, Value, Parm_StDev) %>% 
+                         tidytable::filter(Label %in% c("SR_LN(R0)",
+                                                        "SR_regime_BLK5add_1976",
+                                                        "SR_sigmaR")) %>% 
+                         tidytable::mutate(Name = c("log(mean recruitment)",
+                                                    "Recruitment variability",
+                                                    "1976 Regime adjustment")) %>% 
+                         tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+                         tidytable::mutate(SD = case_when(!is.na(Parm_StDev) ~ round(Parm_StDev, digits = 3),
+                                                          .default = Parm_StDev)) %>% 
+                         tidytable::mutate(SD = case_when(is.na(Parm_StDev) ~ "Fixed",
+                                                          .default = as.character(SD))) %>% 
+                         tidytable::select(Name, Value, SD) %>% 
+                         tidytable::arrange(-Name)) %>% 
+  tidytable::bind_rows(data.frame(Name = "Survey catchability", Value = "--", SD = "--")) %>% 
+  tidytable::bind_rows(mdl_res$parameters %>% 
+                         tidytable::select(Label, Value, Parm_StDev) %>% 
+                         tidytable::filter(Label %in% c("LnQ_base_Srv(4)",
+                                                        "LnQ_base_LLSrv(5)",
+                                                        "LnQ_base_LLSrv(5)_ENV_mult")) %>% 
+                         tidytable::mutate(Name = c("Bottom trawl survey",
+                                                    "Longline survey",
+                                                    "Longline survey environmental coefficient")) %>% 
+                         tidytable::mutate(Value = case_when(Name %in% c("Bottom trawl survey", "Longline survey") ~ round(exp(Value), digits = 2),
+                                                             .default = round(Value, digits = 2))) %>% 
+                         tidytable::mutate(SD = case_when(Name %in% c("Bottom trawl survey", "Longline survey") ~ round(Value * Parm_StDev, digits = 3),
+                                                          .default = round(Parm_StDev, digits = 3))) %>% 
+                         tidytable::select(Name, Value, SD) %>% 
+                         tidytable::arrange(Name)) -> key_param_tbl
+
+vroom::vroom_write(key_param_tbl, here::here(new_year, 'tables', 'key_param_tbl.csv'), delim = ",")
+
+# ssb prev mdl comp table ----
+
+prev_mdl_res$derived_quants %>% 
+  tidytable::select(Label, Value, StdDev) %>% 
+  tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
+  tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+  tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+  tidytable::filter(Year <= new_year) %>% 
+  tidytable::mutate("Previous Sp.Bio" = round(Value / 2, digits = 0),
+                    "Previous SD[Sp.Bio]" = round(StdDev / 2, digits = 0)) %>%
+  tidytable::select(Year, "Previous Sp.Bio", "Previous SD[Sp.Bio]") %>% 
+  tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
+  tidytable::left_join(prev_mdl_res$timeseries %>% 
+                         tidytable::select(Yr, Bio_all) %>% 
+                         tidytable::filter(Yr <= new_year) %>% 
+                         tidytable::select(Year = Yr, "Previous Tot.Bio." = Bio_all) %>% 
+                         tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))) %>% 
+  tidytable::full_join(mdl_res$derived_quants %>% 
+                         tidytable::select(Label, Value, StdDev) %>% 
+                         tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
+                         tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+                         tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+                         tidytable::filter(Year <= new_year + 1) %>% 
+                         tidytable::mutate("Current Sp.Bio" = round(Value / 2, digits = 0),
+                                           "Current SD[Sp.Bio]" = round(StdDev / 2, digits = 0)) %>%
+                         tidytable::select(Year, "Current Sp.Bio", "Current SD[Sp.Bio]") %>% 
+                         tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
+                         tidytable::left_join(mdl_res$timeseries %>% 
+                                                tidytable::select(Yr, Bio_all) %>% 
+                                                tidytable::filter(Yr <= new_year + 1) %>% 
+                                                tidytable::select(Year = Yr, " Current Tot.Bio." = Bio_all) %>% 
+                                                tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))))) %>%
+  tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) -> bio_comp_tbl
+
+vroom::vroom_write(bio_comp_tbl, here::here(new_year, 'tables', 'bio_comp_tbl.csv'), delim = ",")
+
+
+# rec prev mdl comp table ----
+
+prev_mdl_res$derived_quants %>% 
+  tidytable::select(Label, Value, StdDev) %>% 
+  tidytable::slice(grep("Recr", Label, perl = TRUE)) %>% 
+  tidytable::filter(!(Label %in% c("Recr_Virgin", "Recr_Initial", "Recr_unfished"))) %>% 
+  tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+  tidytable::filter(Year <= new_year - 1) %>% 
+  tidytable::mutate("Previous Recruitment" = round(Value / 1000000, digits = 2),
+                    "Previous SD[Rec]" = round(StdDev / 1000000, digits = 2)) %>%
+  tidytable::select(Year, "Previous Recruitment", "Previous SD[Rec]") %>% 
+  tidytable::full_join(mdl_res$derived_quants %>% 
+                         tidytable::select(Label, Value, StdDev) %>% 
+                         tidytable::slice(grep("Recr", Label, perl = TRUE)) %>% 
+                         tidytable::filter(!(Label %in% c("Recr_Virgin", "Recr_Initial", "Recr_unfished"))) %>% 
+                         tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+                         tidytable::filter(Year <= new_year) %>% 
+                         tidytable::mutate("Current Recruitment" = round(Value / 1000000, digits = 2),
+                                           "Current SD[Rec]" = round(StdDev / 1000000, digits = 2)) %>%
+                         tidytable::select(Year, "Current Recruitment", "Current SD[Rec]")) -> rec_comp_tbl
+
+rec_comp_tbl %>% 
+  tidytable::bind_rows(data.frame(Year = "Mean 1977 - (Final year - 2)", 
+                                  rec_comp_tbl %>% tidytable::summarise(prev_rec = round(mean(.$"Previous Recruitment"[which(.$Year <= new_year - 3)]), digits = 2)),
+                                  sd_prev = "",
+                                  rec_comp_tbl %>% tidytable::summarise(curr_rec = round(mean(.$"Current Recruitment"[which(.$Year <= new_year - 2)]), digits = 2)),
+                                  sd_curr = "") %>% 
+                         tidytable::rename("Previous Recruitment" = prev_rec, "Previous SD[Rec]" = sd_prev, "Current Recruitment" = curr_rec, "Current SD[Rec]" = sd_curr)) %>%
+  tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) -> rec_comp_tbl
+
+vroom::vroom_write(rec_comp_tbl, here::here(new_year, 'tables', 'rec_comp_tbl.csv'), delim = ",")
+
+
+# F table ----
+
+mdl_res$derived_quants %>% 
+  tidytable::select(Label, Value, StdDev) %>% 
+  tidytable::slice(grep("F_", Label, perl = TRUE)) %>% 
+  tidytable::filter(!(Label %in% c("annF_Btgt", "annF_SPR", "annF_MSY"))) %>% 
+  tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+  tidytable::filter(Year <= new_year) %>% 
+  tidytable::mutate("Sum Apical F" = round(Value, digits = 3),
+                    "SD[F]" = round(StdDev, digits = 3)) %>%
+  tidytable::select(Year, "Sum Apical F", "SD[F]") %>% 
+  tidytable::left_join(mdl_res$timeseries %>% 
+                         tidytable::select(Yr, Bio_all) %>% 
+                         tidytable::filter(Yr <= new_year) %>% 
+                         tidytable::select(Year = Yr, totbiom = Bio_all) %>% 
+                         tidytable::left_join(mdl_res$timeseries %>% 
+                                                tidytable::select(Year = Yr, c1 = "obs_cat:_1", c2 = "obs_cat:_2", c3 = "obs_cat:_3") %>% 
+                                                tidytable::mutate(totcatch = c1 + c2 + c3) %>% 
+                                                tidytable::select(Year, totcatch)) %>% 
+                         tidytable::filter(Year <= new_year,
+                                           Year >= 1977) %>% 
+                         tidytable::mutate("Total Exploitation" = round(totcatch / totbiom, digits = 3)) %>% 
+                         tidytable::select(-totcatch, -totbiom)) -> F_tbl
+
+vroom::vroom_write(F_tbl, here::here(new_year, 'tables', 'F_tbl.csv'), delim = ",")
+
+
+# hist ref pts table ----
+
+
+old_ref_pts %>% 
+  tidytable::mutate(across(.cols = names(.)[c(2:3, 5:6)], ~format(., big.mark = ","))) %>% 
+  tidytable::bind_rows(data.frame(Year = curr_2yr$Yr[1],
+                                  sb100 = format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","),
+                                  sb40 = format(round(0.4 * curr_2yr$SB100[1], digits = 0), big.mark = ","),
+                                  f40 = round(curr_2yr$F40[1], digits = 2),
+                                  ofl = format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                  abc = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","))) -> ref_pts_tbl
+
+vroom::vroom_write(ref_pts_tbl, here::here(new_year, 'tables', 'ref_pts_tbl.csv'), delim = ",")
+
+# mscen table ----
+
+
+data.table(Year = "Catch", 
+           "Scenario 1" = "-", 
+           "Scenario 2" = "-", 
+           "Scenario 3" = "-", 
+           "Scenario 4" = "-", 
+           "Scenario 5" = "-", 
+           "Scenario 6" = "-", 
+           "Scenario 7" = "-") %>% 
+  tidytable::bind_rows(mscen %>% 
+                         tidytable::filter(...1 <= 14) %>% 
+                         tidytable::select(Year = Catch.Yr,
+                                           "Scenario 1" = Catch.scenario_1,
+                                           "Scenario 2" = Catch.scenario_2,
+                                           "Scenario 3" = Catch.scenario_3,
+                                           "Scenario 4" = Catch.scenario_4,
+                                           "Scenario 5" = Catch.scenario_5,
+                                           "Scenario 6" = Catch.scenario_6,
+                                           "Scenario 7" = Catch.scenario_7) %>% 
+                         tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(round(., digits = 0), big.mark = ",")))) %>% 
+  tidytable::bind_rows(data.table(Year = "F", 
+                                  "Scenario 1" = "-", 
+                                  "Scenario 2" = "-", 
+                                  "Scenario 3" = "-", 
+                                  "Scenario 4" = "-", 
+                                  "Scenario 5" = "-", 
+                                  "Scenario 6" = "-", 
+                                  "Scenario 7" = "-") %>% 
+                         tidytable::bind_rows(mscen %>% 
+                                                tidytable::filter(...1 <= 14) %>% 
+                                                tidytable::select(Year = F.Yr,
+                                                                  "Scenario 1" = F.scenario_1,
+                                                                  "Scenario 2" = F.scenario_2,
+                                                                  "Scenario 3" = F.scenario_3,
+                                                                  "Scenario 4" = F.scenario_4,
+                                                                  "Scenario 5" = F.scenario_5,
+                                                                  "Scenario 6" = F.scenario_6,
+                                                                  "Scenario 7" = F.scenario_7) %>% 
+                                                tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2))))) %>% 
+  tidytable::bind_rows(data.table(Year = "SSB", 
+                                  "Scenario 1" = "-", 
+                                  "Scenario 2" = "-", 
+                                  "Scenario 3" = "-", 
+                                  "Scenario 4" = "-", 
+                                  "Scenario 5" = "-", 
+                                  "Scenario 6" = "-", 
+                                  "Scenario 7" = "-") %>% 
+                         tidytable::bind_rows(mscen %>% 
+                                                tidytable::filter(...1 <= 14) %>% 
+                                                tidytable::select(Year = SSB.Yr,
+                                                                  "Scenario 1" = SSB.scenario_1,
+                                                                  "Scenario 2" = SSB.scenario_2,
+                                                                  "Scenario 3" = SSB.scenario_3,
+                                                                  "Scenario 4" = SSB.scenario_4,
+                                                                  "Scenario 5" = SSB.scenario_5,
+                                                                  "Scenario 6" = SSB.scenario_6,
+                                                                  "Scenario 7" = SSB.scenario_7) %>% 
+                                                tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(round(., digits = 0), big.mark = ","))))) -> mscen_tbl
+
+vroom::vroom_write(mscen_tbl, here::here(new_year, 'tables', 'mscen_tbl.csv'), delim = ",")
+
+# exec summ table ----
+
+data.table(Quantity = "M (natural mortality rate)", 
+           prev1 = paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+           prev2 = paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+           curr1 = paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
+           curr2 = paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*")) %>% 
+  tidytable::bind_rows(data.table(Quantity = "Tier", 
+                                  prev1 = ifelse(prev_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
+                                  prev2 = ifelse(prev_2yr$SSB_PER[2] > 0.4, "3a", "3b"), 
+                                  curr1 = ifelse(curr_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
+                                  curr2 = ifelse(curr_2yr$SSB_PER[2] > 0.4, "3a", "3b"))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "Projected total (age 0+) biomass (t)", 
+                                  prev1 = format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year)], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
+                                  curr1 = format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
+                                  curr2 = format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 2)], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "Female spawning biomass(t)", 
+                                  prev1 = "", 
+                                  prev2 = "", 
+                                  curr1 = "", 
+                                  curr2 = "")) %>% 
+  tidytable::bind_rows(data.table(Quantity = "Projected", 
+                                  prev1 = format(round(prev_2yr$SSB[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$SSB[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$SSB[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$SSB[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "", 
+                                  prev1 = "", 
+                                  prev2 = "", 
+                                  curr1 = "", 
+                                  curr2 = "")) %>% 
+  tidytable::bind_rows(data.table(Quantity = "B100%", 
+                                  prev1 = format(round(prev_2yr$SB100[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$SB100[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$SB100[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "B40%", 
+                                  prev1 = format(round(prev_2yr$SB40[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$SB40[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$SB40[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$SB40[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "B35%", 
+                                  prev1 = format(round(prev_2yr$SB35[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$SB35[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$SB35[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$SB35[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "FOFL", 
+                                  prev1 = round(prev_2yr$F35[1], digits = 2),
+                                  prev2 = round(prev_2yr$F35[2], digits = 2),
+                                  curr1 = round(curr_2yr$F35[1], digits = 2),
+                                  curr2 = round(curr_2yr$F35[2], digits = 2))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "maxFABC", 
+                                  prev1 = round(prev_2yr$F40[1], digits = 2),
+                                  prev2 = round(prev_2yr$F40[2], digits = 2),
+                                  curr1 = round(curr_2yr$F40[1], digits = 2),
+                                  curr2 = round(curr_2yr$F40[2], digits = 2))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "FABC", 
+                                  prev1 = round(prev_2yr$F40[1], digits = 2),
+                                  prev2 = round(prev_2yr$F40[2], digits = 2),
+                                  curr1 = round(curr_2yr$F40[1], digits = 2),
+                                  curr2 = round(curr_2yr$F40[2], digits = 2))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "OFL (t)", 
+                                  prev1 = format(round(prev_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$C_OFL[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$C_OFL[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "maxABC (t)", 
+                                  prev1 = format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","))) %>% 
+  tidytable::bind_rows(data.table(Quantity = "ABC (t)", 
+                                  prev1 = format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                  prev2 = format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
+                                  curr1 = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","),
+                                  curr2 = format(round(curr_2yr$C_ABC[2], digits = 0), big.mark = ","))) -> exec_summ_tbl
+
+
+vroom::vroom_write(exec_summ_tbl, here::here(new_year, 'tables', 'exec_summ_tbl.csv'), delim = ",")
 
 
 
@@ -546,7 +850,4 @@ data.frame(Name = "Key parameters", Value = "--") %>%
 
 
 
-
-
-
-
+  

@@ -1,11 +1,14 @@
 Parameter,Number
+Recruitment/Initial abundance,--
 Early Init Devs,10
 Early Rec Dev,1
 Main Rec Dev,47
 log(mean recruitment),1
 1976 R reg.,1
-Growth,5
+Biology,--
+Growth (LVB),5
 Natural Mortality,2
+Catchability/Selectivity,--
 Survey catchability (trawl),1
 Survey catchability (longline),2
 Trawl survey selex,16

@@ -1,21 +1,21 @@
 Component,Value
 Total negative log-likelihood,2068.39
-Survey indices,--
+Survey indices,-0.97
 Bottom trawl survey index,-6.39
 Longline survey index,5.42
-Length composition,--
+Length composition,1340.79
 Trawl fishery length composition,434.8
 Longline fishery length composition,259.66
 Pot fishery length composition,311.19
 Bottom trawl survey length composition,156.98
 Longline survey length composition,178.17
-Conditional age-at-length,--
+Conditional age-at-length,721.52
 Trawl fishery CAAL,122.29
 Longline fishery CAAL,126.99
 Pot fishery CAAL,98.14
 Bottom trawl survey CAAL,374.1
-Parameter deviations and priors,--
+Parameter deviations and priors,7.04
 Recruitment deviations,-2.62
-Initial abundance deviations,2.78
+Initial Regime (InitEQ_Regime),2.78
 Parameter priors,1.15
 Selectivity deviations,5.74
