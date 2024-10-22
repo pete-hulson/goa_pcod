@@ -254,7 +254,7 @@ run_mdl_anlys <- function(new_year = NULL,
   tictoc::tic()
   
   
-  # get data ----
+  ## get data ----
   biomass_dat <- vroom::vroom(here::here(new_year,'data','raw','twl_srvy_index.csv'), 
                               delim = ",", 
                               progress = FALSE, 
@@ -267,7 +267,7 @@ run_mdl_anlys <- function(new_year = NULL,
                       biomass = biom,
                       cv)
 
-  # run rema model for trawl survey only ----
+  ## run rema model for trawl survey only ----
   apport_in <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("pcod trawl survey"),
                                                          biomass_dat = biomass_dat))
   apport_mdl <- SimDesign::quiet(rema::fit_rema(apport_in))
