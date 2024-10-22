@@ -34,7 +34,8 @@ pkg_cran <- c("data.table",
               "R.utils", 
               "parallel", 
               "doParallel", 
-              "foreach")
+              "foreach",
+              "SimDesign")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
