@@ -26,32 +26,169 @@ if("nmfspalette" %in% installed.packages() == FALSE){
 
 lapply(libs, library, character.only = TRUE)
 
-# Current model name
-Model_name_prev <- "2019.1a-2022"
-Model_name_old <- "2019.1a-2023"
-Model_name_new <- "2019.1b-2023"
-
+# set up ----
+# recommended model name
+rec_mdl <- "2019.1e.5cm-2024"
+# last year's model with updated data (base model)
+base_mdl <- "2019.1b-2024"
+# last year's model
+prev_mdl <- "2019.1b-2023"
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# Do you want to call data? If so, set up connections
-data_query = FALSE
+# read in necessary info ----
 
-if(data_query == TRUE){
-  db <- read.csv(here::here(new_year, "database_specs.csv"))
-  afsc_user = db$username[db$database == "AFSC"]
-  afsc_pass = db$password[db$database == "AFSC"]
-  akfin_user = db$username[db$database == "AKFIN"]
-  akfin_pass = db$password[db$database == "AKFIN"]
-  
-  AFSC = odbcConnect("AFSC", 
-                     afsc_user, 
-                     afsc_pass, 
-                     believeNRows=FALSE)
-  CHINA = odbcConnect("AKFIN", 
-                      akfin_user, 
-                      akfin_pass, 
-                      believeNRows=FALSE)}
+# read in model output
+rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
+                               verbose = FALSE,
+                               printstats = FALSE)
+base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
+                                verbose = FALSE,
+                                printstats = FALSE)
+prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
+                                verbose = FALSE,
+                                printstats = FALSE)
+
+# catch data
+fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
+                        progress = FALSE, 
+                        show_col_types = FALSE)
+
+# set up directory to plop tables into
+if (!dir.exists(here::here(new_year, "output", "safe_plots"))) {
+  dir.create(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
+}
+
+# run r4ss to plot recommended model ----
+
+# plot recommended model
+r4ss::SS_plots(rec_mdl_res,
+               printfolder = "",
+               dir = here::here(new_year, "output", "safe_plots", "r4ss"))
+
+# plot catch by fleet ----
+r4ss::SSplotCatch(rec_mdl_res,
+                  subplots = 2,
+                  fleetcols = scico::scico(3, palette = 'roma'),
+                  plot = FALSE,
+                  print = TRUE,
+                  pheight = 3.777,
+                  plotdir = here::here(new_year, "output", "safe_plots"))
+invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "catch2_landings_stacked.png"),
+                      to = here::here(new_year, "output", "safe_plots", "catch.png")))
+
+
+# plot model data ----
+r4ss::SSplotData(rec_mdl_res,
+                 subplots = 2,
+                 fleetcol = scico::scico(5, palette = 'roma'),
+                 plot = FALSE,
+                 print = TRUE,
+                 pheight = 6.5,
+                 plotdir = here::here(new_year, "output", "safe_plots"))
+invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "data_plot2.png"),
+                      to = here::here(new_year, "output", "safe_plots", "data.png")))
+
+
+# plot vessel participation ----
+tidytable::expand_grid(year = seq(new_year - 20, new_year),
+                       area = c("Central gulf", "Western gulf"),
+                       gear = c("Longline", "Jig", "Pot", "Trawl")) %>% 
+  tidytable::left_join(fed_raw %>% 
+                         tidytable::filter(trip_target_code == "C",
+                                           year >= new_year - 20,
+                                           fmp_subarea %in% c("CG", "WG")) %>% 
+                         tidytable::summarise(num_ves = length(unique(vessel_id)), 
+                                              .by = c(year, fmp_gear, fmp_subarea)) %>% 
+                         tidytable::mutate(gear = case_when(fmp_gear == "HAL" ~ "Longline",
+                                                            fmp_gear == "JIG" ~ "Jig",
+                                                            fmp_gear == "OTH" ~ "Other",
+                                                            fmp_gear == "POT" ~ "Pot",
+                                                            fmp_gear == "TRW" ~ "Trawl"),
+                                           area = case_when(fmp_subarea == "CG" ~ "Central gulf",
+                                                            fmp_subarea == "WG" ~ "Western gulf")) %>% 
+                         tidytable::select(year, area, gear, num_ves)) %>% 
+  tidytable::mutate(num_ves = replace_na(num_ves, 0)) -> num_vess
+
+
+vess_plot <- ggplot(num_vess, 
+                    aes(x = year, y = num_ves, fill = gear)) +
+  geom_area(stat = "identity") +
+  scico::scale_fill_scico_d(palette = 'roma') +
+  scale_x_continuous(breaks = c((new_year - 20):new_year), limits = c((new_year - 20), new_year)) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "top") +
+  labs(y = "Number of vessels", x = "Year", fill = "Gear Type") +
+  facet_wrap( ~ area, scale = "free_y", nrow = 2)
+
+ggsave(filename = "num_vess.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 4.5,
+       units = "in")
+
+# plot cumulative catch ----
+
+tidytable::expand_grid(year = seq(new_year - 4, new_year - 1),
+                       gear = c("Longline", "Jig", "Pot", "Trawl"), 
+                       area = c("Central gulf", "Western gulf"),
+                       week = 0:52) %>% 
+  tidytable::bind_rows(expand.grid(year = new_year, 
+                                   gear = c("Longline", "Jig", "Pot", "Trawl"), 
+                                   area = c("Central gulf", "Western gulf"),
+                                   week = 0:as.numeric(format(Sys.Date(), format = "%W")))) %>% 
+  tidytable::left_join(fed_raw %>% 
+                         tidytable::mutate(week = as.numeric(as.character(format(as.Date(week_end_date), "%W")))) %>% 
+                         tidytable::filter(year >= new_year - 4,
+                                           fmp_subarea %in% c("CG", "WG")) %>% 
+                         tidytable::mutate(gear = case_when(fmp_gear == "HAL" ~ "Longline",
+                                                            fmp_gear == "JIG" ~ "Jig",
+                                                            fmp_gear == "OTH" ~ "Other",
+                                                            fmp_gear == "POT" ~ "Pot",
+                                                            fmp_gear == "TRW" ~ "Trawl"),
+                                           area = case_when(fmp_subarea == "CG" ~ "Central gulf",
+                                                            fmp_subarea == "WG" ~ "Western gulf")) %>% 
+                         tidytable::summarise(tons = sum(weight_posted), .by = c(week, gear, year, area))) %>% 
+  tidytable::mutate(tons = replace_na(tons, 0)) %>% 
+  tidytable::mutate(catch = cumsum(tons), .by = c(year, gear, area)) -> cumul_catch
+
+cumul_plot <- ggplot(data = cumul_catch, 
+                   aes(x = week, y = catch, color = factor(year))) + 
+  geom_point() + 
+  geom_path(aes(group = year)) +
+  facet_grid(gear ~ area, scale = "free_y") +
+  theme_bw(base_size = 14) +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Week", y = "Cummulative Catch (t)", color = "Year")
+
+ggsave(filename = "cumul_catch.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+# plot cod bycatch ----
+
+
+fed_raw %>% 
+  tidytable::filter(agency_gear_code == "PTR")
+
+
+
+
+
+
+
+
+
+scico::scico(3, palette='roma')
+
+
 
 
 # Define plot function
