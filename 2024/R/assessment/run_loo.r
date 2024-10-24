@@ -169,22 +169,32 @@ year_loo <- function(dir = NULL,
   x4 <- x2[variable %like% "_SD"]
   x3$SD <- x4$value
   x3$Year <- cyr - x3$LOO + 1
+  x3 %>% 
+    tidytable::mutate(variable = case_when(variable == "Nat_M" ~ "Base Natural Mortality",
+                                           variable == "annF_Btgt" ~ "F40%",
+                                           variable == "Q" ~ "Bottom trawl survey catchability",
+                                           variable == "SSB_UN" ~ "Unfished Spawning Biomass",
+                                           variable == "SSBfore" ~ "One-year forecasted Spawning Biomass",
+                                           variable == "ABCfore" ~ "One-year forecasted ABC")) -> x3
   
   ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
-              aes(x = Year,y = value)) +
+         aes(x = Year,y = value)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
                aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
-    theme_bw(base_size = 16) +
+    theme_bw(base_size = 14) +
     labs(x = 'Leave one out year', y = 'Parameter value') +
     facet_wrap( ~ variable, 
                 scales = "free_y", 
-                ncol = 2) +
+                ncol = 2, 
+                labeller = labeller(variable = label_wrap_gen(20))) +
     scale_x_continuous(limits = c(min(x3[LOO != 0]$Year) - 0.5, max(x3[LOO != 0]$Year) + 0.5), 
                        breaks = seq(min(x3[LOO != 0]$Year), max(x3[LOO != 0]$Year), by = 1)) +
-    theme(axis.text.x = element_text(vjust = 0.5, angle = 90))
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(vjust = 0.5, angle = 90))
   
   ## Table of LOO analysis ----
   x3 <- data.table(Nat_M = x$Nat_M,
@@ -461,7 +471,13 @@ data_loo <- function(dir = NULL,
   x4 <- x2[variable %like% "_SD"]
   x3$SD <- x4$value
   x3$Data <- rep(c('Base', loo_mdls), times = 6)
-  
+  x3 %>% 
+    tidytable::mutate(variable = case_when(variable == "Nat_M" ~ "Base Natural Mortality",
+                                           variable == "annF_Btgt" ~ "F40%",
+                                           variable == "Q" ~ "Bottom trawl survey catchability",
+                                           variable == "SSB_UN" ~ "Unfished Spawning Biomass",
+                                           variable == "SSBfore" ~ "One-year forecasted Spawning Biomass",
+                                           variable == "ABCfore" ~ "One-year forecasted ABC")) -> x3
   ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
               aes(x = Data, y = value)) +
@@ -469,10 +485,46 @@ data_loo <- function(dir = NULL,
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
                aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
-    theme_bw(base_size = 16) +
+    theme_bw(base_size = 14) +
     labs(x = 'Leave one out data', y = 'Parameter value') +
-    theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +
-    facet_wrap( ~ variable, scales = "free_y", ncol = 2)
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+    facet_wrap( ~ variable, scales = "free_y", ncol = 2, 
+                labeller = labeller(variable = label_wrap_gen(20)))
+  
+  
+  
+  d <- ggplot(x3[LOO != 0],
+              aes(x = Year,y = value)) +
+    geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
+    geom_point(size = 3) +
+    geom_hline(data = x3[LOO == 0],
+               aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
+    theme_bw(base_size = 14) +
+    labs(x = 'Leave one out year', y = 'Parameter value') +
+    facet_wrap( ~ variable, 
+                scales = "free_y", 
+                ncol = 2, 
+                labeller = labeller(variable = label_wrap_gen(20))) +
+    scale_x_continuous(limits = c(min(x3[LOO != 0]$Year) - 0.5, max(x3[LOO != 0]$Year) + 0.5), 
+                       breaks = seq(min(x3[LOO != 0]$Year), max(x3[LOO != 0]$Year), by = 1)) +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(vjust = 0.5, angle = 90))
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   output <- list(d)
   

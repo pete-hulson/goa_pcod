@@ -518,7 +518,37 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery length query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-
+  ## domestic fishery observer catch data ----
+  cat("\u231b", crayon::blue("working on domestic fishery observer catch query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
+                        dplyr::filter(SPECIES == fsh_sp_code),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(gear = gear_type,
+                  weight_kg = extrapolated_weight,
+                  lon = londd_start,
+                  lat = latdd_start,
+                  hday = haul_date.x,
+                  area = nmfs_area) %>% 
+    dplyr::filter(area >= 600,
+                  area <= 699,
+                  area != 670) -> akfin_obsc
+  
+  dplyr::collect(akfin_obsc) %>% 
+    dplyr::mutate(year = lubridate::year(hday),
+                  gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
+                                          gear == 6 ~ 'pot',
+                                          gear %in% c(5, 7, 9, 10, 11, 68, 8) ~ 'longline')) %>%  
+    dplyr::filter(year <= new_year,
+                  year >= 2015) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_obs_catch.csv'), delim = ",")
+  
+  capture.output(dplyr::show_query(akfin_obsc), 
+                 file = here::here(new_year, "data", "sql", "fsh_obs_catch_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery observer catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
   ## foreign fishery length data ----
   cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('pre1991.foreign_haul')) %>% 
@@ -596,4 +626,55 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
+  ## pelagic trawl catch data ----
+  cat("\u231b", crayon::blue("working on domestic pelagic trawl catch query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::filter(GEAR_TYPE == 2) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(species,
+                  weight_kg = extrapolated_weight,
+                  hday = haul_date.x,
+                  area = nmfs_area) %>% 
+    dplyr::filter(area %in% c(620, 630)) -> pel_twl
+
+  dplyr::collect(pel_twl) %>% 
+    dplyr::mutate(year = lubridate::year(hday),
+                  month = lubridate::month(hday)) %>% 
+    dplyr::filter(month %in% seq(1,3),
+                  year > 2007) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'pel_twl.csv'), delim = ",")
+  
+  capture.output(dplyr::show_query(pel_twl), 
+                 file = here::here(new_year, "data", "sql", "pel_twl_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("pelagic trawl query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  ## shallow water flats pcod catch ----
+  cat("\u231b", crayon::blue("working on shallow water flats catch query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::filter(TRIP_TARGET_NAME == "Shallow Water Flatfish - GOA",
+                  GEAR_TYPE == 1) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(species,
+                  gear = gear_type,
+                  weight_kg = extrapolated_weight,
+                  hday = haul_date.x,
+                  area = nmfs_area) %>% 
+    dplyr::filter(area > 609,
+                  area < 650) -> swf_catch
+  
+  dplyr::collect(swf_catch) %>% 
+    dplyr::mutate(year = lubridate::year(hday)) %>%  
+    dplyr::filter(year > 2007) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'swf_catch.csv'), delim = ",")
+  
+  capture.output(dplyr::show_query(swf_catch), 
+                 file = here::here(new_year, "data", "sql", "swf_catch_sql.txt"))
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("swf catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+ 
 }

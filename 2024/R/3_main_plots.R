@@ -18,11 +18,31 @@ libs <- c("r4ss",
           "nmfspalette",
           "afscdata")
 
+
+pkg_cran <- c("data.table",
+              "tidyverse",
+              "vroom",
+              "here",
+              "tictoc",
+              "adnuts",
+              "flextable", 
+              "R.utils", 
+              "parallel", 
+              "doParallel", 
+              "foreach",
+              "SimDesign")
+
+
 if(length(libs[which(libs %in% rownames(installed.packages()) == FALSE )]) > 0) {
   install.packages(libs[which(libs %in% rownames(installed.packages()) == FALSE)])}
 
 if("nmfspalette" %in% installed.packages() == FALSE){
   remotes::install_github("nmfs-fish-tools/nmfspalette")}
+
+if("ss3diags" %in% installed.packages() == FALSE){
+  remotes::install_github("jabbamodel/ss3diags", force = TRUE)}
+
+
 
 lapply(libs, library, character.only = TRUE)
 
@@ -54,10 +74,47 @@ fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv
                         progress = FALSE, 
                         show_col_types = FALSE)
 
+# pel twl catch data
+pel_twl <- vroom::vroom(here::here(new_year, "data", "raw", "pel_twl.csv"), 
+                        progress = FALSE, 
+                        show_col_types = FALSE)
+
+# swf catch data
+swf <- vroom::vroom(here::here(new_year, "data", "raw", "swf_catch.csv"), 
+                    progress = FALSE, 
+                    show_col_types = FALSE)
+# env data
+env_data <- vroom::vroom(here::here(new_year, 'data', 'raw_cfsr.csv'), 
+                         progress = FALSE, 
+                         show_col_types = FALSE)
+# survey specimen data
+age_data <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), 
+                         progress = FALSE, 
+                         show_col_types = FALSE)
+
+# retrospective results
+load(here::here(new_year, "output", "retro", "retrosumm_rec.RData"))
+# historical models
+hist_mdls <- vroom::vroom(here::here(new_year, 'data', 'hist_mdls.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
+# leave-one-out results
+load(here::here(new_year, "output", "loo", "loo_data.RData"))
+load(here::here(new_year, "output", "loo", "loo_year.RData"))
+
+
+
+
+
 # set up directory to plop tables into
 if (!dir.exists(here::here(new_year, "output", "safe_plots"))) {
   dir.create(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
 }
+
+
+
+
+
 
 # run r4ss to plot recommended model ----
 
@@ -172,11 +229,446 @@ ggsave(filename = "cumul_catch.png",
        units = "in")
 
 
-# plot cod bycatch ----
+# auxiliary indices ----
+pel_twl %>% 
+  tidytable::summarise(ncod = length(unique(weight_kg[species == 202])),
+                       nhauls = length(unique(weight_kg)),
+                       .by = c(year, area)) %>% 
+  tidytable::mutate(pcod = ncod / nhauls) %>% 
+  tidytable::summarise(pcod = mean(pcod), .by = year) %>% 
+  tidytable::mutate(type = "Proportion of pelagic hauls with Pcod",
+                    index = "Recruitment") %>% 
+  tidytable::bind_rows(swf %>% 
+                         tidytable::summarise(cod = sum(weight_kg[species == 202]),
+                                              tot = sum(weight_kg),
+                                              .by = year) %>% 
+                         tidytable::mutate(pcod = cod / tot) %>% 
+                         tidytable::mutate(type = "Proportion of Pcod catch in Shallow water flatfish",
+                                           index = "Adult") %>% 
+                         tidytable::select(year, pcod, type, index)) %>% 
+  tidytable::bind_rows(data.table(rec_mdl_res$cpue) %>% 
+                         tidytable::filter(Fleet == 7) %>% 
+                         tidytable::mutate(pcod = as.numeric(Obs),
+                                           type = "ADF&G trawl survey (density)",
+                                           index = "Adult") %>% 
+                         tidytable::bind_rows(data.table(rec_mdl_res$cpue) %>% 
+                                                tidytable::filter(Fleet == 9) %>% 
+                                                tidytable::mutate(pcod = as.numeric(Obs),
+                                                                  type = "Age-0 beach seine survey (numbers/haul)",
+                                                                  index = "Recruitment")) %>% 
+                         tidytable::select(year = Yr, pcod, type, index)) %>% 
+  tidytable::filter(year >= 2006) -> aux_indx_dat
 
 
-fed_raw %>% 
-  tidytable::filter(agency_gear_code == "PTR")
+aux_indx <- ggplot(aux_indx_dat, aes(year, pcod, colour = index)) +
+  geom_line(linetype = 2) +
+  geom_point() +
+  facet_wrap(~type, ncol = 2, scale = "free_y", labeller = labeller(type = label_wrap_gen(30))) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Year", y = "Pacific cod auxiliary indices", color = "Index") +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "top") +
+  scale_x_continuous(breaks = c(2006:new_year), limits = c(2006, new_year))
+
+ggsave(filename = "aux_indx.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+# fitted survey indices ----
+
+data.table(rec_mdl_res$cpue) %>% 
+  tidytable::mutate(obs = as.numeric(Obs),
+                    sd = as.numeric(SE_input) * obs,
+                    pred = as.numeric(Exp)) %>% 
+  tidytable::select(srv = Fleet, year = Yr, obs, pred, sd) %>% 
+  tidytable::filter(srv %in% c(4, 5)) %>% 
+  tidytable::mutate(name = case_when(srv == 4 ~ "AFSC trawl survey numbers (1000s)",
+                                     srv == 5 ~ "AFSC longline survey RPNs")) %>% 
+  tidytable::select(-srv) -> indx_dat
+
+
+ggplot(data = indx_dat, aes(x = year, y = obs, col = name)) +
+  geom_point() +
+  geom_line(aes(y = pred), size = 0.777) +
+  theme_bw(base_size = 14) +
+  facet_wrap(~ name, 
+             ncol = 1, 
+             scales = "free_y") +
+  geom_errorbar(aes(ymin = obs - 1.96 * sd, ymax = obs + 1.96 * sd), width = 0.25) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none") +
+  labs(x = "Year", y = "Pacific cod survey index") +
+  scale_x_continuous(breaks = c(min(indx_dat$year):max(indx_dat$year)), limits = c(min(indx_dat$year), max(indx_dat$year)))
+
+ggsave(filename = "srv_indx.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 5.5,
+       units = "in")
+
+# cfsr index ----
+env_data %>% 
+  filter(Month == 6) %>%
+  select(Year, '0_20') %>% 
+  rename(l20 = '0_20') %>% 
+  mutate(sub = case_when(Year <= 2012 & Year >= 1982 ~ l20),
+         reg_mu = mean(sub, na.rm = TRUE),
+         anomaly = l20 - reg_mu) %>% 
+  select(Year, anomaly) %>% 
+  mutate(sign = case_when(anomaly > 0 ~ "Pos",
+                          anomaly < 0 ~ "Neg")) -> temp_anom
+
+temp_plot <- ggplot(data = temp_anom, 
+                aes(x = Year, y = anomaly, fill = sign)) + 
+  geom_bar(stat = "identity", width = 0.777) + 
+  geom_hline(yintercept = 0) +
+  scico::scale_fill_scico_d(limits = c("Pos", "Neg"), palette = 'roma') +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = 'none') +
+  labs(y = "Temperature anomaly", x = "Year")
+
+ggsave(filename = "temp_anom.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 4.5,
+       units = "in")
+
+# retrospectives ----
+
+# get recommended model ssb
+rec_mdl_res$derived_quants %>% 
+  tidytable::select(Label, Value, StdDev) %>% 
+  tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
+  tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+  tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+  tidytable::filter(Year <= new_year) %>% 
+  tidytable::select(year = Year, Value, sd = StdDev) %>% 
+  tidytable::mutate(Value = Value / 2, 
+                    sd = sd / 2,
+                    uci = Value + 1.96 * sd,
+                    lci = Value - 1.96 * sd) %>% 
+  tidytable::rename(!!paste0("a", new_year) := Value) -> rec_ssb
+
+# get retro runs (data and model)
+retrosumm_rec$SpawnBio %>% 
+  tidytable::filter(Yr %in% seq(1977, new_year)) %>% 
+  tidytable::mutate(replist2 = case_when(Yr >= new_year ~ NA,
+                                         .default = replist2),
+                    replist3 = case_when(Yr >= new_year - 1 ~ NA,
+                                         .default = replist3),
+                    replist4 = case_when(Yr >= new_year - 2 ~ NA,
+                                         .default = replist4),
+                    replist5 = case_when(Yr >= new_year - 3 ~ NA,
+                                         .default = replist5),
+                    replist6 = case_when(Yr >= new_year - 4 ~ NA,
+                                         .default = replist6),
+                    replist7 = case_when(Yr >= new_year - 5 ~ NA,
+                                         .default = replist7),
+                    replist8 = case_when(Yr >= new_year - 6 ~ NA,
+                                         .default = replist8),
+                    replist9 = case_when(Yr >= new_year - 7 ~ NA,
+                                         .default = replist9),
+                    replist10 = case_when(Yr >= new_year - 8 ~ NA,
+                                         .default = replist10),
+                    replist11 = case_when(Yr >= new_year - 9 ~ NA,
+                                         .default = replist11)) %>% 
+  tidytable::pivot_longer(cols = c(paste0("replist", seq(1, 11)))) %>% 
+  tidytable::mutate(peel = case_when(name == "replist1" ~ "0 years",
+                                     name == "replist2" ~ "-1 years",
+                                     name == "replist3" ~ "-2 years",
+                                     name == "replist4" ~ "-3 years",
+                                     name == "replist5" ~ "-4 years",
+                                     name == "replist6" ~ "-5 years",
+                                     name == "replist7" ~ "-6 years",
+                                     name == "replist8" ~ "-7 years",
+                                     name == "replist9" ~ "-8 years",
+                                     name == "replist10" ~ "-9 years",
+                                     name == "replist11" ~ "-10 years"),
+                    type = "Data retrospective (10 years)") %>% 
+  tidytable::select(type, peel, year = Yr, ssb = value) %>% 
+  tidytable::drop_na() %>% 
+  tidytable::mutate(ssb = ssb / 2) %>% 
+  tidytable::bind_rows(hist_mdls %>% 
+                         tidytable::right_join(rec_ssb %>% 
+                                                 tidytable::select(year, paste0("a", new_year))) %>% 
+                         # write out appended historical models
+                         vroom::vroom_write(., here::here(new_year, "output", "retro", 'hist_mdls.csv'), delim = ",") %>% 
+                         tidytable::pivot_longer(cols = paste0("a", seq(2003, new_year))) %>% 
+                         tidytable::mutate(peel = paste(as.numeric(substr(name, 2, 5)) - new_year, "years"),
+                                           type = "Model retrospective (to 2003 assessment)") %>% 
+                         tidytable::select(type, peel, year, ssb = value) %>% 
+                         tidytable::drop_na()) %>% 
+  tidytable::mutate(peel = factor(peel, levels = paste(seq(0, 2003 - new_year), "years"))) %>% 
+  tidytable::left_join(rec_ssb %>% 
+                         tidytable::select(year, uci, lci)) -> retro_dat
+
+# plot and save
+retro_plot <- ggplot(data = retro_dat, 
+       aes(x = year, y = ssb, color = peel)) +
+  geom_ribbon(aes(ymax = uci, ymin = lci), alpha = 0.5, color = NA) +
+  geom_line(size = 0.777) +
+  facet_wrap(~ type, ncol = 1, scale = "free_y") +
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Year", y = "Spawning biomass (t)", color = "Retrospective peel") +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none")
+
+ggsave(filename = "retro.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+## leave-one-out ----
+
+loo_data
+ggsave(filename = "loo_data.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+loo_year[[2]]
+ggsave(filename = "loo_year.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+# aggregated length comp fit ----
+
+
+r4ss::SSplotComps(replist = rec_mdl_res,
+                  subplots = 21,
+                  kind = "LEN",
+                  fleetnames = c("Trawl Fishery", "Longline Fishery", "Pot Fishery", "AFSC Bottom Trawl Survey", "AFSC Longline Survey"),
+                  showsampsize = FALSE,
+                  showeffN = FALSE,
+                  linescol = scico::scico(1, palette='roma'),
+                  # plot = FALSE,
+                  print = TRUE,
+                  pheight = 6.5,
+                  plotdir = here::here(new_year, "output", "safe_plots"))
+invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "comp_lenfit__aggregated_across_time.png"),
+                      to = here::here(new_year, "output", "safe_plots", "agg_lencomp.png")))
+
+
+
+# growth fit plots ----
+
+# get growth parameters
+t0 = as.numeric(rec_mdl_res$Growth_Parameters$A_a_L0)
+Linf = as.numeric(rec_mdl_res$Growth_Parameters$Linf)
+k = as.numeric(rec_mdl_res$Growth_Parameters$K)
+
+# get growth obs and pred
+age_data %>% 
+  tidytable::select(year, age, "Length (cm)" = length, "Weight (kg)" = weight) %>% 
+  tidytable::pivot_longer(cols = c("Length (cm)", "Weight (kg)")) %>% 
+  tidytable::drop_na() %>% 
+  tidytable::filter(age <= 10) %>% 
+  tidytable::summarise(value = mean(value),
+                       sd_value = sd(value), .by = c(year, age, name)) %>% 
+  tidytable::left_join(rec_mdl_res$wtatage %>% 
+                         tidytable::filter(fleet == -1) %>% 
+                         tidytable::select(-year, -seas, -sex, -bio_pattern, -birthseas, -fleet, -'0') %>% 
+                         tidytable::pivot_longer() %>% 
+                         tidytable::summarise(pred = mean(value), .by = name) %>% 
+                         tidytable::mutate(age = as.numeric(name),
+                                           name = "Weight (kg)") %>% 
+                         tidytable::bind_rows(data.table(age = seq(1, 10),
+                                                         name = "Length (cm)",
+                                                         pred = Linf * (1 - exp(-k * ((seq(1, 10) + 0.5) - t0)))))) -> grwth_data
+
+grwth_plot <- ggplot(data = grwth_data,
+       aes(x = age, y = value, col = factor(year))) +
+  geom_pointrange(aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
+                  position = position_jitter(width = 0.3),
+                  linetype = 'dotted') +
+  geom_line(aes(y = pred), col = "black", size = 0.777) +
+  facet_wrap(~ name, 
+             ncol = 1, 
+             scales = "free_y") +
+  scico::scale_color_scico_d(palette = 'roma') +
+  theme_bw(base_size = 14) +
+  scale_x_continuous(breaks = c(1:10), limits = c(0.5, 10.5)) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Age", y = "Pacific cod growth", col = "Year")
+
+ggsave(filename = "grwth_fit.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+
+# plot profiles ----
+# m profile
+load(here::here(new_year, "output", "profile", "m_prof.RData"))
+r4ss::SSplotProfile(summ_prof,
+                    profile.string = "NatM_uniform_Fem_GP_1",
+                    profile.label = "Base M",
+                    exact = TRUE,
+                    pch = "")
+
+
+profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
+                   m = seq(0.41, 0.57, by = 0.02),
+                   m14 = seq(0.73, 0.89, by = 0.02),
+                   q_twl = seq(0.17, 0.33, by = 0.02),
+                   q_ll = seq(0.07, 0.23, by = 0.02),
+                   q_ll_env = seq(0.84, 1, by = 0.02))
+
+
+get_profile_data <- function(data, profilevec){
+  data %>% 
+    tidytable::filter(Label %in% c("TOTAL",
+                                   "Survey",
+                                   "Length_comp",
+                                   "Age_comp",
+                                   "Recruitment",
+                                   "InitEQ_Regime",
+                                   "Parm_priors",
+                                   "Parm_devs")) %>% 
+    tidytable::pivot_longer(paste0("replist", seq(1, 9))) %>% 
+    tidytable::mutate(par_val = case_when(name == "replist1" ~ profilevec[1],
+                                          name == "replist2" ~ profilevec[2],
+                                          name == "replist3" ~ profilevec[3],
+                                          name == "replist4" ~ profilevec[4],
+                                          name == "replist5" ~ profilevec[5],
+                                          name == "replist6" ~ profilevec[6],
+                                          name == "replist7" ~ profilevec[7],
+                                          name == "replist8" ~ profilevec[8],
+                                          name == "replist9" ~ profilevec[9]),
+                      like = case_when(Label == "TOTAL" ~ "Total",
+                                       Label == "Survey" ~ "Index data",
+                                       Label == "Length_comp" ~ "Length comps",
+                                       Label == "Recruitment" ~ "Recruitment devs",
+                                       Label == "Age_comp" ~ "CAAL",
+                                       Label == "InitEQ_Regime" ~ "Initial equil rec",
+                                       Label == "Parm_priors" ~ "Priors",
+                                       Label == "Parm_devs" ~ "Parameter devs")) %>% 
+    tidytable::select(-name, -Label)
+}
+
+# m
+load(here::here(new_year, "output", "profile", "m_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$m) %>% 
+  tidytable::mutate(par_name = "Base natural mortality") -> m_profile
+
+# r
+load(here::here(new_year, "output", "profile", "r_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$r) %>% 
+  tidytable::mutate(par_name = "Log(Mean Recruitment)") -> r_profile
+
+# m 14-16
+load(here::here(new_year, "output", "profile", "m14_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$m14) %>% 
+  tidytable::mutate(par_name = "Natural mortality 2014-2016") -> m14_profile
+
+# q trawl
+load(here::here(new_year, "output", "profile", "q_twl_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$q_twl) %>% 
+  tidytable::mutate(par_val = exp(par_val)) %>% 
+  tidytable::mutate(par_name = "Bottom trawl survey catchability") -> q_twl_profile
+
+# q ll
+load(here::here(new_year, "output", "profile", "q_ll_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$q_ll) %>% 
+  tidytable::mutate(par_val = exp(par_val)) %>% 
+  tidytable::mutate(par_name = "Longline survey catchability") -> q_ll_profile
+
+# q ll env
+load(here::here(new_year, "output", "profile", "q_ll_env_prof.RData"))
+get_profile_data(summ_prof$likelihoods, profilevec$q_ll_env) %>% 
+  tidytable::mutate(par_name = "Longline survey environmental link") -> q_ll_env_profile
+
+m_profile %>% 
+  tidytable::bind_rows(r_profile) %>% 
+  tidytable::bind_rows(m14_profile) %>% 
+  tidytable::bind_rows(q_twl_profile) %>% 
+  tidytable::bind_rows(q_ll_profile) %>% 
+  tidytable::bind_rows(q_ll_env_profile) %>% 
+  tidytable::mutate(min_like = min(value), .by = c(like, par_name)) %>% 
+  tidytable::mutate(value = value - min_like,
+                    like = factor(like, levels = c("Total", 
+                                                   "Index data",
+                                                   "Length comps",
+                                                   "CAAL", 
+                                                   "Recruitment devs",
+                                                   "Initial equil rec",
+                                                   "Parameter devs",
+                                                   "Priors"))) %>% 
+  tidytable::select(-min_like) -> profile_data
+
+
+ggplot(data = profile_data,
+       aes(x = par_val, y = value, col = like)) +
+  geom_line(size = 0.777) +
+  facet_wrap(~par_name, 
+             scales = "free",
+             ncol = 2, 
+             labeller = labeller(par_name = label_wrap_gen(20))) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = "top",
+        legend.key.width = unit(0.25, 'cm')) +
+  labs(x = "Parameter profile value", y = "Change in negative log-likelihood", col = "")
+
+ggsave(filename = "profile_plot.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+
+
+# r profile
+load(here::here(new_year, "output", "profile", "r_prof.RData"))
+r4ss::SSplotProfile(summ_prof,
+                    profile.string = "SR_LN(R0)",
+                    profile.label = "Log(Mean Recruitment)",
+                    exact = TRUE,
+                    col = scico::scico(9, palette='roma'),
+                    pch = "")
+
+
+# m 14-16 profile
+load(here::here(new_year, "output", "profile", "m14_prof.RData"))
+r4ss::SSplotProfile(summ_prof,
+                    profile.string = "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                    profile.label = "M 2014-2016",
+                    exact = TRUE,
+                    col = scico::scico(9, palette='roma'),
+                    pch = "")
+
+# trawl q profile
+load(here::here(new_year, "output", "profile", "q_twl_prof.RData"))
+r4ss::SSplotProfile(summ_prof,
+                    profile.string = "LnQ_base_Srv(4)",
+                    profile.label = "Log(q_twl)",
+                    exact = TRUE)
 
 
 
@@ -186,7 +678,7 @@ fed_raw %>%
 
 
 
-scico::scico(3, palette='roma')
+
 
 
 
