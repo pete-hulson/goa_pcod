@@ -492,9 +492,7 @@ data_loo <- function(dir = NULL,
           axis.text.x = element_text(vjust = 0.5, angle = 90)) +
     facet_wrap( ~ variable, scales = "free_y", ncol = 2, 
                 labeller = labeller(variable = label_wrap_gen(20)))
-  
-  
-  
+
   d <- ggplot(x3[LOO != 0],
               aes(x = Year,y = value)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
@@ -512,20 +510,7 @@ data_loo <- function(dir = NULL,
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.text.x = element_text(vjust = 0.5, angle = 90))
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   output <- list(d)
   
   return(output)
