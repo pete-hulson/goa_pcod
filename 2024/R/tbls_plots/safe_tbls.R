@@ -363,7 +363,7 @@ safe_tbls <- function(new_year = NULL,
     tidytable::filter(year >= 1990) %>% 
     tidytable::summarise(RPN = sum(rpn),
                          RPN_var = sum(rpn_var), .by = year) %>% 
-    tidytable::mutate(RPN = paste0(format(round(RPN, digits = 0), big.mark = ","), " (", round(sqrt(RPN_var) / RPN, digits = 2),")")) %>% 
+    tidytable::mutate(RPN = paste0(format(round(RPN, digits = 0), big.mark = ","), " (", round(100 * sqrt(RPN_var) / RPN, digits = 1),"%)")) %>% 
     tidytable::select(-RPN_var) %>% 
     tidytable::left_join(bts_raw %>% 
                            tidytable::filter(strata == 99903) %>% 
@@ -371,8 +371,8 @@ safe_tbls <- function(new_year = NULL,
                                                 biom_var = sum(biom_var),
                                                 Abundance = sum(num),
                                                 num_var = sum(num_var), .by = year) %>% 
-                           tidytable::mutate(Biomass = paste0(format(round(Biomass, digits = 0), big.mark = ","), " (", round(sqrt(biom_var) / Biomass, digits = 2), ")"),
-                                             Abundance = paste0(format(round(Abundance / 1000, digits = 0), big.mark = ","), " (", round(sqrt(num_var) / Abundance, digits = 2), ")")) %>% 
+                           tidytable::mutate(Biomass = paste0(format(round(Biomass, digits = 0), big.mark = ","), " (", round(100 * sqrt(biom_var) / Biomass, digits = 1), "%)"),
+                                             Abundance = paste0(format(round(Abundance / 1000, digits = 0), big.mark = ","), " (", round(100 * sqrt(num_var) / Abundance, digits = 1), "%)")) %>% 
                            tidytable::select(-biom_var, -num_var)) %>%
     tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-")))  %>% 
     tidytable::rename(Year = year, "Biomass (t)" = Biomass) -> srv_indx_tbl
