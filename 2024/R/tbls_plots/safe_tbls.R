@@ -165,11 +165,12 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::filter(area_label == 'GOA',
                                              year <= new_year) %>% 
                            tidytable::select(year, tac = total_allowable_catch, abc = acceptable_biological_catch, ofl = overfishing_level) %>% 
-                           tidytable::mutate(ghl = abc - tac,
-                                             across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
+                           tidytable::mutate(ghl = case_when(year != 2020 ~ abc - tac,
+                                                             year == 2020 ~ 2537)) %>% 
+                           tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
                            tidytable::left_join(juris_gr_tbl %>% 
-                                                  tidytable::select(year, catch = tot))) %>% 
-    tidytable::rename(Year = year, Catch = catch, TAC = tac, ABC = abc, OFL = ofl, GHL = ghl)-> tac_abc_tbl
+                                                  tidytable::select(year, catch = tot))) %>%
+    tidytable::rename(Year = year, Catch = catch, TAC = tac, ABC = abc, OFL = ofl, GHL = ghl) -> tac_abc_tbl
   
   vroom::vroom_write(tac_abc_tbl, here::here(new_year, "output", "safe_tables", 'tac_abc_tbl.csv'), delim = ",")
   
