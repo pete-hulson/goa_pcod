@@ -920,7 +920,10 @@ safe_tbls <- function(new_year = NULL,
                                                    format(abc_apport$ABC_yr2[which(abc_apport$region == 'central')], big.mark = ",")),
                                        Eastern = c(paste0(abc_apport$apport[which(abc_apport$region == 'eastern')] * 100, "%"),
                                                    format(abc_apport$ABC_yr1[which(abc_apport$region == 'eastern')], big.mark = ","),
-                                                   format(abc_apport$ABC_yr2[which(abc_apport$region == 'eastern')], big.mark = ",")))
+                                                   format(abc_apport$ABC_yr2[which(abc_apport$region == 'eastern')], big.mark = ",")),
+                                       Total = c(paste0(sum(abc_apport$apport) * 100, "%"),
+                                                 format(sum(abc_apport$ABC_yr1), big.mark = ","),
+                                                 format(sum(abc_apport$ABC_yr2), big.mark = ",")))
   
   vroom::vroom_write(apport_tbl, here::here(new_year, "output", "safe_tables", 'abc_apport_tbl.csv'), delim = ",")
   
