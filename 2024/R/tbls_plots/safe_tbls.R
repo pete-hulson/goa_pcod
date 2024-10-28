@@ -293,8 +293,10 @@ safe_tbls <- function(new_year = NULL,
   psc %>% 
     tidytable::pivot_longer(cols = as.character(seq(min(as.numeric(colnames(psc)[which(colnames(psc) != "species")])),
                                                     max(as.numeric(colnames(psc)[which(colnames(psc) != "species")]))))) %>% 
-    tidytable::mutate(name = as.numeric(name)) %>% 
-    tidytable::pivot_wider(names_from = name, values_from = value) -> psc_table
+    tidytable::mutate(name = as.numeric(name),
+                      value = format(round(value, digits = 0), big.mark = ",")) %>% 
+    tidytable::pivot_wider(names_from = name, values_from = value) %>% 
+    tidytable::rename(Species = species) -> psc_table
   
   vroom::vroom_write(psc_table, here::here(new_year, "output", "safe_tables", 'psc.csv'), delim = ",")
   
