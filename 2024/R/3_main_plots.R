@@ -607,6 +607,48 @@ ggsave(filename = "grwth_fit.png",
        units = "in")
 
 
+# length-weight growth plots ----
+
+# summarise weight data (mean & sd) by year and length
+summ_data <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv')) %>% 
+  tidytable::select(year, length, weight) %>% 
+  tidytable::bind_rows(vroom::vroom(here::here(new_year, 'data', 'raw', 'beachseine_lw.csv'))) %>% 
+  tidytable::drop_na() %>% 
+  tidytable::summarise(wt = mean(weight, na.rm = TRUE),
+                       n = .N,
+                       .by = c(year, length))
+
+# define optimizing function
+ests <- function(pars, summ_data){
+  summ_data %>% 
+    tidytable::mutate(est_wt = pars[1] * length ^ pars[2],
+                      rss = n * (wt - est_wt) ^ 2) %>% 
+    tidytable::summarise(obj = sum(rss))
+}
+
+# fit model
+fit <- stats::optim(par = c(3e-06, 3), 
+                    fn = ests,
+                    summ_data = summ_data)
+
+wtlen <- ggplot(data = summ_data,
+       aes(x = length, y = wt, color = year)) +
+  geom_point() +
+  geom_line(aes(x = length, y = fit$par[1] * length ^ fit$par[2]),
+            color = "darkgreen", size = 1) +
+  scico::scale_color_scico(palette = 'roma') +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Length (cm)", y = "Weight (kg)", col = "Year")
+
+ggsave(filename = "wtlen.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 4.5,
+       units = "in")
+
+
 
 # plot profiles ----
 
@@ -1435,7 +1477,7 @@ age_bias <- ggplot(reread, aes(x = reread_age, y = original_age, col = num_rerea
   geom_segment(x = 1, 
                    y = bias_res$`Age 1`[5] - 0.5, 
                    xend = 10, 
-                   yend = bias_res$`Age 10`[5] - 0.5, size = 0.777, color = "blue", linetype = "dashed") +
+                   yend = bias_res$`Age 10`[5] - 0.5, size = 0.777, color = "darkgreen") +
   geom_abline(slope = 1, color = "grey", linewidth = 1.25) +
   geom_point(alpha = 0.5) +
   geom_text(aes(x = reread_age, y = original_age, label = num_reread, size = 2), color = "black") +
@@ -1454,12 +1496,12 @@ age_err <- ggplot(read_test, aes(x = read_age, y = test_age, col = n, size = n))
                y = 1 + 1.96 * ae_res$`Age 0`[3] * 1,
                xend = 14,
                yend = max(read_test$read_age) + 1.96 * ae_res$`Age 0`[3] * max(read_test$read_age), 
-               color = "blue", size = 0.777, linetype = "dashed") +
+               color = "darkgreen", size = 0.777) +
   geom_segment(x = 1,
                y = 1 - 1.96 * ae_res$`Age 0`[3] * 1,
                xend = 14,
                yend = max(read_test$read_age) - 1.96 * ae_res$`Age 0`[3] * max(read_test$read_age), 
-               color = "blue", size = 0.777, linetype = "dashed") +
+               color = "darkgreen", size = 0.777) +
   geom_abline(slope = 1, color = "grey", linewidth = 1.25) +
   geom_point(alpha = 0.5) +
   geom_text(aes(x = read_age, y = test_age, label = n, size = 2), color = "black") +
