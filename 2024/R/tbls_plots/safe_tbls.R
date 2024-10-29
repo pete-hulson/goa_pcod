@@ -41,6 +41,14 @@ safe_tbls <- function(new_year = NULL,
   old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'old_ref_pts.csv'), 
                               progress = FALSE, 
                               show_col_types = FALSE)
+  # ageing error
+  ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+                                          progress = FALSE, 
+                                          show_col_types = FALSE))
+  # ageing bias 
+  bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+                                     progress = FALSE, 
+                                     show_col_types = FALSE))
   # abc/ofl forecast
   prev_2yr <- SimDesign::quiet(vroom::vroom(here::here(new_year - 1, 'output', 'mgmnt_exec_summ.csv'), 
                                             progress = FALSE, 
@@ -545,6 +553,41 @@ safe_tbls <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("Likelihood table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
+  # outside model parameter table ----
+  data.frame(Name = "Ageing error", Value = "--") %>% 
+    tidytable::bind_rows(data.frame(Name = "SD at age-0", Value = round(ae_res$`Age 0`[3], digits = 2))) %>% 
+    tidytable::bind_rows(data.frame(Name = "S at age-10", Value = 10 * round(ae_res$`Age 0`[3], digits = 3))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing bias", Value = "--")) %>% 
+    tidytable::bind_rows(data.frame(Name = "Bias at age-0", Value = round(bias_res$`Age 1`[5] - 0.5, digits = 2))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Bias at age-10", Value = round(bias_res$`Age 10`[5] - 10.5, digits = 2))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Weight-at-length", Value = "--")) %>% 
+    tidytable::bind_rows(mdl_res$parameters %>% 
+                           tidytable::select(Label, Value) %>% 
+                           tidytable::filter(Label %in% c("Wtlen_1_Fem_GP_1",
+                                                          "Wtlen_2_Fem_GP_1")) %>% 
+                           tidytable::mutate(Name = c("Weight-length coefficient",
+                                                      "Weight-length exponent")) %>% 
+                           tidytable::mutate(Value = case_when(Value > 0.001 ~ round(Value, digits = 2),
+                                                               .default = Value)) %>% 
+                           tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
+                                                               .default = as.character(Value))) %>% 
+                           tidytable::select(Name, Value)) %>% 
+    tidytable::bind_rows(data.frame(Name = "Maturity", Value = "--")) %>% 
+    tidytable::bind_rows(mdl_res$parameters %>% 
+                           tidytable::select(Label, Value) %>% 
+                           tidytable::filter(Label %in% c("Mat50%_Fem_GP_1",
+                                                          "Mat_slope_Fem_GP_1")) %>% 
+                           tidytable::mutate(Name = c("Length at 50% maturity",
+                                                      "Slope of maturity")) %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2))%>% 
+                           tidytable::select(Name, Value)) %>% 
+    tidytable::rename(Parameter = Name) -> outside_param_tbl
+  
+  vroom::vroom_write(outside_param_tbl, here::here(new_year, "output", "safe_tables", 'outside_param_tbl.csv'), delim = ",")
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Outside model parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   # key parameter table ----
   data.frame(Name = "Biology", Value = "--", SD = "--") %>% 
     tidytable::bind_rows(mdl_res$parameters %>% 
@@ -553,24 +596,18 @@ safe_tbls <- function(new_year = NULL,
                                                           "L_at_Amax_Fem_GP_1", 
                                                           "VonBert_K_Fem_GP_1", 
                                                           "SD_young_Fem_GP_1",
-                                                          "SD_old_Fem_GP_1",
-                                                          "Wtlen_1_Fem_GP_1",
-                                                          "Wtlen_2_Fem_GP_1")) %>% 
+                                                          "SD_old_Fem_GP_1")) %>% 
                            tidytable::mutate(Name = c("Length at age-0 (cm)",
                                                       "Length at age-10 (cm)",
                                                       "Growth rate",
                                                       "SD in age-at-length for age-0",
-                                                      "SD in age-at-length for age-10",
-                                                      "Weight-length coefficient",
-                                                      "Weight-length exponent")) %>% 
+                                                      "SD in age-at-length for age-10")) %>% 
                            tidytable::mutate(Value = case_when(Value > 0.001 ~ round(Value, digits = 2),
                                                                .default = Value)) %>% 
                            tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
                                                                .default = as.character(Value))) %>% 
                            tidytable::mutate(SD = case_when(!is.na(Parm_StDev) ~ round(Parm_StDev, digits = 3),
                                                             .default = Parm_StDev)) %>% 
-                           tidytable::mutate(SD = case_when(is.na(Parm_StDev) ~ "Fixed",
-                                                            .default = as.character(SD))) %>% 
                            tidytable::select(Name, Value, SD) %>% 
                            tidytable::arrange(Name)) %>% 
     tidytable::bind_rows(mdl_res$parameters %>% 
@@ -587,16 +624,12 @@ safe_tbls <- function(new_year = NULL,
     tidytable::bind_rows(mdl_res$parameters %>% 
                            tidytable::select(Label, Value, Parm_StDev) %>% 
                            tidytable::filter(Label %in% c("SR_LN(R0)",
-                                                          "SR_regime_BLK5add_1976",
-                                                          "SR_sigmaR")) %>% 
+                                                          "SR_regime_BLK5add_1976")) %>% 
                            tidytable::mutate(Name = c("log(mean recruitment)",
-                                                      "Recruitment variability",
                                                       "1976 Regime adjustment")) %>% 
                            tidytable::mutate(Value = round(Value, digits = 2)) %>% 
                            tidytable::mutate(SD = case_when(!is.na(Parm_StDev) ~ round(Parm_StDev, digits = 3),
                                                             .default = Parm_StDev)) %>% 
-                           tidytable::mutate(SD = case_when(is.na(Parm_StDev) ~ "Fixed",
-                                                            .default = as.character(SD))) %>% 
                            tidytable::select(Name, Value, SD) %>% 
                            tidytable::arrange(-Name)) %>% 
     tidytable::bind_rows(data.frame(Name = "Survey catchability", Value = "--", SD = "--")) %>% 
@@ -616,7 +649,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::arrange(Name)) -> key_param_tbl
   
   vroom::vroom_write(key_param_tbl, here::here(new_year, "output", "safe_tables", 'key_param_tbl.csv'), delim = ",")
-  
+
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Key parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
