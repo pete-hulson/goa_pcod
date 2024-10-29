@@ -554,13 +554,10 @@ safe_tbls <- function(new_year = NULL,
   
   
   # outside model parameter table ----
-  data.frame(Name = "Ageing error", Value = "--") %>% 
-    tidytable::bind_rows(data.frame(Name = "SD at age-0", Value = round(ae_res$`Age 0`[3], digits = 2))) %>% 
-    tidytable::bind_rows(data.frame(Name = "S at age-10", Value = 10 * round(ae_res$`Age 0`[3], digits = 3))) %>% 
-    tidytable::bind_rows(data.frame(Name = "Ageing bias", Value = "--")) %>% 
-    tidytable::bind_rows(data.frame(Name = "Bias at age-0", Value = round(bias_res$`Age 1`[5] - 0.5, digits = 2))) %>% 
-    tidytable::bind_rows(data.frame(Name = "Bias at age-10", Value = round(bias_res$`Age 10`[5] - 10.5, digits = 2))) %>% 
-    tidytable::bind_rows(data.frame(Name = "Weight-at-length", Value = "--")) %>% 
+  data.frame(Name = "Ageing error SD at age-0", Value = round(ae_res$`Age 0`[3], digits = 2)) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing error SD at age-10", Value = 10 * round(ae_res$`Age 0`[3], digits = 3))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-0", Value = round(bias_res$`Age 1`[5] - 0.5, digits = 2))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-10", Value = round(bias_res$`Age 10`[5] - 10.5, digits = 2))) %>% 
     tidytable::bind_rows(mdl_res$parameters %>% 
                            tidytable::select(Label, Value) %>% 
                            tidytable::filter(Label %in% c("Wtlen_1_Fem_GP_1",
@@ -572,7 +569,6 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
                                                                .default = as.character(Value))) %>% 
                            tidytable::select(Name, Value)) %>% 
-    tidytable::bind_rows(data.frame(Name = "Maturity", Value = "--")) %>% 
     tidytable::bind_rows(mdl_res$parameters %>% 
                            tidytable::select(Label, Value) %>% 
                            tidytable::filter(Label %in% c("Mat50%_Fem_GP_1",
