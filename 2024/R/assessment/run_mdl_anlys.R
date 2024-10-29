@@ -106,8 +106,7 @@ run_mdl_anlys <- function(new_year = NULL,
   
   # run leave-one-out analysis ----
   cat("\u231b", crayon::blue("working on leave-one-out analysis..."), "\n")
-  
-  ## across time ----
+
   tictoc::tic()
   
   # define how many loo years you want to go back
@@ -115,34 +114,44 @@ run_mdl_anlys <- function(new_year = NULL,
     loo_yr <- 10
   } else{loo_yr <- 1}
   
-  loo_year <- year_loo(dir = here::here(new_year, "mgmt", rec_mdl),
-                       years = 0:-loo_yr,
-                       cyr = new_year)
+  loo <- run_loo(dir = here::here(new_year, "mgmt", rec_mdl),
+                 years = 0:-loo_yr,
+                 cyr = new_year)
   
   # end timer
-  loo_yr_time <- tictoc::toc(quiet = TRUE)
-  
-  ## by new data ----
-  tictoc::tic()
-  
-  loo_data <- data_loo(dir = here::here(new_year, "mgmt", rec_mdl),
-                       cyr = new_year)
+  loo_time <- tictoc::toc(quiet = TRUE)
   
   ## save results ----
   if(isTRUE(full_run)){
     if (!dir.exists(here::here(new_year, "output", "loo"))) {
       dir.create(here::here(new_year, "output", "loo"), recursive = TRUE)
     }
-    save(loo_year, file = here::here(new_year, "output", "loo", "loo_year.RData"))
-    save(loo_data, file = here::here(new_year, "output", "loo", "loo_data.RData"))
-    write.csv(loo_year[[1]], here::here(new_year, "output", "loo", "loo_year_table.csv"))
+    save(loo, file = here::here(new_year, "output", "loo", "loo.RData"))
+    write.csv(loo[[1]], here::here(new_year, "output", "loo", "loo_table.csv"))
   }
-  
-  # end timer
-  loo_dat_time <- tictoc::toc(quiet = TRUE)
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("leave-one-out analysis"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  # run add-one-in analysis ----
+  cat("\u231b", crayon::blue("working on add-one-in analysis..."), "\n")
+  
+  tictoc::tic()
+  
+  aoi <- run_aoi(dir = here::here(new_year, "mgmt", rec_mdl),
+                       cyr = new_year)
+  
+  ## save results ----
+  if (!dir.exists(here::here(new_year, "output", "aoi"))) {
+    dir.create(here::here(new_year, "output", "aoi"), recursive = TRUE)
+  }
+  save(aoi, file = here::here(new_year, "output", "aoi", "aoi.RData"))
+  
+  # end timer
+  aoi_time <- tictoc::toc(quiet = TRUE)
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("add-one-in analysis"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # run jitter ----
   cat("\u231b", crayon::blue("working on jitter analysis..."), "\n")
@@ -365,8 +374,8 @@ run_mdl_anlys <- function(new_year = NULL,
   # compute full run time ----
   tot_time <- round(((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
-                      ((as.numeric(strsplit(loo_yr_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
-                      ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
+                      ((as.numeric(strsplit(loo_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
+                      ((as.numeric(strsplit(aoi_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                       ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
@@ -378,8 +387,8 @@ run_mdl_anlys <- function(new_year = NULL,
     # estimated run time
     run_time <- round(((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                        ((as.numeric(strsplit(retro_time$callback_msg, split = " ")[[1]][1]) / 2 * 11) / 60) / 60 +
-                       ((as.numeric(strsplit(loo_yr_time$callback_msg, split = " ")[[1]][1]) / 2 * 11) / 60) / 60 +
-                       ((as.numeric(strsplit(loo_dat_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
+                       ((as.numeric(strsplit(loo_time$callback_msg, split = " ")[[1]][1]) / 2 * 11) / 60) / 60 +
+                       ((as.numeric(strsplit(aoi_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
                        ((as.numeric(strsplit(jitter_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
                        ((as.numeric(strsplit(prof_time$callback_msg, split = " ")[[1]][1]) * 3) / 60) / 60 +
                        ((as.numeric(strsplit(llq_time$callback_msg, split = " ")[[1]][1]) * 10) / 60) / 60 +
