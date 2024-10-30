@@ -968,8 +968,8 @@ safe_tbls <- function(new_year = NULL,
   
   ## reference points ----
   data.table::data.table("Reference Point:" = "Spawning Biomass:", 
-                         B35 = paste(format(round(prev_2yr$SB35[1], digits = 0), big.mark = ","), "t"),
-                         B40 = paste(format(round(prev_2yr$SB40[2], digits = 0), big.mark = ","), "t"),
+                         B35 = paste(format(round(curr_2yr$SB35[1], digits = 0), big.mark = ","), "t"),
+                         B40 = paste(format(round(curr_2yr$SB40[2], digits = 0), big.mark = ","), "t"),
                          B100 = paste(format(round(curr_2yr$SB100[1], digits = 0), big.mark = ","), "t")) -> ref_pts_intext
   
   vroom::vroom_write(ref_pts_intext, here::here(new_year, "output", "safe_tables", 'ref_pts_intext_tbl.csv'), delim = ",")
