@@ -48,7 +48,7 @@ run_mdl_anlys <- function(new_year = NULL,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("management scenarios"), crayon::green$underline$bold$italic("DONE"), "\n")
   mscen_time <- tictoc::toc(quiet = TRUE)
-  
+
   # run retrospective analysis ----
   cat("\u231b", crayon::blue("working on retrospective analysis..."), "\n")
   tictoc::tic()
@@ -139,7 +139,7 @@ run_mdl_anlys <- function(new_year = NULL,
   tictoc::tic()
   
   aoi <- run_aoi(dir = here::here(new_year, "mgmt", rec_mdl),
-                       cyr = new_year)
+                 cyr = new_year)
   
   ## save results ----
   if (!dir.exists(here::here(new_year, "output", "aoi"))) {
