@@ -87,6 +87,18 @@ base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
 prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                 verbose = FALSE,
                                 printstats = FALSE)
+res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1c-2024"),
+                             verbose = FALSE,
+                             printstats = FALSE)
+res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1d-2024"),
+                             verbose = FALSE,
+                             printstats = FALSE)
+res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1e-2024"),
+                             verbose = FALSE,
+                             printstats = FALSE)
+
+
+
 
 # catch data
 fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
@@ -222,6 +234,459 @@ r4ss::SSplotCatch(rec_mdl_res,
 invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "catch2_landings_stacked.png"),
                       to = here::here(new_year, "output", "safe_plots", "catch.png")))
 
+
+# ssb and rec comparison ----
+prev_mdl_res$timeseries %>% 
+  tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+  tidytable::select(year = Yr, "19.1b-23" = SpawnBio) %>% 
+  tidytable::filter(year >= 1977,
+                    year <= new_year - 1) %>% 
+  tidytable::right_join(base_mdl_res$timeseries %>% 
+                          tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+                          tidytable::select(year = Yr, "19.1b" = SpawnBio) %>% 
+                          tidytable::filter(year >= 1977,
+                                            year <= new_year)) %>% 
+  tidytable::right_join(res_19_1c$timeseries %>% 
+                          tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+                          tidytable::select(year = Yr, "19.1c" = SpawnBio) %>% 
+                          tidytable::filter(year >= 1977,
+                                            year <= new_year)) %>% 
+  tidytable::right_join(res_19_1d$timeseries %>% 
+                          tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+                          tidytable::select(year = Yr, "19.1d" = SpawnBio) %>% 
+                          tidytable::filter(year >= 1977,
+                                            year <= new_year)) %>% 
+  tidytable::right_join(res_19_1e$timeseries %>% 
+                          tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+                          tidytable::select(year = Yr, "19.1e" = SpawnBio) %>% 
+                          tidytable::filter(year >= 1977,
+                                            year <= new_year)) %>% 
+  tidytable::right_join(rec_mdl_res$timeseries %>% 
+                          tidytable::mutate(SpawnBio = SpawnBio / 2) %>% 
+                          tidytable::select(year = Yr, "24.0" = SpawnBio) %>% 
+                          tidytable::filter(year >= 1977,
+                                            year <= new_year)) %>% 
+  tidytable::pivot_longer(cols = c("19.1b-23",
+                                   "19.1b", 
+                                   "19.1c",
+                                   "19.1d",
+                                   "19.1e", 
+                                   "24.0")) %>% 
+  tidytable::mutate(type = "Spawning biomass (t)") %>% 
+  tidytable::bind_rows(prev_mdl_res$timeseries %>% 
+                         tidytable::select(year = Yr, "19.1b-23" = Recruit_0) %>% 
+                         tidytable::filter(year >= 1977,
+                                           year <= new_year - 1) %>% 
+                         tidytable::right_join(base_mdl_res$timeseries %>% 
+                                                 tidytable::select(year = Yr, "19.1b" = Recruit_0) %>% 
+                                                 tidytable::filter(year >= 1977,
+                                                                   year <= new_year)) %>% 
+                         tidytable::right_join(res_19_1c$timeseries %>% 
+                                                 tidytable::select(year = Yr, "19.1c" = Recruit_0) %>% 
+                                                 tidytable::filter(year >= 1977,
+                                                                   year <= new_year)) %>% 
+                         tidytable::right_join(res_19_1d$timeseries %>% 
+                                                 tidytable::select(year = Yr, "19.1d" = Recruit_0) %>% 
+                                                 tidytable::filter(year >= 1977,
+                                                                   year <= new_year)) %>% 
+                         tidytable::right_join(res_19_1e$timeseries %>% 
+                                                 tidytable::select(year = Yr, "19.1e" = Recruit_0) %>% 
+                                                 tidytable::filter(year >= 1977,
+                                                                   year <= new_year)) %>% 
+                         tidytable::right_join(rec_mdl_res$timeseries %>% 
+                                                 tidytable::select(year = Yr, "24.0" = Recruit_0) %>% 
+                                                 tidytable::filter(year >= 1977,
+                                                                   year <= new_year)) %>% 
+                         tidytable::pivot_longer(cols = c("19.1b-23",
+                                                          "19.1b", 
+                                                          "19.1c",
+                                                          "19.1d",
+                                                          "19.1e", 
+                                                          "24.0")) %>% 
+                         tidytable::mutate(type = "Age-0 recruitment (1000s)")) %>% 
+  tidytable::mutate(name = factor(name, levels = c("19.1b-23",
+                                                   "19.1b", 
+                                                   "19.1c",
+                                                   "19.1d",
+                                                   "19.1e", 
+                                                   "24.0"))) -> ssb_rec_comp
+
+
+
+
+ssb_rec_comp_plot <- ggplot(data = ssb_rec_comp,
+       aes(x = year, y = value, col = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~type, scales = "free_y", ncol = 1) +
+  theme_bw(base_size = 14) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Year", y = "Model estimate", color = "Model") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = "top")
+
+ggsave(filename = "ssb_rec_comp.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 7,
+       units = "in")
+
+
+# key parameters comparison ----
+
+prev_mdl_res$parameters %>% 
+  tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+  tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                               "L_at_Amax_Fem_GP_1",
+                               "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                               "SR_LN(R0)",
+                               "LnQ_base_Srv(4)",
+                               "LnQ_base_LLSrv(5)")) %>% 
+  tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                    par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                    par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                    par == "SR_LN(R0)" ~ "R0",
+                                    par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                    par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                    value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                      .default = value),
+                    model = "19.1b-23") %>% 
+  tidytable::bind_rows(base_mdl_res$parameters %>% 
+                         tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+                         tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                                                      "L_at_Amax_Fem_GP_1",
+                                                      "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                                                      "SR_LN(R0)",
+                                                      "LnQ_base_Srv(4)",
+                                                      "LnQ_base_LLSrv(5)")) %>% 
+                         tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                                           par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                                           par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                                           par == "SR_LN(R0)" ~ "R0",
+                                                           par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                                           par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                                           value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                                             .default = value),
+                                           model = "19.1b")) %>% 
+  tidytable::bind_rows(res_19_1c$parameters %>% 
+                         tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+                         tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                                                      "L_at_Amax_Fem_GP_1",
+                                                      "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                                                      "SR_LN(R0)",
+                                                      "LnQ_base_Srv(4)",
+                                                      "LnQ_base_LLSrv(5)")) %>% 
+                         tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                                           par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                                           par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                                           par == "SR_LN(R0)" ~ "R0",
+                                                           par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                                           par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                                           value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                                             .default = value),
+                                           model = "19.1c")) %>% 
+  tidytable::bind_rows(res_19_1d$parameters %>% 
+                         tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+                         tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                                                      "L_at_Amax_Fem_GP_1",
+                                                      "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                                                      "SR_LN(R0)",
+                                                      "LnQ_base_Srv(4)",
+                                                      "LnQ_base_LLSrv(5)")) %>% 
+                         tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                                           par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                                           par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                                           par == "SR_LN(R0)" ~ "R0",
+                                                           par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                                           par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                                           value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                                             .default = value),
+                                           model = "19.1d")) %>% 
+  tidytable::bind_rows(res_19_1e$parameters %>% 
+                         tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+                         tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                                                      "L_at_Amax_Fem_GP_1",
+                                                      "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                                                      "SR_LN(R0)",
+                                                      "LnQ_base_Srv(4)",
+                                                      "LnQ_base_LLSrv(5)")) %>% 
+                         tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                                           par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                                           par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                                           par == "SR_LN(R0)" ~ "R0",
+                                                           par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                                           par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                                           value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                                             .default = value),
+                                           model = "19.1e")) %>% 
+  tidytable::bind_rows(rec_mdl_res$parameters %>% 
+                         tidytable::select(par = Label, value = Value, sd = Parm_StDev) %>% 
+                         tidytable::filter(par %in% c("NatM_uniform_Fem_GP_1",
+                                                      "L_at_Amax_Fem_GP_1",
+                                                      "NatM_uniform_Fem_GP_1_BLK4repl_2014",
+                                                      "SR_LN(R0)",
+                                                      "LnQ_base_Srv(4)",
+                                                      "LnQ_base_LLSrv(5)")) %>% 
+                         tidytable::mutate(par = case_when(par == "NatM_uniform_Fem_GP_1" ~ "M",
+                                                           par == "L_at_Amax_Fem_GP_1" ~ "Linf",
+                                                           par == "NatM_uniform_Fem_GP_1_BLK4repl_2014" ~ "M (2014-2016)",
+                                                           par == "SR_LN(R0)" ~ "R0",
+                                                           par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
+                                                           par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)"),
+                                           value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
+                                                             .default = value),
+                                           model = "24.0")) %>% 
+  tidytable::mutate(model = factor(model, levels = c("19.1b-23",
+                                                   "19.1b", 
+                                                   "19.1c",
+                                                   "19.1d",
+                                                   "19.1e", 
+                                                   "24.0"))) -> par_dat
+
+par_comp <- ggplot(data = par_dat, 
+       aes(x = model, y = value, col = model)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = value - 1.96 * sd, ymax = value + 1.96 * sd), width = 0) +
+  facet_wrap(~par, scales = "free_y", ncol = 2, axis.labels = "all_y")+
+  theme_bw(base_size = 14)+
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Model", y = "Model estimate", color = "") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = "none",
+        axis.text.x = element_text(vjust = 0.5, angle = 90))
+
+ggsave(filename = "par_comp.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 7,
+       units = "in")
+
+
+
+# curr year selex comparison ----
+
+rec_mdl_res$sizeselex %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::filter(yr == new_year,
+                    fleet <= 5,
+                    factor == "Lsel") %>% 
+  tidytable::select(-factor, -yr, -sex, -label) %>% 
+  tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+  tidytable::rename(length = name) %>% 
+  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
+                                      fleet == 2 ~ "Longline fishery",
+                                      fleet == 3 ~ "Pot fishery",
+                                      fleet == 4 ~ "AFSC bottom trawl survey",
+                                      fleet == 5 ~ "AFSC longline survey"),
+                    length = as.numeric(length),
+                    model = "24.0") %>% 
+  filter(length >= 5) %>% 
+  tidytable::bind_rows(res_19_1e$sizeselex %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::filter(yr == new_year,
+                                           fleet <= 5,
+                                           factor == "Lsel") %>% 
+                         tidytable::select(-factor, -yr, -sex, -label) %>% 
+                         tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+                         tidytable::rename(length = name) %>% 
+                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
+                                                             fleet == 2 ~ "Longline fishery",
+                                                             fleet == 3 ~ "Pot fishery",
+                                                             fleet == 4 ~ "AFSC bottom trawl survey",
+                                                             fleet == 5 ~ "AFSC longline survey"),
+                                           length = as.numeric(length),
+                                           model = "19.1e") %>% 
+                         filter(length >= 5)) -> selex_comp_dat
+
+selex_comp <- ggplot(data = selex_comp_dat,
+                     aes(x = length, y = value, col = fleet)) +
+  geom_line(size = 0.777) +
+  theme_bw(base_size = 14) +
+  facet_wrap(~model, ncol= 1) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.position = "top",
+        legend.key.width = unit(0.25, 'cm')) +
+  labs(x = "Length (cm)", y = paste(new_year, "Selectivity"), col = "") +
+  scico::scale_color_scico_d(palette = 'roma') + 
+  guides(color = guide_legend(nrow = 2))
+
+ggsave(filename = "curr_selex_comp.png",
+       path = here::here(new_year, "output", "safe_plots"),
+       width = 6.5,
+       height = 7,
+       units = "in")
+
+
+
+
+
+## likelihood comparison ----
+
+get_likes <- function(mdl_res){
+  mdl_res$likelihoods_used %>% 
+    tidytable::mutate(Component = rownames(.)) %>% 
+    tidytable::select(Component, Value = values) %>% 
+    tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+    tidytable::filter(Component == "TOTAL") %>% 
+    tidytable::mutate(Component = "Total negative log-likelihood") %>% 
+    tidytable::bind_rows(data.frame(Component = "Survey indices", 
+                                    Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Survey')], digits = 2))) %>% 
+    tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
+                           tidytable::filter(Label == "Surv_like") %>% 
+                           tidytable::select(-Label) %>% 
+                           tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
+                           tidytable::filter(Value != 0,
+                                             Component != "ALL") %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+                           tidytable::mutate(Component = c("Bottom trawl survey index", 
+                                                           "Longline survey index"))) %>% 
+    tidytable::bind_rows(data.frame(Component = "Length composition", 
+                                    Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Length_comp')], digits = 2))) %>% 
+    tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
+                           tidytable::filter(Label == "Length_like") %>% 
+                           tidytable::select(-Label) %>% 
+                           tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
+                           tidytable::filter(Value != 0,
+                                             Component != "ALL") %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+                           tidytable::mutate(Component = c("Trawl fishery length composition", 
+                                                           "Longline fishery length composition",
+                                                           "Pot fishery length composition",
+                                                           "Bottom trawl survey length composition",
+                                                           "Longline survey length composition"))) %>% 
+    tidytable::bind_rows(data.frame(Component = "Conditional age-at-length", 
+                                    Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Age_comp')], digits = 2))) %>% 
+    tidytable::bind_rows(mdl_res$likelihoods_by_fleet %>% 
+                           tidytable::filter(Label == "Age_like") %>% 
+                           tidytable::select(-Label) %>% 
+                           tidytable::pivot_longer(names_to = "Component", values_to = "Value") %>% 
+                           tidytable::filter(Value != 0,
+                                             Component != "ALL") %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+                           tidytable::mutate(Component = c("Trawl fishery CAAL", 
+                                                           "Longline fishery CAAL",
+                                                           "Pot fishery CAAL",
+                                                           "Bottom trawl survey CAAL"))) %>% 
+    tidytable::bind_rows(data.frame(Component = "Parameter deviations and priors", 
+                                    Value = round(mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Recruitment')] +
+                                                    mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'InitEQ_Regime')] +
+                                                    mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Parm_priors')] +
+                                                    mdl_res$likelihoods_used$values[which(rownames(mdl_res$likelihoods_used) == 'Parm_devs')], digits = 2))) %>% 
+    tidytable::bind_rows(mdl_res$likelihoods_used %>% 
+                           tidytable::mutate(Component = rownames(.)) %>% 
+                           tidytable::select(Component, Value = values) %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2)) %>% 
+                           tidytable::filter(Component %in% c("Recruitment", "InitEQ_Regime", "Parm_priors", "Parm_devs")) %>% 
+                           tidytable::mutate(Component = c("Recruitment deviations",
+                                                           "Initial Regime (InitEQ_Regime)",
+                                                           "Parameter priors",
+                                                           "Selectivity deviations"))) %>% 
+    tidytable::bind_rows(mdl_res$len_comp_fit_table %>% 
+                           tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                           tidytable::mutate(ratio_ess = Nsamp_in / effN) %>% 
+                           tidytable::summarise(Value = round(mean(ratio_ess), digits = 2)) %>% 
+                           tidytable::mutate(Component = "Length composition mean ISS/ESS")) %>% 
+    tidytable::bind_rows(mdl_res$len_comp_fit_table %>% 
+                           tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                           tidytable::mutate(ratio_ess = Nsamp_in / effN) %>% 
+                           tidytable::summarise(Value = round(mean(ratio_ess), digits = 2), .by = Fleet) %>% 
+                           tidytable::mutate(Component = case_when(Fleet == 1 ~ "Trawl fishery",
+                                                                   Fleet == 2 ~ "Longline fishery",
+                                                                   Fleet == 3 ~ "Pot fishery",
+                                                                   Fleet == 4 ~ "Bottom trawl survey",
+                                                                   Fleet == 5 ~ "Longline survey")) %>% 
+                           tidytable::select(Component, Value)) %>% 
+    tidytable::bind_rows(mdl_res$age_comp_fit_table %>% 
+                           tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                           tidytable::mutate(ratio_ess = Nsamp_in / effN) %>% 
+                           tidytable::summarise(Value = round(mean(ratio_ess), digits = 2)) %>% 
+                           tidytable::mutate(Component = "Conditional age-at-length mean ISS/ESS")) %>% 
+    tidytable::bind_rows(mdl_res$age_comp_fit_table %>% 
+                           tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                           tidytable::mutate(ratio_ess = Nsamp_in / effN) %>% 
+                           tidytable::summarise(Value = round(mean(ratio_ess), digits = 2), .by = Fleet) %>% 
+                           tidytable::mutate(Component = case_when(Fleet == 1 ~ "Trawl fishery",
+                                                                   Fleet == 2 ~ "Longline fishery",
+                                                                   Fleet == 3 ~ "Pot fishery",
+                                                                   Fleet == 4 ~ "Bottom trawl survey")) %>% 
+                           tidytable::select(Component, Value))
+}
+
+
+like_comp <- get_likes(prev_mdl_res) %>% 
+  tidytable::rename("19.1b-23" = Value) %>% 
+  tidytable::bind_cols(get_likes(base_mdl_res) %>% 
+                         tidytable::select(-Component) %>% 
+                         tidytable::rename("19.1b" = Value)) %>% 
+  tidytable::bind_cols(get_likes(res_19_1c) %>% 
+                         tidytable::select(-Component) %>% 
+                         tidytable::rename("19.1c" = Value)) %>% 
+  tidytable::bind_cols(get_likes(res_19_1d) %>% 
+                         tidytable::select(-Component) %>% 
+                         tidytable::rename("19.1d" = Value)) %>% 
+  tidytable::bind_cols(get_likes(res_19_1e) %>% 
+                         tidytable::select(-Component) %>% 
+                         tidytable::rename("19.1e" = Value)) %>% 
+  tidytable::bind_cols(get_likes(rec_mdl_res) %>% 
+                         tidytable::select(-Component) %>% 
+                         tidytable::rename("24.0" = Value))
+
+vroom::vroom_write(like_comp,
+                   here::here(new_year, 'output', 'safe_tables', 'like_comp.csv'),
+                   delim = ",")
+
+
+# mean length & age ----
+
+rec_mdl_res$len_comp_fit_table %>% 
+  tidytable::select(year = Yr, fleet = Fleet, mean = All_obs_mean, uci = `All_exp_95%`, lci = `All_exp_5%`) %>% 
+  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
+                                      fleet == 2 ~ "Longline fishery",
+                                      fleet == 3 ~ "Pot fishery",
+                                      fleet == 4 ~ "Bottom trawl survey",
+                                      fleet == 5 ~ "Longline survey"),
+                    type = "Length") %>% 
+  # tidytable::bind_rows(rec_mdl_res$age_comp_fit_table %>% 
+  #                        tidytable::filter(Lbin_lo == 0.5 & Lbin_hi == 104.5) %>% 
+  #                        tidytable::select(year = Yr, fleet = Fleet, mean = All_obs_mean, uci = `All_exp_95%`, lci = `All_exp_5%`) %>% 
+  #                        tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
+  #                                                            fleet == 2 ~ "Longline fishery",
+  #                                                            fleet == 3 ~ "Pot fishery",
+  #                                                            fleet == 4 ~ "Bottom trawl survey",
+  #                                                            fleet == 5 ~ "Longline survey"),
+  #                                          type = "Age")) %>% 
+  tidytable::mutate(fleet = factor(fleet, levels = c("Trawl fishery", 
+                                                     "Longline fishery",
+                                                     "Pot fishery",
+                                                     "Bottom trawl survey",
+                                                     "Longline survey"))) -> mean_dat
+  
+mean_len <- ggplot(data = mean_dat, 
+         aes(x = year, y = mean, col = fleet)) +
+    geom_point(size = 2) +
+    geom_pointrange(aes(ymin = lci, ymax = uci),
+                    position = position_jitter(width = 0.3),
+                    linetype = 'dotted') +
+    geom_line(size = 0.777, linetype = "dotted") +
+    facet_wrap(~fleet, ncol = 1, scales = "free_y") +
+    theme_bw(base_size = 14) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    labs(x = "Year", y = "Mean length (cm)", color = "Fleet/Survey") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.position = "none")
+
+ ggsave(filename = "mean_len.png",
+        path = here::here(new_year, "output", "safe_plots"),
+        width = 6.5,
+        height = 7,
+        units = "in")
+  
+  
+  
 
 # plot model data ----
 r4ss::SSplotData(rec_mdl_res,
@@ -665,11 +1130,7 @@ get_profile_data <- function(data, profilevec){
     tidytable::filter(Label %in% c("TOTAL",
                                    "Survey",
                                    "Length_comp",
-                                   "Age_comp",
-                                   "Recruitment",
-                                   "InitEQ_Regime",
-                                   "Parm_priors",
-                                   "Parm_devs")) %>% 
+                                   "Age_comp")) %>% 
     tidytable::pivot_longer(paste0("replist", seq(1, 9))) %>% 
     tidytable::mutate(par_val = case_when(name == "replist1" ~ profilevec[1],
                                           name == "replist2" ~ profilevec[2],
@@ -683,11 +1144,7 @@ get_profile_data <- function(data, profilevec){
                       like = case_when(Label == "TOTAL" ~ "Total",
                                        Label == "Survey" ~ "Index data",
                                        Label == "Length_comp" ~ "Length comps",
-                                       Label == "Recruitment" ~ "Recruitment devs",
-                                       Label == "Age_comp" ~ "CAAL",
-                                       Label == "InitEQ_Regime" ~ "Initial equil rec",
-                                       Label == "Parm_priors" ~ "Priors",
-                                       Label == "Parm_devs" ~ "Parameter devs")) %>% 
+                                       Label == "Age_comp" ~ "CAAL")) %>% 
     tidytable::select(-name, -Label)
 }
 
@@ -734,11 +1191,7 @@ m_profile %>%
                     like = factor(like, levels = c("Total", 
                                                    "Index data",
                                                    "Length comps",
-                                                   "CAAL", 
-                                                   "Recruitment devs",
-                                                   "Initial equil rec",
-                                                   "Parameter devs",
-                                                   "Priors"))) %>% 
+                                                   "CAAL"))) %>% 
   tidytable::select(-min_like) -> profile_data
 
 
@@ -1312,6 +1765,7 @@ mcmc_eval %>%
   tidytable::pivot_longer() %>% 
   tidytable::filter(!(name %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
   tidytable::mutate(year = as.numeric(substr(name, 5, nchar(name)))) %>% 
+  tidytable::filter(year <= new_year + 5) %>% 
   tidytable::summarise(uci = quantile(value / 2, probs = 0.975) / 1000,
                        lci = quantile(value / 2, probs = 0.025) / 1000,
                        .by = year) %>% 
@@ -1322,7 +1776,34 @@ mcmc_eval %>%
                          tidytable::mutate(year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label))),
                                            ssb = (Value / 2) / 1000) %>% 
                          tidytable::select(year, value = ssb)) %>% 
-  tidytable::mutate(name = "Spawning biomass (1,000s t)") %>% 
+  tidytable::mutate(name = "Spawning biomass (1,000s t)")
+    
+    
+    
+mcmc_eval %>% 
+  tidytable::select(grep(colnames(mcmc_eval), pattern = "SSB")) %>% 
+  tidytable::pivot_longer() %>% 
+  tidytable::filter(!(name %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+  tidytable::mutate(year = as.numeric(substr(name, 5, nchar(name)))) %>% 
+  tidytable::filter(year <= new_year + 5) %>% 
+  tidytable::summarise(uci = quantile(value / 2, probs = 0.975) / 1000,
+                       lci = quantile(value / 2, probs = 0.025) / 1000,
+                       .by = year) %>% 
+  tidytable::left_join(rec_mdl_res$derived_quants %>% 
+                         tidytable::select(Label, Value, StdDev) %>% 
+                         tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
+                         tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+                         tidytable::mutate(year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label))),
+                                           ssb = (Value / 2) / 1000) %>% 
+                         tidytable::select(year, value = ssb)) %>% 
+  tidytable::mutate(name = "Spawning biomass (1,000s t)")
+    
+    
+    
+    
+    
+    
+    
   tidytable::bind_rows(mcmc_eval %>% 
                          tidytable::select(grep(colnames(mcmc_eval), pattern = "Recr_")) %>% 
                          tidytable::pivot_longer() %>% 
