@@ -179,13 +179,14 @@ run_loo <- function(dir = NULL,
   
   ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
-         aes(x = Year,y = value)) +
+         aes(x = Year, y = value, col = Year)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
-               aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
+               aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "black") +
     theme_bw(base_size = 14) +
-    labs(x = 'Leave one out year', y = 'Parameter value') +
+    scico::scale_color_scico_d(palette = 'roma') +
+    labs(x = 'Year', y = 'Parameter value') +
     facet_wrap( ~ variable, 
                 scales = "free_y", 
                 ncol = 2, 

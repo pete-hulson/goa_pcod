@@ -213,7 +213,7 @@ run_mdl_anlys <- function(new_year = NULL,
                        m14 = seq(0.73, 0.89, by = 0.02),
                        q_twl = seq(0.17, 0.33, by = 0.02),
                        q_ll = seq(0.07, 0.23, by = 0.02),
-                       q_ll_env = seq(0.84, 1, by = 0.02))
+                       q_ll_env = seq(0.76, 1.08, by = 0.04))
   } else{
     profilevec <- list(rec = c(12, 13, 14),
                        m = c(0.4, 0.5, 0.6),

@@ -268,13 +268,14 @@ run_aoi <- function(dir = NULL,
                                            variable == "ABCfore" ~ "One-year forecasted ABC")) -> x3
   ## Plot LOO analysis ----
   d <- ggplot(x3[LOO != 0],
-              aes(x = Data, y = value)) +
+              aes(x = Data, y = value, col = Data)) +
     geom_errorbar(aes(ymin = value - 1.96 * SD, ymax = value + 1.96 * SD), width = 0.25) +
     geom_point(size = 3) +
     geom_hline(data = x3[LOO == 0],
                aes(yintercept = value), linewidth = 1.25, linetype = 2, color = "red") +
     theme_bw(base_size = 14) +
-    labs(x = 'Leave one out data', y = 'Parameter value') +
+    scico::scale_color_scico_d(palette = 'roma') +
+    labs(x = 'Data source', y = 'Parameter value') +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.text.x = element_text(vjust = 0.5, angle = 90)) +
