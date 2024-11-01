@@ -178,7 +178,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               new_lcomp = TRUE)
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1e_5cm.dat")), overwrite = TRUE)
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
 
 
 # get ss3 ctl files ----
@@ -189,6 +189,9 @@ old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
 ## reset params this one time ----
 # reset F ballpark to 0
 old_ctl$F_ballpark <- 0
+
+# reset age at L1 to 1.5
+old_ctl$Growth_Age_for_L1 <- 1.5
 
 # reset q params for surveys not fit to 0
 old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_SPAWN(8)"), 3] <- 0
@@ -256,7 +259,9 @@ r4ss::SS_writectl_3.30(ctllist = old_ctl,
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_year, "output", "mdl_input", "Model19_1e.ctl"),
                        overwrite = TRUE)
-
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_year, "output", "mdl_input", "Model24_0.ctl"),
+                       overwrite = TRUE)
 
 
 

@@ -34,9 +34,9 @@ if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
 
 # set up ----
 # recommended model name
-rec_mdl <- "2019.1e.5cm-2024"
+rec_mdl <- "24.0"
 # last year's model with updated data (base model)
-base_mdl <- "2019.1b-2024"
+base_mdl <- "19.1b"
 # last year's model
 prev_mdl <- "2019.1b-2023"
 # Current assessment year
@@ -54,13 +54,13 @@ base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
 prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                 verbose = FALSE,
                                 printstats = FALSE)
-res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1c-2024"),
+res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
                              verbose = FALSE,
                              printstats = FALSE)
-res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1d-2024"),
+res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
                              verbose = FALSE,
                              printstats = FALSE)
-res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "2019.1e-2024"),
+res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
                              verbose = FALSE,
                              printstats = FALSE)
 ## catch data ----
@@ -143,10 +143,8 @@ vroom::vroom(here::here(new_year, 'data', 'ageing_error', 'reader_tester.csv'), 
 ae_res <- vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
                          progress = FALSE, 
                          show_col_types = FALSE)
-
 ## ll survey q sensitivities ----
 load(here::here(new_year, "output", "llq", "llq_res.RData"))
-
 ## retrospective results ----
 load(here::here(new_year, "output", "retro", "retrosumm.RData"))
 ## historical models ----
@@ -155,18 +153,14 @@ hist_mdls <- vroom::vroom(here::here(new_year, 'data', 'hist_mdls.csv'),
                           show_col_types = FALSE)
 ## leave-one-out results ----
 load(here::here(new_year, "output", "loo", "loo.RData"))
-# add-one-in results
+## add-one-in results ----
 load(here::here(new_year, "output", "aoi", "aoi.RData"))
-
-
-
-
-# management scenarios
+## management scenarios ----
 load(here::here(new_year, "output", "mscen", "mgmnt_scen_rec.RData"))
-# mcmc
+## mcmc ----
 load(here::here(new_year, "output", "mcmc", "mcmc_adnut.RData"))
 load(here::here(new_year, "output", "mcmc", "mcmc_eval.RData"))
-# apportionment
+## apportionment ----
 load(file = here::here(new_year, 'output', "apport", 'apport.rdata'))
 
 
@@ -1725,10 +1719,10 @@ ggsave(filename = "f.png",
 
 # phase-plane ----
 
-Fabc = rec_mdl_mscen$Tables$F$scenario_1[16]
-Fmsy = rec_mdl_mscen$Tables$F$scenario_7[16]
-B35 = rec_mdl_mscen$Two_year$SB35[1]
-B0 = rec_mdl_mscen$Two_year$SB100[1]
+Fabc = as.numeric(mscen$mscen_f$`Scenario 1`[length(mscen$mscen_f$F$`Scenario 1`)])
+Fmsy = mscen$mscen_f$`Scenario 7`[length(mscen$mscen_f$F$`Scenario 7`)]
+B35 = mscen$Two_year$SB35[1]
+B0 = mscen$Two_year$SB100[1]
   
 rec_mdl_res$derived_quants %>% 
   tidytable::select(Label, Value, StdDev) %>% 
@@ -1753,7 +1747,7 @@ rec_mdl_res$derived_quants %>%
                     sd_f_rat = sd_f / Fmsy,
                     sd_ssb_rat = sd_ssb / B35) -> phs_pln_data
 
-phase_plane <- ggplot(data = phs_pln_data,
+ggplot(data = phs_pln_data,
        aes(x = ssb_rat, y = f_rat, col = year)) +
   geom_path(size = 0.777) +
   geom_point(size = 7, col = "white") +
@@ -1765,27 +1759,27 @@ phase_plane <- ggplot(data = phs_pln_data,
         panel.grid.minor = element_blank(),
         legend.position = "none") +
   geom_vline(xintercept = 1, linetype = "dashed") +
-  geom_vline(xintercept = 0.2 / 0.35, linetype = "dashed", color = "brown", size = 1) +
+  geom_vline(xintercept = 0.2 / 0.35, linetype = "dashed", color = "brown", linewidth = 1) +
   geom_hline(yintercept = 1, linetype = "dashed") +
-  geom_segment(x = 0, y = 0, xend = 1.2, yend = 1, color = "red", size = 1) +
-  geom_segment(x = 1.2, y = 1, xend = 5, yend = 1, color = "red", size = 1) +
+  geom_segment(x = 0, y = 0, xend = 1.2, yend = 1, color = "red", linewidth = 1) +
+  geom_segment(x = 1.2, y = 1, xend = 5, yend = 1, color = "red", linewidth = 1) +
   geom_segment(x = (0.05 * B0) / (B0 * 0.40), 
                y = 0, 
                xend = (0.05 * B0) / (B0 * 0.40), 
                yend = Fabc / Fmsy*(((B0 * 0.05) / (B0 * 0.40)) - 0.05) / (1 - 0.05),
-               size = 1,
+               linewidth = 1,
                color = "black") +
   geom_segment(x = (0.05 * B0) / (B0 * 0.40), 
                y = Fabc / Fmsy*(((B0 * 0.05) / (B0 * 0.40)) - 0.05) / (1 - 0.05), 
                xend = 0.4 / 0.35, 
                yend = Fabc / Fmsy,
-               size = 1,
+               linewidth = 1,
                color = "black") +
   geom_segment(x = 0.4 / 0.35, 
                y = Fabc / Fmsy, 
                xend = 5, 
                yend = Fabc / Fmsy,
-               size = 1,
+               linewidth = 1,
                color = "black") +
   geom_label(x = 4, y = 1, label = "OFL Definition", color = "red") +
   geom_label(x = 4, y = Fabc / Fmsy, label = "ABC Control Rule", color = "black") +
@@ -1816,7 +1810,8 @@ adnuts::pairs_admb(mcmc_adnut,
                    label.cex = 1) +
   theme(axis.text = 1)
 
-dev.print(png, file = here::here(new_year, "output", "safe_plots", "mcmc_pairs.png"), width = 1024, height = 1000)
+dev.print(png, file = here::here(new_year, "output", "safe_plots", "mcmc_pairs.png"), 
+          width = 1024, height = 1000)
 
 # mcmc histogram for key parameters ----
 

@@ -41,7 +41,7 @@ lapply(pkg_git, library, character.only = TRUE)
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # recommended model name
-rec_mdl <- "2019.1e.5cm-2024"
+rec_mdl <- "24.0"
 # last year's model
 prev_mdl <- "2019.1b-2023"
 

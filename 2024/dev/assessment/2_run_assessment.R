@@ -13,13 +13,13 @@ dat_day <- "Oct17"
 base_mdl <- "2019.1b-2023"
 
 # full run for retro/jitter/mcmc/etc
-full_run = FALSE
+full_run = TRUE
 
 # run mcmc?
 run_mcmc = FALSE
 
 # remove previous run files?
-remove_files = FALSE
+remove_files = TRUE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
@@ -67,10 +67,9 @@ lapply(pkg_git, library, character.only = TRUE)
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 ## load functions ----
-source_files <- c(list.files(here::here(new_year, "R", "assessment"), pattern = "*.r$"),
-                  list.files(here::here(new_year, "R", "assessment"), pattern = "*.R$"))
-purrr::map(here::here(new_year, "R", "assessment", source_files), source)
-source(here::here(new_year, "R", "utils.R"))
+source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
+                  list.files(here::here(new_year, "R"), pattern = "*.R$"))
+purrr::map(here::here(new_year, "R", source_files), source)
 
 ## remove previous runs and results ----
 if(isTRUE(remove_files)){
@@ -89,11 +88,11 @@ if(isTRUE(remove_files)){
 # run model variants ----
 
 ## define model variant names (model, dat, & ctl name) ----
-### 2019.1b: updated base model ----
-base_mdl_update <- "2019.1b-2024"
+### 19.1b: updated base model ----
+base_mdl_update <- "19.1b"
 base_mdl_update_dat <- paste0("GOAPcod2024", dat_day, "_old.dat")
 base_mdl_update_ctl <- "Model19_1b.ctl"
-### 2019.1c: new base model ----
+### 19.1c: new base model ----
 # includes:
 # - corrected ll survey sd
 # - corrected ll survey length comp bins
@@ -104,21 +103,21 @@ base_mdl_update_ctl <- "Model19_1b.ctl"
 # - turn off recr forecase phase
 # - fix rec forecast option
 # - update l-w
-new_base <- "2019.1c-2024"
+new_base <- "19.1c"
 new_base_dat <- paste0("GOAPcod2024", dat_day, "_1c.dat")
 new_base_ctl <- "Model19_1c.ctl"
 ### 2019.1d: update ageing error ----
-new_base_ae <- "2019.1d-2024"
+new_base_ae <- "19.1d"
 new_base_ae_dat <- paste0("GOAPcod2024", dat_day, "_1d.dat")
 new_base_ae_ctl <- "Model19_1d.ctl"
 ### 2019.1e: new fishery length comps ----
-new_base_lcomp <- "2019.1e-2024"
+new_base_lcomp <- "19.1e"
 new_base_lcomp_dat <- paste0("GOAPcod2024", dat_day, "_1e.dat")
 new_base_lcomp_ctl <- "Model19_1e.ctl"
 ### 2019.1e.5: new fishery length comps at 5 cm bin ----
-new_base_lcomp_bin5 <- "2019.1e.5cm-2024"
-new_base_lcomp_bin5_dat <- paste0("GOAPcod2024", dat_day, "_1e_5cm.dat")
-new_base_lcomp_bin5_ctl <- "Model19_1e.ctl"
+new_base_lcomp_bin5 <- "24.0"
+new_base_lcomp_bin5_dat <- paste0("GOAPcod2024", dat_day, ".dat")
+new_base_lcomp_bin5_ctl <- "Model24_0.ctl"
 
 # lists of model variants
 mdls = c(base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_lcomp_bin5)
