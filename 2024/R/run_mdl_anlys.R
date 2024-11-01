@@ -16,11 +16,10 @@ run_mdl_anlys <- function(new_year = NULL,
                           run_mcmc = FALSE){
   
   # load functions ----
-  source_files <- c(list.files(here::here(new_year, "R", "assessment"), pattern = "*.r$"),
-                    list.files(here::here(new_year, "R", "assessment"), pattern = "*.R$"))
-  purrr::map(1:length(source_files), ~ source(here::here(new_year, "R", "assessment", source_files[.]), local = TRUE))
-  source(here::here(new_year, "R", "utils.R"), local = TRUE)
-  
+  source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
+                    list.files(here::here(new_year, "R"), pattern = "*.R$"))
+  purrr::map(1:length(source_files), ~ source(here::here(new_year, "R", source_files[.]), local = TRUE))
+
   # run management scenarios ----
   cat("\u231b", crayon::blue("working on management scenarios..."), "\n")
   tictoc::tic()
@@ -28,13 +27,11 @@ run_mdl_anlys <- function(new_year = NULL,
   # base model
   run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", base_mdl),
                      cyr = new_year,
-                     do_fig = FALSE,
                      output_name = "mgmnt_scen_base")
   
   # recommended model
   run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", rec_mdl),
                      cyr = new_year,
-                     do_fig = FALSE,
                      output_name = "mgmnt_scen_rec")
   
   # print message when done
@@ -72,7 +69,6 @@ run_mdl_anlys <- function(new_year = NULL,
   
   run_loo(full_run = full_run,
           dir = here::here(new_year, "mgmt", rec_mdl),
-          years = 0:-loo_yr,
           cyr = new_year)
   
   # print message when done
@@ -163,9 +159,7 @@ run_mdl_anlys <- function(new_year = NULL,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("apportionment..."), crayon::green$underline$bold$italic("DONE"), "\n")
   apport_time <- tictoc::toc(quiet = TRUE)
-  
-  
-  
+
   # run mcmc ----
   if(isTRUE(run_mcmc)){
     cat("\u231b", crayon::blue("working on mcmcs..."), "\n")

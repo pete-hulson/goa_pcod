@@ -13,7 +13,6 @@
 #'            that differ from Fmaxabc with columns "Year,Seas,Fleet,Catch_or_F" (default = 1)
 #' @param s2_F F for scenario 2 (default = 0.4)
 #' @param s4_F is the F for scenario 4, defaults to 0.75, should be 0.65 for some species (check your requirements)
-#' @param do_fig whether to plot figures (default = TRUE)
 #' @param output_name name for saved output file (default = NULL)
 #'
 run_ss3_mgmnt_scen <- function(dir = NULL,
@@ -24,7 +23,6 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
                                Scenario2 = 1, 
                                s2_F = 0.4,
                                s4_F = 0.75,
-                               do_fig = TRUE,
                                output_name = NULL) {
   
   # Check if the directory for management scenrios exists, if it doesn't, create it
@@ -74,8 +72,8 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   
   # run models in parallel
   # Define the list of remaining scenarios
-  scenarios <- c("scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8")
-  
+  scenarios <- paste0("scenario_", seq(2, 8))
+
   # Get the number of available cores
   num_cores <- parallel::detectCores()
   if(num_cores > length(scenarios)) num_cores = length(scenarios)
@@ -181,62 +179,66 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   
   # get model outputs
   scenarios <- c("scenario_1", scenarios)
-  mods1 <- r4ss::SSgetoutput(dirvec = here::here(dir, "mscen", scenarios),
-                             verbose = FALSE)
+  mod_outs <- r4ss::SSgetoutput(dirvec = here::here(dir, "mscen", scenarios),
+                                verbose = FALSE)
+  mod_summ <- r4ss::SSsummarize(mod_outs,
+                                verbose = FALSE)
+
+  # ssb
+  mscen_ssb <- mod_summ$quants %>% 
+    tidytable::filter(Label %in% paste0("SSB_", seq(cyr, cyr + 13))) %>% 
+    tidytable::select(-Label, -replist8) %>% 
+    tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+    tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+    tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(. / sex, digits = 0)),
+                      across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))
   
-  # kluge to deal with column name change between versions
-  kluge1 <- data.table(mods1[[1]]$sprseries)$F_report[1]
   
-  # Calculate the year index for the summary statistics
-  eyr <- cyr + fcasty
-  yr1 <- eyr - syr + 3
+  # catch
+  cyr_c <- format(round(as.numeric(mod_outs[[1]]$catch %>% 
+                                     tidytable::filter(Yr == cyr) %>% 
+                                     tidytable::summarise(catch = sum(Obs))), digits = 0), big.mark = ",")
+  mscen_catch <- data.table(Year = cyr,
+                            "Scenario 1" = cyr_c,
+                            "Scenario 2" = cyr_c,
+                            "Scenario 3" = cyr_c,
+                            "Scenario 4" = cyr_c,
+                            "Scenario 5" = cyr_c,
+                            "Scenario 6" = cyr_c,
+                            "Scenario 7" = cyr_c) %>% 
+    tidytable::bind_rows(mod_summ$quants %>% 
+                           tidytable::filter(Label %in% paste0("ForeCatch_", seq(cyr, cyr + 13))) %>% 
+                           tidytable::select(-Label, -replist8) %>% 
+                           tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+                           tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+                           tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 0)),
+                                             across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))))
   
-  # Calculate summary statistics for each scenario
-  summ <- lapply(seq_along(mods1), 
-                 function(i) {
-                   mod <- mods1[[i]]
-                   Yrs <- syr:eyr
-                   TOT <- data.table(mod$timeseries)[Yr %in% Yrs]$Bio_all
-                   SUMM <- data.table(mod$timeseries)[Yr %in% Yrs]$Bio_smry
-                   SSB <- data.table(mod$timeseries)[Yr %in% Yrs]$SpawnBio / sex
-                   std <- data.table(mod$stdtable)[name %like% "SSB"][3:yr1, ]$std / sex
-                   if(!is.null(kluge1)){
-                     F <- data.table(mod$sprseries)[Yr %in% Yrs]$F_report
-                   } else { 
-                     F <- data.table(mod$sprseries)[Yr %in% Yrs]$F_std
-                   }
-                   Catch <- data.table(mod$sprseries)[Yr %in% Yrs]$Enc_Catch
-                   SSB_unfished <- data.table(mod$derived_quants)[Label == "SSB_unfished"]$Value / sex
-                   model <- scenarios[i]
-                   data.table(Yr = Yrs, TOT = TOT, SUMM = SUMM, SSB = SSB, std = std, F = F, Catch = Catch, SSB_unfished = SSB_unfished, model = model)
-                 })
+  # f
+  mscen_f <- mod_summ$Fvalue %>% 
+    tidytable::filter(Yr %in% seq(cyr, cyr + 13)) %>% 
+    tidytable::select(-Label, -replist8) %>% 
+    tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+    tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+    tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
+                      across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))
   
-  # Calculate catch projections for each scenario
-  Pcatch <- lapply(seq_along(mods1), 
-                   function(i) {
-                     mod <- mods1[[i]]
-                     Yrs <- (cyr + 1):eyr
-                     Catch <- data.table(mod$sprseries)[Yr %in% Yrs]$Enc_Catch
-                     Catch_std <- data.table(mod$stdtable)[name %like% "ForeCatch_"]$std
-                     model <- scenarios[i]
-                     data.table(Yr = Yrs, Catch = Catch, Catch_std = Catch_std, model = model)
-                   })
-  
-  # Calculate 2-year projections for catch and F
-  SB100 <- summ[[1]][Yr == cyr + 1]$SSB_unfished
-  SB40 <- data.table(mods1[[1]]$derived_quants)[Label == "SSB_SPR"]$Value / sex
-  SB35 <- data.table(mods1[[8]]$derived_quants)[Label == "SSB_SPR"]$Value / sex
-  F40_1 <- summ[[1]][Yr == cyr + 1]$F
-  F35_1 <- summ[[6]][Yr == cyr + 1]$F
-  catchABC_1 <- Pcatch[[1]][Yr == cyr + 1]$Catch
-  catchOFL_1 <- Pcatch[[6]][Yr == cyr + 1]$Catch
-  F40_2 <- summ[[1]][Yr == cyr + 2]$F
-  F35_2 <- summ[[8]][Yr == cyr + 2]$F
-  catchABC_2 <- Pcatch[[1]][Yr == cyr + 2]$Catch
-  catchOFL_2 <- Pcatch[[8]][Yr == cyr + 2]$Catch
-  SSB_1 <- summ[[1]][Yr == cyr + 1]$SSB
-  SSB_2 <- summ[[1]][Yr == cyr + 2]$SSB
-  
+
+  # get 2-year projections for catch and F
+  SB100 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_unfished"), 1] / sex
+  SB40 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_SPR"), 1] / sex
+  SB35 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_SPR"), 8] / sex
+  F40_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 1)), 1]
+  F35_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 1)), 6]
+  catchABC_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 1)), 1]
+  catchOFL_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 1)), 6]
+  F40_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 1]
+  F35_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 6]
+  catchABC_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 1]
+  catchOFL_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 6]
+  SSB_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 1)), 1] / sex
+  SSB_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 2)), 1] / sex
+
   Two_Year <- data.table(Yr = c((cyr + 1):(cyr + 2)),
                          SSB = c(SSB_1, SSB_2),
                          SSB_PER = c(SSB_1 / SB100, SSB_2 / SB100),
@@ -248,190 +250,17 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
                          C_ABC = c(catchABC_1, catchABC_2),
                          C_OFL = c(catchOFL_1, catchOFL_2))
   
-  # Combine summary statistics and catch projections into tables
-  summ   <- do.call(rbind, summ)
-  Pcatch <- do.call(rbind, Pcatch)
-  summ   <- summ[model != "scenario_8"]
-  Pcatch <- Pcatch[model != "scenario_8"]
-  
-  # Create output list with SSB, CATCH, and Two_year tables
-  output <- list(SSB = summ,
-                 CATCH = Pcatch,
+  # output list
+  mscen <- list(mscen_ssb = mscen_ssb,
+                 mscen_catch = mscen_catch,
+                 mscen_f = mscen_f,
                  Two_year = Two_Year)
-  
-  # Create scenario tables for the document
-  BC <- list(Catch = dcast(output$SSB[Yr >= cyr], Yr ~ model, value.var = "Catch"),
-             F = dcast(output$SSB[Yr >= cyr], Yr ~ model, value.var = "F"),
-             SSB = dcast(output$SSB[Yr >= cyr], Yr ~ model, value.var = "SSB"))
-  output$Tables <- BC
-  
-  # plot figures (if desired)
-  if(do_fig){
-    
-    SSB_unfished <- data.table(mods1[[1]]$derived_quants)[Label == "SSB_unfished"]$Value / sex
-    
-    # Calculate upper and lower confidence intervals for SSB
-    summ2 <- data.table(Yr = c(syr:eyr),
-                        TOT = 0,
-                        SUMM = 0,
-                        SSB = SB40,
-                        std = 0,
-                        F = 0,
-                        Catch = 0,
-                        SSB_unfished = SSB_unfished,
-                        model = "SSB40%")
-    
-    summ2 <- rbind(summ2,
-                   data.table(Yr = c(syr:eyr),
-                              TOT = 0,
-                              SUMM = 0,
-                              SSB = SB35,
-                              std = 0,
-                              F = 0,
-                              Catch = 0,
-                              SSB_unfished = SSB_unfished,
-                              model = "SSB35%"),
-                   data.table(Yr = c(syr:eyr),
-                              TOT = 0,
-                              SUMM = 0,
-                              SSB = SSB_unfished * 0.2,
-                              std = 0,
-                              F = 0,
-                              Catch = 0,
-                              SSB_unfished = SSB_unfished,
-                              model = "SSB20%"),
-                   summ)
-    
-    summ2$model <- factor(summ2$model, levels = unique(summ2$model))
-    summ2$UCI <- summ2$SSB + 1.96 * summ2$std
-    summ2$LCI <- summ2$SSB - 1.96 * summ2$std
-    summ2[LCI < 0]$LCI <- 0
-    
-    # Calculate upper and lower confidence intervals for catch projections
-    Pcatch2 <- data.table(Yr = c(cyr + 1:eyr),
-                          Catch = Pcatch[model == "scenario_1" & Yr == eyr]$Catch,
-                          Catch_std = 0,
-                          model = "Catch Fmaxabc")
-    
-    Pcatch2 <- rbind(Pcatch2,
-                     data.table(Yr = c(cyr + 1:eyr),
-                                Catch = Pcatch[model == "scenario_6" & Yr == eyr]$Catch,
-                                Catch_std = 0,
-                                model = "Catch Fofl"),
-                     Pcatch)
-    
-    Pcatch2$model <- factor(Pcatch2$model, levels = unique(Pcatch2$model))
-    Pcatch2$UCI <- Pcatch2$Catch + 1.96 * Pcatch2$Catch_std
-    Pcatch2$LCI <- Pcatch2$Catch - 1.96 * Pcatch2$Catch_std
-    Pcatch2[LCI < 0]$LCI <- 0
-    
-    ## SSB_Figures
-    # Define the scenarios to plot
-    SSB_reference <- summ2[!model %like% 'scenario_']
-    # Create a list to store the plots
-    Figs_SSB <- list()
-    
-    Figs_SSB[['ALL']] <- ggplot(summ2[model %in% unique(summ2$model)[1:10]], aes(x = Yr, y = SSB, color = model, linetype = model)) +
-      geom_line(linewidth = 1.2) +
-      lims(y = c(0, max(summ2$UCI)), x = c(cyr - 1, eyr)) +
-      theme_bw(base_size = 12) +
-      labs(x = "Year", y = "Spawning biomass (t)", title = "Projections") +
-      scale_color_manual(values = c("darkgreen", "orange", "red", 2:6, 8, 9), name = "Scenarios") +
-      scale_linetype_manual(values = c(rep(1, 3), 2:8), name = "Scenarios") +
-      theme(legend.position = "bottom", 
-            legend.title = element_text(face = "bold"), 
-            legend.text = element_text(size = 10), 
-            plot.title = element_text(face = "bold", size = 14),
-            axis.title = element_text(face = "bold", size = 12), 
-            axis.text = element_text(size = 10))
-    
-    # Iterate over each individual scenario and create the plot
-    scenarios_P <- unique(summ$model)
-    scenarios_P2 <- as.character(unique(summ2$model)[1:3])
-    
-    pcol <- c("darkgreen", "orange", "red", 2:6, 8, 9)
-    
-    for(i in 1:length(scenarios_P)){
-      scenarios_P3 <- c(scenarios_P2, scenarios_P[i])
-      plot_data <- summ2[model %in% scenarios_P3]
-      
-      plot <- ggplot(plot_data, aes(x = Yr, y = SSB, linewidth = model, fill = model, color = model, linetype = model)) +
-        geom_line() +
-        lims(y = c(0, max(summ2$UCI)), x = c(cyr - 1, eyr)) +
-        geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, color = NA) +
-        theme_bw(base_size = 12) +
-        labs(x = "Year", y = "Spawning biomass (t)", title = "Projections") +
-        scale_linetype_manual(values = c(rep(1, 3), (i + 1)), name = "Scenarios") +
-        scale_color_manual(values = c(pcol[1:3], pcol[i + 3]), name = "Scenarios") +
-        scale_fill_manual(values = c(pcol[1:3], pcol[i + 3]), name = "Scenarios") +
-        scale_linewidth_manual(values = c(rep(1.5, 3), 1.2), name = "Scenarios") +
-        theme(legend.position = "bottom", 
-              legend.title = element_text(face = "bold"), 
-              legend.text = element_text(size = 10), 
-              plot.title = element_text(face = "bold", size = 14),
-              axis.title = element_text(face = "bold", size = 12),
-              axis.text = element_text(size = 10))
-      
-      Figs_SSB[[scenarios_P[i]]] <- plot
-    }
-    ## Catch Figures
-    # Define the scenarios to plot
-    scenarios <- unique(Pcatch2$model)[1:9]
-    
-    # Create a list to store the plots
-    Figs_Catch <- list()
-    
-    Figs_Catch[['ALL']]<- ggplot(Pcatch2[model %in% unique(Pcatch2$model)[1:9]], aes(x = Yr, y = Catch, linewidth = model, color = model, linetype = model)) +
-      geom_line() + 
-      lims(y = c(0, max(Pcatch2$UCI)), x = c((cyr + 1), eyr)) +
-      theme_bw(base_size = 12) +
-      labs(x = "Year", y = "Catch (t)", title = "Projections") +
-      scale_linetype_manual(values = c(rep(1, 2), 2:8), name = "Scenarios") +
-      scale_color_manual(values = c("darkgreen", "orange", 2:6, 8, 9),name = "Scenarios") +
-      scale_linewidth_manual(values = c(rep(1.5, 2), rep(1, 7)), name = "Scenarios") +
-      theme(legend.position = "bottom", 
-            legend.title = element_text(face = "bold"), 
-            legend.text = element_text(size = 10),
-            plot.title = element_text(face = "bold", size = 14),
-            axis.title = element_text(face = "bold", size = 12),
-            axis.text = element_text(size = 10))
-    
-    # Create the remaining plots
-    scenarios_P2 <- as.character(unique(Pcatch2$model)[1:2])
-    
-    for(i in 1:length(scenarios_P)){
-      scenarios_P3 <- c(scenarios_P2, scenarios_P[i])
-      plot_data <- Pcatch2[model %in% scenarios_P3]
-      
-      plot <- ggplot(plot_data, aes(x = Yr, y = Catch, linewidth = model, fill = model, color = model, linetype = model)) +
-        geom_line() + 
-        lims(y = c(0, max(Pcatch2$UCI)), x = c((cyr + 1), eyr)) +
-        geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, color = NA) +
-        theme_bw(base_size = 12) +
-        labs(x = "Year", y = "Catch (t)", title = "Projections") +
-        scale_linetype_manual(values = c(rep(1, 2), (i + 1)), name = "Scenarios") +
-        scale_color_manual(values = c(pcol[1:2], pcol[i + 3]), name = "Scenarios") +
-        scale_fill_manual(values = c(pcol[1:2], pcol[i + 3]), name = "Scenarios") +
-        scale_linewidth_manual(values = c(rep(1.5, 2), 1), name = "Scenarios") +
-        labs(y = "Catch (t)", x = "Year", title = "Projections") +
-        theme(legend.position = "bottom",
-              legend.title = element_text(face = "bold"), 
-              legend.text = element_text(size = 10),
-              plot.title = element_text(face = "bold", size = 14),
-              axis.title = element_text(face = "bold", size = 12), 
-              axis.text = element_text(size = 10))
-      
-      Figs_Catch[[scenarios_P[i]]] <- plot
-    }
-    
-    output$FIGS <- list(Figs_SSB, Figs_Catch)
-  }
-  
+
   # save results
   if (!dir.exists(here::here(new_year, "output", "mscen"))) {
     dir.create(here::here(new_year, "output", "mscen"), recursive = TRUE)
   }
-  save(output, file = here::here(new_year, "output", "mscen", paste0(output_name, ".RData")))
+  save(mscen, file = here::here(new_year, "output", "mscen", paste0(output_name, ".RData")))
   
 }
 
@@ -465,6 +294,14 @@ run_fofl_prev <- function(new_year = NULL,
   if(!file.exists(here::here(new_year, 'mgmt', rec_mdl, "f_ofl", 'ss3.exe'))){
     start_ss_fldr(from = here::here(new_year, 'mgmt', rec_mdl),
                   to = here::here(new_year, 'mgmt', rec_mdl, "f_ofl"))
+    # set up starter file
+    starter <- r4ss::SS_readstarter(file = here::here(new_year, 'mgmt', rec_mdl, "f_ofl", 'starter.ss'),
+                                    verbose = FALSE)
+    starter$init_values_src = 0
+    r4ss::SS_writestarter(mylist = starter,
+                          dir = here::here(new_year, 'mgmt', rec_mdl, "f_ofl"),
+                          overwrite = TRUE,
+                          verbose = FALSE)
   }
   
   # replace previous year catch with ofl
@@ -575,18 +412,16 @@ run_retro <- function(new_year = NULL,
 #' 
 #' @param full_run boolean, whether to do full loo analysis (default = NULL)
 #' @param dir is the model directory (default = NULL)
-#' @param years years over which to run analysis (default = 0:-10)
 #' @param cyr current year (default = NULL)
 #' 
 run_loo <- function(full_run = NULL,
                     dir = NULL,
-                    years = 0:-10,
                     cyr = NULL){
   
   # define how many loo years you want to go back
   if(isTRUE(full_run)){
-    loo_yr <- 10
-  } else{loo_yr <- 1}
+    years = 0:-10
+  } else{years = 0:-1}
   
   # check if the directory for leave-one-out exists, if it doesn't, create it
   if (!dir.exists(here::here(dir, "loo"))) {
