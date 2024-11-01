@@ -1719,8 +1719,8 @@ ggsave(filename = "f.png",
 
 # phase-plane ----
 
-Fabc = as.numeric(mscen$mscen_f$`Scenario 1`[length(mscen$mscen_f$F$`Scenario 1`)])
-Fmsy = mscen$mscen_f$`Scenario 7`[length(mscen$mscen_f$F$`Scenario 7`)]
+Fabc = as.numeric(mscen$mscen_f$`Scenario 1`[length(mscen$mscen_f$`Scenario 1`)])
+Fmsy = as.numeric(mscen$mscen_f$`Scenario 7`[length(mscen$mscen_f$`Scenario 7`)])
 B35 = mscen$Two_year$SB35[1]
 B0 = mscen$Two_year$SB100[1]
   
@@ -1747,7 +1747,7 @@ rec_mdl_res$derived_quants %>%
                     sd_f_rat = sd_f / Fmsy,
                     sd_ssb_rat = sd_ssb / B35) -> phs_pln_data
 
-ggplot(data = phs_pln_data,
+phase_plane <- ggplot(data = phs_pln_data,
        aes(x = ssb_rat, y = f_rat, col = year)) +
   geom_path(size = 0.777) +
   geom_point(size = 7, col = "white") +
