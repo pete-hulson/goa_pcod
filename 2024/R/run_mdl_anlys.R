@@ -6,14 +6,14 @@
 #' @param rec_mdl author recommended model (default = NULL)
 #' @param full_run boolean, whether a full analysis is to be conducted (default = NULL)
 #' @param rec_ctl name recommended model ctl file (default = NULL)
-#' @param run_mcmc boolean, whether to run mcmc or not (default = FALSE)
+#' @param run_mcmcz boolean, whether to run mcmc or not (default = FALSE)
 #' 
 run_mdl_anlys <- function(new_year = NULL,
                           base_mdl = NULL,
                           rec_mdl = NULL,
                           full_run = NULL,
                           rec_ctl = NULL,
-                          run_mcmc = FALSE){
+                          run_mcmcz = FALSE){
   
   # load functions ----
   source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
@@ -161,7 +161,7 @@ run_mdl_anlys <- function(new_year = NULL,
   apport_time <- tictoc::toc(quiet = TRUE)
 
   # run mcmc ----
-  if(isTRUE(run_mcmc)){
+  if(isTRUE(run_mcmcz)){
     cat("\u231b", crayon::blue("working on mcmcs..."), "\n")
     
     mcmc_time <- run_mcmc(full_run = full_run,

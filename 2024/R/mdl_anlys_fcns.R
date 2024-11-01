@@ -1152,16 +1152,16 @@ run_mcmc <- function(full_run = NULL,
   
   # run adnuts
   tictoc::tic()
-  mcmc_adnut <- adnuts::sample_rwm(model = 'ss3',
-                                   path = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
-                                   iter = iter,
-                                   chains = 7,
-                                   warmup = warmup,
-                                   thin = thin,
-                                   mceval = FALSE,
-                                   control = list(metric = 'mle'),
-                                   skip_optimization = FALSE,
-                                   verbose = FALSE)
+  mcmc_adnut <- invisible(adnuts::sample_rwm(model = 'ss3',
+                                             path = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
+                                             iter = iter,
+                                             chains = 7,
+                                             warmup = warmup,
+                                             thin = thin,
+                                             mceval = FALSE,
+                                             control = list(metric = 'mle'),
+                                             skip_optimization = FALSE,
+                                             verbose = FALSE))
   nuts_time <- tictoc::toc(quiet = TRUE)
   
   # run mceval

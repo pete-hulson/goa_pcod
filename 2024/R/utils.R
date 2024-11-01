@@ -169,12 +169,13 @@ start_ss_fldr <- function(from, to){
   # get model input files
   r4ss::copy_SS_inputs(dir.old = from, 
                        dir.new = to,
-                       overwrite = TRUE)
+                       overwrite = TRUE,
+                       verbose = FALSE)
   # get data_echo file so you can make changes to ctl file
   file.copy(paste0(from, '/data_echo.ss_new'),
             paste0(to, '/data_echo.ss_new'))
   # get exe
-  r4ss::get_ss3_exe(dir = to)
+  invisible(r4ss::get_ss3_exe(dir = to))
   
 }
 #' function to get weight-length parameters (from survey data)

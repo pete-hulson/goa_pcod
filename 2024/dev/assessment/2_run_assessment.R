@@ -13,10 +13,10 @@ dat_day <- "Oct17"
 base_mdl <- "2019.1b-2023"
 
 # full run for retro/jitter/mcmc/etc
-full_run = TRUE
+full_run = FALSE
 
 # run mcmc?
-run_mcmc = FALSE
+run_mcmcz = TRUE
 
 # remove previous run files?
 remove_files = TRUE
@@ -137,7 +137,7 @@ run_mdl_anlys(new_year = new_year,
               rec_mdl = new_base_lcomp_bin5,
               full_run = full_run,
               rec_ctl = new_base_lcomp_bin5_ctl,
-              run_mcmc = run_mcmc)
+              run_mcmcz = run_mcmcz)
 
 
 
