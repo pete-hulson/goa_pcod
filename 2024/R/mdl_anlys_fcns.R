@@ -292,16 +292,12 @@ run_fofl_prev <- function(new_year = NULL,
   # set up model folder
   # copy ss input files
   if(!file.exists(here::here(new_year, 'mgmt', rec_mdl, "f_ofl", 'ss3.exe'))){
-    start_ss_fldr(from = here::here(new_year, 'mgmt', rec_mdl),
-                  to = here::here(new_year, 'mgmt', rec_mdl, "f_ofl"))
-    # set up starter file
-    starter <- r4ss::SS_readstarter(file = here::here(new_year, 'mgmt', rec_mdl, "f_ofl", 'starter.ss'),
-                                    verbose = FALSE)
-    starter$init_values_src = 0
-    r4ss::SS_writestarter(mylist = starter,
-                          dir = here::here(new_year, 'mgmt', rec_mdl, "f_ofl"),
-                          overwrite = TRUE,
-                          verbose = FALSE)
+    r4ss::copy_SS_inputs(dir.old = here::here(new_year, 'mgmt', rec_mdl), 
+                         dir.new = here::here(new_year, 'mgmt', rec_mdl, "f_ofl"),
+                         copy_par = TRUE,
+                         copy_exe = TRUE,
+                         overwrite = TRUE,
+                         verbose = FALSE)
   }
   
   # replace previous year catch with ofl
@@ -952,9 +948,9 @@ run_llq <- function(dir = NULL,
     iters <- 5 # for testing
   }
   # run
-  rand_res <- purrr::map(1:iters, ~ llq_rand(dat = datafile, 
-                                             dir = here::here(dir, "llq", "rand_cov"), 
-                                             datafilename = datafilename))
+  rand_res <- SimDesign::quiet(purrr::map(1:iters, ~ llq_rand(dat = datafile, 
+                                                              dir = here::here(dir, "llq", "rand_cov"), 
+                                                              datafilename = datafilename)))
   
   # get results
   
@@ -1152,16 +1148,16 @@ run_mcmc <- function(full_run = NULL,
   
   # run adnuts
   tictoc::tic()
-  mcmc_adnut <- invisible(adnuts::sample_rwm(model = 'ss3',
-                                             path = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
-                                             iter = iter,
-                                             chains = 7,
-                                             warmup = warmup,
-                                             thin = thin,
-                                             mceval = FALSE,
-                                             control = list(metric = 'mle'),
-                                             skip_optimization = FALSE,
-                                             verbose = FALSE))
+  mcmc_adnut <- SimDesign::quiet(adnuts::sample_rwm(model = 'ss3',
+                                                    path = here::here(new_year, "mgmt", rec_mdl, "mcmc"),
+                                                    iter = iter,
+                                                    chains = 7,
+                                                    warmup = warmup,
+                                                    thin = thin,
+                                                    mceval = FALSE,
+                                                    control = list(metric = 'mle'),
+                                                    skip_optimization = FALSE,
+                                                    verbose = FALSE))
   nuts_time <- tictoc::toc(quiet = TRUE)
   
   # run mceval

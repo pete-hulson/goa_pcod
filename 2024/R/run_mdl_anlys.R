@@ -170,6 +170,8 @@ run_mdl_anlys <- function(new_year = NULL,
     
     # print message when done
     cat(crayon::green$bold("\u2713"), crayon::blue("mcmc"), crayon::green$underline$bold$italic("DONE"), "\n")
+  } else{
+    mcmc_time <- list(nuts_time = 0, eval_time = 0)
   }
   
   # compute full run time ----
