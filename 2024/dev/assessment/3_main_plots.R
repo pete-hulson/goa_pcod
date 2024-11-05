@@ -618,8 +618,8 @@ rec_mdl_res$len_comp_fit_table %>%
                          tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "fish_lfreq_foreign.csv")) %>% 
                                                 tidytable::select(gear, year, length, freq) %>% 
                                                 tidytable::uncount(freq)) %>% 
-                         tidytable::summarise(uci = quantile(length, probs = 0.975),
-                                              lci = quantile(length, probs = 0.025), .by = c(year, gear)) %>% 
+                         tidytable::summarise(uci = quantile(length, probs = 0.75),
+                                              lci = quantile(length, probs = 0.25), .by = c(year, gear)) %>% 
                          tidytable::mutate(fleet = case_when(gear == "trawl" ~ "Trawl fishery",
                                                              gear == "longline" ~ "Longline fishery",
                                                              gear == "pot" ~ "Pot fishery")) %>% 
@@ -633,8 +633,8 @@ rec_mdl_res$len_comp_fit_table %>%
                                                                        tidytable::mutate(fleet = "Longline survey",
                                                                                          rpn = round(rpn / 10, digits = 0)) %>% 
                                                                        tidytable::uncount(rpn)) %>% 
-                                                tidytable::summarise(uci = quantile(length, probs = 0.975),
-                                                                     lci = quantile(length, probs = 0.025), .by = c(year, fleet)))) %>% 
+                                                tidytable::summarise(uci = quantile(length, probs = 0.75),
+                                                                     lci = quantile(length, probs = 0.25), .by = c(year, fleet)))) %>% 
   tidytable::drop_na() %>% 
   tidytable::mutate(fleet = factor(fleet, levels = c("Trawl fishery", 
                                                      "Longline fishery",
