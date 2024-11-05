@@ -20,8 +20,7 @@ lapply(pkg_cran, library, character.only = TRUE)
 
 ## github packages ----
 pkg_git <- c("r4ss",
-             "afscdata",
-             "nmfspalette")
+             "afscdata")
 
 # if not installed, then install
 if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
@@ -29,9 +28,6 @@ if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
 }
 if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
   devtools::install_github("afsc-assessments/afscdata", force = TRUE)
-}
-if(!isTRUE("nmfspalette" %in% rownames(installed.packages()))) {
-  devtools::install_github("nmfs-fish-tools/nmfspalette", force = TRUE)
 }
 
 # load packages
@@ -46,13 +42,13 @@ rec_mdl <- "24.0"
 prev_mdl <- "2019.1b-2023"
 
 # load functions ----
-source_files <- c(list.files(here::here(new_year, "R", "tbls_plots"), pattern = "*.r$"),
-                  list.files(here::here(new_year, "R", "tbls_plots"), pattern = "*.R$"))
-purrr::map(here::here(new_year, "R", "tbls_plots", source_files), source)
+source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
+                  list.files(here::here(new_year, "R"), pattern = "*.R$"))
+purrr::map(here::here(new_year, "R", source_files), source)
 
 # remove previous tables and plots ----
-unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
-unlink(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
+# unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
+# unlink(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
 
 # get tables for safe ----
 safe_tbls(new_year = new_year,
