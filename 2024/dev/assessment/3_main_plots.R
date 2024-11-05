@@ -146,13 +146,13 @@ ae_res <- vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res
 ## ll survey q sensitivities ----
 load(here::here(new_year, "output", "llq", "llq_res.RData"))
 ## retrospective results ----
-load(here::here(new_year, "output", "retro", "retrosumm.RData"))
+load(here::here(new_year, "output", "retro", "retro_res.RData"))
 ## historical models ----
 hist_mdls <- vroom::vroom(here::here(new_year, 'data', 'hist_mdls.csv'), 
                           progress = FALSE, 
                           show_col_types = FALSE)
 ## leave-one-out results ----
-load(here::here(new_year, "output", "loo", "loo.RData"))
+load(here::here(new_year, "output", "loo", "loo_res.RData"))
 ## add-one-in results ----
 load(here::here(new_year, "output", "aoi", "aoi.RData"))
 ## management scenarios ----
@@ -179,12 +179,15 @@ if (!dir.exists(here::here(new_year, "output", "safe_plots"))) {
 
 # run r4ss to plot recommended model ----
 
+unlink(here::here(new_year, "output", "safe_plots", "r4ss"), recursive = TRUE)
+
 # plot recommended model
 r4ss::SS_plots(rec_mdl_res,
                printfolder = "",
                dir = here::here(new_year, "output", "safe_plots", "r4ss"))
 
 # plot catch by fleet ----
+## NOTE: will need to redo this one ----
 r4ss::SSplotCatch(rec_mdl_res,
                   subplots = 2,
                   fleetcols = scico::scico(3, palette = 'roma'),
@@ -1795,9 +1798,6 @@ ggsave(filename = "phase_plane.png",
 
 
 # mcmc adnuts pairs ----
-
-load(here::here(new_year, "output", "mcmc", "mcmc_adnut.RData"))
-
 dimnames(mcmc_adnut$samples)[[3]][1] <- "M"
 dimnames(mcmc_adnut$samples)[[3]][3] <- "Linf"
 dimnames(mcmc_adnut$samples)[[3]][7] <- "M[14-16]"
@@ -1806,12 +1806,11 @@ dimnames(mcmc_adnut$samples)[[3]][68] <- "ln(q_BTS)"
 dimnames(mcmc_adnut$samples)[[3]][69] <- "ln(q_LL)"
 
 adnuts::pairs_admb(mcmc_adnut, 
-                   pars = c('M', 'M[14-16]', 'R0', 'ln(q_BTS)', 'ln(q_LL)'),
-                   label.cex = 1) +
-  theme(axis.text = 1)
+                   pars = c('M', 'M[14-16]', 'R0', 'ln(q_BTS)'),
+                   label.cex = 1)
 
 dev.print(png, file = here::here(new_year, "output", "safe_plots", "mcmc_pairs.png"), 
-          width = 1024, height = 1000)
+          width = 600, height = 500)
 
 # mcmc histogram for key parameters ----
 
