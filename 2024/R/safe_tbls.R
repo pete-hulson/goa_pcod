@@ -12,86 +12,112 @@ safe_tbls <- function(new_year = NULL,
   if (!dir.exists(here::here(new_year, "output", "safe_tables"))) {
     dir.create(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
   }
+  if (!dir.exists(here::here(new_year, "output", "web", "model_data"))) {
+    dir.create(here::here(new_year, "output", "web", "model_data"), recursive = TRUE)
+  }
+  if (!dir.exists(here::here(new_year, "output", "web", "model_results"))) {
+    dir.create(here::here(new_year, "output", "web", "model_results"), recursive = TRUE)
+  }
   
   # read in/query needed results/etc ----
   
-  ## catch data ----
+  # note: tables that need to be transferred over from year-to-year:
+  # 1 - old_abc_tac
+  # 2 - old_ref_pts
+  # 3 - ageing error resuults
+  # 4 - old apport
+  
+  ## from data queries ----
+  ### catch data ----
   fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
                           progress = FALSE, 
                           show_col_types = FALSE)
   adfg_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), 
                            progress = FALSE, 
                            show_col_types = FALSE)
-  ## historical abc/tac/etc ----
-  old_abc <- vroom::vroom(here::here(new_year, 'data', 'old_abc_tac.csv'), 
-                          progress = FALSE, 
-                          show_col_types = FALSE)
-  ## bycatch ----
-  bycatch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'), 
-                          progress = FALSE, 
-                          show_col_types = FALSE)
-  ## survey indices ----
+  ### survey indices ----
   bts_raw <- vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_index.csv"), 
                           progress = FALSE, 
                           show_col_types = FALSE)
-  lls_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'lls_rpn_geoarea_data.csv'), 
-                          progress = FALSE, 
-                          show_col_types = FALSE)
-  ## historical ref pts ----
-  old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'old_ref_pts.csv'), 
+  bts_age_raw <- vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_apop.csv"), 
                               progress = FALSE, 
                               show_col_types = FALSE)
-  ## ageing error ----
+  bts_len_raw <- vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_lpop.csv"), 
+                              progress = FALSE, 
+                              show_col_types = FALSE)
+  
+  lls_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'lls_rpn_geoarea_data.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE) 
+  lls_len_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'lls_rpn_length_data.csv'), 
+                              progress = FALSE, 
+                              show_col_types = FALSE) 
+  
+  ### nontarget catch ----
+  nontarg <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'data', 'output', 'nontarget_catch.csv'), delim = ',', 
+                                           progress = FALSE, 
+                                           show_col_types = FALSE))
+  ### prohib species catch ----
+  psc <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'data', 'output', 'psc_catch.csv'), delim = ',', 
+                                       progress = FALSE, 
+                                       show_col_types = FALSE))
+  ### specs ----
+  specs <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'data', 'raw', 'specs.csv'), delim = ',', 
+                                         progress = FALSE, 
+                                         show_col_types = FALSE))
+  ### bycatch ----
+  bycatch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)  
+
+  ## historical/fixed tables ----
+  ### historical abc/tac/etc ----
+  old_abc <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_abc_tac.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
+  ### historical ref pts ----
+  old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'), 
+                              progress = FALSE, 
+                              show_col_types = FALSE)
+  ### historical ref pts ----
+  old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'), 
+                              progress = FALSE, 
+                              show_col_types = FALSE)
+  ### historical apport ----
+  old_apport <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_apport.csv'), 
+                             progress = FALSE, 
+                             show_col_types = FALSE)
+  
+  ## from model runs ----
+  ### ageing error ----
   ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
                                           progress = FALSE, 
                                           show_col_types = FALSE))
-  ## ageing bias ----
+  ### ageing bias ----
   bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
                                      progress = FALSE, 
                                      show_col_types = FALSE))
-  ## mscen results  ----
+  ### mscen results  ----
   load(here::here(new_year, "output", "mscen", "mgmnt_scen_rec.RData"))
-  
+  ### jitter results  ----
+  load(here::here(new_year, "output", "jitter", "jitt_res.RData"))
+  # note: sill need to change this to current results format convention
   prev_2yr <- SimDesign::quiet(vroom::vroom(here::here(new_year - 1, 'output', 'mgmnt_exec_summ.csv'), 
                                             progress = FALSE, 
                                             show_col_types = FALSE))
   curr_2yr <- mscen$Two_year
-  ## apportionment ----
+  ### apportionment ----
   load(here::here(new_year, "output", "apport", "apport.Rdata"))
-
-  ## specs ----
-  # get connected to query
-  db = 'akfin'
-  conn = afscdata::connect(db)
-  specs <- afscdata::q_specs(year = new_year,
-                             species = "PCOD",
-                             area = "GOA",
-                             db = conn,
-                             save = FALSE)
-  ## nontarget catch ----
-  nontarg <- afscdata::q_nontarget(year = new_year,
-                                   target = "c",
-                                   area = "goa",
-                                   db = conn,
-                                   save = FALSE)
-  ## prohib species catch ----
-  psc <- afscdata::q_psc(year = new_year,
-                         target = "c",
-                         area = "goa",
-                         db = conn,
-                         save = FALSE)
-  
-  ## model output ----
+  ### f@ofl ----
+  load(here::here(new_year, "output", "fofl_prev", "fofl_prev.Rdata"))
+  ### model output ----
   mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
-                             verbose = FALSE,
-                             printstats = FALSE)
-  f_ofl <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl, "f_ofl"),
                              verbose = FALSE,
                              printstats = FALSE)
   prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                   verbose = FALSE,
                                   printstats = FALSE)
-  
+  # alternate model results
   base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1b"),
                                   verbose = FALSE,
                                   printstats = FALSE)
@@ -104,6 +130,9 @@ safe_tbls <- function(new_year = NULL,
   res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
                                verbose = FALSE,
                                printstats = FALSE)
+  # model data
+  mdl_data <- r4ss::SS_readdat_3.30(here::here(new_year, "mgmt", rec_mdl, list.files(here::here(new_year, "mgmt", rec_mdl), "GOAPcod")),
+                                    verbose = FALSE)
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Get needed info"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -199,7 +228,40 @@ safe_tbls <- function(new_year = NULL,
   
   # apportionment table ----
   
+  # recommended apportionment (with rounded error check)
+  apport_out$proportion_biomass_by_strata %>% 
+    tidytable::filter(year == max(year)) %>% 
+    tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
+    tidytable::select(region, apport) %>% 
+    tidytable::mutate(apport = round(apport, digits = 3),
+                      diff = case_when(region == 'western' ~ 1 - sum(apport),
+                                       .default = 0)) %>%
+    tidytable::mutate(apport_corr = apport + diff) %>%  # if rounding error happens, add to wgoa
+    tidytable::select(region, apport_corr) %>% 
+    tidytable::rename(apport = 'apport_corr') %>% 
+    tidytable::mutate(ABC_yr1 = round(apport * curr_2yr$C_ABC[1], digits = 0),
+                      ABC_yr2 = round(apport * curr_2yr$C_ABC[2], digits = 0)) %>% 
+    tidytable::mutate(diff_y1 = case_when(region == 'western' ~ round(curr_2yr$C_ABC[1], digits = 0) - sum(ABC_yr1),
+                                          .default = 0),
+                      diff_y2 = case_when(region == 'western' ~ round(curr_2yr$C_ABC[2], digits = 0) - sum(ABC_yr2),
+                                          .default = 0)) %>%
+    tidytable::mutate(y1_corr = ABC_yr1 + diff_y1,
+                      y2_corr = ABC_yr2 + diff_y2) %>%  # if rounding error happens, add to wgoa
+    tidytable::select(-c(ABC_yr1, ABC_yr2, diff_y1, diff_y2)) %>% 
+    tidytable::rename(ABC_yr1 = 'y1_corr',
+                      ABC_yr2 = 'y2_corr') -> abc_apport
+
+  # add to apport table
+  apport_tbl <- old_apport %>% 
+    tidytable::bind_rows(data.table(`Year(s)` = new_year + 1,
+                                    Western = abc_apport$apport[which(abc_apport$region == 'western')] * 100,
+                                    Central = abc_apport$apport[which(abc_apport$region == 'central')] * 100,
+                                    Eastern = abc_apport$apport[which(abc_apport$region == 'eastern')] * 100))
   
+  vroom::vroom_write(apport_tbl, here::here(new_year, "output", "safe_tables", 'tbl3_apport.csv'), delim = ",")
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Apportionment table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
   # retained/discarded table ----
@@ -1096,16 +1158,103 @@ safe_tbls <- function(new_year = NULL,
   
   vroom::vroom_write(abc_intext, here::here(new_year, "output", "safe_tables", 'intext_abc_ofl.csv'), delim = ",")
   
+  ## jitter results ----
+  # get diff with mle estimates
+  jitt_res$likelihoods[jitt_res$likelihoods$Label == 'TOTAL',] %>% 
+    select(-Label) %>% 
+    tidytable::pivot_longer() %>% 
+    tidytable::mutate(diff = value - mdl_res$likelihoods_used$values[1]) -> mle_diff
+
+  # put together table
+  jitt_tbl <- data.table(conv = length(jitt_res$maxgrad[which(jitt_res$maxgrad <= 0.001)]),
+                         mle = length(mle_diff$diff[which(mle_diff$diff == 0)]) / 50)
+  
+  vroom::vroom_write(jitt_tbl, here::here(new_year, "output", "safe_tables", 'intext_jitter.csv'), delim = ",")
+  
   ## f with prev catch @ ofl ----
-  f_ofl$derived_quants %>% 
+  fofl_prev$derived_quants %>% 
     tidytable::filter(Label == paste0("F_", new_year - 1)) %>% 
     tidytable::select(param = Label, value = Value) -> f_ofl_val
   
   vroom::vroom_write(f_ofl_val, here::here(new_year, "output", "safe_tables", 'intext_f_ofl.csv'), delim = ",")
-  
-  
+
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("In-text tables"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  # get results for website ----
+  
+  ## survey age numbers ----
+  srv_age <- bts_age_raw %>% 
+    tidytable::mutate(age = case_when(age > 10 ~ 10,
+                                      .default = age)) %>% 
+    tidytable::mutate(names = paste0("age", age)) %>% 
+    tidytable::summarise(apop = sum(num), .by = c(year, names)) %>% 
+    tidytable::pivot_wider(names_from = names,
+                           values_from = apop) %>% 
+    tidytable::mutate(units = "Numbers",
+                      survey = "Bottom trawl",
+                      across(.cols = names(.)[2:length(names(.))], ~replace_na(., 0))) %>% 
+    tidytable::select(year, survey, units, paste0("age", seq(1, 10)))
+  
+  vroom::vroom_write(srv_age, here::here(new_year, "output", "web", "model_data", 'survey_age_numbers.csv'), delim = ",")
+  
+
+  ## survey length numbers ----
+  srv_len <- tidytable::expand_grid(length = seq(min(bts_len_raw$length, lls_len_raw$length), 104)) %>% 
+    tidytable::left_join(bts_len_raw %>% 
+                           tidytable::mutate(length = case_when(length > 104 ~ 104,
+                                                                .default = length)) %>% 
+                           tidytable::summarise(lpop = sum(num), .by = c(year, length))) %>% 
+    tidytable::mutate(names = paste(length, "cm")) %>% 
+    tidytable::select(-length) %>% 
+    tidytable::pivot_wider(names_from = names,
+                           values_from = lpop) %>% 
+    tidytable::mutate(units = "Numbers",
+                      survey = "Bottom trawl") %>% 
+    tidytable::bind_rows(tidytable::expand_grid(length = seq(min(bts_len_raw$length, lls_len_raw$length), 104)) %>% 
+                           tidytable::left_join(lls_len_raw %>% 
+                                                  tidytable::mutate(length = case_when(length > 104 ~ 104,
+                                                                                       .default = length)) %>% 
+                                                  tidytable::summarise(lrpn = sum(rpn), .by = c(year, length))) %>% 
+                           tidytable::mutate(names = paste(length, "cm")) %>% 
+                           tidytable::filter(year >= 1990,
+                                             !is.na(year)) %>% 
+                           tidytable::select(-length) %>% 
+                           tidytable::pivot_wider(names_from = names,
+                                                  values_from = lrpn) %>% 
+                           tidytable::mutate(units = "RPN",
+                                             survey = "Longline")) %>% 
+    tidytable::select(year, survey, units, paste(seq(min(bts_len_raw$length, lls_len_raw$length), 104), "cm")) %>% 
+    tidytable::mutate(across(.cols = names(.)[4:length(names(.))], ~replace_na(., 0)))
+    
+  vroom::vroom_write(srv_len, here::here(new_year, "output", "web", "model_data", 'survey_length_numbers.csv'), delim = ",")
+  
+  ## pred numbers at age ----
+  natage <- mdl_res$natage %>% 
+    tidytable::filter(Yr >= 1977,
+                      `Beg/Mid` == 'B') %>% 
+    tidytable::select(-c(Area, Bio_Pattern, Sex, BirthSeas, Settlement, Platoon, Morph, Seas, Time, `Beg/Mid`, Era))
+  
+  vroom::vroom_write(natage, here::here(new_year, "output", "web", "model_results", 'predicted_numbers_at_age.csv'), delim = ",")
+  
+  ## pred numbers at legnth ----
+  natlen <- mdl_res$natlen %>% 
+    tidytable::filter(Yr >= 1977,
+                      `Beg/Mid` == 'B') %>% 
+    tidytable::select(-c(Area, Bio_Pattern, Sex, BirthSeas, Settlement, Platoon, Morph, Seas, Time, `Beg/Mid`, Era))
+  
+  vroom::vroom_write(natlen, here::here(new_year, "output", "web", "model_results", 'predicted_numbers_at_length.csv'), delim = ",")
+  
+  ## parameters ----
+  parms <- mdl_res$parameters %>% 
+    tidytable::select(Label, Value, Parm_StDev)
+  
+  vroom::vroom_write(parms, here::here(new_year, "output", "web", "model_results", 'model_parameters.csv'), delim = ",")
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Website tables"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+
   cat(crayon::green$bold("\u2713"), crayon::blue("All tables"), crayon::green$underline$bold$italic("DONE"), "\n")
   
 }
