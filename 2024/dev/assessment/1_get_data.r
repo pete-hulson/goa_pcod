@@ -37,7 +37,8 @@ pkg_cran <- c("data.table",
               "tidyverse",
               "vroom",
               "here",
-              "tictoc")
+              "tictoc",
+              "SimDesign")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
@@ -94,6 +95,9 @@ len_bins5 <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 5
 # Make folders for data queries, raw data, and model input files
 if (!file.exists(here::here(new_year, "data", "raw"))){
   dir.create(here::here(new_year, "data", "raw"))
+}
+if (!file.exists(here::here(new_year, "data", "output"))){
+  dir.create(here::here(new_year, "data", "output"))
 }
 if (!file.exists(here::here(new_year, "data", "sql"))){
   dir.create(here::here(new_year, "data", "sql"))
