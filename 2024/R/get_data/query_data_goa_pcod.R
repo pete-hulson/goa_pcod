@@ -365,21 +365,21 @@ query_goa_pcod <- function(new_year = 9999,
 
   ## longline survey index data ----
   cat("\u231b", crayon::blue("working on longline survey index query..."), "\n")
-  afscdata::q_lls_rpn(year = new_year,
+  SimDesign::quiet(afscdata::q_lls_rpn(year = new_year,
                       species = srv_sp,
                       area = area,
                       by = 'geoarea',
                       use_historical = FALSE,
-                      db = conn)
+                      db = conn))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## longline survey length data ----
   cat("\u231b", crayon::blue("working on longline survey length rpn query..."), "\n")
-  afscdata::q_lls_rpn_length(year = new_year,
+  SimDesign::quiet(afscdata::q_lls_rpn_length(year = new_year,
                              species = srv_sp,
                              area = area,
-                             db = conn)
+                             db = conn))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
@@ -411,11 +411,11 @@ query_goa_pcod <- function(new_year = 9999,
   ## catch data ----
   cat("\u231b", crayon::blue("working on catch query..."), "\n")
   ### query catch data and write raw data to folder ----
-  afscdata::q_catch(year = new_year,
+  SimDesign::quiet(afscdata::q_catch(year = new_year,
                     species = fsh_sp,
                     area = fsh_subarea,
                     db = conn,
-                    add_fields = c("akr_state_fishery_flag", "vessel_id"))
+                    add_fields = c("akr_state_fishery_flag", "vessel_id")))
   ### query ADF&G data from 1997-2002 and write raw data to folder ----
   dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -677,4 +677,29 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("swf catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
  
+  ## nontarget catch ----
+  SimDesign::quiet(afscdata::q_nontarget(year = new_year,
+                                         target = "c",
+                                         area = "goa",
+                                         db = conn,
+                                         save = TRUE))
+  cat(crayon::green$bold("\u2713"), crayon::blue("nontarget catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  ## prohib species catch ----
+  SimDesign::quiet(afscdata::q_psc(year = new_year,
+                                   target = "c",
+                                   area = "goa",
+                                   db = conn,
+                                   save = TRUE))
+  cat(crayon::green$bold("\u2713"), crayon::blue("prohib species catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+
+  ## specs ----
+  
+  SimDesign::quiet(afscdata::q_specs(year = new_year,
+                                     species = "PCOD",
+                                     area = "GOA",
+                                     db = conn,
+                                     save = TRUE))
+  cat(crayon::green$bold("\u2713"), crayon::blue("specs query"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
 }
