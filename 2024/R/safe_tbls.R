@@ -678,7 +678,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::rename("24.0" = Value))
   
   vroom::vroom_write(like_comp,
-                     here::here(new_year, 'output', 'safe_tables', 'tbl11_like_comp.csv'),
+                     here::here(new_year, 'output', 'safe_tables', 'tbl13_like_comp.csv'),
                      delim = ",")
 
   # rec model likelihood table ----
@@ -773,7 +773,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::select(Name, Value)) %>% 
     tidytable::rename(Parameter = Name) -> outside_param_tbl
   
-  vroom::vroom_write(outside_param_tbl, here::here(new_year, "output", "safe_tables", 'intext_outside_param.csv'), delim = ",")
+  vroom::vroom_write(outside_param_tbl, here::here(new_year, "output", "safe_tables", 'tbl11_outside_param.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Outside model parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -838,7 +838,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::select(Name, Value, SD) %>% 
                            tidytable::arrange(Name)) -> key_param_tbl
   
-  vroom::vroom_write(key_param_tbl, here::here(new_year, "output", "safe_tables", 'tbl13_key_param.csv'), delim = ",")
+  vroom::vroom_write(key_param_tbl, here::here(new_year, "output", "safe_tables", 'tbl14_key_param.csv'), delim = ",")
 
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Key parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -878,7 +878,7 @@ safe_tbls <- function(new_year = NULL,
                                                   tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))))) %>%
     tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) -> bio_comp_tbl
   
-  vroom::vroom_write(bio_comp_tbl, here::here(new_year, "output", "safe_tables", 'tbl14_bio_comp.csv'), delim = ",")
+  vroom::vroom_write(bio_comp_tbl, here::here(new_year, "output", "safe_tables", 'tbl15_bio_comp.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Model biomass comparison table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -914,7 +914,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::rename("Previous Recruitment" = prev_rec, "Previous SD[Rec]" = sd_prev, "Current Recruitment" = curr_rec, "Current SD[Rec]" = sd_curr)) %>%
     tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) -> rec_comp_tbl
   
-  vroom::vroom_write(rec_comp_tbl, here::here(new_year, "output", "safe_tables", 'tbl15_rec_comp.csv'), delim = ",")
+  vroom::vroom_write(rec_comp_tbl, here::here(new_year, "output", "safe_tables", 'tbl16_rec_comp.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Model recruitment comparison table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -944,7 +944,7 @@ safe_tbls <- function(new_year = NULL,
                            tidytable::mutate("Total Exploitation" = round(totcatch / totbiom, digits = 3)) %>% 
                            tidytable::select(-totcatch, -totbiom)) -> F_tbl
   
-  vroom::vroom_write(F_tbl, here::here(new_year, "output", "safe_tables", 'tbl16_F.csv'), delim = ",")
+  vroom::vroom_write(F_tbl, here::here(new_year, "output", "safe_tables", 'tbl17_F.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("F estimate table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -960,7 +960,7 @@ safe_tbls <- function(new_year = NULL,
                                     ofl = format(round(curr_2yr$C_OFL[1], digits = 0), big.mark = ","),
                                     abc = format(round(curr_2yr$C_ABC[1], digits = 0), big.mark = ","))) -> ref_pts_tbl
   
-  vroom::vroom_write(ref_pts_tbl, here::here(new_year, "output", "safe_tables", 'tbl17_hist_ref_pts.csv'), delim = ",")
+  vroom::vroom_write(ref_pts_tbl, here::here(new_year, "output", "safe_tables", 'tbl18_hist_ref_pts.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Historical reference point table"), crayon::green$underline$bold$italic("DONE"), "\n")
@@ -995,7 +995,7 @@ safe_tbls <- function(new_year = NULL,
                                                 "Scenario 7" = "-") %>% 
                            tidytable::bind_rows(mscen$mscen_ssb)) -> mscen_tbl
   
-  vroom::vroom_write(mscen_tbl, here::here(new_year, "output", "safe_tables", 'tbl18_mscen.csv'), delim = ",")
+  vroom::vroom_write(mscen_tbl, here::here(new_year, "output", "safe_tables", 'tbl19_mscen.csv'), delim = ",")
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Management scenario table"), crayon::green$underline$bold$italic("DONE"), "\n")

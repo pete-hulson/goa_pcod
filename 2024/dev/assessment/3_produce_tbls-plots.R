@@ -47,7 +47,7 @@ source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
 purrr::map(here::here(new_year, "R", source_files), source)
 
 # remove previous tables and plots ----
-# unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
+unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
 # unlink(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
 
 # get tables for safe ----
