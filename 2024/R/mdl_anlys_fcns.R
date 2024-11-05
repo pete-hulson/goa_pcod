@@ -73,7 +73,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   # run models in parallel
   # Define the list of remaining scenarios
   scenarios <- paste0("scenario_", seq(2, 8))
-
+  
   # Get the number of available cores
   num_cores <- parallel::detectCores()
   if(num_cores > length(scenarios)) num_cores = length(scenarios)
@@ -183,7 +183,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
                                 verbose = FALSE)
   mod_summ <- r4ss::SSsummarize(mod_outs,
                                 verbose = FALSE)
-
+  
   # ssb
   mscen_ssb <- mod_summ$quants %>% 
     tidytable::filter(Label %in% paste0("SSB_", seq(cyr, cyr + 13))) %>% 
@@ -223,7 +223,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
     tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
                       across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))
   
-
+  
   # get 2-year projections for catch and F
   SB100 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_unfished"), 1] / sex
   SB40 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_SPR"), 1] / sex
@@ -238,7 +238,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   catchOFL_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 6]
   SSB_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 1)), 1] / sex
   SSB_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 2)), 1] / sex
-
+  
   Two_Year <- data.table(Yr = c((cyr + 1):(cyr + 2)),
                          SSB = c(SSB_1, SSB_2),
                          SSB_PER = c(SSB_1 / SB100, SSB_2 / SB100),
@@ -252,10 +252,10 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   
   # output list
   mscen <- list(mscen_ssb = mscen_ssb,
-                 mscen_catch = mscen_catch,
-                 mscen_f = mscen_f,
-                 Two_year = Two_Year)
-
+                mscen_catch = mscen_catch,
+                mscen_f = mscen_f,
+                Two_year = Two_Year)
+  
   # save results
   if (!dir.exists(here::here(new_year, "output", "mscen"))) {
     dir.create(here::here(new_year, "output", "mscen"), recursive = TRUE)
@@ -274,15 +274,9 @@ run_fofl_prev <- function(new_year = NULL,
                           rec_mdl = NULL){
   
   # get previous year ofl
-  # get connected to query
-  db = 'akfin'
-  conn = afscdata::connect(db)  
-  # specs
-  specs <- afscdata::q_specs(year = new_year,
-                             species = "PCOD",
-                             area = "GOA",
-                             db = conn,
-                             save = FALSE)
+  specs <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'data', 'raw', 'specs.csv'), delim = ',', 
+                                         progress = FALSE, 
+                                         show_col_types = FALSE))
   # get ofl
   specs %>% 
     tidytable::filter(year == new_year - 1,
@@ -320,9 +314,10 @@ run_fofl_prev <- function(new_year = NULL,
                          outfile = here::here(new_year, "mgmt", rec_mdl, "f_ofl", list.files(here::here(new_year, "mgmt", rec_mdl), "GOAPcod")),
                          overwrite = TRUE,
                          verbose = FALSE)
-  
+
   # run model
   r4ss::run(dir = here::here(new_year, "mgmt", rec_mdl, "f_ofl"),
+            extras = "-stopph 0",
             skipfinished = FALSE,
             show_in_console = FALSE,
             verbose = FALSE)
@@ -330,7 +325,8 @@ run_fofl_prev <- function(new_year = NULL,
   # get results
   fofl_prev <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl, "f_ofl"),
                                verbose = FALSE,
-                               printstats = FALSE)
+                               printstats = FALSE,
+                               covar = FALSE)
   
   # save results
   if (!dir.exists(here::here(new_year, "output", "fofl_prev"))) {
@@ -913,10 +909,11 @@ run_llq <- function(dir = NULL,
                         verbose = FALSE)
   
   # run model
-  r4ss::run(dir = here::here(dir, "llq", "no_cov"),
-            skipfinished = FALSE,
-            show_in_console = FALSE,
-            verbose = FALSE)
+  suppressWarnings(r4ss::run(dir = here::here(dir, "llq", "no_cov"),
+                             extras = "-nohess",
+                             skipfinished = FALSE,
+                             show_in_console = FALSE,
+                             verbose = FALSE))
   
   
   # white noise llq covariate
@@ -959,9 +956,9 @@ run_llq <- function(dir = NULL,
                               verbose = FALSE,
                               printstats = FALSE)
   # read no covariate results
-  res_run_nocov <- r4ss::SS_output(dir = here::here(dir, 'llq', 'no_cov'),
-                                   verbose = FALSE,
-                                   printstats = FALSE)
+  res_run_nocov <- suppressWarnings(r4ss::SS_output(dir = here::here(dir, 'llq', 'no_cov'),
+                                                    verbose = FALSE,
+                                                    printstats = FALSE))
   
   # set up likelihood results
   res_base$likelihoods_used %>% 
@@ -1042,13 +1039,14 @@ llq_rand <- function(dat = NULL,
                          verbose = FALSE)
   # run model
   r4ss::run(dir = dir,
+            extras = "-nohess",
             skipfinished = FALSE,
             show_in_console = FALSE,
             verbose = FALSE)
   # read the model output and save
-  res <- r4ss::SS_output(dir = dir,
-                         verbose = FALSE,
-                         printstats = FALSE)
+  res <- suppressWarnings(r4ss::SS_output(dir = dir,
+                                          verbose = FALSE,
+                                          printstats = FALSE))
   # format likelihood results
   res$likelihoods_used %>% 
     tidytable::mutate(like_compon = rownames(res$likelihoods_used)) %>% 
