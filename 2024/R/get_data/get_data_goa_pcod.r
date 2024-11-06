@@ -7,6 +7,7 @@
 #' @param query switch for whether to run sql query and update data (default = TRUE)
 #' @param fsh_sp species label for observer/catch data (default = "PCOD")
 #' @param fsh_sp_code species code for observer/catch data (default = 202)
+#' @param fsh_target trip target code for catch data (default = "c")
 #' @param fsh_subarea NPFMC subareas (default to goa subareas c("CG","PWSI","SE","SEI","WG","WY"))
 #' @param fsh_age_st_yr beginning year for fishery age comps (default = 2007)
 #' @param twl_srvy gap survey id number (default = 47 for goa)
@@ -30,6 +31,7 @@ get_data_goa_pcod <- function(new_data = new_data,
                               query = TRUE,
                               fsh_sp = "PCOD",
                               fsh_sp_code = 202,
+                              fsh_target = "c",
                               fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"),
                               fsh_age_st_yr = 2007,
                               twl_srvy = 47,
@@ -55,6 +57,7 @@ get_data_goa_pcod <- function(new_data = new_data,
     query_goa_pcod(new_year = new_year,
                    fsh_sp = fsh_sp,
                    fsh_sp_code = fsh_sp_code,
+                   fsh_target = fsh_target,
                    fsh_subarea = fsh_subarea,
                    twl_srvy = twl_srvy,
                    srv_sp = srv_sp,
