@@ -4,6 +4,7 @@
 #' @param new_year current assessment year
 #' @param fsh_sp species label for observer/catch data (default = 'PCOD')
 #' @param fsh_sp_code species code for observer/catch data (default = 202)
+#' @param fsh_target trip target code for catch data (default = "c")
 #' @param fsh_subarea NPFMC subareas (default to goa subareas)
 #' @param twl_srvy gap survey id number (default = 47 for goa)
 #' @param srv_sp gap species code (default = 21720)
@@ -12,6 +13,7 @@
 query_goa_pcod <- function(new_year = 9999,
                            fsh_sp = "PCOD",
                            fsh_sp_code = 202,
+                           fsh_target = "c",
                            fsh_subarea = c("CG","PWSI","SE","SEI","WG","WY"),
                            twl_srvy = 47,
                            srv_sp = 21720,
@@ -679,27 +681,60 @@ query_goa_pcod <- function(new_year = 9999,
  
   ## nontarget catch ----
   SimDesign::quiet(afscdata::q_nontarget(year = new_year,
-                                         target = "c",
-                                         area = "goa",
+                                         target = fsh_target,
+                                         area = area,
                                          db = conn,
                                          save = TRUE))
   cat(crayon::green$bold("\u2713"), crayon::blue("nontarget catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## prohib species catch ----
   SimDesign::quiet(afscdata::q_psc(year = new_year,
-                                   target = "c",
-                                   area = "goa",
+                                   target = fsh_target,
+                                   area = area,
                                    db = conn,
                                    save = TRUE))
   cat(crayon::green$bold("\u2713"), crayon::blue("prohib species catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## specs ----
-  
   SimDesign::quiet(afscdata::q_specs(year = new_year,
-                                     species = "PCOD",
-                                     area = "GOA",
+                                     species = fsh_sp,
+                                     area = area,
                                      db = conn,
                                      save = TRUE))
   cat(crayon::green$bold("\u2713"), crayon::blue("specs query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
+  ## em data ----
+  dplyr::tbl(conn, dplyr::sql('akfin_marts.comprehensive_obs_em')) %>% 
+    dplyr::rename_all(tolower) %>%
+    dplyr::select(year,
+                  target = trip_target_code,
+                  species = obs_species_code,
+                  em_haul_num = em_haul_number,
+                  em_trip_num = em_trip_number,
+                  vessel = vessel_id,
+                  haul_date = retrieval_start_date,
+                  gear = agency_gear_code,
+                  area = fmp_area,
+                  subarea = fmp_subarea,
+                  start_lat = retrieval_start_latitude_dd,
+                  start_lon = retrieval_start_longitude_dd,
+                  end_lat = retrieval_end_latitude_dd,
+                  end_lon = retrieval_end_longitude_dd,
+                  weight_kg = extrapolated_weight_kg,
+                  num = extrapolated_number) %>% 
+    dplyr::filter(subarea %in% fsh_subarea,
+                  species == fsh_sp_code,
+                  year >= new_year - 5) -> em_catch
+
+  dplyr::collect(em_catch) %>% 
+    dplyr::mutate(haul_date = lubridate::date(haul_date),
+                  lat = (start_lat + end_lat) / 2,
+                  lon = (start_lon + end_lon) / 2,
+                  gear = case_when(gear == "POT" ~ "Pot",
+                                   gear == "HAL" ~ "Longline",
+                                   .default = gear)) %>% 
+    tidytable::select(-start_lat, -end_lat, -start_lon, -end_lon) %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'em_catch.csv'), delim = ",")
+  cat(crayon::green$bold("\u2713"), crayon::blue("em catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+
 }
