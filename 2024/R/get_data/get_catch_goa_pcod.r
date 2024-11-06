@@ -9,8 +9,15 @@ get_catch_goa_pcod <- function(new_year = 9999){
 
   # read in data files ----
   
-  fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"))
-  adfg_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'))
+  fed_raw <- vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
+  adfg_raw <- vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), 
+                           progress = FALSE, 
+                           show_col_types = FALSE)
+  specs <- vroom::vroom(here::here(new_year, 'data', 'raw', 'specs.csv'), 
+                        progress = FALSE, 
+                        show_col_types = FALSE)
   
   # current catch ----
   
@@ -45,7 +52,7 @@ get_catch_goa_pcod <- function(new_year = 9999){
   # old catch ----
   
   # read in fixed old catch and add gear descriptions
-  vroom::vroom(here::here(new_year, 'data', 'old_catch.csv')) %>% 
+  vroom::vroom(here::here(new_year, 'data', 'historical', 'old_catch.csv')) %>% 
     dplyr::rename_all(tolower) %>% 
     tidytable::mutate(gear_desc = case_when(gear %in% c("TRAWL") ~ "trawl",
                                             gear %in% c("LONGLINE", "OTHER") ~ "longline",
@@ -75,6 +82,22 @@ get_catch_goa_pcod <- function(new_year = 9999){
     tidytable::bind_rows(old_catch) %>% 
     tidytable::arrange(gear, year) -> tot_catch
   
+  # set current year catch at abc ----
+  # current year catch is set at the average proportion for each gear over the previous 5 years of full catch
+  tot_catch %>% 
+    tidytable::filter(year < new_year) %>% 
+    tidytable::bind_rows(tot_catch %>% 
+                           tidytable::filter(year >= new_year - 6,
+                                             year <= new_year -1) %>% 
+                           tidytable::summarise(tons = mean(tons), .by = gear) %>% 
+                           tidytable::mutate(prop_c = tons / sum(tons),
+                                             curr_c = prop_c * as.numeric(specs %>% 
+                                                                            tidytable::filter(year == new_year,
+                                                                                              area_label == "GOA") %>% 
+                                                                            tidytable::select(abc = acceptable_biological_catch)),
+                                             year = new_year) %>% 
+                           tidytable::select(year, gear, tons = curr_c)) -> tot_catch
+
   # put in ss3 format ----
   
   # get total catch in ss3 format
