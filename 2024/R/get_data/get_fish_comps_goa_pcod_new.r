@@ -7,7 +7,9 @@ expand_fsh_len <- function(new_year = 9999){
 
   ## length freq data ----
   ### federal ----
-  fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
+  fsh_len_f <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv'), 
+                            progress = FALSE, 
+                            show_col_types = FALSE) %>% 
     # filter to years post-1991
     tidytable::filter(year >= 1991) %>% 
     # unique cruise-permit-haul description
@@ -16,7 +18,9 @@ expand_fsh_len <- function(new_year = 9999){
     tidytable::mutate(area = trunc(area / 10) * 10)
   
   ### state ----
-  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
+  fsh_len_s <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv'), 
+                            progress = FALSE, 
+                            show_col_types = FALSE) %>% 
     dplyr::rename_all(tolower) %>% 
     #filter to positive lengths
     tidytable::filter(length > 0) %>% 
@@ -31,7 +35,9 @@ expand_fsh_len <- function(new_year = 9999){
     tidytable::select(year, area, gear = gear1, month, sex, length, freq)
   
   ## catch data ----
-  vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv')) %>%
+  vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv'), 
+               progress = FALSE, 
+               show_col_types = FALSE) %>%
     tidytable::mutate(month = lubridate::month(week_end_date),
                       trimester = tidytable::case_when(month <= 4 ~ 1,
                                                        month %in% c(5, 6, 7, 8) ~ 2,
@@ -144,7 +150,9 @@ get_fsh_len_post91_new <- function(new_year = 9999,
     ss3_args = c(1, 0, 0)
     # get input sample size
     # federal data
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv')) %>% 
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_domestic.csv'), 
+                 progress = FALSE, 
+                 show_col_types = FALSE) %>% 
       # filter to years post-1991
       tidytable::filter(year >= 1991) %>% 
       # unique cruise-permit-haul description
@@ -153,7 +161,9 @@ get_fsh_len_post91_new <- function(new_year = 9999,
       tidytable::summarise(nsamp_f = length(unique(haul1)),
                            .by = c(year, gear)) -> nsamp_f
     # state data
-    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv')) %>% 
+    vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_lfreq_state.csv'), 
+                 progress = FALSE, 
+                 show_col_types = FALSE) %>% 
       dplyr::rename_all(tolower) %>% 
       #filter to positive lengths
       tidytable::filter(length > 0) %>% 
@@ -207,7 +217,9 @@ get_fsh_age_new <- function(new_year = 9999,
     tidytable::filter(year > st_yr)
   
   ## age data ----
-  fsh_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv')) %>% 
+  fsh_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_age_domestic.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE) %>% 
     # filter to years post-2007 (as default)
     tidytable::filter(year > st_yr)
 

@@ -18,7 +18,9 @@ get_twl_srvy_lcomp <- function(new_year = 9999,
                                nsamp = 100){
   
   # compute comps ----
-  ts_lpop <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'))
+  ts_lpop <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_lpop.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
   
   # bin length comps to desired bin width
   tidytable::expand_grid(year = sort(unique(ts_lpop$year)),
@@ -90,7 +92,9 @@ get_ll_srvy_lcomp <- function(new_year = 9999,
   # compute comps ----
   
   # read in longline survey data and filter to 1990 on
-  lls_lpop <- vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_length_data.csv")) %>% 
+  lls_lpop <- vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_length_data.csv"), 
+                           progress = FALSE, 
+                           show_col_types = FALSE) %>% 
     tidytable::filter(year >= 1990)
   
   # bin length comps to desired bin width
@@ -145,7 +149,9 @@ get_twl_srvy_acomp <- function(new_year = 9999,
                                nsamp = 100){
   
   # compute comps ----
-  ts_apop <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_apop.csv'))
+  ts_apop <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_apop.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
   
   tidytable::expand_grid(year = sort(unique(ts_apop$year)),
                          age = seq(1, max_age)) %>% 
@@ -209,7 +215,9 @@ get_twl_srvy_caal <- function(new_year = 9999,
                               bin_iss = NULL){
   
   # compute conditional age-at-length  ----
-  ts_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'))
+  ts_age <- vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), 
+                         progress = FALSE, 
+                         show_col_types = FALSE)
   
   tidytable::expand_grid(year = sort(unique(ts_age$year)),
                          length = bins) %>% 
