@@ -874,14 +874,12 @@ run_llq <- function(dir = NULL,
   # for no covariate
   r4ss::copy_SS_inputs(dir.old = dir, 
                        dir.new = here::here(dir, "llq", "no_cov"),
-                       copy_par = TRUE,
                        copy_exe = TRUE,
                        overwrite = TRUE,
                        verbose = FALSE)
   # for random covariate
   r4ss::copy_SS_inputs(dir.old = dir, 
                        dir.new = here::here(dir, "llq", "rand_cov"),
-                       copy_par = TRUE,
                        copy_exe = TRUE,
                        overwrite = TRUE,
                        verbose = FALSE)
@@ -912,7 +910,6 @@ run_llq <- function(dir = NULL,
   
   # run model
   suppressWarnings(r4ss::run(dir = here::here(dir, "llq", "no_cov"),
-                             extras = "-nohess",
                              skipfinished = FALSE,
                              show_in_console = FALSE,
                              verbose = FALSE))
@@ -959,6 +956,7 @@ run_llq <- function(dir = NULL,
                               printstats = FALSE)
   # read no covariate results
   res_run_nocov <- suppressWarnings(r4ss::SS_output(dir = here::here(dir, 'llq', 'no_cov'),
+                                                    covar = FALSE,
                                                     verbose = FALSE,
                                                     printstats = FALSE))
   
@@ -989,7 +987,7 @@ run_llq <- function(dir = NULL,
                            tidytable::map_df(., ~as.data.frame(.x), .id = "rand") %>% 
                            tidytable::mutate(model = paste0("rand", rand)) %>% 
                            tidytable::select(like_compon, values, model)) -> likes
-  
+
   # set up predicted ll surv results
   res_base$cpue %>% 
     tidytable::filter(Fleet == 5) %>% 
