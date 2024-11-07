@@ -19,6 +19,8 @@ safe_tbls <- function(new_year = NULL,
     dir.create(here::here(new_year, "output", "web", "model_results"), recursive = TRUE)
   }
   
+  cat("\u231b", crayon::blue("Gathering table data..."), "\n")
+  
   # read in/query needed results/etc ----
   
   # note: tables that need to be transferred over from year-to-year:
@@ -133,10 +135,7 @@ safe_tbls <- function(new_year = NULL,
   # model data
   mdl_data <- r4ss::SS_readdat_3.30(here::here(new_year, "mgmt", rec_mdl, list.files(here::here(new_year, "mgmt", rec_mdl), "GOAPcod")),
                                     verbose = FALSE)
-  
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("Get needed info"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+
   # catch by gear type and jurisdiction ----
   
   # get federal catch by gear
