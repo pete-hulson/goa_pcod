@@ -8,7 +8,8 @@ pkg_cran <- c("tidyverse",
               "here",
               "scales",
               "SimDesign",
-              "data.table")
+              "data.table",
+              "adnuts")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
@@ -20,7 +21,9 @@ lapply(pkg_cran, library, character.only = TRUE)
 
 ## github packages ----
 pkg_git <- c("r4ss",
-             "afscdata")
+             "afscdata",
+             "afscOSA",
+             "compResidual")
 
 # if not installed, then install
 if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
@@ -28,6 +31,13 @@ if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
 }
 if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
   devtools::install_github("afsc-assessments/afscdata", force = TRUE)
+}
+if(!isTRUE("afscOSA" %in% rownames(installed.packages()))){
+  devtools::install_github("noaa-afsc/afscOSA", dependencies = TRUE, force = TRUE)
+}
+if(!isTRUE("compResidual" %in% rownames(installed.packages()))){
+  TMB:::install.contrib("https://github.com/vtrijoulet/OSA_multivariate_dists/archive/main.zip")
+  devtools::install_github("fishfollower/compResidual/compResidual", force = TRUE)
 }
 
 # load packages
@@ -38,6 +48,8 @@ lapply(pkg_git, library, character.only = TRUE)
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # recommended model name
 rec_mdl <- "24.0"
+# last year's model with updated data (base model)
+base_mdl <- "19.1b"
 # last year's model
 prev_mdl <- "2019.1b-2023"
 
@@ -45,17 +57,24 @@ prev_mdl <- "2019.1b-2023"
 source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
                   list.files(here::here(new_year, "R"), pattern = "*.R$"))
 purrr::map(here::here(new_year, "R", source_files), source)
+source_files <- list.files(here::here(new_year, "R", "get_data"), pattern = "*.r$")
+purrr::map(here::here(new_year, "R", "get_data", source_files), source)
 
 # remove previous tables and plots ----
 unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
-# unlink(here::here(new_year, "output", "safe_plots"), recursive = TRUE)
+unlink(here::here(new_year, "output", "safe_plots", list.files(here::here(new_year, "output", "safe_plots"), pattern = ".png")))
+unlink(here::here(new_year, "output", "safe_plots", "r4ss"), recursive = TRUE)
 
 # get tables for safe ----
 safe_tbls(new_year = new_year,
           rec_mdl = rec_mdl,
           prev_mdl = prev_mdl)
-  
-  
+
+# get figures for safe ----
+safe_figs(new_year,
+          rec_mdl,
+          base_mdl,
+          prev_mdl)
   
   
   
