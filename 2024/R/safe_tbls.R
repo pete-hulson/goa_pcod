@@ -1170,6 +1170,10 @@ safe_tbls <- function(new_year = NULL,
   
   vroom::vroom_write(jitt_tbl, here::here(new_year, "output", "safe_tables", 'intext_jitter.csv'), delim = ",")
   
+  ## llq results ----
+  
+  
+  
   ## f with prev catch @ ofl ----
   fofl_prev$derived_quants %>% 
     tidytable::filter(Label == paste0("F_", new_year - 1)) %>% 
