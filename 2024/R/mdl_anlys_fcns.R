@@ -706,7 +706,9 @@ run_aoi <- function(dir = NULL,
   base_res <- r4ss::SS_output(dir = here::here(dir, "aoi", aoi_mdls[1]),
                               verbose = FALSE,
                               printstats = FALSE)
-  aoi <- list(aoi_res = aoi_res, base_res = base_res)
+  aoi <- list(aoi_res = aoi_res, 
+              base_res = base_res,
+              aoi_mdls = aoi_mdls)
   
   # save results
   if (!dir.exists(here::here(new_year, "output", "aoi"))) {
