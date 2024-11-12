@@ -273,18 +273,7 @@ safe_figs <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("One-step-ahead residual plots"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # pearson resids ----
-  ## note: remove or pull out of r4ss ----
-  r4ss::SSplotComps(replist = rec_mdl_res,
-                    subplots = 24,
-                    plot = FALSE,
-                    fleets = seq(1, 5),
-                    fleetnames = c("Trawl fishery", "Longline fishery", "Pot fishery", "AFSC bottom trawl survey", "AFSC longline survey"),
-                    print = TRUE,
-                    pheight = 6.5,
-                    plotdir = here::here(new_year, "output", "safe_plots"))
-  
-  invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "comp_lenfit__multi-fleet_comparison.png"),
-                        to = here::here(new_year, "output", "safe_plots", "all_pearson.png")))
+  plot_pearson(rec_mdl_res, new_year)
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Pearson residual plot"), crayon::green$underline$bold$italic("DONE"), "\n")
   

@@ -374,8 +374,10 @@ plot_deptem <- function(new_year = NULL){
                                         xmin = mtemp + sd_temp,
                                         color = regi),
                    linewidth = 0.25) +
-    theme_test(base_size = 15) +
-    theme(legend.position = 'top',
+    theme_bw(base_size = 14) +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.position = 'top',
           legend.box = "vertical") +
     xlab(expression("Temperature ("* degree * C *")")) +
     ylab("Depth (m)") +
@@ -386,7 +388,18 @@ plot_deptem <- function(new_year = NULL){
                aes(x = mtemp, y = -1 * mdepth), 
                size = 3, shape = 23, color = "black", stroke = 1.5) +
     xlim(2, 8) + 
-    geom_text(data = dat_text, mapping = aes(x = x, y = y, label = text), fontface = 'bold', color = "black")
+    geom_text(data = dat_text, 
+              mapping = aes(x = x, y = y, label = text), 
+              fontface = 'bold', color = "black") +
+    geom_text(data = plot_dat %>% 
+                tidytable::filter(year == max(year)) %>% 
+                tidytable::summarise(mdepth = mean(mdepth),
+                                     mtemp = mean(mtemp),
+                                     .by = c(year, label)) %>% 
+                tidytable::mutate(Subarea = "Western",
+                                  regi = "Med"),
+              mapping = aes(x = mtemp, y = -1 * mdepth, label = year), 
+              fontface = 'bold', color = "black")
   
   
   # save
@@ -1399,6 +1412,70 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
   invisible(file.remove(here::here(new_year, "output", "safe_plots", "osa_length_diagnostics.png")))
   
 }
+
+#' function to plot pearson residuals
+#' @param rec_mdl_res list of ss3 results for recommended model (default = NULL)
+#' @param new_year current assessment year (default = NULL)
+#' @param outlier limit for what determines an outlier (default = 5)
+#' 
+plot_pearson <- function(rec_mdl_res = NULL, 
+                         new_year = NULL,
+                         outlier = 5){
+
+  # get data
+  data.frame(rec_mdl_res$lendbase[,c("Yr", "Fleet", "Bin", "Pearson")]) %>% 
+    dplyr::rename_all(tolower) %>% 
+    tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
+                                        fleet == 2 ~ "Longline fishery",
+                                        fleet == 3 ~ "Pot fishery",
+                                        fleet == 4 ~ "AFSC bottom trawl survey",
+                                        fleet == 5 ~ "AFSC longline survey"),
+                      year = as.numeric(yr),
+                      Year = factor(year),
+                      id = ifelse(pearson < 0 , 'a', 'b'),
+                      Outlier = ifelse(abs(pearson) >= outlier, "Yes", "No"),
+                      Outlier = factor(Outlier, levels = c("No", "Yes"))) %>% 
+    tidytable::rename(length = bin) %>% 
+    tidytable::select(-yr) -> df
+
+  # plot
+  df %>%
+    ggplot(aes(x = year, y = length, color = pearson, size = pearson, shape = Outlier)) +
+    geom_point(show.legend = TRUE) +
+    # scale_shape_manual(values = c(19, 2), drop = FALSE) +
+    scale_size_area(guide = F, max_size = 5) +
+    scico::scale_color_scico(limits = c(-10, 10), palette = 'vik') +
+    # scale_color_gradient2(midpoint = 0, low = "blue", mid = "white",
+    #                       high = "red", space = "Lab" ) +
+    theme_bw(base_size = 14) +
+    facet_wrap(~fleet, ncol = 1) +
+    # afscassess::scale_y_tickr(data = df, var = length, start=0) +
+    # afscassess::scale_x_tickr(data = df, var = year) +
+    # afscassess::theme_report() +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank()) +
+    labs(x = "Year", y = "Length (cm)", col = "Pearson") -> pearson_plot
+  
+  # save
+  ggsave(filename = "pearson_plot.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 7,
+         units = "in")
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 #' function to plot growth estimates to empirical data
 #' 

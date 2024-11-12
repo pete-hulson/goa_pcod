@@ -23,7 +23,8 @@ lapply(pkg_cran, library, character.only = TRUE)
 pkg_git <- c("r4ss",
              "afscdata",
              "afscOSA",
-             "compResidual")
+             "compResidual",
+             "afscassess")
 
 # if not installed, then install
 if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
@@ -39,6 +40,10 @@ if(!isTRUE("compResidual" %in% rownames(installed.packages()))){
   TMB:::install.contrib("https://github.com/vtrijoulet/OSA_multivariate_dists/archive/main.zip")
   devtools::install_github("fishfollower/compResidual/compResidual", force = TRUE)
 }
+if(!isTRUE("afscassess" %in% rownames(installed.packages()))){
+  devtools::install_github("BenWilliams-NOAA/afscassess")
+}
+
 
 # load packages
 lapply(pkg_git, library, character.only = TRUE)
