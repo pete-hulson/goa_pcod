@@ -1507,15 +1507,17 @@ plot_grwth <- function(rec_mdl_res = NULL,
                            tidytable::summarise(pred = mean(value), .by = name) %>% 
                            tidytable::mutate(age = as.numeric(name),
                                              name = "Weight (kg)") %>% 
-                           tidytable::bind_rows(data.table(age = seq(1, 10),
-                                                           name = "Length (cm)",
-                                                           pred = Linf * (1 - exp(-k * ((seq(1, 10) + 0.5) - t0)))))) -> grwth_data
-  
+                           tidytable::bind_rows(rec_mdl_res$endgrowth[,c('Real_Age', 'Len_Mid')] %>% 
+                                                  tidytable::rename(age = Real_Age, pred = Len_Mid) %>% 
+                                                  tidytable::filter(age > 0) %>% 
+                                                  tidytable::mutate(name = "Length (cm)"))) %>% 
+    tidytable::drop_na() -> grwth_data
+
   # plot
   grwth_plot <- ggplot(data = grwth_data,
                        aes(x = age, y = value, col = factor(year))) +
     geom_pointrange(aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
-                    position = position_jitter(width = 0.3),
+                    position = position_jitter(width = 0.1),
                     linetype = 'dotted') +
     geom_line(aes(y = pred), col = "black", linewidth = 0.777) +
     facet_wrap(~ name, 
