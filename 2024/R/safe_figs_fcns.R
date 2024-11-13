@@ -406,7 +406,7 @@ plot_deptem <- function(new_year = NULL){
   ggsave(filename = "temp_depth.png",
          path = here::here(new_year, "output", "safe_plots"),
          width = 6.5,
-         height = 7,
+         height = 5.5,
          units = "in")
  
 }
@@ -1277,7 +1277,7 @@ run_osa_ss3 <- function(mdl_res = NULL,
   
   # length bins
   lens = unique(mdl_res$lendbase$Bin)
-  
+
   # input sample sizes and years (vector)
   data.frame(mdl_res$lendbase[,c(1,6,13,16,22)]) %>% 
     dplyr::rename_all(tolower) %>% 
