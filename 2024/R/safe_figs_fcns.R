@@ -1316,7 +1316,8 @@ run_osa_ss3 <- function(mdl_res = NULL,
                           exp = exp,
                           N = N$effn, 
                           index = lens,
-                          years = N$yr)
+                          years = N$yr,
+                          seed = runif(1, 1, 7770))
   
   out
 }
@@ -1389,7 +1390,8 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
   
   # plot
   srv_osa <- afscOSA::plot_osa(osa_out_srv,
-                               outpath = here::here(new_year, "output", "safe_plots")) 
+                               outpath = NULL,
+                               plot = FALSE) 
   srv_osa_new <- cowplot::plot_grid(srv_osa$bubble +
                                       theme_bw(base_size = 12) +
                                       theme(legend.position = "top",
@@ -1400,7 +1402,7 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
                                       theme_bw(base_size = 12),
                                     nrow = 3, 
                                     rel_heights = c(4,3,3))
-  
+
   # save
   ggsave(filename = "srv_osa.png",
          path = here::here(new_year, "output", "safe_plots"),
