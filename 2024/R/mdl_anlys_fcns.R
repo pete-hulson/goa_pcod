@@ -235,7 +235,7 @@ run_ss3_mgmnt_scen <- function(dir = NULL,
   F40_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 1]
   F35_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 6]
   catchABC_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 1]
-  catchOFL_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 6]
+  catchOFL_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 8]
   SSB_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 1)), 1] / sex
   SSB_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 2)), 1] / sex
   
