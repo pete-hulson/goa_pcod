@@ -1,4 +1,4 @@
-#' function to grab temperature data for longlien survey catchability link
+#' function to grab temperature data for longline survey catchability link
 #' 
 get_lls_env <- function(new_year,
                         ss3_frmt = TRUE,
