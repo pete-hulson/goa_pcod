@@ -13,6 +13,6 @@ file.copy(from = here::here(new_year - 1, 'data', 'ageing_error'),
 file.copy(from = here::here(new_year - 1, 'data', 'historical'),
           to = here::here(new_year, 'data', 'historical'))
 #' notes: 
-#' - will need to add accepted model tp model retro
+#' - will need to add accepted model to model retro
 #' - will need to add accepted apportionment
 #' - will need to add accepted reference points
