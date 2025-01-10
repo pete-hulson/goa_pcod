@@ -29,12 +29,12 @@ obs %>%
                 month = lubridate::month(haul_date)) %>% 
   tidytable::select(-hday) %>% 
   tidytable::filter(year >= 2021,
-                    month < 5,
-                    area == 610) -> plot_data
+                    month < 4,
+                    area %in% c(610, 620, 630)) -> plot_data
 
 ggplot(data = rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")) +
   geom_sf() +
-  coord_sf(xlim = c(-168, -158), ylim = c(53, 56), expand = FALSE) +
+  coord_sf(xlim = c(-168, -145), ylim = c(53, 62), expand = FALSE) +
   geom_point(data = plot_data, aes(x = lon, y = lat, size = weight_kg, col = weight_kg, shape = as.factor(year))) +
   scico::scale_color_scico(palette = 'roma', direction = -1) +
   labs(shape = 'year', title = "jan - mar")
@@ -46,12 +46,12 @@ obs %>%
                 month = lubridate::month(haul_date)) %>% 
   tidytable::select(-hday) %>% 
   tidytable::filter(year >= 2021,
-                    month >= 5,
-                    area == 610) -> plot_data
+                    month >= 4,
+                    area %in% c(610, 620, 630)) -> plot_data
 
 ggplot(data = rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")) +
   geom_sf() +
-  coord_sf(xlim = c(-168, -158), ylim = c(53, 56), expand = FALSE) +
+  coord_sf(xlim = c(-168, -145), ylim = c(53, 62), expand = FALSE) +
   geom_point(data = plot_data, aes(x = lon, y = lat, size = weight_kg, col = weight_kg, shape = as.factor(year))) +
   scico::scale_color_scico(palette = 'roma', direction = -1) +
   labs(shape = 'year', title = "may - dec")
