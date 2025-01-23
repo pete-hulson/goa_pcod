@@ -36,10 +36,10 @@ tag_data %>%
   tidytable::bind_rows(
     # released ebs in winter/spawning, recovered goa during all survey months survey (with time filter > 3 months)
     .tag_data %>% 
-      tidytable::filter(rel_region == 'EBS',
-                        lib_time > 3/12,
-                        rel_month <= 3,
-                        rec_month %in% seq(5, 8)) %>% 
+      tidytable::filter(rel_region == 'EBS', # released in ebs
+                        lib_time > 3/12, # at liberty for at least the time between spawning and survey
+                        rel_month <= 3, # released during spawning
+                        rec_month %in% seq(5, 8)) %>% # recovered during survey months
       tidytable::mutate(test = tidytable::case_when(rec_region == 'GOA' ~ 1,
                                                     .default = 0)) %>% 
       tidytable::summarise(case = 'EBS(w) -> GOA(s)',
