@@ -553,7 +553,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "fsh_obs_catch_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery observer catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+
   ## foreign fishery length data ----
   cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('pre1991.foreign_haul')) %>% 
