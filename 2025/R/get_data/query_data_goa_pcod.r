@@ -724,7 +724,11 @@ query_goa_pcod <- function(new_year = 9999,
                   end_lat = retrieval_end_latitude_dd,
                   end_lon = retrieval_end_longitude_dd,
                   weight_kg = extrapolated_weight_kg,
-                  num = extrapolated_number) %>% 
+                  num = extrapolated_number,
+                  trip_total_hauls_pots,
+                  trip_sampled_hauls_pots,
+                  total_groundfish_weight_mt,
+                  retained_groundfish_weight_mt) %>% 
     dplyr::filter(subarea %in% fsh_subarea,
                   species == fsh_sp_code,
                   year >= new_year - 5) -> em_catch

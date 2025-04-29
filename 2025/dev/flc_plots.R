@@ -7,7 +7,7 @@ conn = afscdata::connect(db)
 
 dplyr::tbl(conn, dplyr::sql('obsint.current_haul')) %>% 
   dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('obsint.current_spcomp')) %>% 
-                      dplyr::filter(SPECIES == fsh_sp_code),
+                      dplyr::filter(SPECIES == 202),
                     by = c('HAUL_JOIN')) %>% 
   dplyr::rename_all(tolower) %>% 
   dplyr::select(year = year.x,
@@ -40,6 +40,23 @@ dplyr::collect(akfin_obsc2) %>%
                 year >= 2015,
                 area <= 630) -> cpue_dat
 
+vroom::vroom_write(cpue_dat, here::here(new_year, "output", "flc_plots", 'cpue_dat.csv'), delim = ",")
+
+
+em_dat <- vroom::vroom(here::here(new_year, 'data', 'raw', 'em_catch.csv'))
+
+vroom::vroom(here::here(new_year, 'data', 'raw', 'em_catch.csv')) %>% 
+  tidytable::filter(subarea %in% c('CG', 'WG'),
+                    gear == 'Pot') %>% 
+  tidytable::mutate(cpue = weight_kg / trip_sampled_hauls_pots,
+                    ln_cpue = log(cpue),
+                    month = lubridate::month(haul_date),
+                    area = case_when(subarea == 'WG' ~ 'Western gulf',
+                                     .default = 'Central gulf'),
+                    gear = 'pot') %>% 
+  tidytable::filter(month <= 4)%>% 
+  tidytable::select(year, month, gear, area, cpue, ln_cpue)
+
 
 
 cpue_dat %>% 
@@ -49,10 +66,21 @@ cpue_dat %>%
   tidytable::mutate(ln_cpue = log(cpue),
                     area = case_when(area == 610 ~ 'Western gulf',
                                      .default = 'Central gulf')) -> plot_dat
+  # tidytable::bind_rows(vroom::vroom(here::here(new_year, 'data', 'raw', 'em_catch.csv')) %>% 
+  #                        tidytable::filter(subarea %in% c('CG', 'WG'),
+  #                                          gear == 'Pot') %>% 
+  #                        tidytable::mutate(cpue = weight_kg / trip_sampled_hauls_pots,
+  #                                          ln_cpue = log(cpue),
+  #                                          month = lubridate::month(haul_date),
+  #                                          area = case_when(subarea == 'WG' ~ 'Western gulf',
+  #                                                           .default = 'Central gulf'),
+  #                                          gear = 'pot') %>% 
+  #                        tidytable::filter(month <= 4)%>% 
+  #                        tidytable::select(year, month, gear, area, cpue, ln_cpue)) -> plot_dat
 
 
 ggplot(data = plot_dat, 
-       aes(x = factor(year), y = ln_cpue, fill = factor(gear))) +
+       aes(x = factor(year), y = ln_cpue, fill = factor(year))) +
   geom_boxplot(width = 0.5, alpha = 0.7, outliers = FALSE) +
   facet_grid(gear ~ area, scales = 'free_y') +
   theme_bw() +
