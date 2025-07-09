@@ -4,29 +4,34 @@
 
 # Function to construct ALK given mean length and sd
 get_al_trans_matrix = function(age_bins, len_bins, mean_length, sd) {
-
   # container array
   age_length = matrix(0.0, nrow = length(age_bins), ncol = length(len_bins))
-
+  
   for(a in 1:length(age_bins)) {
-
-    # Create boundaries halfway between consecutive bins
-    bin_boundaries = c(len_bins[1] - (len_bins[2] - len_bins[1])/2,
-                       (len_bins[-length(len_bins)] + len_bins[-1])/2,
-                       len_bins[length(len_bins)] + (len_bins[length(len_bins)] - len_bins[length(len_bins)-1])/2)
-
-    AL = pnorm(bin_boundaries, mean_length[a], sd[a]) # calculate cumulative probabilities
-
-    # Calculate bin probabilities as differences
+    # Use actual bin lower limits as per SS3 specification
+    # Assume len_bins contains the lower limits of each bin
+    bin_lower_limits = len_bins
+    
+    # Calculate cumulative probabilities at bin lower limits
+    AL = pnorm(bin_lower_limits, mean_length[a], sd[a])
+    
+    # Calculate bin probabilities according to the SS3 specification
     for(l in 1:length(len_bins)) {
-      age_length[a, l] = AL[l+1] - AL[l]
-    } # end l loop
-
-  } # end a loop
-
+      if(l == 1) {
+        # First bin: from -infinity to lower limit of bin 2
+        age_length[a, l] = pnorm(bin_lower_limits[2], mean_length[a], sd[a])
+      } else if(l == length(len_bins)) {
+        # Last bin: from lower limit of last bin to +infinity
+        age_length[a, l] = 1 - pnorm(bin_lower_limits[l], mean_length[a], sd[a])
+      } else {
+        # Middle bins: from lower limit of bin l to lower limit of bin l+1
+        age_length[a, l] = pnorm(bin_lower_limits[l+1], mean_length[a], sd[a]) -
+          pnorm(bin_lower_limits[l], mean_length[a], sd[a])
+      }
+    }
+  }
   return(age_length)
 }
-
 # Installation
 # install.packages("devtools") # install dev tools
 # install.packages("TMB") # install TMB
@@ -235,6 +240,18 @@ for(i in lens_fleet5_yrs) {
 waa_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes))
 for(i in 1:length(years))  waa_arr[1,i,,1] <- out$endgrowth$Wt_Beg
 
+# waa_fish_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_fish_fleets))
+# for(f in 1:n_fish_fleets) {
+#   tmp <- out$ageselex %>% filter(Fleet == f, str_detect(Label, "bodywt"))
+#   for(i in tmp$Yr) waa_fish_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
+# }
+# 
+# waa_srv_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_srv_fleets))
+# for(f in 1:n_srv_fleets) {
+#   tmp <- out$ageselex %>% filter(Fleet == f + 3, str_detect(Label, "bodywt"))
+#   for(i in tmp$Yr) waa_srv_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
+# }
+
 ### Maturity at age ---------------------------------------------------------
 mataa_arr <- array(rep(out$endgrowth$Len_Mat, each = n_yrs),
                    dim = c(n_regions, n_yrs, n_ages, n_sexes))
@@ -294,7 +311,7 @@ input_list <- Setup_Mod_Dim(
 # Setup recruitment stuff (using defaults for other stuff)
 input_list <- Setup_Mod_Rec(
   input_list = input_list,
-
+  
   # Model options
   do_rec_bias_ramp = 1, # do bias ramp (0 == don't do bias ramp, 1 == do bias ramp)
   bias_year = c(-16, length(years[1]:1989), length(years[1]:2021), length(years[1]:2024)), # recruitment bias ramp (according to SS3 specifications, full bias correction until 2018) # out$recruit$biasadjuster
@@ -304,28 +321,31 @@ input_list <- Setup_Mod_Rec(
   sigmaR_spec = "fix", # fix early sigmaR and late sigmaR
   init_age_strc = 1, # geometric series to derive initial age structure
   equil_init_age_strc = 2, # estimate all age deviations inlcluding for plus group
-
+  
   # Fixed values
   ln_sigmaR = c(log(0.44), log(0.44)), # 2 values for early and late sigma (early sigma is not used); starting values / fixed valuesfor early and late sigmaR
   sexratio = as.vector(c(1.0)), # sex ratio
   t_spawn = spwn_month # spawning month
-
+  
 )
 
 # Setup biologicals
 input_list <- Setup_Mod_Biologicals(
   input_list = input_list,
-
+  
   # Model options
   fit_lengths = 1, # fit lengths
   Selex_Type = "length", # length-based selectivity
-  SizeAgeTrans = sizeage, # size age transition
-  AgeingError = ageerror, # ageing error matrix
   M_spec = "fix", # fixing natural mortality
-
+  addtocomp = 1e-4,
+  
   # Data inputs
   WAA = waa_arr,
+  # WAA_fish = waa_fish_arr,
+  # WAA_srv = waa_srv_arr,
   MatAA = mataa_arr,
+  SizeAgeTrans = sizeage, # size age transition
+  AgeingError = ageerror, # ageing error matrix
   Fixed_natmort = fixed_natmort
 )
 
@@ -343,16 +363,16 @@ input_list <- Setup_Mod_Tagging(input_list = input_list, UseTagging = 0)
 # setup catch and fishing mortality stuff
 input_list <- Setup_Mod_Catch_and_F(
   input_list = input_list,
-
+  
   # Data inputs
   ObsCatch = ObsFishCatch,
   Catch_Type = Catch_Type,
   UseCatch = UseCatch,
-
+  
   # Model options
   Use_F_pen = 1, # whether to use f penalty, == 0 don't use, == 1 use
   sigmaC_spec = "fix", # fixing sigma catch
-
+  
   # starting values / fixed values
   ln_sigmaC = array(log(0.01), dim = c(n_regions, n_fish_fleets)), # sigma catch (basically known)
   ln_sigmaF = array(log(10), dim = c(n_regions, n_fish_fleets)) # sigma of f penalty(set large because catch is known)
@@ -361,7 +381,7 @@ input_list <- Setup_Mod_Catch_and_F(
 # setup fishery index and comps stuff
 input_list <- Setup_Mod_FishIdx_and_Comps(
   input_list = input_list,
-
+  
   # data inputs
   ObsFishIdx = ObsFishIdx,
   ObsFishIdx_SE = ObsFishIdx_SE,
@@ -372,28 +392,28 @@ input_list <- Setup_Mod_FishIdx_and_Comps(
   ObsFishLenComps = ObsFishLenComps,
   UseFishLenComps = UseFishLenComps,
   ISS_FishLenComps = ISS_FishLenComps,
-
+  
   # Model options
   # indices for fishery
   fish_idx_type = c("none",
                     "none",
                     "none"),
-
+  
   # age comp likelihoods for fishery fleet
   FishAgeComps_LikeType = c("Multinomial",
                             "Multinomial",
                             "Multinomial"),
-
+  
   # len comp likelihoods for fishery fleet
   FishLenComps_LikeType = c("Multinomial",
                             "Multinomial",
                             "Multinomial"),
-
+  
   # aggregated age comps (b/c only single sex)
   FishAgeComps_Type = c("agg_Year_1-terminal_Fleet_1",
                         "agg_Year_1-terminal_Fleet_2",
                         "agg_Year_1-terminal_Fleet_3"),
-
+  
   # aggregated length comps (b/c only single sex)
   FishLenComps_Type = c("agg_Year_1-terminal_Fleet_1",
                         "agg_Year_1-terminal_Fleet_2",
@@ -407,7 +427,7 @@ input_list <- Setup_Mod_FishIdx_and_Comps(
 # setup survey index and comps stuff
 input_list <- Setup_Mod_SrvIdx_and_Comps(
   input_list = input_list,
-
+  
   # data inputs
   ObsSrvIdx = ObsSrvIdx,
   ObsSrvIdx_SE = ObsSrvIdx_SE,
@@ -418,28 +438,28 @@ input_list <- Setup_Mod_SrvIdx_and_Comps(
   ObsSrvLenComps = ObsSrvLenComps,
   UseSrvLenComps = UseSrvLenComps,
   ISS_SrvLenComps = ISS_SrvLenComps,
-
+  
   # Model options
   # abundance and biomass for survey fleet 1 and 2, respectively
   srv_idx_type = c("biom",
                    "abd"),
-
+  
   # survey age composition likelihood for survey fleet 1, none used for survey fleet 2
   SrvAgeComps_LikeType = c("Multinomial",
                            "none"),
-
+  
   # survey len composition likelihood for survey fleet 1, none used for survey fleet 2
   SrvLenComps_LikeType = c("Multinomial",
                            "Multinomial"),
-
+  
   # survey age aggregation type
   SrvAgeComps_Type = c("agg_Year_1-terminal_Fleet_1",
                        "none_Year_1-terminal_Fleet_2"),
-
+  
   # survey length comp type
   SrvLenComps_Type = c("agg_Year_1-terminal_Fleet_1",
                        "agg_Year_1-terminal_Fleet_2"),
-
+  
   SrvAge_comp_agg_type = c(1, 1),
   # ADMB aggregation quirks, ideally get rid of this
   SrvLen_comp_agg_type = c(0, 0)
@@ -449,13 +469,13 @@ input_list <- Setup_Mod_SrvIdx_and_Comps(
 
 # setup fishery selectivity and catchability
 input_list <- Setup_Mod_Fishsel_and_Q(
-
+  
   input_list = input_list,
-
+  
   # Model options
   # fishery selectivity, whether continuous time-varying
   cont_tv_fish_sel = c("none_Fleet_1", "none_Fleet_2", "none_Fleet_3"),
-
+  
   # fishery selectivity blocks (setup to mimic assessment)
   fish_sel_blocks = c("Block_1_Year_1-13_Fleet_1", # longline (1977 - 1989)
                       "Block_2_Year_14-terminal_Fleet_1", # longline (1990 - temrinal)
@@ -466,23 +486,23 @@ input_list <- Setup_Mod_Fishsel_and_Q(
                       "Block_5_Year_41-terminal_Fleet_2", # trawl (2017 - terminal)
                       "Block_1_Year_1-36_Fleet_3", # pot (1977 - 2012)
                       "Block_2_Year_37-terminal_Fleet_3" # pot (2012 - terminal)
-                      ),
-
+  ),
+  
   # fishery selectivity form
   fish_sel_model = c("logist1_Fleet_1", # logistic a50 and slope
                      "logist1_Fleet_2",
                      "gamma_Fleet_3"),
-
+  
   # fishery catchability blocks (none b/c no fishery idx)
   fish_q_blocks = c("none_Fleet_1",
                     "none_Fleet_2",
                     "none_Fleet_3"),
-
+  
   # whether to estiamte all fixed effects for fishery selectivity
   fish_fixed_sel_pars = c("est_all",
                           "est_all",
                           "est_all"),
-
+  
   # whether to estiamte all fixed effects for fishery catchability (fix b/c no fishery idx)
   fish_q_spec = c("fix",
                   "fix",
@@ -491,30 +511,32 @@ input_list <- Setup_Mod_Fishsel_and_Q(
 
 # Setup survey selectivity and catchability
 input_list <- Setup_Mod_Srvsel_and_Q(
-
+  
   input_list = input_list,
-
+  
   # Model options
   # survey selectivity, whether continuous time-varying
   cont_tv_srv_sel = c("none_Fleet_1",
                       "none_Fleet_2"),
-
+  
   # survey selectivity blocks
-  srv_sel_blocks = c("none_Fleet_1",
+  srv_sel_blocks = c("Block_1_Year_1-19_Fleet_1",
+                     "Block_1_Year_20-30_Fleet_1",
+                     "Block_1_Year_31-terminal_Fleet_1",
                      "none_Fleet_2"),
-
+  
   # survey selectivity form
   srv_sel_model = c("logist1_Fleet_1",
                     "logist1_Fleet_2"),
-
+  
   # survey catchability blocks
   srv_q_blocks = c("none_Fleet_1",
                    "none_Fleet_2"),
-
+  
   # whether to estiamte all fixed effects for survey selectivity
   srv_fixed_sel_pars_spec = c("est_all",
                               "est_all"),
-
+  
   # whether to estiamte all fixed effects for survey catchability
   srv_q_spec = c("est_all",
                  "est_all")
@@ -585,6 +607,9 @@ parameters$ln_fish_fixed_sel_pars[,1,,,1:2] <- log(60) # l50 parameter for logis
 parameters$ln_fish_fixed_sel_pars[,2,,,1:2] <- log(0.5) # slope parameter for logistic, fleet 1 and 2
 parameters$ln_fish_fixed_sel_pars[,1,,,3] <- log(50) # lmax parameter for gamma, fleet 3
 parameters$ln_fish_fixed_sel_pars[,2,,,3] <- log(10) # slope for gamma fleet 3
+
+parameters$ln_srv_fixed_sel_pars[,1,,,] <- log(50) # lmax parameter for gamma, fleet 3
+parameters$ln_srv_fixed_sel_pars[,2,,,] <- log(0.5) # slope for gamma fleet 3
 
 
 # Fit Model ---------------------------------------------------------------
@@ -721,200 +746,200 @@ ggplot(rec_ts) +
 # 2) Seems to not be able to predict that early recruitment spike
 # 3) Could be due to time-varying ageing error + ageing bias
 
-# Deterministic -----------------------------------------------------------
-
-# we can also do some deterministic comparison. Using triple colon because these functions are hidden function
-obj <- RTMB::MakeADFun(SPoRC:::cmb(SPoRC:::SPoRC_rtmb, data), parameters = parameters, map = mapping, random = NULL, silent = F)
-obj$rep <- obj$report(obj$env$last.par.best) # get report of unoptimized values (deterministic comparison)
-
-# remember we setup the starting values above, based on ss3 values, so just using those for comparison
-
-# compare initial age structure (not quite sure how they are so different ... pretty sure some weird SS3 age0 stuff;
-# it estimates it back into the right scale which is good.)
-plot(obj$rep$NAA[1,1,-1,1], main = 'Points = SPoRC, SS3 = Red', ylab = 'Initial Numbers at Age')
-lines(unlist((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B', Time == 1977))[,-c(1:13)]), type = 'l', col = 'red')
-
-# Fishing Mortality Rates
-fmort_ts <- data.frame(
-  ss3 = c(ss3_f$`F:_1`, ss3_f$`F:_2`, ss3_f$`F:_3`),
-  SPoRC = c(obj$rep$Fmort[,,1], obj$rep$Fmort[,,2], obj$rep$Fmort[,,3]),
-  Type = rep(c("Fleet 1", "Fleet 2", "Fleet 3"), each = length(data$years)),
-  Year = rep(data$years,3)
-)
-
-# Same F if feeding in the same values
-ggplot(fmort_ts) +
-  geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  theme_sablefish() +
-  facet_wrap(~Type, scales = 'free') +
-  labs(x = 'Year', y = 'Instantaneous Fishing Mortality', color = 'Model', lty = 'Model')
-
-# Numbers at age
-naa_ts <- data.frame(
-  ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)]),
-  SPoRC = rowSums(obj$rep$NAA[1,-49,,1]),
-  Type = 'Numbers at Age',
-  Year = data$years
-)
-
-# Numbers at age are pretty similar except for early period, b/c of initial age deviations
-# other differences are probably because selectivity is parameterized different
-ggplot(naa_ts) +
-  geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  theme_sablefish() +
-  labs(x = 'Year', y = 'Numbers at age', color = 'Model', lty = 'Model')
-
-# Total Biomass
-totbiom_ts <- data.frame(
-  ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)] * waa_arr),
-  SPoRC = as.vector(obj$rep$Total_Biom),
-  Type = 'Total Biomass',
-  Year = data$years
-)
-
-# again, pretty close for total biomass (all these can be chalked up to selex not being the same;
-# if we feed in the same selectivity values from ss3 into SPoRC, these will be identical)
-ggplot(totbiom_ts) +
-  geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  theme_sablefish() +
-  labs(x = 'Year', y = 'Total Biomass', color = 'Model', lty = 'Model')
-
-# Spawning Biomass
-ssb_ts <- data.frame(
-  ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)] * waa_arr * mataa_arr) * 0.5,
-  SPoRC = as.vector(obj$rep$SSB),
-  Type = 'Spawning Stock Biomass',
-  Year = data$years
-)
-
-ggplot(ssb_ts) +
-  geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  theme_sablefish() +
-  labs(x = 'Year', y = 'Spawning Stock Biomass', color = 'Model', lty = 'Model')
-
-# Compare Terminal Age Based Fishery and Survey Selectivity
-sel_a_ts <- data.frame(
-  ss3 = c(
-    unlist((out$ageselex %>% filter(Label == '2024_1_Asel2'))[,-c(1:7)]),
-    unlist((out$ageselex %>% filter(Label == '2024_2_Asel2'))[,-c(1:7)]),
-    unlist((out$ageselex %>% filter(Label == '2024_3_Asel2'))[,-c(1:7)])
-  ),
-  SPoRC = c(obj$rep$fish_sel[1,48,,1,1],
-            obj$rep$fish_sel[1,48,,1,2],
-            obj$rep$fish_sel[1,48,,1,3]),
-  Type = rep(c("Fishery Fleet 1",
-               "Fishery Fleet 2",
-               "Fishery Fleet 3"
-               ), each = length(data$ages)),
-  Ages = rep(data$ages, data$n_fish_fleets)
-)
-
-
-# think SS3 does finer length-bins when doing length-based selectivtiy so we could be missing something there
-# also, our selectivity from SPoRC here is different from SS3 specifications, ours is simplified and these are
-# unoptimized values with different functional forms
-ggplot(sel_a_ts) +
-  geom_line(aes(x = Ages, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Ages, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  facet_wrap(~Type) +
-  theme_sablefish() +
-  labs(x = 'Age', y = 'Selectivity', color = 'Model', lty = 'Model')
-
-# Recruitment
-rec_ts <- data.frame(
-  ss3 = (out$timeseries %>% filter(Era == 'TIME'))$Recruit_0,
-  SPoRC = as.vector(obj$rep$Rec),
-  Type = 'Recruitment',
-  Year = data$years
-)
-
-# Recruitment values are basicially the same if feeding back the same values estimated from SS3
-# remaining differences due to bias ramp
-ggplot(rec_ts) +
-  geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
-  geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
-  theme_sablefish() +
-  labs(x = 'Year', y = 'Recruitment', color = 'Model', lty = 'Model')
-
-
-
-# Dig SS3 WAA -------------------------------------------------------------
-
-# Trying to figure out some weight-at-age stuff in SS3?
-# Is this time-varying and fleet-specific??
-
-# weight at age
-waa_arr <- array(0, dim = c(n_yrs, n_ages, 5))
-fleet <- 1:5
-
-# get ss3 weights
-ss3_wts <- out$ageselex %>% filter(str_detect(Label, "bodywt"))
-
-for(f in 1:length(fleet)) {
-  tmp <- ss3_wts %>% filter(Fleet == f)
-  for(i in tmp$Yr) waa_arr[which(years == i),,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
-}
-
-reshape2::melt(waa_arr) %>%
-  ggplot(aes(x = Var1, y = value,  group = Var3, color = factor(Var3))) +
-  geom_line() +
-  facet_wrap(~Var2, scales = 'free') +
-  labs(x = 'Year', y = 'Weight', color = 'Fleet') +
-  theme_sablefish()
-
-# Scratch -----------------------------------------------------------------
-
-# starting values if double normal is specified
-# double normal selectivity for fleet 1
-# parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,1] <- c(
-#   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshTrawl(1)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshTrawl(1)'])),
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshTrawl(1)'],
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshTrawl(1)'],
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_FshTrawl(1)'],
-#   -999,
-#   10
+# # Deterministic -----------------------------------------------------------
+#
+# # we can also do some deterministic comparison. Using triple colon because these functions are hidden function
+# obj <- RTMB::MakeADFun(SPoRC:::cmb(SPoRC:::SPoRC_rtmb, data), parameters = parameters, map = mapping, random = NULL, silent = F)
+# obj$rep <- obj$report(obj$env$last.par.best) # get report of unoptimized values (deterministic comparison)
+#
+# # remember we setup the starting values above, based on ss3 values, so just using those for comparison
+#
+# # compare initial age structure (not quite sure how they are so different ... pretty sure some weird SS3 age0 stuff;
+# # it estimates it back into the right scale which is good.)
+# plot(obj$rep$NAA[1,1,-1,1], main = 'Points = SPoRC, SS3 = Red', ylab = 'Initial Numbers at Age')
+# lines(unlist((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B', Time == 1977))[,-c(1:13)]), type = 'l', col = 'red')
+#
+# # Fishing Mortality Rates
+# fmort_ts <- data.frame(
+#   ss3 = c(ss3_f$`F:_1`, ss3_f$`F:_2`, ss3_f$`F:_3`),
+#   SPoRC = c(obj$rep$Fmort[,,1], obj$rep$Fmort[,,2], obj$rep$Fmort[,,3]),
+#   Type = rep(c("Fleet 1", "Fleet 2", "Fleet 3"), each = length(data$years)),
+#   Year = rep(data$years,3)
 # )
-
-# double normal selectivity for fleet 2
-# parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,2] <- c(
-#   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshLL(2)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshLL(2)'])),
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshLL(2)'],
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshLL(2)'],
-#   10,
-#   -999,
-#   10
+#
+# # Same F if feeding in the same values
+# ggplot(fmort_ts) +
+#   geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   theme_sablefish() +
+#   facet_wrap(~Type, scales = 'free') +
+#   labs(x = 'Year', y = 'Instantaneous Fishing Mortality', color = 'Model', lty = 'Model')
+#
+# # Numbers at age
+# naa_ts <- data.frame(
+#   ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)]),
+#   SPoRC = rowSums(obj$rep$NAA[1,-49,,1]),
+#   Type = 'Numbers at Age',
+#   Year = data$years
 # )
-
-# double normal selectivity for fleet 3
-# parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,3] <- c(
-#   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshPot(3)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshPot(3)'])),
-#   -999,
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshPot(3)'],
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_FshPot(3)'],
-#   -999,
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_end_logit_FshPot(3)']
+#
+# # Numbers at age are pretty similar except for early period, b/c of initial age deviations
+# # other differences are probably because selectivity is parameterized different
+# ggplot(naa_ts) +
+#   geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   theme_sablefish() +
+#   labs(x = 'Year', y = 'Numbers at age', color = 'Model', lty = 'Model')
+#
+# # Total Biomass
+# totbiom_ts <- data.frame(
+#   ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)] * waa_arr),
+#   SPoRC = as.vector(obj$rep$Total_Biom),
+#   Type = 'Total Biomass',
+#   Year = data$years
 # )
-
-# double normal selectivity for LLS fleet 4
-# parameters$ln_srv_fixed_sel_pars[1,1:6,1,1,1] <- c(
-#   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)'])),
-#   -999,
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_Srv(4)'],
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_Srv(4)'],
-#   -999,
-#   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_end_logit_Srv(4)']
+#
+# # again, pretty close for total biomass (all these can be chalked up to selex not being the same;
+# # if we feed in the same selectivity values from ss3 into SPoRC, these will be identical)
+# ggplot(totbiom_ts) +
+#   geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   theme_sablefish() +
+#   labs(x = 'Year', y = 'Total Biomass', color = 'Model', lty = 'Model')
+#
+# # Spawning Biomass
+# ssb_ts <- data.frame(
+#   ss3 = rowSums((out$natage %>% filter(Era == 'TIME', `Beg/Mid` == 'B'))[,-c(1:12)] * waa_arr * mataa_arr) * 0.5,
+#   SPoRC = as.vector(obj$rep$SSB),
+#   Type = 'Spawning Stock Biomass',
+#   Year = data$years
 # )
-
-# double normal selectivity for LLS fleet 5
-# parameters$ln_srv_fixed_sel_pars[1,1:6,1,1,2] <- c(
-#   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_LLSrv(5)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_LLSrv(5)'])),
-#   -999,
-#   6,
-#   1,
-#   -999,
-#  0.9
+#
+# ggplot(ssb_ts) +
+#   geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   theme_sablefish() +
+#   labs(x = 'Year', y = 'Spawning Stock Biomass', color = 'Model', lty = 'Model')
+#
+# # Compare Terminal Age Based Fishery and Survey Selectivity
+# sel_a_ts <- data.frame(
+#   ss3 = c(
+#     unlist((out$ageselex %>% filter(Label == '2024_1_Asel2'))[,-c(1:7)]),
+#     unlist((out$ageselex %>% filter(Label == '2024_2_Asel2'))[,-c(1:7)]),
+#     unlist((out$ageselex %>% filter(Label == '2024_3_Asel2'))[,-c(1:7)])
+#   ),
+#   SPoRC = c(obj$rep$fish_sel[1,48,,1,1],
+#             obj$rep$fish_sel[1,48,,1,2],
+#             obj$rep$fish_sel[1,48,,1,3]),
+#   Type = rep(c("Fishery Fleet 1",
+#                "Fishery Fleet 2",
+#                "Fishery Fleet 3"
+#   ), each = length(data$ages)),
+#   Ages = rep(data$ages, data$n_fish_fleets)
 # )
+#
+#
+# # think SS3 does finer length-bins when doing length-based selectivtiy so we could be missing something there
+# # also, our selectivity from SPoRC here is different from SS3 specifications, ours is simplified and these are
+# # unoptimized values with different functional forms
+# ggplot(sel_a_ts) +
+#   geom_line(aes(x = Ages, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Ages, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   facet_wrap(~Type) +
+#   theme_sablefish() +
+#   labs(x = 'Age', y = 'Selectivity', color = 'Model', lty = 'Model')
+#
+# # Recruitment
+# rec_ts <- data.frame(
+#   ss3 = (out$timeseries %>% filter(Era == 'TIME'))$Recruit_0,
+#   SPoRC = as.vector(obj$rep$Rec),
+#   Type = 'Recruitment',
+#   Year = data$years
+# )
+#
+# # Recruitment values are basicially the same if feeding back the same values estimated from SS3
+# # remaining differences due to bias ramp
+# ggplot(rec_ts) +
+#   geom_line(aes(x = Year, y = ss3, lty = 'SS3', col = 'SS3'), lwd = 1.3, alpha = 0.8) +
+#   geom_line(aes(x = Year, y = SPoRC, lty = 'SPoRC', col = 'SPoRC'), lwd = 1.3, alpha = 0.8) +
+#   theme_sablefish() +
+#   labs(x = 'Year', y = 'Recruitment', color = 'Model', lty = 'Model')
+#
+#
+#
+# # Dig SS3 WAA -------------------------------------------------------------
+#
+# # Trying to figure out some weight-at-age stuff in SS3?
+# # Is this time-varying and fleet-specific??
+#
+# # weight at age
+# waa_arr <- array(0, dim = c(n_yrs, n_ages, 5))
+# fleet <- 1:5
+#
+# # get ss3 weights
+# ss3_wts <- out$ageselex %>% filter(str_detect(Label, "bodywt"))
+#
+# for(f in 1:length(fleet)) {
+#   tmp <- ss3_wts %>% filter(Fleet == f)
+#   for(i in tmp$Yr) waa_arr[which(years == i),,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
+# }
+#
+# reshape2::melt(waa_arr) %>%
+#   ggplot(aes(x = Var1, y = value,  group = Var3, color = factor(Var3))) +
+#   geom_line() +
+#   facet_wrap(~Var2, scales = 'free') +
+#   labs(x = 'Year', y = 'Weight', color = 'Fleet') +
+#   theme_sablefish()
+#
+# # Scratch -----------------------------------------------------------------
+#
+# # starting values if double normal is specified
+# # double normal selectivity for fleet 1
+# # parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,1] <- c(
+# #   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshTrawl(1)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshTrawl(1)'])),
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshTrawl(1)'],
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshTrawl(1)'],
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_FshTrawl(1)'],
+# #   -999,
+# #   10
+# # )
+#
+# # double normal selectivity for fleet 2
+# # parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,2] <- c(
+# #   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshLL(2)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshLL(2)'])),
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_top_logit_FshLL(2)'],
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshLL(2)'],
+# #   10,
+# #   -999,
+# #   10
+# # )
+#
+# # double normal selectivity for fleet 3
+# # parameters$ln_fish_fixed_sel_pars[1,1:6,1,1,3] <- c(
+# #   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshPot(3)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_FshPot(3)'])),
+# #   -999,
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_FshPot(3)'],
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_FshPot(3)'],
+# #   -999,
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_end_logit_FshPot(3)']
+# # )
+#
+# # double normal selectivity for LLS fleet 4
+# # parameters$ln_srv_fixed_sel_pars[1,1:6,1,1,1] <- c(
+# #   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_Srv(4)'])),
+# #   -999,
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_ascend_se_Srv(4)'],
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_descend_se_Srv(4)'],
+# #   -999,
+# #   out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_end_logit_Srv(4)']
+# # )
+#
+# # double normal selectivity for LLS fleet 5
+# # parameters$ln_srv_fixed_sel_pars[1,1:6,1,1,2] <- c(
+# #   log((out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_LLSrv(5)'] - min(lens)) / (max(lens) - out$estimated_non_dev_parameters$Value[rownames(out$estimated_non_dev_parameters) == 'Size_DblN_peak_LLSrv(5)'])),
+# #   -999,
+# #   6,
+# #   1,
+# #   -999,
+# #  0.9
+# # )
