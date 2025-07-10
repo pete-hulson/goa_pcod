@@ -240,17 +240,17 @@ for(i in lens_fleet5_yrs) {
 waa_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes))
 for(i in 1:length(years))  waa_arr[1,i,,1] <- out$endgrowth$Wt_Beg
 
-# waa_fish_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_fish_fleets))
-# for(f in 1:n_fish_fleets) {
-#   tmp <- out$ageselex %>% filter(Fleet == f, str_detect(Label, "bodywt"))
-#   for(i in tmp$Yr) waa_fish_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
-# }
-# 
-# waa_srv_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_srv_fleets))
-# for(f in 1:n_srv_fleets) {
-#   tmp <- out$ageselex %>% filter(Fleet == f + 3, str_detect(Label, "bodywt"))
-#   for(i in tmp$Yr) waa_srv_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
-# }
+waa_fish_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_fish_fleets))
+for(f in 1:n_fish_fleets) {
+  tmp <- out$ageselex %>% filter(Fleet == f, str_detect(Label, "bodywt"))
+  for(i in tmp$Yr) waa_fish_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
+}
+
+waa_srv_arr <- array(0, dim = c(n_regions, n_yrs, n_ages, n_sexes, n_srv_fleets))
+for(f in 1:n_srv_fleets) {
+  tmp <- out$ageselex %>% filter(Fleet == f + 3, str_detect(Label, "bodywt"))
+  for(i in tmp$Yr) waa_srv_arr[,which(years == i),,1,f] <- unlist((tmp %>% filter(Yr == i))[,-c(1:7)])
+}
 
 ### Maturity at age ---------------------------------------------------------
 mataa_arr <- array(rep(out$endgrowth$Len_Mat, each = n_yrs),
@@ -280,7 +280,7 @@ ageerror <- out$AAK[2,,] # Is this ageing error + bias? (right now, no time-vary
 ageerror <- t(ageerror[nrow(ageerror):1,]) # need to flip the matrix and also transpose
 
 plot(out$AAK[1,,8], type = 'l') # this seems like its ageing imprecision
-lines(out$AAK[2,,8], type = 'l') # this seems likek ageing imprecision + bias?
+lines(out$AAK[2,,6], type = 'l') # this seems likek ageing imprecision + bias?
 
 ### Natural Mortality -------------------------------------------------------
 # Setup fixed natural mortality array first
@@ -473,7 +473,13 @@ input_list <- Setup_Mod_Fishsel_and_Q(
   input_list = input_list,
   
   # Model options
-  # fishery selectivity, whether continuous time-varying
+  # Continuous time-varying selex
+  # cont_tv_fish_sel = c("iid_Fleet_1", "iid_Fleet_2", "iid_Fleet_3"),
+  # fishsel_pe_pars_spec = c("fix", "fix", "fix"), 
+  # fish_sel_devs_spec = c("est_all", "est_all", "est_all"),
+  # fish_sel_blocks = c("none_Fleet_1", "none_Fleet_2", "none_Fleet_3"),
+  
+  # Time blocked selex
   cont_tv_fish_sel = c("none_Fleet_1", "none_Fleet_2", "none_Fleet_3"),
   
   # fishery selectivity blocks (setup to mimic assessment)
@@ -509,6 +515,9 @@ input_list <- Setup_Mod_Fishsel_and_Q(
                   "fix")
 )
 
+# Fix sigma at 0.2
+# input_list$par$fishsel_pe_pars[] <- log(0.2)
+
 # Setup survey selectivity and catchability
 input_list <- Setup_Mod_Srvsel_and_Q(
   
@@ -541,6 +550,10 @@ input_list <- Setup_Mod_Srvsel_and_Q(
   srv_q_spec = c("est_all",
                  "est_all")
 )
+
+# change that early period to gamma (right now, the set up
+# functions are not set up to auto change selex functional form for a fleet)
+input_list$data$srv_sel_model[,1:19,1] <- 1
 
 # Setup model weighting (empahsis factors / lambdas for SS3)
 input_list <- Setup_Mod_Weighting(
@@ -607,9 +620,8 @@ parameters$ln_fish_fixed_sel_pars[,1,,,1:2] <- log(60) # l50 parameter for logis
 parameters$ln_fish_fixed_sel_pars[,2,,,1:2] <- log(0.5) # slope parameter for logistic, fleet 1 and 2
 parameters$ln_fish_fixed_sel_pars[,1,,,3] <- log(50) # lmax parameter for gamma, fleet 3
 parameters$ln_fish_fixed_sel_pars[,2,,,3] <- log(10) # slope for gamma fleet 3
-
-parameters$ln_srv_fixed_sel_pars[,1,,,] <- log(50) # lmax parameter for gamma, fleet 3
-parameters$ln_srv_fixed_sel_pars[,2,,,] <- log(0.5) # slope for gamma fleet 3
+parameters$ln_srv_fixed_sel_pars[,1,,,1] <- log(50) # lmax parameter for gamma, fleet 1
+parameters$ln_srv_fixed_sel_pars[,2,,,1] <- log(5) # slope for gamma fleet 1
 
 
 # Fit Model ---------------------------------------------------------------
