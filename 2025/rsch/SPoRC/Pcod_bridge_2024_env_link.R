@@ -375,7 +375,7 @@ input_list <- Setup_Mod_Catch_and_F(
   
   # starting values / fixed values
   ln_sigmaC = array(log(0.01), dim = c(n_regions, n_fish_fleets)), # sigma catch (basically known)
-  ln_sigmaF = array(log(10), dim = c(n_regions, n_fish_fleets)) # sigma of f penalty(set large because catch is known)
+  ln_sigmaF = array(log(1), dim = c(n_regions, n_fish_fleets)) # sigma of f penalty(set large because catch is known)
 )
 
 # setup fishery index and comps stuff
@@ -632,7 +632,7 @@ parameters$ln_fish_fixed_sel_pars[,2,,,1:2] <- log(0.5) # slope parameter for lo
 parameters$ln_fish_fixed_sel_pars[,1,,,3] <- log(50) # lmax parameter for gamma, fleet 3
 parameters$ln_fish_fixed_sel_pars[,2,,,3] <- log(10) # slope for gamma fleet 3
 parameters$ln_srv_fixed_sel_pars[,1,,,1] <- log(50) # lmax parameter for gamma, fleet 1
-parameters$ln_srv_fixed_sel_pars[,2,,,1] <- log(5) # slope for gamma fleet 1
+parameters$ln_srv_fixed_sel_pars[,2,,,1] <- log(3) # slope for gamma fleet 1
 parameters$srv_q_coeff[,2,1] <- 0.9 # survey catchability effect
 
 
