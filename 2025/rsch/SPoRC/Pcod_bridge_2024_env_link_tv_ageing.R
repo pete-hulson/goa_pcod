@@ -490,15 +490,9 @@ input_list <- Setup_Mod_Fishsel_and_Q(
   cont_tv_fish_sel = c("none_Fleet_1", "none_Fleet_2", "none_Fleet_3"),
   
   # fishery selectivity blocks (setup to mimic assessment)
-  fish_sel_blocks = c("Block_1_Year_1-13_Fleet_1", # longline (1977 - 1989)
-                      "Block_2_Year_14-terminal_Fleet_1", # longline (1990 - temrinal)
-                      "Block_1_Year_1-13_Fleet_2", # trawl (1977 - 1989)
-                      "Block_2_Year_14-28_Fleet_2", # trawl (1990 - 2004)
-                      "Block_3_Year_29-30_Fleet_2", # trawl (2005 - 2006); this should probably be removed and subsumed into another block
-                      "Block_4_Year_31-40_Fleet_2", # trawl (2007 - 2016)
-                      "Block_5_Year_41-terminal_Fleet_2", # trawl (2017 - terminal)
-                      "Block_1_Year_1-36_Fleet_3", # pot (1977 - 2012)
-                      "Block_2_Year_37-terminal_Fleet_3" # pot (2012 - terminal)
+  fish_sel_blocks = c("Block_1_Year_1-terminal_Fleet_1",
+                      "Block_1_Year_1-terminal_Fleet_2",
+                      "Block_1_Year_1-terminal_Fleet_3"
   ),
   
   # fishery selectivity form
@@ -633,15 +627,14 @@ parameters$ln_F_devs[!is.finite(parameters$ln_F_devs)] <- 0 # don't estimate f d
 # n_max_sel_blocks, n_sexes, n_fleets)
 # n_max_sel_pars = If you have 3 fleets, fleet 1 = logistic, fleet 2 = logistic, fleet 3 = double normal, this dimension will always be 6
 # n_max_sel_blocks = If you have 5 blocks for fleet 1, 3 blocks for fleet 2, and 1 block for fleet 3, this dimension will be 5.
-parameters$ln_fish_fixed_sel_pars[,1,,,1:2] <- log(70) # l50 parameter for logistic, fleet 1 and 2
-parameters$ln_fish_fixed_sel_pars[,2,,,1:2] <- log(1) # slope parameter for logistic, fleet 1 and 2
-parameters$ln_fish_fixed_sel_pars[,1,,,3] <- log(60) # lmax parameter for gamma, fleet 3
-parameters$ln_fish_fixed_sel_pars[,2,,,3] <- log(10) # slope for gamma fleet 3
-parameters$ln_srv_fixed_sel_pars[,1,,,] <- log(60) # lmax parameter for gamma, fleet 1
+parameters$ln_fish_fixed_sel_pars[,,,,1:2] <- log(50) # l50 parameter for logistic, fleet 1 and 2
+parameters$ln_fish_fixed_sel_pars[,,,,1:2] <- log(1) # slope parameter for logistic, fleet 1 and 2
+parameters$ln_fish_fixed_sel_pars[,,,,3] <- log(50) # lmax parameter for gamma, fleet 3
+parameters$ln_fish_fixed_sel_pars[,,,,3] <- log(10) # slope for gamma fleet 3
+parameters$ln_srv_fixed_sel_pars[,1,,,] <- log(50) # lmax parameter for gamma, fleet 1
 parameters$ln_srv_fixed_sel_pars[,2,,,] <- log(3) # slope for gamma fleet 1
 
 # Fit Model ---------------------------------------------------------------
-
 # Fit model here
 goapcod_obj <- SPoRC::fit_model(data = data,
                                 parameters = parameters,
@@ -652,6 +645,9 @@ goapcod_obj <- SPoRC::fit_model(data = data,
 
 goapcod_obj$sdrep <- RTMB::sdreport(goapcod_obj) # get standard error report
 
+goapcod_obj$data <- data
+goapcod_obj$parameters <- parameters
+goapcod_obj$mapping <- mapping
 
 # Comparisons -------------------------------------------------------------
 
