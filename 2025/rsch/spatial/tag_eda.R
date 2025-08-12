@@ -92,7 +92,11 @@ tag_data %>%
   tidytable::filter(rel_month > 3) %>%
   count(rel_region, rec_region) -> not_spawn
 
+output <- list(all = all,
+               spawn = spawn,
+               not_spawn = not_spawn)
 
+saveRDS(output, here::here('2025', 'rsch', 'spatial', 'tag_out.RDS'))
 
 
 
