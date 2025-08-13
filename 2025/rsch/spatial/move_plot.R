@@ -40,16 +40,35 @@ centroids <- nmfs_areas %>%
 
 colors <- unname(ggthemes::ggthemes_data[["colorblind"]][["value"]]) # get colors
 
-# Plot (All Tags) ---------------------------------------------------------
-all_df <- tag_dat$all %>% 
+# Plot ---------------------------------------------------------
+move_df <- tag_dat$all %>% 
   filter(!rec_region %in% c("RUS", "NBS", "CS"),
          rel_region != "NBS") %>% 
   group_by(rel_region) %>% 
   mutate(sum = sum(n),
-         prop = n / sum)
+         prop = n / sum,
+         Type = 'All') %>% 
+  
+  # combine spawning and not spawning recoveries
+  bind_rows(
+    tag_dat$spawn %>% 
+      filter(!rec_region %in% c("RUS", "NBS", "CS"),
+             rel_region != "NBS") %>% 
+      group_by(rel_region) %>% 
+      mutate(sum = sum(n),
+             prop = n / sum,
+             Type = 'Spawn'),
+    tag_dat$not_spawn %>% 
+      filter(!rec_region %in% c("RUS", "NBS", "CS"),
+             rel_region != "NBS") %>% 
+      group_by(rel_region) %>% 
+      mutate(sum = sum(n),
+             prop = n / sum,
+             Type = 'Not Spawn')
+  )
 
 # Left join centroids to dataframe for plotting where from -> to
-move_df_with_coords <- all_df %>%
+move_df_with_coords <- move_df %>%
   left_join(centroids, by = c("rel_region" = "NAME")) %>%
   rename(from_geometry = geometry) %>%
   left_join(centroids, by = c("rec_region" = "NAME")) %>%
@@ -66,108 +85,18 @@ ggplot() +
   geom_sf(data = nmfs_areas, alpha = 0.55) +
   geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
   geom_curve(data = move_df_with_coords %>% filter(rel_region != rec_region),
-             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rel_region, size = prop),
+             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rec_region, size = prop),
              curvature = 0.4, alpha = 0.45) + # movement arrows (from != to)
   geom_text(data = move_df_with_coords %>% filter(rel_region != rec_region),
-            aes(x = to_x, y = to_y, label = round(prop, 2), color = rec_region), alpha = 1, size = 8.5, nudge_y = 0.07) + # from != to
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = ''), color = rec_region), alpha = 1, size = 6.5, nudge_y = 0.07) + # from != to
   scale_color_manual(values = colors[-c(1,5)]) +
-  geom_text(data = move_df_with_coords %>% filter(rel_region == rec_region), size = 8.5, # from == to 
-            aes(x = from_x, y = from_y, label = round(prop, 2)), alpha = 1, color = 'black', nudge_y = 0.07) +
-  facet_grid(~rel_region) +
+  geom_text(data = move_df_with_coords %>% filter(rel_region == rec_region), size = 6.5, # from == to 
+            aes(x = from_x, y = from_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, color = 'black', nudge_y = 0.07) +
+  facet_grid(Type~rel_region) +
+  guides(size = 'none') +
   coord_sf(ylim = c(45.2, 70.5), xlim = c(165, 230)) + # Restrict Map Area
   theme_bw(base_size = 24) +
-  labs(x = "Longitude", y = "Latitude", size = 'Percentage Recovered',
-       color = "Recovery Region", label = "Percentage Recovered") +
-  theme(legend.position = 'top',
-        legend.box = 'vertical',
-        legend.background = element_blank(),
-        legend.spacing.y = unit(-1, 'cm'),  # Adjust spacing between items
-        plot.background = element_rect(fill = "transparent", colour = NA),
-        axis.text.x = element_text(angle = 90, vjust = 0.5))
-
-# Plot (Spawning) ---------------------------------------------------------
-spawn_df <- tag_dat$spawn %>% 
-  filter(!rec_region %in% c("RUS", "NBS", "CS"),
-         rel_region != "NBS") %>% 
-  group_by(rel_region) %>% 
-  mutate(sum = sum(n),
-         prop = n / sum)
-
-# Left join centroids to dataframe for plotting where from -> to
-move_df_with_coords <- spawn_df %>%
-  left_join(centroids, by = c("rel_region" = "NAME")) %>%
-  rename(from_geometry = geometry) %>%
-  left_join(centroids, by = c("rec_region" = "NAME")) %>%
-  rename(to_geometry = geometry) %>%
-  mutate(
-    from_x = st_coordinates(st_shift_longitude(from_geometry))[, 1], # get from centroids
-    from_y = st_coordinates(from_geometry)[, 2],
-    to_x = st_coordinates(st_shift_longitude(to_geometry))[, 1], # get to centroids
-    to_y = st_coordinates(to_geometry)[, 2]
-  ) %>% 
-  mutate(rel_region = factor(rel_region, levels = c("EBS", "AI", "WGOA", "CGOA")))
-
-ggplot() +
-  geom_sf(data = nmfs_areas, alpha = 0.55) +
-  geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
-  geom_curve(data = move_df_with_coords %>% filter(rel_region != rec_region),
-             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rel_region, size = prop),
-             curvature = 0.4, alpha = 0.45) + # movement arrows (from != to)
-  geom_text(data = move_df_with_coords %>% filter(rel_region != rec_region),
-            aes(x = to_x, y = to_y, label = round(prop, 2), color = rec_region), alpha = 1, size = 8.5, nudge_y = 0.07) + # from != to
-  scale_color_manual(values = colors[-c(1,5)]) +
-  geom_text(data = move_df_with_coords %>% filter(rel_region == rec_region), size = 8.5, # from == to 
-            aes(x = from_x, y = from_y, label = round(prop, 2)), alpha = 1, color = 'black', nudge_y = 0.07) +
-  facet_grid(~rel_region) +
-  coord_sf(ylim = c(45.2, 70.5), xlim = c(165, 230)) + # Restrict Map Area
-  theme_bw(base_size = 24) +
-  labs(x = "Longitude", y = "Latitude", size = 'Percentage Recovered',
-       color = "Recovery Region", label = "Percentage Recovered") +
-  theme(legend.position = 'top',
-        legend.box = 'vertical',
-        legend.background = element_blank(),
-        legend.spacing.y = unit(-1, 'cm'),  # Adjust spacing between items
-        plot.background = element_rect(fill = "transparent", colour = NA),
-        axis.text.x = element_text(angle = 90, vjust = 0.5))
-
-# Plot (Not Spawning) ---------------------------------------------------------
-notspawn_df <- tag_dat$not_spawn %>% 
-  filter(!rec_region %in% c("RUS", "NBS", "CS"),
-         rel_region != "NBS") %>% 
-  group_by(rel_region) %>% 
-  mutate(sum = sum(n),
-         prop = n / sum)
-
-# Left join centroids to dataframe for plotting where from -> to
-move_df_with_coords <- notspawn_df %>%
-  left_join(centroids, by = c("rel_region" = "NAME")) %>%
-  rename(from_geometry = geometry) %>%
-  left_join(centroids, by = c("rec_region" = "NAME")) %>%
-  rename(to_geometry = geometry) %>%
-  mutate(
-    from_x = st_coordinates(st_shift_longitude(from_geometry))[, 1], # get from centroids
-    from_y = st_coordinates(from_geometry)[, 2],
-    to_x = st_coordinates(st_shift_longitude(to_geometry))[, 1], # get to centroids
-    to_y = st_coordinates(to_geometry)[, 2]
-  ) %>% 
-  mutate(rel_region = factor(rel_region, levels = c("EBS", "AI", "WGOA", "CGOA")))
-
-ggplot() +
-  geom_sf(data = nmfs_areas, alpha = 0.55) +
-  geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
-  geom_curve(data = move_df_with_coords %>% filter(rel_region != rec_region),
-             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rel_region, size = prop),
-             curvature = 0.4, alpha = 0.45) + # movement arrows (from != to)
-  geom_text(data = move_df_with_coords %>% filter(rel_region != rec_region),
-            aes(x = to_x, y = to_y, label = round(prop, 2), color = rec_region), alpha = 1, size = 8.5, nudge_y = 0.07) + # from != to
-  scale_color_manual(values = colors[-c(1,5)]) +
-  geom_text(data = move_df_with_coords %>% filter(rel_region == rec_region), size = 8.5, # from == to 
-            aes(x = from_x, y = from_y, label = round(prop, 2)), alpha = 1, color = 'black', nudge_y = 0.07) +
-  facet_grid(~rel_region) +
-  coord_sf(ylim = c(45.2, 70.5), xlim = c(165, 230)) + # Restrict Map Area
-  theme_bw(base_size = 24) +
-  labs(x = "Longitude", y = "Latitude", size = 'Percentage Recovered',
-       color = "Recovery Region", label = "Percentage Recovered") +
+  labs(x = "Longitude", y = "Latitude", color = "Recovery Region", label = "Percentage Recovered") +
   theme(legend.position = 'top',
         legend.box = 'vertical',
         legend.background = element_blank(),
