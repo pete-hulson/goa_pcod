@@ -42,7 +42,7 @@ colors <- unname(ggthemes::ggthemes_data[["colorblind"]][["value"]]) # get color
 
 # Plot ---------------------------------------------------------
 move_df <- tag_dat$all %>% 
-  filter(!rec_region %in% c("RUS", "NBS", "CS"),
+  filter(!rec_region %in% c("RUS", "CS"),
          rel_region != "NBS") %>% 
   group_by(rel_region) %>% 
   mutate(sum = sum(n),
@@ -52,14 +52,14 @@ move_df <- tag_dat$all %>%
   # combine spawning and not spawning recoveries
   bind_rows(
     tag_dat$spawn %>% 
-      filter(!rec_region %in% c("RUS", "NBS", "CS"),
+      filter(!rec_region %in% c("RUS", "CS"),
              rel_region != "NBS") %>% 
       group_by(rel_region) %>% 
       mutate(sum = sum(n),
              prop = n / sum,
              Type = 'Spawn'),
     tag_dat$not_spawn %>% 
-      filter(!rec_region %in% c("RUS", "NBS", "CS"),
+      filter(!rec_region %in% c("RUS", "CS"),
              rel_region != "NBS") %>% 
       group_by(rel_region) %>% 
       mutate(sum = sum(n),
@@ -81,9 +81,12 @@ move_df_with_coords <- move_df %>%
   ) %>% 
   mutate(rel_region = factor(rel_region, levels = c("EBS", "AI", "WGOA", "CGOA")))
 
+move_df_with_coords$to_x[is.na(move_df_with_coords$to_x)] <- 170
+move_df_with_coords$to_y[is.na(move_df_with_coords$to_y)] <- 70
+
 ggplot() +
-  geom_sf(data = nmfs_areas, alpha = 0.55) +
-  geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
+  # geom_sf(data = nmfs_areas, alpha = 0.55) +
+  # geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
   geom_curve(data = move_df_with_coords %>% filter(rel_region != rec_region),
              aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rec_region, size = prop),
              curvature = 0.4, alpha = 0.45) + # movement arrows (from != to)
