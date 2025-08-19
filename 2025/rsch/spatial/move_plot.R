@@ -38,66 +38,123 @@ centroids <- nmfs_areas %>%
   summarise(geometry = st_centroid(geometry)) %>%
   ungroup()
 
+centroids <- nmfs_areas %>%
+  tidytable::summarise(geometry = st_centroid(geometry), .by = NAME) %>% 
+  tidytable::filter(!NAME %in% c('AI', 'EGOA')) %>% 
+  tidytable::mutate(NAME = factor(case_when(NAME == 'EBS' ~ 'EBS|NBS',
+                                     .default = NAME),
+                                  levels = c('EBS|NBS', 'WGOA', 'CGOA')))
+
+
 colors <- unname(ggthemes::ggthemes_data[["colorblind"]][["value"]]) # get colors
 
 # Plot ---------------------------------------------------------
-move_df <- tag_dat$all %>% 
-  filter(!rec_region %in% c("RUS", "CS"),
-         rel_region != "NBS") %>% 
-  group_by(rel_region) %>% 
-  mutate(sum = sum(n),
-         prop = n / sum,
-         Type = 'All') %>% 
-  
+# Plot ---------------------------------------------------------
+move_df_full <- tag_dat$all %>% 
+  tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                    !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+  tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rel_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA")),
+                    rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rec_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+  tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
+  tidytable::mutate(sum = sum(n),
+                    prop = n / sum,
+                    Type = 'All', .by = rel_region) %>% 
   # combine spawning and not spawning recoveries
   bind_rows(
     tag_dat$spawn %>% 
-      filter(!rec_region %in% c("RUS", "CS"),
-             rel_region != "NBS") %>% 
-      group_by(rel_region) %>% 
-      mutate(sum = sum(n),
-             prop = n / sum,
-             Type = 'Spawn'),
+      tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                        !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+      tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                      .default = rel_region), 
+                                            levels = c('EBS|NBS', "WGOA", "CGOA")),
+                        rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                      .default = rec_region), 
+                                            levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+      tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
+      tidytable::mutate(sum = sum(n),
+                        prop = n / sum,
+                        Type = 'Spawn', .by = rel_region),
     tag_dat$not_spawn %>% 
-      filter(!rec_region %in% c("RUS", "CS"),
-             rel_region != "NBS") %>% 
-      group_by(rel_region) %>% 
-      mutate(sum = sum(n),
-             prop = n / sum,
-             Type = 'Not Spawn')
+      tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                        !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+      tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                      .default = rel_region), 
+                                            levels = c('EBS|NBS', "WGOA", "CGOA")),
+                        rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                      .default = rec_region), 
+                                            levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+      tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
+      tidytable::mutate(sum = sum(n),
+                        prop = n / sum,
+                        Type = 'Not Spawn', .by = rel_region)
   )
+
+# combine spawning and not spawning recoveries
+move_df <- tag_dat$spawn %>% 
+  tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                    !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+  tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rel_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA")),
+                    rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rec_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+  tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
+  tidytable::mutate(sum = sum(n),
+                    prop = n / sum,
+                    Type = 'Jan-Mar', .by = rel_region) %>% 
+  tidytable::bind_rows(tag_dat$not_spawn %>% 
+                         tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                                           !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+                         tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                                         .default = rel_region), 
+                                                               levels = c('EBS|NBS', "WGOA", "CGOA")),
+                                           rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                                         .default = rec_region), 
+                                                               levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+                         tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
+                         tidytable::mutate(sum = sum(n),
+                                           prop = n / sum,
+                                           Type = 'Apr-Dec', .by = rel_region)) %>% 
+  tidytable::mutate(Type = factor(Type, levels = c('Jan-Mar', 'Apr-Dec')))
+
+
 
 # Left join centroids to dataframe for plotting where from -> to
 move_df_with_coords <- move_df %>%
-  left_join(centroids, by = c("rel_region" = "NAME")) %>%
-  rename(from_geometry = geometry) %>%
-  left_join(centroids, by = c("rec_region" = "NAME")) %>%
-  rename(to_geometry = geometry) %>%
-  mutate(
-    from_x = st_coordinates(st_shift_longitude(from_geometry))[, 1], # get from centroids
-    from_y = st_coordinates(from_geometry)[, 2],
-    to_x = st_coordinates(st_shift_longitude(to_geometry))[, 1], # get to centroids
-    to_y = st_coordinates(to_geometry)[, 2]
-  ) %>% 
-  mutate(rel_region = factor(rel_region, levels = c("EBS", "AI", "WGOA", "CGOA")))
+  tidytable::left_join(centroids, by = c("rel_region" = "NAME")) %>%
+  tidytable::rename(from_geometry = geometry) %>%
+  tidytable::left_join(centroids, by = c("rec_region" = "NAME")) %>%
+  tidytable::rename(to_geometry = geometry) %>%
+  tidytable::mutate(from_x = st_coordinates(st_shift_longitude(from_geometry))[, 1], # get from centroids
+                    from_y = st_coordinates(from_geometry)[, 2],
+                    to_x = st_coordinates(st_shift_longitude(to_geometry))[, 1], # get to centroids
+                    to_y = st_coordinates(to_geometry)[, 2])
 
-move_df_with_coords$to_x[is.na(move_df_with_coords$to_x)] <- 170
-move_df_with_coords$to_y[is.na(move_df_with_coords$to_y)] <- 70
+# move_df_with_coords$to_x[is.na(move_df_with_coords$to_x)] <- 170
+# move_df_with_coords$to_y[is.na(move_df_with_coords$to_y)] <- 70
 
 ggplot() +
-  # geom_sf(data = nmfs_areas, alpha = 0.55) +
-  # geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
+  geom_sf(data = nmfs_areas, alpha = 0.25) +
+  geom_sf(data = west, lwd = 0.05, color = 'black', alpha = 1) + # World Map
   geom_curve(data = move_df_with_coords %>% filter(rel_region != rec_region),
-             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rec_region, size = prop),
-             curvature = 0.4, alpha = 0.45) + # movement arrows (from != to)
+             aes(x = from_x, y = from_y, xend = to_x, yend = to_y, color = rec_region, linewidth = prop),
+             curvature = 0.4, alpha = 0.25, lineend = 'round') + # movement arrows (from != to)
   geom_text(data = move_df_with_coords %>% filter(rel_region != rec_region),
-            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = ''), color = rec_region), alpha = 1, size = 6.5, nudge_y = 0.07) + # from != to
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = ''), color = rec_region), alpha = 1, size = 6.5) + # from != to
+  geom_text(data = move_df_with_coords %>% tidytable::summarise(n = sum, .by = c(rel_region, Type)) %>% distinct(rel_region, Type, n),
+            aes(x = 212, y = 47, label = paste0('n = ', n)), alpha = 1, size = 6.5) + # sample size
   scale_color_manual(values = colors[-c(1,5)]) +
   geom_text(data = move_df_with_coords %>% filter(rel_region == rec_region), size = 6.5, # from == to 
-            aes(x = from_x, y = from_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, color = 'black', nudge_y = 0.07) +
-  facet_grid(Type~rel_region) +
-  guides(size = 'none') +
-  coord_sf(ylim = c(45.2, 70.5), xlim = c(165, 230)) + # Restrict Map Area
+            aes(x = from_x, y = from_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, color = 'black', fontface = "bold") +
+  facet_grid(Type ~ rel_region) +
+  guides(linewidth = 'none',
+         size = 'none') +
+  coord_sf(ylim = c(45.2, 65), xlim = c(180, 220)) + # Restrict Map Area
   theme_bw(base_size = 24) +
   labs(x = "Longitude", y = "Latitude", color = "Recovery Region", label = "Percentage Recovered") +
   theme(legend.position = 'top',
@@ -106,3 +163,6 @@ ggplot() +
         legend.spacing.y = unit(-1, 'cm'),  # Adjust spacing between items
         plot.background = element_rect(fill = "transparent", colour = NA),
         axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+# Save plot
+ggsave(here("2025", "rsch", "spatial", "move_plot.png"), width = 16, height = 12, dpi = 300, bg = 'transparent')
