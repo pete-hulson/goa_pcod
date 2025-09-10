@@ -5,32 +5,35 @@ library(tidyverse)
 # prep tag data ----
 
 ## steve data (this data came from steve in email on 1-16-25) ----
-sb_data <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'raw_data_SB', 'ALL_TAG_DATA2025.csv'), delim = ',') %>% 
+sb_data <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'data', 'raw_data_SB', 'ALL_TAG_DATA2025.csv'), delim = ',') %>% 
   dplyr::rename_all(tolower) %>% 
   tidytable::mutate(recdt = as.Date(recdt, format = '%m/%d/%Y'),
                     reldt = as.Date(reldt, format = '%m/%d/%Y'),
-                    lib_time = as.numeric(recdt - reldt)) %>% 
+                    lib_time = as.numeric(recdt - reldt),
+                    source = 'sb') %>% 
   # filter out duplicated tags (these ones have same release location but different recovery locations)
   tidytable::filter(n() == 1, .by = c(tag_number, reldt)) %>% 
   tidytable::select(tag_number, rel_month, rel_year, reldt, rel_region, rel_lat = lat_rel, rel_lon = long_rel,
-                    rec_month, rec_year, recdt, rec_region, rec_lat = lat_rec, rec_lon = long_rec, lib_time) 
+                    rec_month, rec_year, recdt, rec_region, rec_lat = lat_rec, rec_lon = long_rec, lib_time, source) 
 ## PACT data ----
 # this data comes from PACTbase (date pulled is in the file name)
-rel_sat <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'raw_data_PACT', 'rel_sat.csv'), delim = ',')
-rec_sat <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'raw_data_PACT', 'rec_sat.csv'), delim = ',')
+rel_sat <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'data', 'raw_data_PACT', 'rel_sat.csv'), delim = ',')
+rec_sat <- vroom::vroom(here::here('2025', 'rsch', 'spatial', 'data', 'raw_data_PACT', 'rec_sat.csv'), delim = ',')
 
 rel_sat %>% 
   dplyr::rename_all(tolower) %>% 
   tidytable::mutate(reldt = as.Date(rel_time_local, format = '%m/%d/%Y'),
                     rel_month = lubridate::month(reldt),
-                    rel_year = lubridate::year(reldt)) %>% 
-  tidytable::select(tag_number = tag_num, rel_month, rel_year, reldt, rel_region, rel_lat = rel_latdd, rel_lon = rel_longdd) %>% 
+                    rel_year = lubridate::year(reldt),
+                    source = 'pact') %>% 
+  tidytable::select(tag_number = tag_num, rel_month, rel_year, reldt, rel_region, rel_lat = rel_latdd, rel_lon = rel_longdd, source) %>% 
   tidytable::left_join(rec_sat %>% 
                          dplyr::rename_all(tolower) %>% 
                          tidytable::mutate(recdt = as.Date(rec_time_utc, format = '%m/%d/%Y'),
                                            rec_month = lubridate::month(recdt),
-                                           rec_year = lubridate::year(recdt)) %>% 
-                         tidytable::select(tag_number = tag_num, rec_month, rec_year, recdt, rec_region, rec_lat, rec_lon = rec_lng)) %>% 
+                                           rec_year = lubridate::year(recdt),
+                                           source = 'pact') %>% 
+                         tidytable::select(tag_number = tag_num, rec_month, rec_year, recdt, rec_region, rec_lat, rec_lon = rec_lng, source)) %>% 
   tidytable::drop_na() %>% 
   tidytable::mutate(lib_time = as.numeric(recdt - reldt)) -> pact_data
   
@@ -64,7 +67,10 @@ tag_data %>%
                                                                   rec_lon > -159 & rec_lon <= -147 ~ 'CGOA',
                                                                   .default = 'EGOA'))) -> tag_data
 # movement cases ----
+# set spawn month
+spawn_month = 3
 
+## all years ----
 # overall
 tag_data %>% 
   count(rel_region, rec_region) %>% 
@@ -74,7 +80,7 @@ tag_data %>%
 
 # released during spawning season
 tag_data %>% 
-  tidytable::filter(rel_month <= 3) %>% 
+  tidytable::filter(rel_month <= spawn_month) %>% 
   count(rel_region, rec_region) %>% 
   tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
   tidytable::mutate(prop_move = n / tot_n) %>% 
@@ -82,7 +88,7 @@ tag_data %>%
 
 # released outside spawning season
 tag_data %>% 
-  tidytable::filter(rel_month > 3) %>%
+  tidytable::filter(rel_month > spawn_month) %>%
   count(rel_region, rec_region) %>% 
   tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
   tidytable::mutate(prop_move = n / tot_n) %>% 
@@ -92,6 +98,86 @@ output <- list(all = all,
                spawn = spawn,
                not_spawn = not_spawn)
 
-saveRDS(output, here::here('2025', 'rsch', 'spatial', 'tag_out.RDS'))
+
+## pre 2020 ----
+# overall
+tag_data %>%
+  tidytable::filter(rel_year < 2020) %>% 
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> all
+
+# released during spawning season
+tag_data %>% 
+  tidytable::filter(rel_year < 2020) %>% 
+  tidytable::filter(rel_month <= spawn_month) %>% 
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> spawn
+
+# released outside spawning season
+tag_data %>% 
+  tidytable::filter(rel_year < 2020) %>% 
+  tidytable::filter(rel_month > spawn_month) %>%
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> not_spawn
+
+output_pre <- list(all = all,
+                   spawn = spawn,
+                   not_spawn = not_spawn)
+
+
+## post 2020 ----
+# overall
+tag_data %>%
+  tidytable::filter(rel_year >= 2020) %>% 
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> all
+
+# released during spawning season
+tag_data %>% 
+  tidytable::filter(rel_year >= 2020) %>% 
+  tidytable::filter(rel_month <= spawn_month) %>% 
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> spawn
+
+# released outside spawning season
+tag_data %>% 
+  tidytable::filter(rel_year >= 2020) %>% 
+  tidytable::filter(rel_month > spawn_month) %>%
+  count(rel_region, rec_region) %>% 
+  tidytable::mutate(tot_n = sum(n), .by = rel_region) %>% 
+  tidytable::mutate(prop_move = n / tot_n) %>% 
+  tidytable::select(-tot_n) -> not_spawn
+
+output_post <- list(all = all,
+                   spawn = spawn,
+                   not_spawn = not_spawn)
+
+
+# save output ----
+saveRDS(output, here::here('2025', 'rsch', 'spatial', 'data', 'tag_out.RDS'))
+saveRDS(output_pre, here::here('2025', 'rsch', 'spatial', 'data', 'tag_out_pre.RDS'))
+saveRDS(output_post, here::here('2025', 'rsch', 'spatial', 'data', 'tag_out_post.RDS'))
+
+tag_data %>% 
+  tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
+                    !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
+  tidytable::mutate(rel_region = factor(case_when(rel_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rel_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA")),
+                    rec_region = factor(case_when(rec_region %in% c('EBS', 'NBS') ~ 'EBS|NBS',
+                                                  .default = rec_region), 
+                                        levels = c('EBS|NBS', "WGOA", "CGOA"))) %>%
+  tidytable::summarise(n = .N, .by = c(rel_year, rel_month, rel_region, rec_region)) %>% 
+  vroom::vroom_write(., here::here('2025', 'rsch', 'spatial', 'data', 'tag_data_used.csv'), delim = ',')
 
 
