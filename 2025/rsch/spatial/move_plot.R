@@ -7,7 +7,7 @@ library(rnaturalearthdata)
 library(sf)
 
 # Read in tag data
-tag_dat <- readRDS(here("2025", "rsch", "spatial", "tag_out.RDS"))
+tag_dat <- readRDS(here("2025", "rsch", "spatial", 'data', "tag_out.RDS"))
 
 # Read in maps here
 west <- ne_states(c("United States of America", "Russia", "Canada"), returnclass = "sf")
@@ -93,6 +93,8 @@ move_df_full <- tag_dat$all %>%
                         Type = 'Not Spawn', .by = rel_region)
   )
 
+vroom::vroom_write(move_df_full, here::here('2025', 'rsch', 'spatial', 'data', 'move_df_full.csv'), delim = ',')
+
 # combine spawning and not spawning recoveries
 move_df <- tag_dat$spawn %>% 
   tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
@@ -106,7 +108,7 @@ move_df <- tag_dat$spawn %>%
   tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
   tidytable::mutate(sum = sum(n),
                     prop = n / sum,
-                    Type = 'Jan-Mar', .by = rel_region) %>% 
+                    Type = 'Jan-Apr', .by = rel_region) %>% 
   tidytable::bind_rows(tag_dat$not_spawn %>% 
                          tidytable::filter(!rec_region %in% c('RUS', 'CS', 'AI', 'EGOA'),
                                            !rel_region %in% c('RUS', 'CS', 'AI', 'EGOA')) %>% 
@@ -119,8 +121,8 @@ move_df <- tag_dat$spawn %>%
                          tidytable::summarise(n = sum(n), .by = c(rel_region, rec_region)) %>% 
                          tidytable::mutate(sum = sum(n),
                                            prop = n / sum,
-                                           Type = 'Apr-Dec', .by = rel_region)) %>% 
-  tidytable::mutate(Type = factor(Type, levels = c('Jan-Mar', 'Apr-Dec')))
+                                           Type = 'May-Dec', .by = rel_region)) %>% 
+  tidytable::mutate(Type = factor(Type, levels = c('Jan-Apr', 'May-Dec')))
 
 
 
@@ -165,4 +167,4 @@ ggplot() +
         axis.text.x = element_text(angle = 90, vjust = 0.5))
 
 # Save plot
-ggsave(here("2025", "rsch", "spatial", "move_plot.png"), width = 16, height = 12, dpi = 300, bg = 'transparent')
+ggsave(here("2025", "rsch", "spatial", 'figures', "move_plot.png"), width = 16, height = 12, dpi = 300, bg = 'transparent')
