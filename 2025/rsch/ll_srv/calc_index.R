@@ -1,8 +1,8 @@
 library(tidyverse)
 
 # get data ----
-gap_strata <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'gap_strata.csv'))
-ll_catch <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'lls_pcod_catch.csv'))
+gap_strata <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'data', 'gap_strata.csv'))
+ll_catch <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'data', 'lls_pcod_catch.csv'))
 ll_rpn <- vroom::vroom(here::here('2025', 'data', 'raw', 'lls_rpn_geoarea_data.csv'))
 
 # combined strata areas for depths > 300 m ----
@@ -55,8 +55,9 @@ boot_cpue <- function(data){
                                          subarea == 'Western Gulf of Alaska' ~ 'WGOA',
                                          subarea == 'West Yakutat' ~ 'EGOA',
                                          subarea == 'East Yakutat/Southeast' ~ 'EGOA')) %>% 
-    tidytable::select(year, subreg, id) %>% 
-    tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year, subreg)) %>% 
+    tidytable::select(year, subreg, station_number, id) %>% 
+    # tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year, subreg, station_number)) %>% 
+    tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year)) %>%
     tidytable::separate(id, c('year', 'vessel_number', 'station_number', "hachi"), sep = '-', convert = TRUE) %>% 
     tidytable::left_join(data) -> data_resamp
   # compute the cpue
@@ -76,21 +77,40 @@ calc_rpn <- function(data, area_size){
                                          subarea == 'West Yakutat' ~ 'EGOA',
                                          subarea == 'East Yakutat/Southeast' ~ 'EGOA'),
                       stratum_description = case_when(stratum >= 4 ~ '301-1000m',
-                                                      .default = stratum_description)) %>% 
+                                                      .default = stratum_description),
+                      pos_catch = case_when(catch_freq > 0 ~ 1,
+                                            .default = 0)) %>% 
     tidytable::summarize(mean_cpue = mean(cpue, na.rm = TRUE),
                          n_skate = .N, 
+                         n_pos_c = sum(pos_catch),
                          .by = c(year, subreg, stratum_description)) -> cpue_stratum
-  # get subregion rpn
+  # get stratum rpn
   cpue_stratum %>% 
     tidytable::left_join(area_size) %>% 
     tidytable::mutate(rpn = mean_cpue * area) %>% 
-    tidytable::summarise(rpn = sum(rpn), .by = c(year, subreg)) %>% 
+    tidytable::summarise(rpn = sum(rpn), 
+                         n_skate = sum(n_skate),
+                         n_pos_c = sum(n_pos_c),
+                         .by = c(year, subreg, stratum_description)) %>% 
+    # get subregion rpn
+    tidytable::bind_rows(cpue_stratum %>% 
+                           tidytable::left_join(area_size) %>% 
+                           tidytable::mutate(rpn = mean_cpue * area) %>% 
+                           tidytable::summarise(rpn = sum(rpn), 
+                                                n_skate = sum(n_skate),
+                                                n_pos_c = sum(n_pos_c),
+                                                .by = c(year, subreg)) %>% 
+                           tidytable::mutate(stratum_description = '101-1000m')) %>% 
     # get total rpn
     tidytable::bind_rows(cpue_stratum %>% 
                            tidytable::left_join(area_size) %>% 
                            tidytable::mutate(rpn = mean_cpue * area) %>% 
-                           tidytable::summarise(rpn = sum(rpn), .by = year) %>% 
-                           tidytable::mutate(subreg = 'GOA')) %>% 
+                           tidytable::summarise(rpn = sum(rpn), 
+                                                n_skate = sum(n_skate),
+                                                n_pos_c = sum(n_pos_c),
+                                                .by = year) %>% 
+                           tidytable::mutate(subreg = 'GOA',
+                                             stratum_description = '101-1000m')) %>% 
     tidytable::rename(region = subreg) -> rpn
   rpn
 }
@@ -105,8 +125,9 @@ boot_rpn <- function(data, area_size){
                                          subarea == 'West Yakutat' ~ 'EGOA',
                                          subarea == 'East Yakutat/Southeast' ~ 'EGOA'))  %>% 
     tidytable::mutate(id = paste0(year, "-", vessel_number, "-", station_number, "-", hachi)) %>% 
-    tidytable::select(year, subreg, stratum, id) %>% 
-    tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year, subreg, stratum)) %>% 
+    tidytable::select(year, subreg, station_number, id) %>% 
+    # tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year, subreg, stratum, station_number)) %>% 
+    tidytable::mutate(id = base::sample(id, .N, replace = TRUE), .by = c(year)) %>%
     tidytable::separate(id, c('year', 'vessel_number', 'station_number', "hachi"), sep = '-', convert = TRUE) %>% 
     tidytable::left_join(data) -> data_resamp
   # compute the rpn
@@ -116,7 +137,7 @@ boot_rpn <- function(data, area_size){
 }
 
 # define number of iterations for bootstrap ----
-iters = 1000
+iters = 100
 
 # compute cpue index ----
 
@@ -155,5 +176,5 @@ rpn_indx <- rpn %>%
                          tidytable::summarise(sd = sd(rpn),
                                               lci = quantile(rpn, probs = 0.025),
                                               uci = quantile(rpn, probs = 0.975),
-                                              .by = c(year, region))) %>% 
+                                              .by = c(year, region, stratum_description))) %>% 
   vroom::vroom_write(., here::here('2025', 'rsch', 'll_srv', 'output', 'rpn_indx.csv'), delim = ',')

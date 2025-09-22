@@ -45,6 +45,8 @@ rpn_hist <- ll_rpn_og %>%
 # compare new vs old standardized rpns ----
 ll_rpn %>% 
   tidytable::mutate(type = 'll_srv_new') %>% 
+  tidytable::filter(stratum_description == '101-1000m') %>% 
+  tidytable::select(-c(stratum_description, n_skate, n_pos_c)) %>% 
   tidytable::bind_rows(rpn_hist %>% 
                          tidytable::mutate(type = 'll_srv_orig')) %>% 
   tidytable::mutate(mean = mean(rpn), .by = c(region, type)) %>% 
@@ -75,10 +77,12 @@ ggsave(here::here("2025", "rsch", "ll_srv", 'figures', "index_plot.png"), width 
 
 # compare ll and trawl survey apportionment ----
 ll_rpn %>% 
-  tidytable::filter(region != 'GOA') %>% 
+  tidytable::filter(region != 'GOA',
+                    stratum_description == '101-1000m') %>% 
   tidytable::left_join(ll_rpn %>% 
-                         tidytable::filter(region == 'GOA') %>% 
-                         select(-c(region, sd, lci, uci)) %>% 
+                         tidytable::filter(region == 'GOA',
+                                           stratum_description == '101-1000m') %>% 
+                         tidytable::select(year, rpn) %>% 
                          tidytable::rename(rpn_goa = rpn)) %>% 
   tidytable::mutate(apport = rpn / rpn_goa,
                     type = 'll_srv_new') %>% 
