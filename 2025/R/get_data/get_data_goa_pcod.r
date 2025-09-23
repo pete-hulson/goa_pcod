@@ -17,8 +17,6 @@
 #' @param run_glm switch for whether to run delta glm model for adf&g index (default = FALSE)
 #' @param len_bins user-defined length bins for length comps (default = NULL)
 #' @param fltr switch for whether to filter small number of length samples (default = TRUE)
-#' @param new_lcomp use old or new method for computing fishery length comps (default = FALSE)
-#' @param update_ae switch to update ageing error
 #' @param ss3_frmt whether to format comp data for ss3 data file (default = TRUE)
 #' @param iss test for whether input sample size comes from surveyISS package (TRUE) or not (FALSE)
 #' @param bin_iss value for special case of iss based on bin size (e.g., 'bin2', default = NULL)
@@ -41,8 +39,6 @@ get_data_goa_pcod <- function(new_data = new_data,
                               run_glm = FALSE,
                               len_bins = NULL,
                               fltr = TRUE,
-                              new_lcomp = FALSE,
-                              update_ae = FALSE,
                               ss3_frmt = TRUE,
                               iss = FALSE,
                               bin_iss = NULL,
@@ -87,23 +83,18 @@ get_data_goa_pcod <- function(new_data = new_data,
                                    indx = indx)
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  ## iphc longline survey ----
-  ss3_iphc_indx <- get_iphc_srvy_index(new_year = new_year)
-  cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index data"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
   ## adf&g trawl survey ----
   ss3_adfg_indx <- get_adfg_srvy_index(new_year = new_year,
                                        run_glm = run_glm)
   cat(crayon::green$bold("\u2713"), crayon::blue("adf&g survey index data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  ## larval and beach seine indices ----
+  ## beach seine index ----
   # note: for time-being, these are entered by hand from emailed data
   ss3_other_indx <- data.frame(vroom::vroom(here::here(new_year, 'data', 'other_indices.csv')))
   
   ## plop into ss3 data file ----
   cpue <- rbind(ss3_twl_indx,
                 ss3_ll_indx,
-                ss3_iphc_indx,
                 ss3_adfg_indx,
                 ss3_other_indx)
   
@@ -136,17 +127,9 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("pre-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ### post-1991 ----
-  if(isTRUE(new_lcomp)){
-    post_fsh_lcomp <- get_fsh_len_post91_new(new_year = new_year,
-                                             bins = len_bins,
-                                             ss3_frmt = ss3_frmt)
-  } else{
-    post_fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
-                                         fltr = fltr,
-                                         bins = len_bins,
-                                         ss3_frmt = ss3_frmt)
-  }
-
+  post_fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
+                                       bins = len_bins,
+                                       ss3_frmt = ss3_frmt)
   cat(crayon::green$bold("\u2713"), crayon::blue("post-1991 fishery length comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   data.frame(pre_fsh_lcomp %>% 
@@ -173,25 +156,11 @@ get_data_goa_pcod <- function(new_data = new_data,
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   ## fishery -----
-  if(isTRUE(new_lcomp)){
-    ss3_fsh_acomp <- get_fsh_age_new(new_year = new_year,
-                                     st_yr = fsh_age_st_yr,
-                                     max_age = max_age,
-                                     ss3_frmt = ss3_frmt,
-                                     fit = FALSE)
-  } else{
-  ss3_fsh_acomp <- get_fsh_age(new_year = new_year,
-                               st_yr = fsh_age_st_yr,
-                               max_age = max_age,
-                               fltr = fltr,
-                               add_a1 = TRUE,
-                               use_FSA = TRUE,
-                               iters = 1,
-                               by_sex = TRUE,
-                               ss3_frmt = ss3_frmt,
-                               fit = FALSE)
-  }
-  
+  ss3_fsh_acomp <- get_fsh_age_new(new_year = new_year,
+                                   st_yr = fsh_age_st_yr,
+                                   max_age = max_age,
+                                   ss3_frmt = ss3_frmt,
+                                   fit = FALSE)
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age comp data"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   # get conditional age-at-length data ----
@@ -237,21 +206,13 @@ get_data_goa_pcod <- function(new_data = new_data,
   # ageing error ----
   new_data$agebin_vector = seq(1, max_age, 1)
   
-  if(isTRUE(update_ae)){
-    # update with new reader-tester data and reread data for bias within the dat file
-    age_error <- get_agerr(new_year,
-                           type = 'dat',
-                           max_age)
-    new_data$N_ageerror_definitions <- 2
-    new_data$ageerror <- age_error
-    new_data$agecomp[which(new_data$agecomp$year >= 2007),'ageerr'] = 2
-  } else{
-    # turn off and read through ctl instead
-    age_error <- data.frame(rbind(rep(-1, max_age + 1),
-                                  rep(-0.001, max_age + 1)))
-    colnames(age_error) <- paste0("age", seq(0, max_age))
-    new_data$ageerror <- age_error
-  }
+  # update with new reader-tester data and reread data for bias within the dat file
+  age_error <- get_agerr(new_year,
+                         type = 'dat',
+                         max_age)
+  new_data$N_ageerror_definitions <- 2
+  new_data$ageerror <- age_error
+  new_data$agecomp[which(new_data$agecomp$year >= 2007),'ageerr'] = 2
   cat(crayon::green$bold("\u2713"), crayon::blue("ageing error"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # length bins ----

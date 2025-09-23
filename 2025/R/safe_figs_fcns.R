@@ -276,7 +276,7 @@ plot_auxind <- function(new_year = NULL){
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "other_indices.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::filter(index == -9) %>% 
+                           tidytable::filter(index == -7) %>% 
                            tidytable::mutate(pcod = obs,
                                              type = "Age-0 beach seine survey (numbers/haul)",
                                              index = "Recruitment") %>% 

@@ -32,10 +32,10 @@ get_agerr <- function(new_year,
     writeLines(.,
                here::here(new_year, 'output', 'ageing_error', 'agerr.dat'))
   
-  data_ae <- AgeingError:::CreateData(here::here(new_year, 'output', 'ageing_error', 'agerr.dat'), 
-                                      NDataSet = 1, 
-                                      verbose = FALSE, 
-                                      EchoFile = "")
+  data_ae <- AgeingError:::load_data(here::here(new_year, 'output', 'ageing_error', 'agerr.dat'), 
+                                     NDataSet = 1, 
+                                     verbose = FALSE, 
+                                     EchoFile = "")
   
   ## format specifications file ----
   # cv by age (1 param)
@@ -47,9 +47,9 @@ get_agerr <- function(new_year,
     writeLines(.,
                here::here(new_year, 'output', 'ageing_error', 'agerr.spc'))
   
-  spc_ae <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agerr.spc'), 
-                                     DataSpecs = data_ae,
-                                     verbose = TRUE)
+  spc_ae <- AgeingError::load_specs(here::here(new_year, 'output', 'ageing_error', 'agerr.spc'), 
+                                    DataSpecs = data_ae,
+                                    verbose = TRUE)
   
   ## run model ----
   agerr_mod <- AgeingError::DoApplyAgeError(Species = "Pcod",
@@ -92,10 +92,10 @@ get_agerr <- function(new_year,
     writeLines(.,
                here::here(new_year, 'output', 'ageing_error', 'agebias.dat'))
   
-  data_bias <- AgeingError:::CreateData(here::here(new_year, 'output', 'ageing_error', 'agebias.dat'), 
-                                        NDataSet = 1, 
-                                        verbose = FALSE, 
-                                        EchoFile = "")
+  data_bias <- AgeingError:::load_data(here::here(new_year, 'output', 'ageing_error', 'agebias.dat'), 
+                                       NDataSet = 1, 
+                                       verbose = FALSE, 
+                                       EchoFile = "")
   
   ## format specifications file ----
   c("# reader BiasOpt SigmaOpt",
@@ -108,9 +108,9 @@ get_agerr <- function(new_year,
     writeLines(.,
                here::here(new_year, 'output', 'ageing_error', 'agebias.spc'))
   
-  spc_bias <- AgeingError::CreateSpecs(here::here(new_year, 'output', 'ageing_error', 'agebias.spc'), 
-                                       DataSpecs = data_bias,
-                                       verbose = TRUE)
+  spc_bias <- AgeingError::load_specs(here::here(new_year, 'output', 'ageing_error', 'agebias.spc'), 
+                                      DataSpecs = data_bias,
+                                      verbose = TRUE)
   
   ## run model ----
   agebias_mod <- AgeingError::DoApplyAgeError(Species = "Pcod",
@@ -132,7 +132,7 @@ get_agerr <- function(new_year,
   if(type == 'dat'){
     rbind(agebias_out$ErrorAndBiasArray[,,1][5, 1:(max_age + 1)],
           agerr_out$ErrorAndBiasArray[,,1][4, 1:(max_age + 1)],
-          rep(-1, length.out = max_age),
+          rep(-1, length.out = max_age + 1),
           agerr_out$ErrorAndBiasArray[,,1][4, 1:(max_age + 1)]) -> ae_mtx
     colnames(ae_mtx) <- paste0("age", seq(0, max_age))
     ae_info <- data.table(ae_mtx)

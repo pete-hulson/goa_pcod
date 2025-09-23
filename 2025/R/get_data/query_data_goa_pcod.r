@@ -385,29 +385,6 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
-  ## iphc survey index data ----
-  cat("\u231b", crayon::blue("working on iphc survey index query..."), "\n")
-  dplyr::tbl(conn, dplyr::sql('afsc_host.fiss_rpn')) %>% 
-    dplyr::rename_all(tolower) %>% 
-    dplyr::filter(species %in% c('Pacific cod'),
-                  fmp_sub_area %in% c("CGOA", "EY/SE", "WGOA", "WY")) %>% 
-    dplyr::select(year = survey_year, 
-                  fmp_sub_area, 
-                  species, 
-                  strata = rpn_strata, 
-                  strata_rpn, 
-                  boot_sd, 
-                  boot_bias,
-                  n_stations,
-                  n_pos_catch) -> iphc_q
-  
-  dplyr::collect(iphc_q) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'iphc_srvy_index.csv'), delim = ",")
-  capture.output(dplyr::show_query(iphc_q), 
-                 file = here::here(new_year, "data", "sql", "iphc_srvy_index_sql.txt"))
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("iphc survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
   # fishery data ----
   
   ## catch data ----

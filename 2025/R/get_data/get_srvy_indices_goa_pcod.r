@@ -21,6 +21,7 @@ get_twl_srvy_index <- function(new_year = 9999,
                  tidytable::select(year, obs, se_log) %>% 
                  tidytable::mutate(seas = 7,
                                    index = 4) %>% 
+                 tidytable::arrange(year) %>% 
                  tidytable::select(year, seas, index, obs, se_log))
   } else{
     # get biomass index
@@ -31,6 +32,7 @@ get_twl_srvy_index <- function(new_year = 9999,
                  tidytable::select(year, obs, se_log) %>% 
                  tidytable::mutate(seas = 7,
                                    index = 4) %>% 
+                 tidytable::arrange(year) %>% 
                  tidytable::select(year, seas, index, obs, se_log))
   }
 }
@@ -62,6 +64,7 @@ get_ll_srvy_index <- function(new_year = 9999,
                  tidytable::select(year, obs, se_log) %>% 
                  tidytable::mutate(seas = 7,
                                    index = 5) %>% 
+                 tidytable::arrange(year) %>% 
                  tidytable::select(year, seas, index, obs, se_log))
   } else{
     # get rpw index
@@ -73,35 +76,9 @@ get_ll_srvy_index <- function(new_year = 9999,
                  tidytable::select(year, obs, se_log) %>% 
                  tidytable::mutate(seas = 7,
                                    index = 5) %>% 
+                 tidytable::arrange(year) %>% 
                  tidytable::select(year, seas, index, obs, se_log))
   }
-  
-}
-
-
-#' Function to pull iphc longline survey abundance index
-#' adapted/generalized from Steve Barbeaux' files for generating SS files
-#' Re-developed in 2024 by p. hulson
-#' 
-#' @param new_year current assessment year
-#' 
-
-get_iphc_srvy_index <- function(new_year = 9999){
-  
-  # format for ss3 ----
-  
-  # read in iphc longline survey data
-  iphc_indx <- vroom::vroom(here::here(new_year, "data", "raw", "iphc_srvy_index.csv"))
-  
-  # get iphc rpn index
-  # note: can not reproduce original cvs as obtained from s. barbeaux in 2021 by bootstrap
-  data.frame(iphc_indx %>% 
-               tidytable::summarise(obs = sum(strata_rpn),
-                                    se_log = sqrt(log(1 + sqrt(sum(boot_sd ^ 2)) / sum(strata_rpn)) ^ 2),
-                                    .by = c(year)) %>%
-               tidytable::mutate(seas = 7, 
-                                 index = -6) %>%
-               tidytable::select(year, seas, index, obs, se_log))
   
 }
 
@@ -154,7 +131,7 @@ get_adfg_srvy_index <- function(new_year = 9999,
                tidytable::rename(obs = index) %>% 
                tidytable::mutate(se_log = sqrt(log(1 + jack.se / obs) ^ 2),
                                  seas = 7, 
-                                 index = -7) %>% 
+                                 index = -6) %>% 
                tidytable::select(year, seas, index, obs, se_log))
   
 }

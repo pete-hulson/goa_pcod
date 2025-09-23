@@ -14,11 +14,16 @@
 # 1. accepted model dat file from previous assessment
 # 2. accepted model ctl file from previous assessment
 # 3. data_echo.ss_new file from accepted model
-old_dat_filename <- "GOAPcod2023Oct16.dat"
-old_ctl_filename <- "Model19_1b.ctl"
+# 4. data/historical folder
+# 5. delta_glm_1-7-2.get file to get adf&g trawl survey index
+# 6. other_indices.csv that includes age-0 beach seine indices (updated by hand)
+# 7. fish_lfreq_state.csv in the data/raw folder (updated by hand)
+# 8. data/ageing_error folder (note to updated reader-tester data on occasion)
+old_dat_filename <- "GOAPcod2024Oct17.dat"
+old_ctl_filename <- "Model24_0.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = FALSE
+query = TRUE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -84,11 +89,7 @@ new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
 ## comp data arguments ----
 # length bins to use for length comp data
-bin_width <- 1
-min_size <- 0.5
-max_size <- 104.5  # less than 1% of the fish in each year are 105 cm or larger (max less than 0.6%)
-len_bins <- seq(min_size, max_size, bin_width)
-len_bins5 <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
+len_bins <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
 
 # set up needed folders ----
 
@@ -129,57 +130,13 @@ source(here::here(new_year, "R", "utils.r"))
 # read in previous assessment ss3 datafile
 old_data <- r4ss::SS_readdat_3.30(here::here(new_year, "data", old_dat_filename))
 
-# fix survey timing
-old_data$fleetinfo = old_data$fleetinfo %>% 
-  dplyr::mutate(surveytiming = dplyr::case_when(surveytiming == 1007 ~ 1,
-                                                .default = surveytiming))
-old_data$surveytiming[old_data$surveytiming == 1007] = 1
-
-## file with all c series changes ----
+## get data file ----
 new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_year,
                               query = query,
                               run_glm = run_glm,
                               len_bins = len_bins)
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_year, "output", "mdl_input", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1c.dat")), overwrite = TRUE)
-
-## with updated ageing error ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_year,
-                              query = FALSE,
-                              run_glm = FALSE,
-                              len_bins = len_bins,
-                              update_ae = TRUE)
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1d.dat")), overwrite = TRUE)
-
-## with new fish len comps ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_year,
-                              query = FALSE,
-                              run_glm = run_glm,
-                              len_bins = len_bins,
-                              update_ae = TRUE,
-                              new_lcomp = TRUE)
-r4ss::SS_writedat_3.30(new_data,
-                       here::here(new_year, "output", "mdl_input", 
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_1e.dat")), overwrite = TRUE)
-
-## new len comps at 5 cm bins ----
-new_data <- get_data_goa_pcod(new_data = old_data,
-                              new_file = new_dat_filename,
-                              new_year = new_year,
-                              query = FALSE,
-                              run_glm = run_glm,
-                              len_bins = len_bins5,
-                              update_ae = TRUE,
-                              new_lcomp = TRUE)
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
@@ -191,11 +148,6 @@ r4ss::SS_writedat_3.30(new_data,
 old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
 
 ## reset params this one time ----
-# reset F ballpark to 0
-old_ctl$F_ballpark <- 0
-
-# reset age at L1 to 1.5
-old_ctl$Growth_Age_for_L1 <- 1.5
 
 # reset q params for surveys not fit to 0
 old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_SPAWN(8)"), 3] <- 0
