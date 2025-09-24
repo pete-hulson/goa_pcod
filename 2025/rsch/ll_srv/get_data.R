@@ -103,7 +103,9 @@ dplyr::tbl(conn, dplyr::sql('afsc.lls_catch_summary_with_nulls_mv')) %>%
                 rpn_filter,
                 subarea = council_sablefish_management_area,
                 stratum,
-                stratum_description) %>% 
+                stratum_description,
+                stratum2,
+                stratum_description2) %>% 
   dplyr::collect() %>% 
   vroom::vroom_write(., here::here('2025', 'rsch', 'll_srv', 'data', 'lls_pcod_catch.csv'), delim = ',')
 

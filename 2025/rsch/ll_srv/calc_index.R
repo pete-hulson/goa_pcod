@@ -178,3 +178,31 @@ rpn_indx <- rpn %>%
                                               uci = quantile(rpn, probs = 0.975),
                                               .by = c(year, region, stratum_description))) %>% 
   vroom::vroom_write(., here::here('2025', 'rsch', 'll_srv', 'output', 'rpn_indx.csv'), delim = ',')
+
+
+# compute rpn with only 2025 stations ----
+stat_25 <- ll_catch %>% 
+  tidytable::filter(year == 2025) %>% 
+  tidytable::distinct(station_number) %>% 
+  tidytable::pull(station_number)
+
+# calc rpn
+rpn_25 <- calc_rpn(ll_catch %>% 
+                     tidytable::filter(station_number %in% stat_25), 
+                   area_size)
+
+# bootstrap for uncertainty
+rr <- purrr::map(1:iters, ~ boot_rpn(ll_catch %>% 
+                                       tidytable::filter(station_number %in% stat_25), 
+                                     area_size),
+                 .progress = list(type = "iterator", 
+                                  format = "Resampling {cli::pb_bar} {cli::pb_percent}",
+                                  clear = TRUE))
+rpn_indx_25 <- rpn_25 %>% 
+  tidytable::left_join(do.call(mapply, c(list, rr, SIMPLIFY = FALSE))$rpn %>% 
+                         tidytable::map_df(., ~as.data.frame(.x), .id = "sim") %>% 
+                         tidytable::summarise(sd = sd(rpn),
+                                              lci = quantile(rpn, probs = 0.025),
+                                              uci = quantile(rpn, probs = 0.975),
+                                              .by = c(year, region, stratum_description))) %>% 
+  vroom::vroom_write(., here::here('2025', 'rsch', 'll_srv', 'output', 'rpn_indx_25.csv'), delim = ',')
