@@ -50,11 +50,13 @@ if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )
 lapply(pkg_cran, library, character.only = TRUE)
 
 ## github packages ----
-pkg_git <- c("r4ss")
+pkg_git <- c("r4ss",
+             "rema")
 
 # if not installed, then install
-if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
+if(length(pkg_git[which(pkg_git %in% rownames(installed.packages()) == FALSE )]) > 0) {
   devtools::install_github("r4ss/r4ss", force = TRUE)
+  devtools::install_github("afsc-assessments/rema", dependencies = TRUE, build_vignettes = TRUE)
 }
 
 # load packages

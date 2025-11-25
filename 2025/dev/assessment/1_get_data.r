@@ -137,15 +137,44 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               query = query,
                               run_glm = run_glm,
                               len_bins = len_bins)
+
+## make 2025 changes ----
+# changes were:
+# 1. remove IPHC index
+# 2. Remove spawn index
+# fleet info
+new_data <- data.frame(new_data$fleetinfo %>% 
+                         tidytable::filter(!(fleetname %in% c('IPHCLL', 'SPAWN'))))
+# cpue info
+new_data$CPUEinfo <- new_data$CPUEinfo[-which(rownames(new_data$CPUEinfo) %in% c('IPHCLL', 'SPAWN')),]
+new_data$CPUEinfo$fleet <- seq(1, length(new_data$CPUEinfo$fleet))
+# length info
+new_data$len_info <- new_data$len_info[-which(rownames(new_data$len_info) %in% c('IPHCLL', 'SPAWN')),]
+# age info
+new_data$age_info <- new_data$age_info[-which(rownames(new_data$age_info) %in% c('IPHCLL', 'SPAWN')),]
+
+## write data file ----
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
+
+
+
+
+
 
 
 # get ss3 ctl files ----
 
 # read in previous assessment ss3 ctl
 old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
+
+old_ctl$fleetnames <- old_ctl$fleetnames[-which(old_ctl$fleetnames %in% c('IPHCLL', 'SPAWN'))]
+
+old_ctl$Nfleets <- length(old_ctl$fleetnames)
+
+names(old_ctl)
+
 
 ## reset params this one time ----
 
