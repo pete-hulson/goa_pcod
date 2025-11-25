@@ -23,7 +23,7 @@ old_dat_filename <- "GOAPcod2024Oct17.dat"
 old_ctl_filename <- "Model24_0.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
+query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -143,7 +143,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 # 1. remove IPHC index
 # 2. Remove spawn index
 # fleet info
-new_data <- data.frame(new_data$fleetinfo %>% 
+new_data$fleetinfo <- data.frame(new_data$fleetinfo %>% 
                          tidytable::filter(!(fleetname %in% c('IPHCLL', 'SPAWN'))))
 # cpue info
 new_data$CPUEinfo <- new_data$CPUEinfo[-which(rownames(new_data$CPUEinfo) %in% c('IPHCLL', 'SPAWN')),]
@@ -159,41 +159,35 @@ r4ss::SS_writedat_3.30(new_data,
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
 
 
-
-
-
-
-
 # get ss3 ctl files ----
 
 # read in previous assessment ss3 ctl
 old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
 
+## make 2025 changes ----
+# changes were:
+# 1. remove IPHC index
+# 2. Remove spawn index
+# fleet names
 old_ctl$fleetnames <- old_ctl$fleetnames[-which(old_ctl$fleetnames %in% c('IPHCLL', 'SPAWN'))]
-
 old_ctl$Nfleets <- length(old_ctl$fleetnames)
+# q params
+old_ctl$Q_options <- old_ctl$Q_options[-which(rownames(old_ctl$Q_options) %in% c('IPHCLL', 'SPAWN')),]
+old_ctl$Q_options$fleet <- seq(4, 7)
+old_ctl$Q_parms <- old_ctl$Q_parms[-which(rownames(old_ctl$Q_parms) %in% c('LnQ_base_IPHCLL(6)', 'LnQ_base_SPAWN(8)', 'Q_power_SPAWN(8)')),]
+# selex patterns
+old_ctl$size_selex_types <- old_ctl$size_selex_types[-which(rownames(old_ctl$size_selex_types) %in% c('IPHCLL', 'SPAWN')),]
+old_ctl$age_selex_types <- old_ctl$age_selex_types[-which(rownames(old_ctl$age_selex_types) %in% c('IPHCLL', 'SPAWN')),]
+# lambdas
+old_ctl$lambdas <- old_ctl$lambdas[-which(rownames(old_ctl$lambdas) %in% c('Surv_IPHCLL_Phz1', 'Surv_SPAWN_Phz1')),]
+old_ctl$lambdas$fleet <- c(6, 7)
+old_ctl$N_lambdas <- length(old_ctl$lambdas$fleet)
 
-names(old_ctl)
-
-
-## reset params this one time ----
-
-# reset q params for surveys not fit to 0
-old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_SPAWN(8)"), 3] <- 0
-old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "Q_power_SPAWN(8)"), 3] <- 0
-old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "LnQ_base_Seine(9)"), 3] <- 0
-old_ctl$Q_parms[which(rownames(old_ctl$Q_parms) == "Q_power_Seine(9)"), 3] <- 0
-
-# reset selex patterns for surveys not fit to 0
-old_ctl$size_selex_types$Pattern[which(rownames(old_ctl$size_selex_types) == "IPHCLL")] <- 0
-old_ctl$size_selex_types$Special[which(rownames(old_ctl$size_selex_types) == "IPHCLL")] <- 0
-old_ctl$size_selex_types$Pattern[which(rownames(old_ctl$size_selex_types) == "ADFG")] <- 0
-old_ctl$size_selex_types$Special[which(rownames(old_ctl$size_selex_types) == "ADFG")] <- 0
-old_ctl$age_selex_types$Pattern[which(rownames(old_ctl$age_selex_types) == "IPHCLL")] <- 0
-old_ctl$age_selex_types$Pattern[which(rownames(old_ctl$age_selex_types) == "ADFG")] <- 0
-
-# set max bound for selex params to 100 cm
-old_ctl$size_selex_parms$HI[which(old_ctl$size_selex_parms$HI > 100)] = 100
+# reset variance adjustment list
+old_ctl$Variance_adjustment_list <- rbind(expand.grid(factor = 1, fleet = seq(1, 7), value = 0),
+                                          expand.grid(factor = 4, fleet = seq(1, 6), value = 1),
+                                          expand.grid(factor = 5, fleet = seq(1, 4), value = 1),
+                                          expand.grid(factor = 6, fleet = seq(1, 4), value = 1))
 
 ## reset params annually ----
 # reset end year in block designs
@@ -207,48 +201,10 @@ old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
 # note: when fcast_rec_option = 4 in forecast file, then use the following:
 old_ctl$MainRdevYrLast <- new_year
 
-## write model 2019.1b ctl ----
-r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_year, "output", "mdl_input", old_ctl_filename),
-                       overwrite = TRUE)
-
-
-## write model 2019.1c ctl ----
-# turn off forecast rec phase
-old_ctl$Fcast_recr_phase = -1
-# update weight-length parameters
-wtlen <- wt_len(new_year)
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_1_Fem_GP_1"), 3] <- wtlen[1]
-old_ctl$MG_parms[which(rownames(old_ctl$MG_parms) == "Wtlen_2_Fem_GP_1"), 3] <- wtlen[2]
-# write ctl
-r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1c.ctl"),
-                       overwrite = TRUE)
-
-## write model 2019.1d and 2019.1e ctls ----
-# remove ageing error sds
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm1"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm2"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm3"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm4"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm5"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm6"),]
-old_ctl$MG_parms <- old_ctl$MG_parms[-which(rownames(old_ctl$MG_parms) == "AgeKeyParm7"),]
-# remove bias
-old_ctl$MG_parms_tv <- old_ctl$MG_parms_tv[-which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm2_BLK6repl_1976"),]
-old_ctl$MG_parms_tv <- old_ctl$MG_parms_tv[-which(rownames(old_ctl$MG_parms_tv) == "AgeKeyParm3_BLK6repl_1976"),]
-# write ctl
-r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1d.ctl"),
-                       overwrite = TRUE)
-r4ss::SS_writectl_3.30(ctllist = old_ctl,
-                       outfile = here::here(new_year, "output", "mdl_input", "Model19_1e.ctl"),
-                       overwrite = TRUE)
+## write model ctl ----
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_year, "output", "mdl_input", "Model24_0.ctl"),
                        overwrite = TRUE)
-
-
 
 
 
