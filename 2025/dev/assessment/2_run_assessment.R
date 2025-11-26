@@ -1,4 +1,4 @@
-## Script to run 2024 GOA Pacific Cod Assessment (P. Hulson)
+## Script to run 2025 GOA Pacific Cod Assessment (P. Hulson)
 
 
 # user-defined function arguments ----
@@ -7,16 +7,16 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Oct17"
+dat_day <- "Nov26"
 
-# 2023 accepted model
-base_mdl <- "2019.1b-2023"
+# 2024 accepted model
+base_mdl <- "24.0"
 
 # full run for retro/jitter/mcmc/etc
 full_run = FALSE
 
 # run mcmc?
-run_mcmcz = TRUE
+run_mcmcz = FALSE
 
 # remove previous run files?
 remove_files = TRUE
@@ -87,58 +87,36 @@ if(isTRUE(remove_files)){
   unlink(here::here(new_year, "output", "mcmc"), recursive = TRUE)
 }
 
-# run model variants ----
 
-## define model variant names (model, dat, & ctl name) ----
-### 19.1b: updated base model ----
-base_mdl_update <- "19.1b"
-base_mdl_update_dat <- paste0("GOAPcod2024", dat_day, "_old.dat")
-base_mdl_update_ctl <- "Model19_1b.ctl"
-### 19.1c: new base model ----
-# includes:
-# - corrected ll survey sd
-# - corrected ll survey length comp bins
-# - corrected ll survey timing
-# - fishery iss set at number of hauls that data is used from
-# - plus length bin set at 104 cm
-# - correct season for twl survey caal
-# - turn off recr forecase phase
-# - fix rec forecast option
-# - update l-w
-new_base <- "19.1c"
-new_base_dat <- paste0("GOAPcod2024", dat_day, "_1c.dat")
-new_base_ctl <- "Model19_1c.ctl"
-### 2019.1d: update ageing error ----
-new_base_ae <- "19.1d"
-new_base_ae_dat <- paste0("GOAPcod2024", dat_day, "_1d.dat")
-new_base_ae_ctl <- "Model19_1d.ctl"
-### 2019.1e: new fishery length comps ----
-new_base_lcomp <- "19.1e"
-new_base_lcomp_dat <- paste0("GOAPcod2024", dat_day, "_1e.dat")
-new_base_lcomp_ctl <- "Model19_1e.ctl"
-### 2019.1e.5: new fishery length comps at 5 cm bin ----
-new_base_lcomp_bin5 <- "24.0"
-new_base_lcomp_bin5_dat <- paste0("GOAPcod2024", dat_day, ".dat")
-new_base_lcomp_bin5_ctl <- "Model24_0.ctl"
 
-# lists of model variants
-mdls = c(base_mdl_update, new_base, new_base_ae, new_base_lcomp, new_base_lcomp_bin5)
-dats = c(base_mdl_update_dat, new_base_dat, new_base_ae_dat, new_base_lcomp_dat, new_base_lcomp_bin5_dat)
-ctls = c(base_mdl_update_ctl, new_base_ctl, new_base_ae_ctl, new_base_lcomp_ctl, new_base_lcomp_bin5_ctl)
+# set up model folder ----
 
-## run model variants in parallel ----
-run_mdl_vrnts(mdls = mdls,
-              new_year = new_year,
-              base_mdl = base_mdl,
-              dats = dats,
-              ctls = ctls)
+## copy ss files from last year's accepted assessment ----
+start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
+              to = here::here(new_year, 'mgmt', base_mdl),
+              update_exe = FALSE)
+
+## update dat/ctl/etc files ----
+update_ss3_files(asmnt_yr = new_year, 
+                 folder = 'mgmt',
+                 mdl = base_mdl, 
+                 dat_filename = paste0('GOAPcod2025', dat_day, '.dat'),
+                 ctl_filename = 'Model24_0.ctl')
+
+
+# run model ----
+run_ss3_model(asmnt_yr = new_year, 
+              folder = 'mgmt',
+              mdl = base_mdl, 
+              ctl_filename = 'Model24_0.ctl',
+              iters = 2)
 
 # run model analyses ----
 run_mdl_anlys(new_year = new_year,
-              base_mdl = base_mdl_update,
-              rec_mdl = new_base_lcomp_bin5,
+              base_mdl = base_mdl,
+              rec_mdl = base_mdl,
               full_run = full_run,
-              rec_ctl = new_base_lcomp_bin5_ctl,
+              rec_ctl = 'Model24_0.ctl',
               run_mcmcz = run_mcmcz)
 
 
