@@ -159,8 +159,11 @@ update_ss3_files <- function(asmnt_yr = NULL,
 #' function to set up folder with ss3 model files and exe
 #' @param from folder containing ss3 files that are to be copied (default = NULL)
 #' @param to destination folder for ss3 files (default = NULL)
+#' @param update_exe boolean, whether to update the exe with the latest version of ss3, or, copy from previous year
 #' 
-start_ss_fldr <- function(from, to){
+start_ss_fldr <- function(from = NULL, 
+                          to = NULL,
+                          update_exe = FALSE){
   
   # set up folder
   if(!dir.exists(to)){
@@ -175,7 +178,12 @@ start_ss_fldr <- function(from, to){
   file.copy(paste0(from, '/data_echo.ss_new'),
             paste0(to, '/data_echo.ss_new'))
   # get exe
-  invisible(r4ss::get_ss3_exe(dir = to))
+  if(isTRUE(update_exe)){
+    invisible(r4ss::get_ss3_exe(dir = to))
+  } else{
+    file.copy(paste0(from, '/ss3.exe'),
+              paste0(to, '/ss3.exe'))
+  }
   
 }
 #' function to get weight-length parameters (from survey data)
