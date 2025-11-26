@@ -114,7 +114,7 @@ run_mdl_anlys <- function(new_year = NULL,
   # names for parameters to profile over (used as folder names)
   params <- c("r", "m", "m14", "q_twl", "q_ll", "q_ll_env")
   # define line numbers for params in ctl
-  linenums = c(84, 56, 72, 136, 137, 146)
+  linenums = c(84, 56, 72, 134, 135, 141)
   # define parameter value vector
   if(isTRUE(full_run)){
     profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
