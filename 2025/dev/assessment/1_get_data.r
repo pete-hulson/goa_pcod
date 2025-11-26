@@ -145,6 +145,7 @@ new_data <- get_data_goa_pcod(new_data = old_data,
 # fleet info
 new_data$fleetinfo <- data.frame(new_data$fleetinfo %>% 
                          tidytable::filter(!(fleetname %in% c('IPHCLL', 'SPAWN'))))
+new_data$Nfleets <- length(new_data$fleetinfo$fleetname)
 # cpue info
 new_data$CPUEinfo <- new_data$CPUEinfo[-which(rownames(new_data$CPUEinfo) %in% c('IPHCLL', 'SPAWN')),]
 new_data$CPUEinfo$fleet <- seq(1, length(new_data$CPUEinfo$fleet))
