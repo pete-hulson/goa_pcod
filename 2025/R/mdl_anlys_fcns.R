@@ -314,7 +314,7 @@ run_fofl_prev <- function(new_year = NULL,
                          outfile = here::here(new_year, "mgmt", rec_mdl, "f_ofl", list.files(here::here(new_year, "mgmt", rec_mdl), "GOAPcod")),
                          overwrite = TRUE,
                          verbose = FALSE)
-
+  
   # run model
   r4ss::run(dir = here::here(new_year, "mgmt", rec_mdl, "f_ofl"),
             extras = "-stopph 0",
@@ -354,41 +354,57 @@ run_retro <- function(new_year = NULL,
     ret_yr <- 10
   } else{ret_yr <- 1}
   
-  ## run retro in parallel
-  # list models
-  mdls = c(base_mdl, rec_mdl)
-  # set up index
-  indx = seq(1, length(mdls))
-  
-  # Get the number of available cores
-  num_cores <- parallel::detectCores()
-  if(num_cores > length(mdls)) num_cores = length(mdls)
-  # Set the number of cores to be used for parallel computing
-  doParallel::registerDoParallel(cores = num_cores)
-  
-  foreach::foreach(i = indx) %dopar% {
+  if(base_mdl != rec_mdl){
+    ## run retro in parallel
+    # list models
+    mdls = c(base_mdl, rec_mdl)
+    # set up index
+    indx = seq(1, length(mdls))
     
-    r4ss::retro(dir = here::here(new_year, "mgmt", mdls[i]),
+    # Get the number of available cores
+    num_cores <- parallel::detectCores()
+    if(num_cores > length(mdls)) num_cores = length(mdls)
+    # Set the number of cores to be used for parallel computing
+    doParallel::registerDoParallel(cores = num_cores)
+    
+    foreach::foreach(i = indx) %dopar% {
+      
+      r4ss::retro(dir = here::here(new_year, "mgmt", mdls[i]),
+                  years = 0:-ret_yr)
+      
+    }
+    
+    # Stop parallel computing
+    doParallel::stopImplicitCluster()
+    
+    # load the retrospective models
+    retro_base <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", base_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
+                                    verbose = FALSE)
+    retro_rec <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", rec_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
+                                   verbose = FALSE)
+    # summarize the model results
+    retrosumm_rec <- r4ss::SSsummarize(retro_rec,
+                                       verbose = FALSE)
+    retrosumm_base <- r4ss::SSsummarize(retro_base,
+                                        verbose = FALSE)
+    
+    retro_res <- list(retrosumm_rec = retrosumm_rec, retrosumm_base = retrosumm_base)
+    
+  } else{
+    ## run retro
+    r4ss::retro(dir = here::here(new_year, "mgmt", rec_mdl),
                 years = 0:-ret_yr)
     
+    
+    # load the retrospective results
+    retro_rec <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", rec_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
+                                   verbose = FALSE)
+    # summarize the model results
+    retrosumm_rec <- r4ss::SSsummarize(retro_rec,
+                                       verbose = FALSE)
+    
+    retro_res <- list(retrosumm_rec = retrosumm_rec)
   }
-  
-  # Stop parallel computing
-  doParallel::stopImplicitCluster()
-  
-  # load the retrospective models
-  retro_base <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", base_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
-                                  verbose = FALSE)
-  retro_rec <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", rec_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
-                                 verbose = FALSE)
-  # summarize the model results
-  retrosumm_rec <- r4ss::SSsummarize(retro_rec,
-                                     verbose = FALSE)
-  retrosumm_base <- r4ss::SSsummarize(retro_base,
-                                      verbose = FALSE)
-  
-  retro_res <- list(retrosumm_rec = retrosumm_rec, retrosumm_base = retrosumm_base)
-  
   # save results
   if(isTRUE(full_run)){
     if (!dir.exists(here::here(new_year, "output", "retro"))) {
@@ -987,7 +1003,7 @@ run_llq <- function(dir = NULL,
                            tidytable::map_df(., ~as.data.frame(.x), .id = "rand") %>% 
                            tidytable::mutate(model = paste0("rand", rand)) %>% 
                            tidytable::select(like_compon, values, model)) -> likes
-
+  
   # set up predicted ll surv results
   res_base$cpue %>% 
     tidytable::filter(Fleet == 5) %>% 

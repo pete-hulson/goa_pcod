@@ -24,15 +24,22 @@ run_mdl_anlys <- function(new_year = NULL,
   cat("\u231b", crayon::blue("working on management scenarios..."), "\n")
   tictoc::tic()
   
-  # base model
-  run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", base_mdl),
-                     cyr = new_year,
-                     output_name = "mgmnt_scen_base")
-  
-  # recommended model
-  run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", rec_mdl),
-                     cyr = new_year,
-                     output_name = "mgmnt_scen_rec")
+  if(base_mdl != rec_mdl){
+    # base model
+    run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", base_mdl),
+                       cyr = new_year,
+                       output_name = "mgmnt_scen_base")
+    
+    # recommended model
+    run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", rec_mdl),
+                       cyr = new_year,
+                       output_name = "mgmnt_scen_rec")
+  } else{
+    # recommended model
+    run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", rec_mdl),
+                       cyr = new_year,
+                       output_name = "mgmnt_scen_rec")
+  }
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("management scenarios"), crayon::green$underline$bold$italic("DONE"), "\n")
