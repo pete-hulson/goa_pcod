@@ -101,7 +101,9 @@ get_adfg_srvy_index <- function(new_year = 9999,
     dglm = dget(here::here(new_year, 'data', "delta_glm_1-7-2.get"))
     
     # get model data together
-    vroom::vroom(here::here(new_year, 'data', 'adfg_srvy_index.csv')) %>% 
+    raw <- vroom::vroom(here::here(new_year, 'data', 'adfg_srvy_index.csv'))
+    # weight cpue
+    raw %>% 
       tidytable::filter(district %in% c(1,2,6),
                         !is.na(avg_depth_fm),
                         !is.na(start_longitude)) %>% 
@@ -109,15 +111,29 @@ get_adfg_srvy_index <- function(new_year = 9999,
                                           avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
                                           avg_depth_fm > 70 ~ 3),
                         density = total_weight_kg / area_km2) %>% 
-      tidytable::select(density, year, district, depth) -> mydata
+      tidytable::select(density, year, district, depth) -> mydata_wt
+    # numbers cpue
+    raw %>% 
+      tidytable::filter(district %in% c(1,2,6),
+                        !is.na(avg_depth_fm),
+                        !is.na(start_longitude)) %>% 
+      tidytable::mutate(depth = case_when(avg_depth_fm <= 30 ~ 1,
+                                          avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
+                                          avg_depth_fm > 70 ~ 3),
+                        density = total_number_caught / area_km2) %>% 
+      tidytable::select(density, year, district, depth) -> mydata_num
     
     # run model
-    codout = dglm(mydata, dist = "lognormal", write = F, J = T)
+    codout_wt = dglm(mydata_wt, dist = "lognormal", write = F, J = T)
+    codout_num = dglm(mydata_num, dist = "lognormal", write = F, J = T)
     
     # write model results
-    codout$deltaGLM.index %>% 
-      mutate(year = as.numeric(rownames(.))) %>% 
-      as_tibble(.) %>% 
+    codout_wt$deltaGLM.index %>% 
+      tidytable::mutate(year = as.numeric(rownames(.))) %>% 
+      tidytable::select(year, index_wt = index, se_wt = jack.se) %>% 
+      tidytable::left_join(codout_num$deltaGLM.index %>% 
+                             tidytable::mutate(year = as.numeric(rownames(.))) %>% 
+                             tidytable::select(year, index_num = index, se_num = jack.se)) %>% 
       vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'adfg_srvy_glm.csv'), delim = ",")
   }
   
