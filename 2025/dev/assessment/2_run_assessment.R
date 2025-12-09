@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Nov26"
+dat_day <- "Dec08"
 
 # 2024 accepted model
 base_mdl <- "24.0"
@@ -75,16 +75,17 @@ purrr::map(here::here(new_year, "R", source_files), source)
 
 ## remove previous runs and results ----
 if(isTRUE(remove_files)){
-  unlink(here::here(new_year, "mgmt"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "mscen"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "retro"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "loo"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "aoi"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "jitter"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "profile"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "llq"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "apport"), recursive = TRUE)
-  unlink(here::here(new_year, "output", "mcmc"), recursive = TRUE)
+  unlink(here::here(new_year, "mgmt"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "mscen"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "retro"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "loo"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "aoi"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "jitter"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "profile"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "llq"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "apport"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "mcmc"), recursive = TRUE, force = TRUE)
+  unlink(here::here(new_year, "output", "fofl_prev"), recursive = TRUE, force = TRUE)
 }
 
 
