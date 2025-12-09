@@ -183,12 +183,14 @@ old_ctl$age_selex_types <- old_ctl$age_selex_types[-which(rownames(old_ctl$age_s
 old_ctl$lambdas <- old_ctl$lambdas[-which(rownames(old_ctl$lambdas) %in% c('Surv_IPHCLL_Phz1', 'Surv_SPAWN_Phz1')),]
 old_ctl$lambdas$fleet <- c(6, 7)
 old_ctl$N_lambdas <- length(old_ctl$lambdas$fleet)
-
 # reset variance adjustment list
 old_ctl$Variance_adjustment_list <- rbind(expand.grid(factor = 1, fleet = seq(1, 7), value = 0),
                                           expand.grid(factor = 4, fleet = seq(1, 6), value = 1),
                                           expand.grid(factor = 5, fleet = seq(1, 4), value = 1),
                                           expand.grid(factor = 6, fleet = seq(1, 4), value = 1))
+# reset max phase from 10 to 7
+old_ctl$MG_parms$PHASE[which(rownames(old_ctl$MG_parms) == 'CV_young_Fem_GP_1')] <- 7
+old_ctl$MG_parms$PHASE[which(rownames(old_ctl$MG_parms) == 'CV_old_Fem_GP_1')] <- 7
 
 ## reset params annually ----
 # reset end year in block designs
