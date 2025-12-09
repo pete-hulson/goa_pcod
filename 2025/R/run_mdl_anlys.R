@@ -168,18 +168,14 @@ run_mdl_anlys <- function(new_year = NULL,
   apport_time <- tictoc::toc(quiet = TRUE)
 
   # run mcmc ----
-  if(isTRUE(run_mcmcz)){
-    cat("\u231b", crayon::blue("working on mcmcs..."), "\n")
-    
-    mcmc_time <- run_mcmc(full_run = full_run,
-                          new_year = new_year,
-                          rec_mdl = rec_mdl)
-    
-    # print message when done
-    cat(crayon::green$bold("\u2713"), crayon::blue("mcmc"), crayon::green$underline$bold$italic("DONE"), "\n")
-  } else{
-    mcmc_time <- list(nuts_time = 0, eval_time = 0)
-  }
+  cat("\u231b", crayon::blue("working on mcmcs..."), "\n")
+  
+  mcmc_time <- run_mcmc(full_run = run_mcmcz,
+                        new_year = new_year,
+                        rec_mdl = rec_mdl)
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("mcmc"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # compute full run time ----
   tot_time <- round(((as.numeric(strsplit(mscen_time$callback_msg, split = " ")[[1]][1])) / 60) / 60 +
