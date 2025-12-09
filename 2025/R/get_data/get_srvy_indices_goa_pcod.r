@@ -144,8 +144,8 @@ get_adfg_srvy_index <- function(new_year = 9999,
   
   # get adf&g index
   data.frame(adfg_indx %>% 
-               tidytable::rename(obs = index) %>% 
-               tidytable::mutate(se_log = sqrt(log(1 + jack.se / obs) ^ 2),
+               tidytable::rename(obs = index_wt) %>% 
+               tidytable::mutate(se_log = sqrt(log(1 + se_wt / obs) ^ 2),
                                  seas = 7, 
                                  index = -6) %>% 
                tidytable::select(year, seas, index, obs, se_log))
