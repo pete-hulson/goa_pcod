@@ -763,8 +763,8 @@ run_jitter <- function(full_run = NULL,
                        verbose = FALSE)
   
   # run the jitters in parallel
-  ncores <- parallelly::availableCores(omit = 1)
-  future::plan(future::multisession, workers = ncores)
+  # ncores <- parallelly::availableCores(omit = 1)
+  # future::plan(future::multisession, workers = ncores)
   r4ss::jitter(dir = here::here(new_year, "mgmt", rec_mdl, "jitter"),
                Njitter = Njitter,
                jitter_fraction = 0.05,
@@ -772,7 +772,7 @@ run_jitter <- function(full_run = NULL,
                exe = "ss3",
                printlikes = FALSE,
                verbose = FALSE)
-  future::plan(future::sequential)
+  # future::plan(future::sequential)
   
   # get results
   jitt_res <- SSgetoutput(dirvec = here::here(new_year, "mgmt", rec_mdl, "jitter"),, 
