@@ -60,7 +60,7 @@ plot_catch <- function(new_year = NULL){
 plot_meanlen <- function(new_year = NULL){
    
    # get length comps
-   fsh_lcomp <- get_fsh_len_post91_new(new_year = new_year,
+   fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
                                        bins = seq(1, 105),
                                        ss3_frmt = FALSE)
    twl_srvy_lcomp <- get_twl_srvy_lcomp(new_year = new_year,
@@ -269,7 +269,7 @@ plot_auxind <- function(new_year = NULL){
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::mutate(pcod = index,
+                           tidytable::mutate(pcod = index_wt,
                                              type = "ADF&G trawl survey (density)",
                                              index = "Adult") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
@@ -370,7 +370,7 @@ plot_deptem <- function(new_year = NULL){
                                          ymin = -1 * (mdepth - sd_depth),
                                          color = regi),
                     linewidth = 0.25) +
-    geom_errorbarh(data = plot_dat, aes(xmax = mtemp - sd_temp, 
+    geom_errorbar(data = plot_dat, aes(xmax = mtemp - sd_temp, 
                                         xmin = mtemp + sd_temp,
                                         color = regi),
                    linewidth = 0.25) +
@@ -397,9 +397,11 @@ plot_deptem <- function(new_year = NULL){
                                      mtemp = mean(mtemp),
                                      .by = c(year, label)) %>% 
                 tidytable::mutate(Subarea = "Western",
-                                  regi = "Med"),
+                                  regi = "Med",
+                                  year = year - 2000),
               mapping = aes(x = mtemp, y = -1 * mdepth, label = year), 
-              fontface = 'bold', color = "black")
+              fontface = 'bold', color = "black",
+              position = 'identity')
   
   
   # save
@@ -540,7 +542,7 @@ plot_agerr <- function(new_year = NULL){
                          .by = c(reread_age, original_age)) %>% 
     tidytable::arrange(original_age) -> reread
   
-  bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+  bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod_SS3_format_Reader1.csv'), delim = ',', 
                                             progress = FALSE, 
                                             show_col_types = FALSE))
   # ageing error data
@@ -555,7 +557,7 @@ plot_agerr <- function(new_year = NULL){
     filter(year >= 2000) %>%  
     tidytable::summarise(n = .N, .by = c(read_age, test_age)) -> read_test
   
-  ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+  ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod_SS3_format_Reader1.csv'), delim = ',', 
                                           progress = FALSE, 
                                           show_col_types = FALSE))
   
@@ -740,7 +742,7 @@ plot_selex_comp <- function(selex_comp = NULL){
           panel.grid.minor = element_blank(),
           legend.position = "top",
           legend.key.width = unit(0.25, 'cm')) +
-    labs(x = "Length (cm)", y = paste(new_year, "Selectivity"), col = "") +
+    labs(x = "Length (cm)", y = "Terminal Year Selectivity", col = "") +
     scico::scale_color_scico_d(palette = 'roma') + 
     guides(color = guide_legend(nrow = 2))
   
@@ -778,6 +780,8 @@ plot_retro <- function(rec_mdl_res = NULL,
   
   # load retrospective results
   load(here::here(new_year, "output", "retro", "retro_res.RData"))
+  
+  mohn <- round(r4ss::SSmohnsrho(retro_res$retrosumm_rec, verbose = FALSE)$AFSC_Hurtado_SSB, digits = 3)
   
   # get retro runs (data and model)
   retro_res$retrosumm_rec$SpawnBio %>% 
@@ -834,6 +838,14 @@ plot_retro <- function(rec_mdl_res = NULL,
     tidytable::left_join(rec_ssb %>% 
                            tidytable::select(year, uci, lci)) -> retro_dat
   
+  
+  dat_text <- data.frame(
+    text = c(paste0("Mohn's = ", mohn), ""),
+    type = c('Data retrospective (10 years)', 'Model retrospective (to 2003 assessment)'),
+    x = new_year - 5,
+    y = c(2.5e+05,
+          2.5e+05))
+  
   # plot
   retro_plot <- ggplot(data = retro_dat, 
                        aes(x = year, y = ssb, color = peel)) +
@@ -846,7 +858,10 @@ plot_retro <- function(rec_mdl_res = NULL,
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.text.x = element_text(vjust = 0.5, angle = 90),
-          legend.position = "none")
+          legend.position = "none") + 
+    geom_text(data = dat_text, 
+              mapping = aes(x = x, y = y, label = text), 
+              color = "black")
   # save
   ggsave(filename = "retro.png",
          path = here::here(new_year, "output", "safe_plots"),
@@ -1243,7 +1258,7 @@ plot_indxfit <- function(rec_mdl_res = NULL){
     facet_wrap(~ name, 
                ncol = 1, 
                scales = "free_y") +
-    geom_errorbar(aes(ymin = obs - 1.96 * sd, ymax = obs + 1.96 * sd), width = 0.25) +
+    geom_errorbar(aes(ymin = obs - 1.96 * sd, ymax = obs + 1.96 * sd), width = 0) +
     scico::scale_color_scico_d(palette = 'roma') +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
@@ -1316,8 +1331,7 @@ run_osa_ss3 <- function(mdl_res = NULL,
                           exp = exp,
                           N = N$effn, 
                           index = lens,
-                          years = N$yr,
-                          seed = runif(1, 1, 7770))
+                          years = N$yr)
   
   out
 }
@@ -1344,7 +1358,7 @@ plot_fsh_osa <- function(rec_mdl_res = NULL,
   
   # plot
   fsh_osa <- afscOSA::plot_osa(osa_out_fsh,
-                               outpath = here::here(new_year, "output", "safe_plots")) 
+                               outpath = NULL) 
   fsh_osa_new <- cowplot::plot_grid(fsh_osa$bubble +
                                       theme_bw(base_size = 12) +
                                       theme(legend.position = "top",
@@ -1390,8 +1404,7 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
   
   # plot
   srv_osa <- afscOSA::plot_osa(osa_out_srv,
-                               outpath = NULL,
-                               plot = FALSE) 
+                               outpath = NULL) 
   srv_osa_new <- cowplot::plot_grid(srv_osa$bubble +
                                       theme_bw(base_size = 12) +
                                       theme(legend.position = "top",
