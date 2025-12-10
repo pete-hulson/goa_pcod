@@ -1046,7 +1046,7 @@ safe_tbls <- function(new_year = NULL,
                          "Scenario 5" = "-", 
                          "Scenario 6" = "-", 
                          "Scenario 7" = "-") %>% 
-    tidytable::bind_rows(mscen$mscen_catch) %>% 
+    tidytable::bind_rows(mscen_curr$mscen_catch) %>% 
     tidytable::bind_rows(data.table::data.table(Year = "F", 
                                                 "Scenario 1" = "-", 
                                                 "Scenario 2" = "-", 
@@ -1055,7 +1055,7 @@ safe_tbls <- function(new_year = NULL,
                                                 "Scenario 5" = "-", 
                                                 "Scenario 6" = "-", 
                                                 "Scenario 7" = "-") %>% 
-                           tidytable::bind_rows(mscen$mscen_f)) %>% 
+                           tidytable::bind_rows(mscen_curr$mscen_f)) %>% 
     tidytable::bind_rows(data.table::data.table(Year = "SSB", 
                                                 "Scenario 1" = "-", 
                                                 "Scenario 2" = "-", 
@@ -1064,7 +1064,7 @@ safe_tbls <- function(new_year = NULL,
                                                 "Scenario 5" = "-", 
                                                 "Scenario 6" = "-", 
                                                 "Scenario 7" = "-") %>% 
-                           tidytable::bind_rows(mscen$mscen_ssb)) -> mscen_tbl
+                           tidytable::bind_rows(mscen_curr$mscen_ssb)) -> mscen_tbl
   
   vroom::vroom_write(mscen_tbl, here::here(new_year, "output", "safe_tables", 'tbl19_mscen.csv'), delim = ",")
   
