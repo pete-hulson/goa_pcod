@@ -21,31 +21,31 @@ safe_figs <- function(new_year = NULL,
   rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
                                  verbose = FALSE,
                                  printstats = FALSE)
-  base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
-                                  verbose = FALSE,
-                                  printstats = FALSE)
+  # base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
+  #                                 verbose = FALSE,
+  #                                 printstats = FALSE)
   prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                   verbose = FALSE,
                                   printstats = FALSE)
-  res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
-                               verbose = FALSE,
-                               printstats = FALSE)
-  res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
-                               verbose = FALSE,
-                               printstats = FALSE)
-  res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
-                               verbose = FALSE,
-                               printstats = FALSE)
+  # res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
+  # res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
+  # res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
   res_mdl_comp <- suppressWarnings(r4ss::SSsummarize(biglist = list(prev_mdl_res,
-                                                                    base_mdl_res,
-                                                                    res_19_1c,
-                                                                    res_19_1d,
-                                                                    res_19_1e,
+                                                                    # base_mdl_res,
+                                                                    # res_19_1c,
+                                                                    # res_19_1d,
+                                                                    # res_19_1e,
                                                                     rec_mdl_res),
                                                      verbose = FALSE))
-  res_bin_comp <- r4ss::SSsummarize(biglist = list(res_19_1e,
-                                                   rec_mdl_res),
-                                    verbose = FALSE)
+  # res_bin_comp <- r4ss::SSsummarize(biglist = list(res_19_1e,
+  #                                                  rec_mdl_res),
+  #                                   verbose = FALSE)
   
   # run r4ss for recommended model ----
   cat("\u231b", crayon::blue("Working on r4ss plots..."), "\n")
@@ -126,12 +126,8 @@ safe_figs <- function(new_year = NULL,
     tidytable::mutate(model1 = case_when(Yr == new_year ~ NA,
                                          .default = model1)) %>% 
     tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
-    tidytable::mutate(name = case_when(name == "model1" ~ "19.1b-23",
-                                       name == "model2" ~ "19.1b",
-                                       name == "model3" ~ "19.1c",
-                                       name == "model4" ~ "19.1d",
-                                       name == "model5" ~ "19.1e",
-                                       name == "model6" ~ "24.0")) %>% 
+    tidytable::mutate(name = case_when(name == "model1" ~ "24.0 (2024)",
+                                       name == "model2" ~ "24.0 (2025)")) %>% 
     tidytable::mutate(type = "Spawning biomass (t)") %>% 
     tidytable::bind_rows(res_mdl_comp$recruits %>% 
                            tidytable::filter(Yr >= 1977,
@@ -140,12 +136,8 @@ safe_figs <- function(new_year = NULL,
                            tidytable::mutate(model1 = case_when(Yr == new_year ~ NA,
                                                                 .default = model1)) %>% 
                            tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
-                           tidytable::mutate(name = case_when(name == "model1" ~ "19.1b-23",
-                                                              name == "model2" ~ "19.1b",
-                                                              name == "model3" ~ "19.1c",
-                                                              name == "model4" ~ "19.1d",
-                                                              name == "model5" ~ "19.1e",
-                                                              name == "model6" ~ "24.0")) %>% 
+                           tidytable::mutate(name = case_when(name == "model1" ~ "24.0 (2024)",
+                                                              name == "model2" ~ "24.0 (2025)")) %>% 
                            tidytable::mutate(type = "Age-0 recruitment (1000s)")) %>% 
     tidytable::rename(year = Yr) -> ssb_rec_comp
   # plot
@@ -171,12 +163,8 @@ safe_figs <- function(new_year = NULL,
                                       par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
                                       par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)")) %>% 
     tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
-    tidytable::mutate(model = case_when(name == "model1" ~ "19.1b-23",
-                                        name == "model2" ~ "19.1b",
-                                        name == "model3" ~ "19.1c",
-                                        name == "model4" ~ "19.1d",
-                                        name == "model5" ~ "19.1e",
-                                        name == "model6" ~ "24.0"),
+    tidytable::mutate(model = case_when(name == "model1" ~ "24.0 (2024)",
+                                        name == "model2" ~ "24.0 (2025)"),
                       value = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ exp(value),
                                         .default = value)) %>% 
     tidytable::left_join(res_mdl_comp$parsSD %>% 
@@ -194,12 +182,8 @@ safe_figs <- function(new_year = NULL,
                                                              par == "LnQ_base_Srv(4)" ~ "q (Trawl survey)",
                                                              par == "LnQ_base_LLSrv(5)" ~ "q (Longline survey)")) %>% 
                            tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
-                           tidytable::mutate(model = case_when(name == "model1" ~ "19.1b-23",
-                                                               name == "model2" ~ "19.1b",
-                                                               name == "model3" ~ "19.1c",
-                                                               name == "model4" ~ "19.1d",
-                                                               name == "model5" ~ "19.1e",
-                                                               name == "model6" ~ "24.0")) %>% 
+                           tidytable::mutate(model = case_when(name == "model1" ~ "24.0 (2024)",
+                                                               name == "model2" ~ "24.0 (2025)")) %>% 
                            tidytable::rename(sd = value)) %>% 
     tidytable::select(-name) %>% 
     tidytable::mutate(sd = case_when(par %in% c("q (Trawl survey)", "q (Longline survey)") ~ sd * value,
@@ -210,15 +194,23 @@ safe_figs <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("Parameter comparison plot"), crayon::green$underline$bold$italic("DONE"), "\n")
 
   # curr year selex comparison ----
-  res_bin_comp$sizesel %>% 
+  res_mdl_comp$sizesel %>% 
     dplyr::rename_all(tolower) %>% 
-    tidytable::filter(yr == new_year,
+    tidytable::filter(yr == new_year - 1,
                       fleet <= 5,
-                      factor == "Lsel") %>% 
+                      factor == "Lsel",
+                      name == "model1") %>% 
     tidytable::select(-factor, -yr, -sex, -label, -imodel) %>% 
+    tidytable::bind_rows(res_mdl_comp$sizesel %>% 
+                           dplyr::rename_all(tolower) %>% 
+                           tidytable::filter(yr == new_year,
+                                             fleet <= 5,
+                                             factor == "Lsel",
+                                             name == "model2") %>% 
+                           tidytable::select(-factor, -yr, -sex, -label, -imodel)) %>% 
     tidytable::rename(model = name) %>% 
-    tidytable::mutate(model = case_when(model == "model1" ~ "19.1e",
-                                        model == "model2" ~ "24.0")) %>% 
+    tidytable::mutate(model = case_when(model == "model1" ~ "24.0 (2024)",
+                                        model == "model2" ~ "24.0 (2025)")) %>% 
     tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
     tidytable::rename(length = name) %>% 
     tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
@@ -232,7 +224,7 @@ safe_figs <- function(new_year = NULL,
   plot_selex_comp(selex_comp)
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Selex comparison plot"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+
   # retrospectives ----
   plot_retro(rec_mdl_res, new_year)
   # print message when done
