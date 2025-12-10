@@ -71,45 +71,30 @@ safe_tbls <- function(new_year = NULL,
   bycatch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'bycatch.csv'), 
                           progress = FALSE, 
                           show_col_types = FALSE)  
-
-  ## historical/fixed tables ----
-  ### historical abc/tac/etc ----
-  old_abc <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_abc_tac.csv'), 
-                          progress = FALSE, 
-                          show_col_types = FALSE)
-  ### historical ref pts ----
-  old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'), 
-                              progress = FALSE, 
-                              show_col_types = FALSE)
-  ### historical ref pts ----
-  old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'), 
-                              progress = FALSE, 
-                              show_col_types = FALSE)
-  ### historical apport ----
-  old_apport <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_apport.csv'), 
-                             progress = FALSE, 
-                             show_col_types = FALSE)
   
   ## from model runs ----
   ### ageing error ----
-  ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+  ae_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agerr_res', 'Pcod_SS3_format_Reader1.csv'), delim = ',', 
                                           progress = FALSE, 
                                           show_col_types = FALSE))
   ### ageing bias ----
-  bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod SS3_format_Reader1.csv'), delim = ',', 
+  bias_res <- SimDesign::quiet(vroom::vroom(here::here(new_year, 'output', 'ageing_error', 'agebias_res', 'Pcod_SS3_format_Reader1.csv'), delim = ',', 
                                      progress = FALSE, 
                                      show_col_types = FALSE))
   ### mscen results  ----
+  # current model
   load(here::here(new_year, "output", "mscen", "mgmnt_scen_rec.RData"))
+  mscen_curr <- mscen
+  curr_2yr <- mscen_curr$Two_year
+  # previous model
+  load(here::here(new_year - 1, "output", "mscen", "mgmnt_scen_rec.RData"))
+  mscen_prev <- mscen
+  prev_2yr <- mscen_prev$Two_year
   ### jitter results  ----
   load(here::here(new_year, "output", "jitter", "jitt_res.RData"))
-  # note: sill need to change this to current results format convention
-  prev_2yr <- SimDesign::quiet(vroom::vroom(here::here(new_year - 1, 'output', 'mgmnt_exec_summ.csv'), 
-                                            progress = FALSE, 
-                                            show_col_types = FALSE))
-  curr_2yr <- mscen$Two_year
   ### apportionment ----
   load(here::here(new_year, "output", "apport", "apport.Rdata"))
+  apport_curr <- apport_out
   ### f@ofl ----
   load(here::here(new_year, "output", "fofl_prev", "fofl_prev.Rdata"))
   ### model output ----
@@ -119,22 +104,108 @@ safe_tbls <- function(new_year = NULL,
   prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                   verbose = FALSE,
                                   printstats = FALSE)
+  
+  # note for future: code up how to pull in alternative models investigated
   # alternate model results
-  base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1b"),
-                                  verbose = FALSE,
-                                  printstats = FALSE)
-  res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
-                               verbose = FALSE,
-                               printstats = FALSE)
-  res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
-                               verbose = FALSE,
-                               printstats = FALSE)
-  res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
-                               verbose = FALSE,
-                               printstats = FALSE)
+  # base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1b"),
+  #                                 verbose = FALSE,
+  #                                 printstats = FALSE)
+  # res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
+  # res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
+  # res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
+  #                              verbose = FALSE,
+  #                              printstats = FALSE)
+  
   # model data
   mdl_data <- r4ss::SS_readdat_3.30(here::here(new_year, "mgmt", rec_mdl, list.files(here::here(new_year, "mgmt", rec_mdl), "GOAPcod")),
                                     verbose = FALSE)
+
+  ## historical tables ----
+  ### historical abc/tac/etc (fixed, does not update) ----
+  old_abc <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_abc_tac.csv'), 
+                          progress = FALSE, 
+                          show_col_types = FALSE)
+  
+  
+  # note: for the following files, if it is the first time loading them then the results
+  # from the previous assessment get added and written out, if not, they are just read in
+  
+  ### historical ref pts ----
+  if(lubridate::year(file.info(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'))$mtime) != new_year){
+    old_ref_pts <- read.csv(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'))
+    old_ref_pts %>% 
+      tidytable::bind_rows(data.frame(Year = prev_2yr$Yr[1],
+                                      sb100 = round(prev_2yr$SB100[1], digits = 0),
+                                      sb40 = round(prev_2yr$SB40[1], digits = 0),
+                                      f40 = round(prev_2yr$F40[1], digits = 2),
+                                      ofl = round(prev_2yr$C_OFL[1], digits = 0),
+                                      abc = round(prev_2yr$C_ABC[1], digits = 0))) -> old_ref_pts
+    vroom::vroom_write(old_ref_pts,
+                       file = here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'),
+                       delim = ',')
+  } else{
+    old_ref_pts <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_ref_pts.csv'), 
+                                progress = FALSE, 
+                                show_col_types = FALSE)
+  }
+
+  ### historical apport ----
+  if(lubridate::year(file.info(here::here(new_year, 'data', 'historical', 'old_apport.csv'))$mtime) != new_year){
+    old_apport <- read.csv(here::here(new_year, 'data', 'historical', 'old_apport.csv'))
+    load(here::here(new_year - 1, "output", "apport", "apport.Rdata"))
+    apport_prev <- apport_out
+    old_apport %>% 
+      tidytable::bind_rows(apport_prev$proportion_biomass_by_strata %>% 
+                             tidytable::filter(year == max(year)) %>% 
+                             tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
+                             tidytable::select(region, apport) %>% 
+                             tidytable::mutate(apport = round(apport, digits = 3),
+                                               diff = case_when(region == 'western' ~ 1 - sum(apport),
+                                                                .default = 0)) %>%
+                             tidytable::mutate(apport_corr = apport + diff) %>%  # if rounding error happens, add to wgoa
+                             tidytable::select(region, apport_corr) %>% 
+                             tidytable::mutate(apport = apport_corr * 100) %>% 
+                             tidytable::select(-apport_corr) %>% 
+                             tidytable::pivot_wider(names_from = region, values_from = apport) %>% 
+                             tidytable::rename(Western = western, Central = central, Eastern = eastern) %>% 
+                             tidytable::mutate(Year.s. = new_year)) %>% 
+      tidytable::rename('Year(s)' = Year.s.) -> old_apport
+    vroom::vroom_write(old_apport,
+                       file = here::here(new_year, 'data', 'historical', 'old_apport.csv'),
+                       delim = ',')
+
+  } else{
+    old_apport <- vroom::vroom(here::here(new_year, 'data', 'historical', 'old_apport.csv'), 
+                               progress = FALSE, 
+                               show_col_types = FALSE)
+  }
+
+  ### historical model ssb ----
+  if(lubridate::year(file.info(here::here(new_year, 'data', 'historical', 'hist_mdls.csv'))$mtime) != new_year){
+    hist_mdls <- read.csv(here::here(new_year, 'data', 'historical', 'hist_mdls.csv'))
+    prev_mdl_res$derived_quants %>% 
+      tidytable::select(Label, Value, StdDev) %>% 
+      tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
+      tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+      tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
+      tidytable::filter(Year <= new_year - 1) %>% 
+      tidytable::mutate(test = Value / 2) %>% 
+      tidytable::select(Year, test) -> t1
+    colnames(t1) = c("year", paste0('a', new_year - 1))
+    hist_mdls %>% 
+      tidytable::right_join(t1) -> hist_mdls
+    vroom::vroom_write(hist_mdls,
+                       file = here::here(new_year, 'data', 'historical', 'hist_mdls.csv'),
+                       delim = ',')
+  } else{
+    hist_mdls <- vroom::vroom(here::here(new_year, 'data', 'historical', 'hist_mdls.csv'), 
+                               progress = FALSE, 
+                               show_col_types = FALSE)
+  }
 
   # catch by gear type and jurisdiction ----
   
@@ -228,7 +299,7 @@ safe_tbls <- function(new_year = NULL,
   # apportionment table ----
   
   # recommended apportionment (with rounded error check)
-  apport_out$proportion_biomass_by_strata %>% 
+  apport_curr$proportion_biomass_by_strata %>% 
     tidytable::filter(year == max(year)) %>% 
     tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
     tidytable::select(region, apport) %>% 
@@ -358,21 +429,7 @@ safe_tbls <- function(new_year = NULL,
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Bycatch table"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  
-  # non-target table ----
-  # note for future: will need to figure out how to filter out those not included/confidential
-  
-  nontarg %>%
-    tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
-                      across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) %>% 
-    tidytable::rename("Species Group" = species) -> nontarg_tbl
-  
-  vroom::vroom_write(nontarg_tbl, here::here(new_year, "output", "safe_tables", 'tbl7_nontarget.csv'), delim = ",")
-  
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("Non-target table"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+   
   
   # prohib species table ----
   psc %>% 
@@ -389,6 +446,20 @@ safe_tbls <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("PSC table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
+  # non-target table ----
+  # note for future: will need to figure out how to filter out those not included/confidential
+  
+  nontarg %>%
+    tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
+                      across(.cols = names(.)[2:length(names(.))], ~replace(., is.na(.), "-"))) %>% 
+    tidytable::rename("Species Group" = species) -> nontarg_tbl
+  
+  vroom::vroom_write(nontarg_tbl, here::here(new_year, "output", "safe_tables", 'tbl7_nontarget.csv'), delim = ",")
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Non-target table"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+
   # cod catch in other fisheries ----
   
   # catch by fishery
@@ -467,6 +538,38 @@ safe_tbls <- function(new_year = NULL,
   
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Survey index table"), crayon::green$underline$bold$italic("DONE"), "\n")
+  
+  
+  # outside model parameter table ----
+  data.frame(Name = "Ageing error SD at age-0", Value = round(ae_res$`Age 0`[3], digits = 2)) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing error SD at age-10", Value = 10 * round(ae_res$`Age 0`[3], digits = 3))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-0", Value = round(bias_res$`Age 1`[5] - 0.5, digits = 2))) %>% 
+    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-10", Value = round(bias_res$`Age 10`[5] - 10.5, digits = 2))) %>% 
+    tidytable::bind_rows(mdl_res$parameters %>% 
+                           tidytable::select(Label, Value) %>% 
+                           tidytable::filter(Label %in% c("Wtlen_1_Fem_GP_1",
+                                                          "Wtlen_2_Fem_GP_1")) %>% 
+                           tidytable::mutate(Name = c("Weight-length coefficient",
+                                                      "Weight-length exponent")) %>% 
+                           tidytable::mutate(Value = case_when(Value > 0.001 ~ round(Value, digits = 2),
+                                                               .default = Value)) %>% 
+                           tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
+                                                               .default = as.character(Value))) %>% 
+                           tidytable::select(Name, Value)) %>% 
+    tidytable::bind_rows(mdl_res$parameters %>% 
+                           tidytable::select(Label, Value) %>% 
+                           tidytable::filter(Label %in% c("Mat50%_Fem_GP_1",
+                                                          "Mat_slope_Fem_GP_1")) %>% 
+                           tidytable::mutate(Name = c("Length at 50% maturity",
+                                                      "Slope of maturity")) %>% 
+                           tidytable::mutate(Value = round(Value, digits = 2))%>% 
+                           tidytable::select(Name, Value)) %>% 
+    tidytable::rename(Parameter = Name) -> outside_param_tbl
+  
+  vroom::vroom_write(outside_param_tbl, here::here(new_year, "output", "safe_tables", 'tbl11_outside_param.csv'), delim = ",")
+  
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Outside model parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
   # number of parameters table ----
@@ -659,19 +762,19 @@ safe_tbls <- function(new_year = NULL,
   
   
   like_comp <- get_likes(prev_mdl_res) %>% 
-    tidytable::rename("19.1b-23" = Value) %>% 
-    tidytable::bind_cols(get_likes(base_mdl_res) %>% 
-                           tidytable::select(-Component) %>% 
-                           tidytable::rename("19.1b" = Value)) %>% 
-    tidytable::bind_cols(get_likes(res_19_1c) %>% 
-                           tidytable::select(-Component) %>% 
-                           tidytable::rename("19.1c" = Value)) %>% 
-    tidytable::bind_cols(get_likes(res_19_1d) %>% 
-                           tidytable::select(-Component) %>% 
-                           tidytable::rename("19.1d" = Value)) %>% 
-    tidytable::bind_cols(get_likes(res_19_1e) %>% 
-                           tidytable::select(-Component) %>% 
-                           tidytable::rename("19.1e" = Value)) %>% 
+    tidytable::rename("24.0-24" = Value) %>% 
+    # tidytable::bind_cols(get_likes(base_mdl_res) %>% 
+    #                        tidytable::select(-Component) %>% 
+    #                        tidytable::rename("19.1b" = Value)) %>% 
+    # tidytable::bind_cols(get_likes(res_19_1c) %>% 
+    #                        tidytable::select(-Component) %>% 
+    #                        tidytable::rename("19.1c" = Value)) %>% 
+    # tidytable::bind_cols(get_likes(res_19_1d) %>% 
+    #                        tidytable::select(-Component) %>% 
+    #                        tidytable::rename("19.1d" = Value)) %>% 
+    # tidytable::bind_cols(get_likes(res_19_1e) %>% 
+    #                        tidytable::select(-Component) %>% 
+    #                        tidytable::rename("19.1e" = Value)) %>% 
     tidytable::bind_cols(get_likes(mdl_res) %>% 
                            tidytable::select(-Component) %>% 
                            tidytable::rename("24.0" = Value))
@@ -746,37 +849,6 @@ safe_tbls <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("Likelihood table"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   
-  # outside model parameter table ----
-  data.frame(Name = "Ageing error SD at age-0", Value = round(ae_res$`Age 0`[3], digits = 2)) %>% 
-    tidytable::bind_rows(data.frame(Name = "Ageing error SD at age-10", Value = 10 * round(ae_res$`Age 0`[3], digits = 3))) %>% 
-    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-0", Value = round(bias_res$`Age 1`[5] - 0.5, digits = 2))) %>% 
-    tidytable::bind_rows(data.frame(Name = "Ageing bias at age-10", Value = round(bias_res$`Age 10`[5] - 10.5, digits = 2))) %>% 
-    tidytable::bind_rows(mdl_res$parameters %>% 
-                           tidytable::select(Label, Value) %>% 
-                           tidytable::filter(Label %in% c("Wtlen_1_Fem_GP_1",
-                                                          "Wtlen_2_Fem_GP_1")) %>% 
-                           tidytable::mutate(Name = c("Weight-length coefficient",
-                                                      "Weight-length exponent")) %>% 
-                           tidytable::mutate(Value = case_when(Value > 0.001 ~ round(Value, digits = 2),
-                                                               .default = Value)) %>% 
-                           tidytable::mutate(Value = case_when(Value < 0.001 ~ scales::scientific(Value, digits = 2),
-                                                               .default = as.character(Value))) %>% 
-                           tidytable::select(Name, Value)) %>% 
-    tidytable::bind_rows(mdl_res$parameters %>% 
-                           tidytable::select(Label, Value) %>% 
-                           tidytable::filter(Label %in% c("Mat50%_Fem_GP_1",
-                                                          "Mat_slope_Fem_GP_1")) %>% 
-                           tidytable::mutate(Name = c("Length at 50% maturity",
-                                                      "Slope of maturity")) %>% 
-                           tidytable::mutate(Value = round(Value, digits = 2))%>% 
-                           tidytable::select(Name, Value)) %>% 
-    tidytable::rename(Parameter = Name) -> outside_param_tbl
-  
-  vroom::vroom_write(outside_param_tbl, here::here(new_year, "output", "safe_tables", 'tbl11_outside_param.csv'), delim = ",")
-  
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("Outside model parameter table"), crayon::green$underline$bold$italic("DONE"), "\n")
-
   # key parameter table ----
   data.frame(Name = "Biology", Value = "--", SD = "--") %>% 
     tidytable::bind_rows(mdl_res$parameters %>% 
@@ -1086,7 +1158,7 @@ safe_tbls <- function(new_year = NULL,
   
   
   ## apportionment table ----
-  apport_out$proportion_biomass_by_strata %>% 
+  apport_curr$proportion_biomass_by_strata %>% 
     tidytable::filter(year == max(year)) %>% 
     tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
     tidytable::select(region, apport) %>% 
@@ -1240,7 +1312,7 @@ safe_tbls <- function(new_year = NULL,
   
   vroom::vroom_write(natage, here::here(new_year, "output", "web", "model_results", 'predicted_numbers_at_age.csv'), delim = ",")
   
-  ## pred numbers at legnth ----
+  ## pred numbers at length ----
   natlen <- mdl_res$natlen %>% 
     tidytable::filter(Yr >= 1977,
                       `Beg/Mid` == 'B') %>% 
