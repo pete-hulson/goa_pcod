@@ -19,6 +19,7 @@
 # 6. other_indices.csv that includes age-0 beach seine indices (updated by hand)
 # 7. fish_lfreq_state.csv in the data/raw folder (updated by hand)
 # 8. data/ageing_error folder (note to updated reader-tester data on occasion)
+# 9. beachseine_lw.csv to data/raw (updated by hand)
 old_dat_filename <- "GOAPcod2024Oct17.dat"
 old_ctl_filename <- "Model24_0.ctl"
 
