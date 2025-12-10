@@ -54,9 +54,9 @@ new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # recommended model name
 rec_mdl <- "24.0"
 # last year's model with updated data (base model)
-base_mdl <- "19.1b"
+base_mdl <- "24.0"
 # last year's model
-prev_mdl <- "2019.1b-2023"
+prev_mdl <- "24.0"
 
 # load functions ----
 source_files <- c(list.files(here::here(new_year, "R"), pattern = "*.r$"),
@@ -66,9 +66,9 @@ source_files <- list.files(here::here(new_year, "R", "get_data"), pattern = "*.r
 purrr::map(here::here(new_year, "R", "get_data", source_files), source)
 
 # remove previous tables and plots ----
-unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE)
-unlink(here::here(new_year, "output", "safe_plots", list.files(here::here(new_year, "output", "safe_plots"), pattern = ".png")))
-unlink(here::here(new_year, "output", "safe_plots", "r4ss"), recursive = TRUE)
+unlink(here::here(new_year, "output", "safe_tables"), recursive = TRUE, force = TRUE)
+unlink(here::here(new_year, "output", "safe_plots", list.files(here::here(new_year, "output", "safe_plots"), pattern = ".png")), force = TRUE)
+unlink(here::here(new_year, "output", "safe_plots", "r4ss"), recursive = TRUE, force = TRUE)
 
 # get tables for safe ----
 safe_tbls(new_year = new_year,
