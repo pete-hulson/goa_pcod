@@ -241,11 +241,10 @@ safe_figs <- function(new_year = NULL,
   cat(crayon::green$bold("\u2713"), crayon::blue("Add-one-in plot"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # ll survey sensitivities ----
-  ## note: need to figure out what's up with no_cov ----
-  # plot_llq(new_year)
-  # # print message when done
-  # cat(crayon::green$bold("\u2713"), crayon::blue("Longline srv q plot"), crayon::green$underline$bold$italic("DONE"), "\n")
-  # 
+  plot_llq(rec_mdl_res, new_year)
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Longline srv q plot"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   # profiles ----
   plot_profile(new_year)
   # print message when done
