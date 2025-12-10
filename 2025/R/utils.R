@@ -160,10 +160,12 @@ update_ss3_files <- function(asmnt_yr = NULL,
 #' @param from folder containing ss3 files that are to be copied (default = NULL)
 #' @param to destination folder for ss3 files (default = NULL)
 #' @param update_exe boolean, whether to update the exe with the latest version of ss3, or, copy from previous year
+#' @param ver_exe if ss3 exe is updated, define the version desired
 #' 
 start_ss_fldr <- function(from = NULL, 
                           to = NULL,
-                          update_exe = FALSE){
+                          update_exe = FALSE,
+                          ver_exe = NULL){
   
   # set up folder
   if(!dir.exists(to)){
@@ -179,7 +181,8 @@ start_ss_fldr <- function(from = NULL,
             paste0(to, '/data_echo.ss_new'))
   # get exe
   if(isTRUE(update_exe)){
-    invisible(r4ss::get_ss3_exe(dir = to))
+    invisible(r4ss::get_ss3_exe(dir = to,
+                                version = ver_exe))
   } else{
     file.copy(paste0(from, '/ss3.exe'),
               paste0(to, '/ss3.exe'))
