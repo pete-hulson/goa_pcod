@@ -95,7 +95,8 @@ if(isTRUE(remove_files)){
 ## copy ss files from last year's accepted assessment ----
 start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
               to = here::here(new_year, 'mgmt', base_mdl),
-              update_exe = FALSE)
+              update_exe = TRUE,
+              ver_exe = 'v3.30.22.1')
 
 ## update dat/ctl/etc files ----
 update_ss3_files(asmnt_yr = new_year, 
