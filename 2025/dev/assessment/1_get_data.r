@@ -154,6 +154,8 @@ new_data$CPUEinfo$fleet <- seq(1, length(new_data$CPUEinfo$fleet))
 new_data$len_info <- new_data$len_info[-which(rownames(new_data$len_info) %in% c('IPHCLL', 'SPAWN')),]
 # age info
 new_data$age_info <- new_data$age_info[-which(rownames(new_data$age_info) %in% c('IPHCLL', 'SPAWN')),]
+# change number of environmental variables
+new_data$N_environ_variables <- 1
 
 ## write data file ----
 r4ss::SS_writedat_3.30(new_data,
