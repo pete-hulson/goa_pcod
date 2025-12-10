@@ -905,8 +905,8 @@ run_llq <- function(dir = NULL,
   # turn off llq covariate in ctl
   ctl <- r4ss::SS_readctl_3.30(here::here(dir, ctl_filename),
                                verbose = FALSE)
-  ctl$Q_parms$`env_var&link` = 0
-  ctl$Q_parms_tv = NULL
+  ctl$Q_parms_tv$INIT = 0
+  ctl$Q_parms_tv$PHASE = -5
   r4ss::SS_writectl_3.30(ctllist = ctl,
                          outfile = here::here(dir, "llq", "no_cov",ctl_filename),
                          overwrite = TRUE,
@@ -972,7 +972,6 @@ run_llq <- function(dir = NULL,
                               printstats = FALSE)
   # read no covariate results
   res_run_nocov <- suppressWarnings(r4ss::SS_output(dir = here::here(dir, 'llq', 'no_cov'),
-                                                    covar = FALSE,
                                                     verbose = FALSE,
                                                     printstats = FALSE))
   
