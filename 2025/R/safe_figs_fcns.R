@@ -3,7 +3,7 @@
 #' @param new_year current assessment year (default = NULL)
 #' 
 plot_catch <- function(new_year = NULL){
-
+  
   # get federal catch
   vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
                progress = FALSE, 
@@ -11,8 +11,8 @@ plot_catch <- function(new_year = NULL){
     tidytable::summarise(tons = sum(weight_posted), 
                          .by = c(year, fmp_gear)) %>% 
     tidytable::mutate(gear = case_when(fmp_gear %in% c("TRW", "OTH", "GLN") ~ "Trawl",
-                                            fmp_gear %in% c("HAL", "JIG") ~ "Longline",
-                                            fmp_gear == "POT" ~ "Pot")) %>% 
+                                       fmp_gear %in% c("HAL", "JIG") ~ "Longline",
+                                       fmp_gear == "POT" ~ "Pot")) %>% 
     tidytable::select(year, gear, tons) %>% 
     # get state catch
     tidytable::bind_rows(vroom::vroom(here::here(new_year, 'data', 'raw', 'adfg_catch.csv'), 
@@ -58,85 +58,85 @@ plot_catch <- function(new_year = NULL){
 #' @param new_year current assessment year (default = NULL)
 #' 
 plot_meanlen <- function(new_year = NULL){
-   
-   # get length comps
-   fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
+  
+  # get length comps
+  fsh_lcomp <- get_fsh_len_post91(new_year = new_year,
+                                  bins = seq(1, 105),
+                                  ss3_frmt = FALSE)
+  twl_srvy_lcomp <- get_twl_srvy_lcomp(new_year = new_year,
                                        bins = seq(1, 105),
                                        ss3_frmt = FALSE)
-   twl_srvy_lcomp <- get_twl_srvy_lcomp(new_year = new_year,
-                                        bins = seq(1, 105),
-                                        ss3_frmt = FALSE)
-   ll_srvy_lcomp <- get_ll_srvy_lcomp(new_year = new_year,
-                                      bins = seq(1, 105),
-                                      ss3_frmt = FALSE)
-   
-   # put together data for plot
-   fsh_lcomp %>% 
-     tidytable::summarise(mean = sum(length * lencomp), .by = c(year, gear)) %>% 
-     tidytable::mutate(fleet = case_when(gear == "trawl" ~ "Trawl fishery",
-                                         gear == "longline" ~ "Longline fishery",
-                                         gear == "pot" ~ "Pot fishery")) %>% 
-     tidytable::select(year, fleet, mean) %>% 
-     tidytable::bind_rows(twl_srvy_lcomp %>% 
-                            tidytable::summarise(mean = sum(length * lencomp), .by = c(year)) %>% 
-                            tidytable::mutate(fleet = "Bottom trawl survey")) %>% 
-     tidytable::bind_rows(ll_srvy_lcomp %>% 
-                            tidytable::summarise(mean = sum(length * lencomp), .by = c(year)) %>% 
-                            tidytable::mutate(fleet = "Longline survey")) %>% 
-     tidytable::left_join(vroom::vroom(here::here(new_year, "data", "raw", "fish_lfreq_domestic.csv"), 
-                                       progress = FALSE, 
-                                       show_col_types = FALSE) %>% 
-                            tidytable::select(gear, year, length, freq) %>% 
-                            tidytable::uncount(freq) %>% 
-                            tidytable::summarise(uci = quantile(length, probs = 0.975),
-                                                 lci = quantile(length, probs = 0.025), .by = c(year, gear)) %>% 
-                            tidytable::mutate(fleet = case_when(gear == "trawl" ~ "Trawl fishery",
-                                                                gear == "longline" ~ "Longline fishery",
-                                                                gear == "pot" ~ "Pot fishery")) %>% 
-                            tidytable::select(year, fleet, uci, lci) %>% 
-                            tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_lenfreq.csv"), 
-                                                              progress = FALSE, 
-                                                              show_col_types = FALSE) %>% 
-                                                   tidytable::select(year, length, frequency) %>% 
-                                                   tidytable::uncount(frequency) %>% 
-                                                   tidytable::mutate(fleet = "Bottom trawl survey") %>% 
-                                                   tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_length_data.csv"), 
-                                                                                     progress = FALSE, 
-                                                                                     show_col_types = FALSE) %>% 
-                                                                          tidytable::select(year, length, rpn) %>% 
-                                                                          tidytable::mutate(fleet = "Longline survey",
-                                                                                            rpn = round(rpn / 10, digits = 0)) %>% 
-                                                                          tidytable::uncount(rpn)) %>% 
-                                                   tidytable::summarise(uci = quantile(length, probs = 0.975),
-                                                                        lci = quantile(length, probs = 0.025), .by = c(year, fleet)))) %>% 
-     tidytable::drop_na() %>% 
-     tidytable::mutate(fleet = factor(fleet, levels = c("Trawl fishery", 
-                                                        "Longline fishery",
-                                                        "Pot fishery",
-                                                        "Bottom trawl survey",
-                                                        "Longline survey"))) -> mean_dat
-
-   # plot
-   mean_len <- ggplot(data = mean_dat, 
-                      aes(x = year, y = mean, col = fleet)) +
-     geom_point(size = 2) +
-     geom_pointrange(aes(ymin = lci, ymax = uci)) +
-     geom_line(linewidth = 0.777, linetype = "dotted") +
-     facet_wrap(~fleet, ncol = 1) +
-     theme_bw(base_size = 14) +
-     scico::scale_color_scico_d(palette = 'roma') +
-     labs(x = "Year", y = "Mean length (cm)", color = "Fleet/Survey") +
-     theme(panel.grid.major = element_blank(), 
-           panel.grid.minor = element_blank(),
-           legend.position = "none")
-   
-   # save
-   ggsave(filename = "mean_len.png",
-          path = here::here(new_year, "output", "safe_plots"),
-          width = 6.5,
-          height = 7,
-          units = "in")
-   
+  ll_srvy_lcomp <- get_ll_srvy_lcomp(new_year = new_year,
+                                     bins = seq(1, 105),
+                                     ss3_frmt = FALSE)
+  
+  # put together data for plot
+  fsh_lcomp %>% 
+    tidytable::summarise(mean = sum(length * lencomp), .by = c(year, gear)) %>% 
+    tidytable::mutate(fleet = case_when(gear == "trawl" ~ "Trawl fishery",
+                                        gear == "longline" ~ "Longline fishery",
+                                        gear == "pot" ~ "Pot fishery")) %>% 
+    tidytable::select(year, fleet, mean) %>% 
+    tidytable::bind_rows(twl_srvy_lcomp %>% 
+                           tidytable::summarise(mean = sum(length * lencomp), .by = c(year)) %>% 
+                           tidytable::mutate(fleet = "Bottom trawl survey")) %>% 
+    tidytable::bind_rows(ll_srvy_lcomp %>% 
+                           tidytable::summarise(mean = sum(length * lencomp), .by = c(year)) %>% 
+                           tidytable::mutate(fleet = "Longline survey")) %>% 
+    tidytable::left_join(vroom::vroom(here::here(new_year, "data", "raw", "fish_lfreq_domestic.csv"), 
+                                      progress = FALSE, 
+                                      show_col_types = FALSE) %>% 
+                           tidytable::select(gear, year, length, freq) %>% 
+                           tidytable::uncount(freq) %>% 
+                           tidytable::summarise(uci = quantile(length, probs = 0.975),
+                                                lci = quantile(length, probs = 0.025), .by = c(year, gear)) %>% 
+                           tidytable::mutate(fleet = case_when(gear == "trawl" ~ "Trawl fishery",
+                                                               gear == "longline" ~ "Longline fishery",
+                                                               gear == "pot" ~ "Pot fishery")) %>% 
+                           tidytable::select(year, fleet, uci, lci) %>% 
+                           tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "twl_srvy_lenfreq.csv"), 
+                                                             progress = FALSE, 
+                                                             show_col_types = FALSE) %>% 
+                                                  tidytable::select(year, length, frequency) %>% 
+                                                  tidytable::uncount(frequency) %>% 
+                                                  tidytable::mutate(fleet = "Bottom trawl survey") %>% 
+                                                  tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "lls_rpn_length_data.csv"), 
+                                                                                    progress = FALSE, 
+                                                                                    show_col_types = FALSE) %>% 
+                                                                         tidytable::select(year, length, rpn) %>% 
+                                                                         tidytable::mutate(fleet = "Longline survey",
+                                                                                           rpn = round(rpn / 10, digits = 0)) %>% 
+                                                                         tidytable::uncount(rpn)) %>% 
+                                                  tidytable::summarise(uci = quantile(length, probs = 0.975),
+                                                                       lci = quantile(length, probs = 0.025), .by = c(year, fleet)))) %>% 
+    tidytable::drop_na() %>% 
+    tidytable::mutate(fleet = factor(fleet, levels = c("Trawl fishery", 
+                                                       "Longline fishery",
+                                                       "Pot fishery",
+                                                       "Bottom trawl survey",
+                                                       "Longline survey"))) -> mean_dat
+  
+  # plot
+  mean_len <- ggplot(data = mean_dat, 
+                     aes(x = year, y = mean, col = fleet)) +
+    geom_point(size = 2) +
+    geom_pointrange(aes(ymin = lci, ymax = uci)) +
+    geom_line(linewidth = 0.777, linetype = "dotted") +
+    facet_wrap(~fleet, ncol = 1) +
+    theme_bw(base_size = 14) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    labs(x = "Year", y = "Mean length (cm)", color = "Fleet/Survey") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.position = "none")
+  
+  # save
+  ggsave(filename = "mean_len.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 7,
+         units = "in")
+  
 }
 
 #' function to plot number of vessels by gear type
@@ -186,7 +186,7 @@ plot_vessnum <- function(new_year = NULL){
          width = 6.5,
          height = 4.5,
          units = "in")
-
+  
 }
 
 #' function to plot cumulative catch
@@ -236,7 +236,7 @@ plot_cumcatch <- function(new_year = NULL){
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot auxiliary indices
@@ -282,7 +282,7 @@ plot_auxind <- function(new_year = NULL){
                                              index = "Recruitment") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
     tidytable::filter(year >= 2006) -> aux_indx_dat
-
+  
   # plot
   aux_indx <- ggplot(aux_indx_dat, aes(year, pcod, colour = index)) +
     geom_line(linetype = 2) +
@@ -303,7 +303,7 @@ plot_auxind <- function(new_year = NULL){
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot mean depth at temperature for size ranges
@@ -371,9 +371,9 @@ plot_deptem <- function(new_year = NULL){
                                          color = regi),
                     linewidth = 0.25) +
     geom_errorbar(data = plot_dat, aes(xmax = mtemp - sd_temp, 
-                                        xmin = mtemp + sd_temp,
-                                        color = regi),
-                   linewidth = 0.25) +
+                                       xmin = mtemp + sd_temp,
+                                       color = regi),
+                  linewidth = 0.25) +
     theme_bw(base_size = 14) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
@@ -410,7 +410,7 @@ plot_deptem <- function(new_year = NULL){
          width = 6.5,
          height = 5.5,
          units = "in")
- 
+  
 }
 
 #' helper function to get mean depth and temperature data
@@ -484,8 +484,8 @@ plot_env <- function(new_year = NULL){
   
   # get plot data
   vroom::vroom(here::here(new_year, 'data', 'raw_cfsr.csv'), 
-                           progress = FALSE, 
-                           show_col_types = FALSE) %>% 
+               progress = FALSE, 
+               show_col_types = FALSE) %>% 
     filter(Month == 6) %>%
     select(Year, '0_20') %>% 
     rename(l20 = '0_20') %>% 
@@ -615,7 +615,7 @@ plot_agerr <- function(new_year = NULL){
          width = 6.5,
          height = 6.5,
          units = "in")
-
+  
 }
 
 #' function to plot length-weight relationship
@@ -666,7 +666,7 @@ plot_lenwt <- function(new_year = NULL){
          width = 6.5,
          height = 4.5,
          units = "in")
-
+  
 }
 
 #' function to plot comparison of time-series estimates (ssb & rec) for 2024 alternative models
@@ -674,7 +674,7 @@ plot_lenwt <- function(new_year = NULL){
 #' @param ssb_rec_comp tidytable of model results (default = NULL)
 #' 
 plot_ts_comp <- function(ssb_rec_comp = NULL){
-
+  
   # plot
   ssb_rec_comp_plot <- ggplot(data = ssb_rec_comp,
                               aes(x = year, y = value, col = name)) +
@@ -694,7 +694,7 @@ plot_ts_comp <- function(ssb_rec_comp = NULL){
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot comparison of key parameter estimates for 2024 alternative models
@@ -702,7 +702,7 @@ plot_ts_comp <- function(ssb_rec_comp = NULL){
 #' @param par_comp tidytable of model results (default = NULL)
 #' 
 plot_par_comp <- function(par_comp = NULL){
-
+  
   # plot
   par_comp_plot <- ggplot(data = par_comp, 
                           aes(x = model, y = value, col = model)) +
@@ -734,7 +734,7 @@ plot_selex_comp <- function(selex_comp = NULL){
   
   # plot
   selex_comp_plot <- ggplot(data = selex_comp,
-                       aes(x = length, y = value, col = fleet)) +
+                            aes(x = length, y = value, col = fleet)) +
     geom_line(linewidth = 0.777) +
     theme_bw(base_size = 14) +
     facet_wrap(~model, ncol= 1) +
@@ -881,11 +881,11 @@ plot_loo <- function(rec_mdl_res = NULL,
   
   # get plot data
   load(here::here(new_year, "output", "loo", "loo_res.RData"))
-
+  
   years <- seq(0, -(length(loo_res$pars %>% 
-                           tidytable::select(-Label, -Yr, -recdev) %>% 
-                           colnames(.)) - 1))
-
+                             tidytable::select(-Label, -Yr, -recdev) %>% 
+                             colnames(.)) - 1))
+  
   loo_res$pars %>% 
     tidytable::filter(Label %in% c("NatM_uniform_Fem_GP_1",
                                    "SR_LN(R0)",
@@ -966,7 +966,7 @@ plot_loo <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 6.5,
          units = "in")
-
+  
 }
 
 #' function to plot add-one-in analysis
@@ -974,7 +974,7 @@ plot_loo <- function(rec_mdl_res = NULL,
 #' @param new_year current assessment year (default = NULL)  
 #' 
 plot_aoi <- function(new_year = NULL){
-
+  
   # get plot data
   load(here::here(new_year, "output", "aoi", "aoi.RData"))
   
@@ -1055,7 +1055,7 @@ plot_aoi <- function(new_year = NULL){
          width = 6.5,
          height = 6.5,
          units = "in")
- 
+  
 }
 
 #' function to plot ll survey catchability sensitivity
@@ -1201,7 +1201,7 @@ plot_profile <- function(new_year = NULL){
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' help function for profile plot, get's appropriate likelihood results
@@ -1273,7 +1273,7 @@ plot_indxfit <- function(rec_mdl_res = NULL){
          width = 6.5,
          height = 5.5,
          units = "in")
-
+  
 }
 
 #' function that runs one-step-ahead residuals for ss3
@@ -1292,7 +1292,7 @@ run_osa_ss3 <- function(mdl_res = NULL,
   
   # length bins
   lens = unique(mdl_res$lendbase$Bin)
-
+  
   # input sample sizes and years (vector)
   data.frame(mdl_res$lendbase[,c(1,6,13,16,22)]) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -1357,18 +1357,18 @@ plot_fsh_osa <- function(rec_mdl_res = NULL,
                                                             comp_name = comp_name))
   
   # plot
-  fsh_osa <- afscOSA::plot_osa(osa_out_fsh,
-                               outpath = NULL) 
-  fsh_osa_new <- cowplot::plot_grid(fsh_osa$bubble +
-                                      theme_bw(base_size = 12) +
-                                      theme(legend.position = "top",
-                                            legend.key.width = unit(0.1, 'cm')),
-                                    fsh_osa$qq +
-                                      theme_bw(base_size = 12),
-                                    fsh_osa$aggcomp +
-                                      theme_bw(base_size = 12),
-                                    nrow = 3, 
-                                    rel_heights = c(4,3,3))
+  fsh_osa <- SimDesign::quiet(afscOSA::plot_osa(osa_out_fsh,
+                                                outpath = NULL))
+  fsh_osa_new <- SimDesign::quiet(cowplot::plot_grid(fsh_osa$bubble +
+                                                       theme_bw(base_size = 12) +
+                                                       theme(legend.position = "top",
+                                                             legend.key.width = unit(0.1, 'cm')),
+                                                     fsh_osa$qq +
+                                                       theme_bw(base_size = 12),
+                                                     fsh_osa$aggcomp +
+                                                       theme_bw(base_size = 12),
+                                                     nrow = 3, 
+                                                     rel_heights = c(4,3,3)))
   
   # save
   ggsave(filename = "fsh_osa.png",
@@ -1378,8 +1378,8 @@ plot_fsh_osa <- function(rec_mdl_res = NULL,
          units = "in")
   
   # delete osa standard plot
-  invisible(file.remove(here::here(new_year, "output", "safe_plots", "osa_length_diagnostics.png")))
-
+  invisible(file.remove(here::here("osa_length_diagnostics.png")))
+  
 }
 
 #' function to plot survey one-step-ahead length comp residuals
@@ -1403,19 +1403,19 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
                                                             comp_name = comp_name))
   
   # plot
-  srv_osa <- afscOSA::plot_osa(osa_out_srv,
-                               outpath = NULL) 
-  srv_osa_new <- cowplot::plot_grid(srv_osa$bubble +
-                                      theme_bw(base_size = 12) +
-                                      theme(legend.position = "top",
-                                            legend.key.width = unit(0.1, 'cm')),
-                                    srv_osa$qq +
-                                      theme_bw(base_size = 12),
-                                    srv_osa$aggcomp +
-                                      theme_bw(base_size = 12),
-                                    nrow = 3, 
-                                    rel_heights = c(4,3,3))
-
+  srv_osa <- SimDesign::quiet(afscOSA::plot_osa(osa_out_srv,
+                                                outpath = NULL))
+  srv_osa_new <- SimDesign::quiet(cowplot::plot_grid(srv_osa$bubble +
+                                                       theme_bw(base_size = 12) +
+                                                       theme(legend.position = "top",
+                                                             legend.key.width = unit(0.1, 'cm')),
+                                                     srv_osa$qq +
+                                                       theme_bw(base_size = 12),
+                                                     srv_osa$aggcomp +
+                                                       theme_bw(base_size = 12),
+                                                     nrow = 3, 
+                                                     rel_heights = c(4,3,3)))
+  
   # save
   ggsave(filename = "srv_osa.png",
          path = here::here(new_year, "output", "safe_plots"),
@@ -1424,7 +1424,7 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
          units = "in")
   
   # delete osa standard plot
-  invisible(file.remove(here::here(new_year, "output", "safe_plots", "osa_length_diagnostics.png")))
+  invisible(file.remove(here::here("osa_length_diagnostics.png")))
   
 }
 
@@ -1436,7 +1436,7 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
 plot_pearson <- function(rec_mdl_res = NULL, 
                          new_year = NULL,
                          outlier = 5){
-
+  
   # get data
   data.frame(rec_mdl_res$lendbase[,c("Yr", "Fleet", "Bin", "Pearson")]) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -1452,7 +1452,7 @@ plot_pearson <- function(rec_mdl_res = NULL,
                       Outlier = factor(Outlier, levels = c("No", "Yes"))) %>% 
     tidytable::rename(length = bin) %>% 
     tidytable::select(-yr) -> df
-
+  
   # plot
   df %>%
     ggplot(aes(x = year, y = length, color = pearson, size = pearson, shape = Outlier)) +
@@ -1479,17 +1479,6 @@ plot_pearson <- function(rec_mdl_res = NULL,
          units = "in")
   
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 #' function to plot growth estimates to empirical data
@@ -1527,7 +1516,7 @@ plot_grwth <- function(rec_mdl_res = NULL,
                                                   tidytable::filter(age > 0) %>% 
                                                   tidytable::mutate(name = "Length (cm)"))) %>% 
     tidytable::drop_na() -> grwth_data
-
+  
   # plot
   grwth_plot <- ggplot(data = grwth_data,
                        aes(x = age, y = value, col = factor(year))) +
@@ -1551,7 +1540,7 @@ plot_grwth <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot time-dependent selectivity estimates
@@ -1598,7 +1587,7 @@ plot_td_selex <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot current year selectivity
@@ -1645,7 +1634,7 @@ plot_curr_selex <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 4.5,
          units = "in")
-
+  
 }
 
 #' function to plot total and ssb with forecasts
@@ -1716,7 +1705,7 @@ plot_tot_ssb <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot recruitment and dev estimates
@@ -1908,7 +1897,7 @@ plot_phspln <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 6.5,
          units = "in")
-
+  
 }
 
 #' wrapper function to plot pairs from adnuts
@@ -1934,7 +1923,7 @@ plot_pairs <- function(new_year = NULL){
   # save
   dev.print(png, file = here::here(new_year, "output", "safe_plots", "mcmc_pairs.png"), 
             width = 600, height = 500)
-
+  
 }
 
 #' function to compare mcmc histograms and mle 
@@ -1944,7 +1933,7 @@ plot_pairs <- function(new_year = NULL){
 #' 
 plot_hists <- function(rec_mdl_res = NULL,
                        new_year = NULL){
-
+  
   # get plot data
   load(here::here(new_year, "output", "mcmc", "mcmc_eval.RData"))
   
@@ -2008,7 +1997,7 @@ plot_hists <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
 
 #' function to plot apportionment results
@@ -2069,5 +2058,5 @@ plot_apport <- function(new_year = NULL){
          width = 6.5,
          height = 7,
          units = "in")
-
+  
 }
