@@ -53,7 +53,7 @@ apport_out_cv$parameter_estimates
 apport_out_pe$parameter_estimates
 
 # plot results for new model ----
-apport_out_pe$biomass_by_strata %>% 
+apport_out_cv$biomass_by_strata %>% 
   tidytable::select(strata, year, pred, pred_lci, pred_uci, obs, obs_cv) %>% 
   tidytable::mutate(Region = case_when(strata == 'central' ~ "Central GOA",
                                        strata == 'western' ~ "Western GOA",
@@ -61,7 +61,7 @@ apport_out_pe$biomass_by_strata %>%
                     Region = factor(Region, levels = c("Western GOA", "Central GOA", "Eastern GOA")),
                     type = "Biomass (t)") %>% 
   tidytable::select(-strata) %>% 
-  tidytable::bind_rows(apport_out_pe$proportion_biomass_by_strata %>% 
+  tidytable::bind_rows(apport_out_cv$proportion_biomass_by_strata %>% 
                          tidytable::pivot_longer(cols = c(central, eastern, western)) %>% 
                          tidytable::rename(Region = "name",
                                            pred = "value") %>% 
@@ -367,4 +367,4 @@ t1[1, 1] <- 'Previous apportionment'
 
 t1 %>% 
   tidytable::bind_rows(apport_tbl_base[1:2, ]) %>% 
-  tidytable::bind_rows(apport_tbl[1:2, ])
+  tidytable::bind_rows(apport_tbl_cv[1:2, ])
