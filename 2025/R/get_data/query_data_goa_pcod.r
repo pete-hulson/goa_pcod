@@ -385,6 +385,35 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
+  ## longline survey catch data ----
+  cat("\u231b", crayon::blue("working on longline survey catch query..."), "\n")
+  dplyr::tbl(conn, dplyr::sql('afsc.lls_catch_summary_with_nulls_mv')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::filter(species_code == srv_sp,
+                  year > yrs,
+                  stratum > 1,
+                  country == 'United States',
+                  !(council_sablefish_management_area %in% c('Bering Sea', 'Aleutians'))) %>% 
+    dplyr::select(year, 
+                  species_code,
+                  station_number, 
+                  vessel_number,
+                  hachi,
+                  lat = start_latitude,
+                  lon = end_longitude,
+                  catch_freq, 
+                  ineffective,
+                  rpn_filter,
+                  subarea = council_sablefish_management_area,
+                  stratum,
+                  stratum_description,
+                  stratum2,
+                  stratum_description2) %>% 
+    dplyr::collect() %>% 
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'lls_catch.csv'), delim = ',')
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("longline survey catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   # fishery data ----
   
   ## catch data ----
@@ -718,7 +747,7 @@ query_goa_pcod <- function(new_year = 9999,
                                    gear == "HAL" ~ "Longline",
                                    .default = gear)) %>% 
     tidytable::select(-start_lat, -end_lat, -start_lon, -end_lon) %>% 
-    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'em_catch.csv'), delim = ",")
+    vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_em_catch.csv'), delim = ",")
   cat(crayon::green$bold("\u2713"), crayon::blue("em catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
 
 }
