@@ -32,15 +32,6 @@ apport_in_prev <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0(
 apport_mdl_prev <- SimDesign::quiet(rema::fit_rema(apport_in_prev))
 apport_out_prev <- SimDesign::quiet(rema::tidy_rema(rema_model = apport_mdl_prev))
 
-# new model with pe prior
-apport_in_pe <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("pcod trawl survey"),
-                                                       biomass_dat = biomass_dat,
-                                                       PE_options = list(pointer_PE_biomass = c(1, 1, 1),
-                                                                         penalty_options = "normal_prior",
-                                                                         penalty_values = c(-3.15, 0.2))))
-apport_mdl_pe <- SimDesign::quiet(rema::fit_rema(apport_in_pe))
-apport_out_pe <- SimDesign::quiet(rema::tidy_rema(rema_model = apport_mdl_pe))
-
 # new model with extra cv
 apport_in_cv <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("pcod trawl survey"),
                                                        biomass_dat = biomass_dat,
@@ -48,9 +39,6 @@ apport_in_cv <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("p
                                                        PE_options = list(pointer_PE_biomass = c(1, 1, 1))))
 apport_mdl_cv <- SimDesign::quiet(rema::fit_rema(apport_in_cv))
 apport_out_cv <- SimDesign::quiet(rema::tidy_rema(rema_model = apport_mdl_cv))
-
-apport_out_cv$parameter_estimates
-apport_out_pe$parameter_estimates
 
 # plot results for new model ----
 apport_out_cv$biomass_by_strata %>% 
@@ -127,8 +115,8 @@ apport_out_base$biomass_by_strata %>%
 apport_data %>% 
   tidytable::mutate(Model = "Recommended REMA") %>% 
   tidytable::bind_rows(apport_data_base %>% 
-                         tidytable::mutate(Model = "Base REMA")) %>% 
-    tidytable::mutate(Model = factor(Model, levels = c("Recommended REMA", "Base REMA"))) -> comp_data
+                         tidytable::mutate(Model = "Status quo REMA")) %>% 
+    tidytable::mutate(Model = factor(Model, levels = c("Recommended REMA", "Status quo REMA"))) -> comp_data
 
 ## subregion rema estimates ----
 ggplot(comp_data %>% tidytable::filter(type == "Biomass (t)"), aes(x = year, y = pred / 1000, color = Model, fill = Model, linetype = Model)) +
@@ -176,102 +164,9 @@ ggsave(filename = "apport_comp.png",
        height = 7,
        units = "in")
 
-## total biomass estimates ----
-
-rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", '24.0'),
-                               verbose = FALSE,
-                               printstats = FALSE)
-
-rec_mdl_res$timeseries %>% 
-  tidytable::select(year = Yr, value = Bio_all) %>% 
-  tidytable::filter(year %in% seq(1990, new_year)) %>% 
-  tidytable::rename(tot_biom = value) %>% 
-  tidytable::mutate(Model = 'Assessment',
-                    uci = tot_biom,
-                    lci = tot_biom) %>% 
-  tidytable::bind_rows(apport_out_base$total_predicted_biomass %>% 
-                         tidytable::select(year, tot_biom = pred, uci = pred_uci, lci = pred_lci) %>% 
-                         tidytable::mutate(Model = 'Base REMA')) %>% 
-  tidytable::bind_rows(apport_out_pe$total_predicted_biomass %>% 
-                         tidytable::select(year, tot_biom = pred, uci = pred_uci, lci = pred_lci) %>% 
-                         tidytable::mutate(Model = 'Recommended REMA')) %>% 
-  tidytable::left_join(apport_data_base %>% 
-                         tidytable::select(year, obs, obs_cv) %>% 
-                         tidytable::drop_na() %>% 
-                         tidytable::mutate(var = (obs * obs_cv)^2) %>% 
-                         tidytable::summarise(obs = sum(obs),
-                                              var = sum(var),
-                                              .by = year) %>% 
-                         tidytable::mutate(obs_cv = sqrt(var) / obs) %>% 
-                         tidytable::select(year, obs, obs_cv)) -> tot_data
-
-
-ggplot(tot_data, aes(x = year, y = tot_biom / 1000, color = Model, fill = Model, linetype = Model)) +
-  geom_line(linewidth = 1) +
-  geom_ribbon(aes(ymin = lci / 1000, ymax = uci / 1000), alpha = 0.2) +
-  geom_point(aes(x = year, y = obs / 1000)) +
-  geom_linerange(aes(ymin = obs / 1000 - 1.96 * obs_cv * obs / 1000, ymax = obs / 1000 + 1.96 * obs_cv * obs / 1000)) +
-  # facet_wrap(~Region, scales = "free_y", ncol = 1) +
-  scico::scale_color_scico_d(palette = 'roma') +
-  scico::scale_fill_scico_d(palette = 'roma') +
-  theme_bw(base_size = 14) +
-  labs(x = "Year", y = "REMA esimates (1000s mt)") +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        legend.key.width = unit(0.25, 'cm'),
-        legend.position = "top")
-
-# save
-ggsave(filename = "total_comp.png",
-       path = here::here(new_year, "dev", "alt_apport", "figs_tabs"),
-       width = 7,
-       height = 5,
-       units = "in")
-
-
-
 # get apportionment tables ----
 ## recommended apportionment table ----
-### pe ----
-apport_out_pe$proportion_biomass_by_strata %>% 
-  tidytable::filter(year == max(year)) %>% 
-  tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
-  tidytable::select(region, apport) %>% 
-  tidytable::mutate(apport = round(apport, digits = 3),
-                    diff = case_when(region == 'western' ~ 1 - sum(apport),
-                                     .default = 0)) %>%
-  tidytable::mutate(apport_corr = apport + diff) %>%  # if rounding error happens, add to wgoa
-  tidytable::select(region, apport_corr) %>% 
-  tidytable::rename(apport = 'apport_corr') %>% 
-  tidytable::mutate(ABC_yr1 = round(apport * curr_2yr$C_ABC[1], digits = 0),
-                    ABC_yr2 = round(apport * curr_2yr$C_ABC[2], digits = 0)) %>% 
-  tidytable::mutate(diff_y1 = case_when(region == 'western' ~ round(curr_2yr$C_ABC[1], digits = 0) - sum(ABC_yr1),
-                                        .default = 0),
-                    diff_y2 = case_when(region == 'western' ~ round(curr_2yr$C_ABC[2], digits = 0) - sum(ABC_yr2),
-                                        .default = 0)) %>%
-  tidytable::mutate(y1_corr = ABC_yr1 + diff_y1,
-                    y2_corr = ABC_yr2 + diff_y2) %>%  # if rounding error happens, add to wgoa
-  tidytable::select(-c(ABC_yr1, ABC_yr2, diff_y1, diff_y2)) %>% 
-  tidytable::rename(ABC_yr1 = 'y1_corr',
-                    ABC_yr2 = 'y2_corr') -> abc_apport_pe
 
-apport_tbl_pe <- data.table::data.table(" " = c("Recommended apportionment", 
-                                             paste(new_year + 1, "ABC"), 
-                                             paste(new_year + 2, "ABC")),
-                                     Western = c(paste0(abc_apport_pe$apport[which(abc_apport_pe$region == 'western')] * 100, "%"),
-                                                 format(abc_apport_pe$ABC_yr1[which(abc_apport_pe$region == 'western')], big.mark = ","),
-                                                 format(abc_apport_pe$ABC_yr2[which(abc_apport_pe$region == 'western')], big.mark = ",")),
-                                     Central = c(paste0(abc_apport_pe$apport[which(abc_apport_pe$region == 'central')] * 100, "%"),
-                                                 format(abc_apport_pe$ABC_yr1[which(abc_apport_pe$region == 'central')], big.mark = ","),
-                                                 format(abc_apport_pe$ABC_yr2[which(abc_apport_pe$region == 'central')], big.mark = ",")),
-                                     Eastern = c(paste0(abc_apport_pe$apport[which(abc_apport_pe$region == 'eastern')] * 100, "%"),
-                                                 format(abc_apport_pe$ABC_yr1[which(abc_apport_pe$region == 'eastern')], big.mark = ","),
-                                                 format(abc_apport_pe$ABC_yr2[which(abc_apport_pe$region == 'eastern')], big.mark = ",")),
-                                     Total = c(paste0(sum(abc_apport_pe$apport) * 100, "%"),
-                                               format(sum(abc_apport_pe$ABC_yr1), big.mark = ","),
-                                               format(sum(abc_apport_pe$ABC_yr2), big.mark = ",")))
-
-### cv ----
 apport_out_cv$proportion_biomass_by_strata %>% 
   tidytable::filter(year == max(year)) %>% 
   tidytable::pivot_longer(., cols = c('central', 'eastern', 'western'), names_to = "region", values_to = "apport") %>% 
@@ -311,9 +206,6 @@ apport_tbl_cv <- data.table::data.table(" " = c("Recommended apportionment",
                                                   format(sum(abc_apport_cv$ABC_yr2), big.mark = ",")))
 
 
-apport_tbl_pe
-apport_tbl_cv
-
 ## base apportionment table ----
 apport_out_base$proportion_biomass_by_strata %>% 
   tidytable::filter(year == max(year)) %>% 
@@ -337,7 +229,7 @@ apport_out_base$proportion_biomass_by_strata %>%
   tidytable::rename(ABC_yr1 = 'y1_corr',
                     ABC_yr2 = 'y2_corr') -> abc_apport_base
 
-apport_tbl_base <- data.table::data.table(" " = c("Base apportionment", 
+apport_tbl_base <- data.table::data.table(" " = c("Status quo apportionment", 
                                              paste(new_year + 1, "ABC"), 
                                              paste(new_year + 2, "ABC")),
                                      Western = c(paste0(abc_apport_base$apport[which(abc_apport_base$region == 'western')] * 100, "%"),
@@ -365,6 +257,16 @@ t1 <- apport_tbl_prev[1:2, ] %>%
   tidytable::rename(` ` = ...1)
 t1[1, 1] <- 'Previous apportionment'
 
-t1 %>% 
+compare <- t1 %>% 
   tidytable::bind_rows(apport_tbl_base[1:2, ]) %>% 
   tidytable::bind_rows(apport_tbl_cv[1:2, ])
+
+## write tables ----
+
+vroom::vroom_write(apport_tbl_cv, here::here(new_year, 'dev', 'alt_apport', 'figs_tabs', 'rec_apport_tbl.csv'), delim = ',')
+vroom::vroom_write(apport_tbl_base, here::here(new_year, 'dev', 'alt_apport', 'figs_tabs', 'sq_apport_tbl.csv'), delim = ',')
+vroom::vroom_write(compare, here::here(new_year, 'dev', 'alt_apport', 'figs_tabs', 'intext_comp_apport_tbl.csv'), delim = ',')
+
+
+
+
