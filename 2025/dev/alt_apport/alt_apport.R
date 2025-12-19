@@ -190,8 +190,8 @@ apport_out_cv$proportion_biomass_by_strata %>%
                     ABC_yr2 = 'y2_corr') -> abc_apport_cv
 
 apport_tbl_cv <- data.table::data.table(" " = c("Recommended apportionment", 
-                                                paste(new_year + 1, "ABC"), 
-                                                paste(new_year + 2, "ABC")),
+                                                paste(new_year + 1, "BRD"), 
+                                                paste(new_year + 2, "BRD")),
                                         Western = c(paste0(abc_apport_cv$apport[which(abc_apport_cv$region == 'western')] * 100, "%"),
                                                     format(abc_apport_cv$ABC_yr1[which(abc_apport_cv$region == 'western')], big.mark = ","),
                                                     format(abc_apport_cv$ABC_yr2[which(abc_apport_cv$region == 'western')], big.mark = ",")),
@@ -230,8 +230,8 @@ apport_out_base$proportion_biomass_by_strata %>%
                     ABC_yr2 = 'y2_corr') -> abc_apport_base
 
 apport_tbl_base <- data.table::data.table(" " = c("Status quo apportionment", 
-                                             paste(new_year + 1, "ABC"), 
-                                             paste(new_year + 2, "ABC")),
+                                             paste(new_year + 1, "BRD"), 
+                                             paste(new_year + 2, "BRD")),
                                      Western = c(paste0(abc_apport_base$apport[which(abc_apport_base$region == 'western')] * 100, "%"),
                                                  format(abc_apport_base$ABC_yr1[which(abc_apport_base$region == 'western')], big.mark = ","),
                                                  format(abc_apport_base$ABC_yr2[which(abc_apport_base$region == 'western')], big.mark = ",")),
