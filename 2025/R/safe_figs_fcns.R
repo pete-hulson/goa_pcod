@@ -781,7 +781,7 @@ plot_retro <- function(rec_mdl_res = NULL,
   # load retrospective results
   load(here::here(new_year, "output", "retro", "retro_res.RData"))
   
-  mohn <- round(r4ss::SSmohnsrho(retro_res$retrosumm_rec, verbose = FALSE)$AFSC_Hurtado_SSB, digits = 3)
+  mohn <- round(r4ss::SSmohnsrho(retro_res$retrosumm_rec, verbose = FALSE)$SSB, digits = 3)
   
   # get retro runs (data and model)
   retro_res$retrosumm_rec$SpawnBio %>% 
