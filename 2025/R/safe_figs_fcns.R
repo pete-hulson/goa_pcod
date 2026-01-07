@@ -677,9 +677,13 @@ plot_ts_comp <- function(ssb_rec_comp = NULL){
   
   # plot
   ssb_rec_comp_plot <- ggplot(data = ssb_rec_comp,
-                              aes(x = year, y = value, col = name)) +
-    geom_point() +
-    geom_line() +
+         aes(x = year, y = value, col = name)) +
+    geom_point(position = position_dodge(width = 0.25)) +
+    geom_line(position = position_dodge(width = 0.25)) +
+    geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                      ymax = value + 1.96 * sd), 
+                  linewidth = 0.777, width = 0,
+                  position = position_dodge(width = 0.25)) +
     facet_wrap(~type, scales = "free_y", ncol = 1) +
     theme_bw(base_size = 14) +
     scico::scale_color_scico_d(palette = 'roma') +
@@ -687,6 +691,7 @@ plot_ts_comp <- function(ssb_rec_comp = NULL){
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           legend.position = "top")
+  
   
   # save
   ggsave(filename = "ssb_rec_comp.png",
