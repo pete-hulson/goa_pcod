@@ -137,8 +137,8 @@ ggplot(comp_data %>% tidytable::filter(type == "Biomass (t)"), aes(x = year, y =
 # save
 ggsave(filename = "biom_comp.png",
        path = here::here(new_year, "dev", "alt_apport", "figs_tabs"),
-       width = 7,
-       height = 5,
+       width = 6,
+       height = 7,
        units = "in")
 
 ## apportionment estimates ----
