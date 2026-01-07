@@ -23,6 +23,32 @@
 #' @param title Optional title
 #' @return ggplot object
 #'
+#' @examples
+#' library(dplyr); library(ggplot2)
+#' Full - 2024 differences in catch biomass by cohort & fleet
+#' p_bio <- plot_delta_catch_by_cohort_fleet(
+#'   runA="Report_2024.sso",
+#'   runB="Report_full.sso",
+#'   years=2020:2027,
+#'   metric="biomass",
+#'   direction="B_minus_A",
+#'   facet="fleet",
+#'   title="Model 2025 - Model 2024 catch by cohort"
+#' )
+#' print(p_bio)
+#'
+#' # Full - 2024 differences in catch numbers by cohort & fleet
+#' p_num <- plot_delta_catch_by_cohort_fleet(
+#'   runA="Report_2024.sso",
+#'   runB="Report_full.sso",
+#'   years=2020:2027,
+#'   metric="numbers",
+#'   direction="B_minus_A",
+#'   numbers_scale=1,
+#'   facet="fleet"
+#' )
+#' print(p_num)
+
 plot_delta_catch_by_cohort_fleet <- function(runA,
                                             runB,
                                             years = 2020:2027,
@@ -211,28 +237,3 @@ plot_delta_catch_by_cohort_fleet <- function(runA,
   return(p)
 }
 
-# ---------------- Examples ----------------
- library(dplyr); library(ggplot2)
-# # Full - 2024 differences in catch biomass by cohort & fleet
- p_bio <- plot_delta_catch_by_cohort_fleet(
-   runA="Report_2024.sso",
-   runB="Report_full.sso",
-   years=2020:2027,
-   metric="biomass",
-   direction="B_minus_A",
-   facet="fleet",
-   title="Model 2025 - Model 2024 catch by cohort"
- )
- print(p_bio)
-#
-# # Full - 2024 differences in catch numbers by cohort & fleet
-# p_num <- plot_delta_catch_by_cohort_fleet(
-#   runA="Report_2024.sso",
-#   runB="Report_full.sso",
-#   years=2020:2027,
-#   metric="numbers",
-#   direction="B_minus_A",
-#   numbers_scale=1,
-#   facet="fleet"
-# )
-# print(p_num)

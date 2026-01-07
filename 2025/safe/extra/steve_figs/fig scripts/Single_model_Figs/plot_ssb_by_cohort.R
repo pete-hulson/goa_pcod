@@ -19,7 +19,7 @@
 #' @param title Optional plot title
 #' @return list(plot=ggplot, data=data.frame)
 #'
-#' @example
+#' @examples
 #' library(ggplot2)
 #' library(patchwork)
 #' res1 <- plot_ssb_by_cohort("Report_full.sso", years=2020:2027, mode="ssb")
