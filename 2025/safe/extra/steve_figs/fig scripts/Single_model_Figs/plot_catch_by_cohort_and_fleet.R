@@ -18,6 +18,18 @@
 #' @param title Optional plot title (character)
 #' @return A ggplot object
 #'
+#' @Example 
+#' library(ggplot2)
+#' library(patchwork)
+#'
+#' p1 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="biomass")
+#' p2 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="numbers", numbers_scale=1)
+#' p1/p2+plot_layout(heights=c(2,2),guides="collect")
+#'
+#' p24 <- plot_catch_by_cohort_fleet("Report_2024.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2024 Model",Ylim=c(0,5))
+#' p25 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2025 Model",Ylim=c(0,5))
+#' p24/p25+plot_layout(heights=c(2,2),guides="collect")
+
 plot_catch_by_cohort_fleet <- function(report_file,
                                        years = 2020:2027,
                                        fleets = c(1,2,3),
@@ -180,14 +192,3 @@ plot_catch_by_cohort_fleet <- function(report_file,
   return(p)
 }
 
-# ---------------- Example usage ----------------
-# library(ggplot2)
-# library(patchwork)
-#
-# p1 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="biomass")
-# p2 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="numbers", numbers_scale=1)
-# p1/p2+plot_layout(heights=c(2,2),guides="collect")
-#
- p24 <- plot_catch_by_cohort_fleet("Report_2024.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2024 Model",Ylim=c(0,5))
- p25 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2025 Model",Ylim=c(0,5))
- p24/p25+plot_layout(heights=c(2,2),guides="collect")

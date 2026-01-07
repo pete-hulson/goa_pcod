@@ -18,6 +18,20 @@
 #' @param morph Morph filter for numbers-at-age (default 1)
 #' @param title Optional plot title
 #' @return list(plot=ggplot, data=data.frame)
+#'
+#' @example
+#' library(ggplot2)
+#' library(patchwork)
+#' res1 <- plot_ssb_by_cohort("Report_full.sso", years=2020:2027, mode="ssb")
+#' print(res1$plot)
+#'
+#' res2 <- plot_ssb_by_cohort("Report_full.sso", years=2020:2027, mode="percent")
+#' print(res2$plot)
+#' res1$plot/res2$plot+plot_layout(heights=c(2,2),guides="collect")
+#' res1 <- plot_ssb_by_cohort("Report_full.sso", years=2025:2027, mode="ssb", title="2025 Model cohort contribution to SSB")
+#' print(res1$plot)
+
+
 plot_ssb_by_cohort <- function(report_file,
                                years = 2020:2027,
                                mode = c("ssb", "percent"),
@@ -202,14 +216,3 @@ plot_ssb_by_cohort <- function(report_file,
   list(plot = p, data = dat)
 }
 
-# ---- Examples ----
-# library(ggplot2)
-# library(patchwork)
-# res1 <- plot_ssb_by_cohort("Report_full.sso", years=2020:2027, mode="ssb")
-# print(res1$plot)
-#
-# res2 <- plot_ssb_by_cohort("Report_full.sso", years=2020:2027, mode="percent")
-# print(res2$plot)
-#  res1$plot/res2$plot+plot_layout(heights=c(2,2),guides="collect")
-#  res1 <- plot_ssb_by_cohort("Report_full.sso", years=2025:2027, mode="ssb", title="2025 Model cohort contribution to SSB")
-#  print(res1$plot)

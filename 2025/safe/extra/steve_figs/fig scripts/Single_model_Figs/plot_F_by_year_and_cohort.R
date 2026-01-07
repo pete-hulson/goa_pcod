@@ -20,6 +20,11 @@
 #' @param title Optional plot title
 #' @return A ggplot object, plus invisibly returns the underlying data.frame
 #'
+#' @Example
+#' library(dplyr); library(tidyr); library(ggplot2)
+#' res <- plot_F_by_year_and_cohort("Report_full.sso", years = 2020:2027, M = 0.485, plus_age = 10)
+#' head(res$data)
+
 plot_F_by_year_and_cohort <- function(report_file,
                                       years = 2020:2027,
                                       M = 0.485,
@@ -145,7 +150,4 @@ plot_F_by_year_and_cohort <- function(report_file,
   invisible(list(plot = p, data = dfF))
 }
 
-# ---- Example ----
-# library(dplyr); library(tidyr); library(ggplot2)
-# res <- plot_F_by_year_and_cohort("Report_full.sso", years = 2020:2027, M = 0.485, plus_age = 10)
-# head(res$data)
+
