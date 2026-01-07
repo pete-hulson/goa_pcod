@@ -188,6 +188,6 @@ plot_catch_by_cohort_fleet <- function(report_file,
 # p2 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="numbers", numbers_scale=1)
 # p1/p2+plot_layout(heights=c(2,2),guides="collect")
 #
-# p24 <- plot_catch_by_cohort_fleet("Report_2024.sso", years=2020:2027, metric="numbers", numbers_scale=1,title="2024 Model",Ylim=(0,1500))
-# p25 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2020:2027, metric="numbers", numbers_scale=1,title="2025 Model",Ylim=(0,1500))
-# p24/p25+plot_layout(heights=c(2,2),guides="collect")
+ p24 <- plot_catch_by_cohort_fleet("Report_2024.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2024 Model",Ylim=c(0,5))
+ p25 <- plot_catch_by_cohort_fleet("Report_full.sso", years=2025:2027, metric="biomass", numbers_scale=1,title="2025 Model",Ylim=c(0,5))
+ p24/p25+plot_layout(heights=c(2,2),guides="collect")

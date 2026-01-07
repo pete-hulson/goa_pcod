@@ -1,3 +1,75 @@
+#' Difference in spawning biomass contributions by cohort between two Stock Synthesis models
+#'
+#' Computes and plots the difference in spawning stock biomass (SSB) contributions
+#' by cohort between two Stock Synthesis model runs (e.g., a prior-year model and a
+#' full updated model). Cohort-specific SSB contributions are reconstructed from
+#' underlying numbers-at-age and fecundity components rather than taken from derived
+#' quantities.
+#'
+#' Spawning biomass contributions are calculated as:
+#' \deqn{SSB_{y,c} = \sum_a N_{y,a} \times Fecund_{y,a}}
+#' where numbers-at-age (\code{N}) are extracted from
+#' \code{NUMBERS_AT_AGE report:35} and fecundity-at-age is extracted from
+#' \code{AGE_SELEX report:32} using the \code{fecund} factor. Contributions are then
+#' aggregated by cohort, defined as \code{Year − Age}. Ages greater than or equal to
+#' \code{plus_age} are combined into a single plus-group labeled
+#' \dQuote{Age 10+ cohorts}.
+#'
+#' The function supports plotting either \code{Full − 2024} or \code{2024 − Full}
+#' differences and produces a time series plot showing how cohort-specific SSB
+#' contributions differ between the two model configurations over a specified set
+#' of years.
+#'
+#' @param report_2024 Path to the Stock Synthesis \code{.sso} report file for the
+#'   comparison (e.g., the 2024 assessment model).
+#' @param report_full Path to the Stock Synthesis \code{.sso} report file for the
+#'   full or updated assessment model.
+#' @param years Integer vector of calendar years over which to compute and plot
+#'   SSB differences.
+#' @param plus_age Integer age defining the plus group; all ages greater than or
+#'   equal to this value are aggregated and labeled as \dQuote{Age 10+ cohorts}.
+#' @param delta Character specifying the direction of subtraction:
+#'   \code{"full_minus_2024"} (default) or \code{"2024_minus_full"}.
+#' @param title Optional plot title. If \code{NULL}, a descriptive default is used.
+#'
+#' @return A \code{ggplot2} object showing the difference in SSB contribution by cohort
+#'   and year. Positive values indicate cohorts contributing more SSB in the model
+#'   listed first in \code{delta}.
+#'
+#' @details
+#' This function is SS-Strict and reconstructs spawning biomass directly from
+#' model-internal components rather than relying on \code{DERIVED_QUANTITIES}.
+#' Fecundity-at-age values are averaged across sexes if multiple rows are present,
+#' and numbers-at-age are summed across sexes prior to computing cohort contributions.
+#'
+#' The plus group is visually emphasized in the plot using a black dashed line and
+#' points, while individual cohorts are shown in color. A horizontal reference line
+#' at zero is included to highlight the sign and magnitude of differences.
+#'
+#' @examples
+#' \dontrun{
+#' # Difference in cohort SSB contributions between 2024 and full models
+#' p <- plot_delta_ssb_by_cohort(
+#'   report_2024 = "Report_2024.sso",
+#'   report_full = "Report_full.sso",
+#'   years = 2020:2027,
+#'   plus_age = 10,
+#'   delta = "full_minus_2024"
+#' )
+#' print(p)
+#'
+#' # Reverse subtraction (2024 − Full)
+#' p <- plot_delta_ssb_by_cohort(
+#'   report_2024 = "Report_2024.sso",
+#'   report_full = "Report_full.sso",
+#'   years = 2020:2027,
+#'   delta = "2024_minus_full"
+#' )
+#' print(p)
+#' }
+#'
+#' @export
+
 plot_delta_ssb_by_cohort <- function(report_2024,
                                     report_full,
                                     years = 2020:2027,
