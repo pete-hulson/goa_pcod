@@ -1281,6 +1281,48 @@ plot_indxfit <- function(rec_mdl_res = NULL){
   
 }
 
+#' function to index data
+#' 
+#' @param rec_mdl_res list of ss3 results for recommended model (default = NULL)
+#' 
+plot_indx <- function(rec_mdl_res = NULL){
+  
+  # get plot data
+  data.table(rec_mdl_res$cpue) %>% 
+    tidytable::mutate(obs = as.numeric(Obs),
+                      sd = as.numeric(SE_input) * obs) %>% 
+    tidytable::select(srv = Fleet, year = Yr, obs, sd) %>% 
+    tidytable::filter(srv %in% c(4, 5)) %>% 
+    tidytable::mutate(name = case_when(srv == 4 ~ "AFSC trawl survey numbers (1000s)",
+                                       srv == 5 ~ "AFSC longline survey RPNs")) %>% 
+    tidytable::select(-srv) -> indx_dat
+
+  # plot
+  srv_indx <- ggplot(data = indx_dat, aes(x = year, y = obs, col = name)) +
+    geom_point() +
+    geom_line(linetype = "dashed") +
+    theme_bw(base_size = 14) +
+    facet_wrap(~ name, 
+               ncol = 1, 
+               scales = "free_y") +
+    geom_errorbar(aes(ymin = obs - 1.96 * sd, ymax = obs + 1.96 * sd), width = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          axis.text.x = element_text(vjust = 0.5, angle = 90),
+          legend.position = "none") +
+    labs(x = "Year", y = "Pacific cod survey index") +
+    scale_x_continuous(breaks = c(min(indx_dat$year):max(indx_dat$year)), limits = c(min(indx_dat$year), max(indx_dat$year)))
+  
+  # save
+  ggsave(filename = "srv_indx_raw.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 5.5,
+         units = "in")
+  
+}
+
 #' function that runs one-step-ahead residuals for ss3
 #' 
 #' @param mdl_res model results in ss3 format (default = NULL)
