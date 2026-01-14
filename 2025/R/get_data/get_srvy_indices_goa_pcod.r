@@ -110,7 +110,7 @@ get_adfg_srvy_index <- function(new_year = 9999,
       tidytable::mutate(depth = case_when(avg_depth_fm <= 30 ~ 1,
                                           avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
                                           avg_depth_fm > 70 ~ 3),
-                        density = total_weight_kg / area_km2) %>% 
+                        density = total_weight_kg / area_swept_km2) %>% 
       tidytable::select(density, year, district, depth) -> mydata_wt
     # numbers cpue
     raw %>% 
@@ -120,7 +120,7 @@ get_adfg_srvy_index <- function(new_year = 9999,
       tidytable::mutate(depth = case_when(avg_depth_fm <= 30 ~ 1,
                                           avg_depth_fm > 30 & avg_depth_fm <= 70 ~ 2,
                                           avg_depth_fm > 70 ~ 3),
-                        density = total_number_caught / area_km2) %>% 
+                        density = total_number_caught / area_swept_km2) %>% 
       tidytable::select(density, year, district, depth) -> mydata_num
     
     # run model
