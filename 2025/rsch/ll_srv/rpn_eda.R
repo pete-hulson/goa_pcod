@@ -10,6 +10,42 @@ gap_cpue <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'data', 'gap_cpue.
 gap_index <- vroom::vroom(here::here('2025', 'data', 'raw', 'twl_srvy_index.csv'))
 gap_strata <- vroom::vroom(here::here('2025', 'rsch', 'll_srv', 'data', 'gap_strata.csv'))
 
+
+# plot raw cpue results ----
+
+ll_cpue %>% 
+  tidytable::filter(subreg == 'GOA') %>% 
+  tidytable::select(year, index = mean_cpue) %>% 
+  tidytable::mutate(type = "Numbers CPUE") %>% 
+  tidytable::bind_rows(ll_rpn_og %>% 
+                         tidytable::summarise(index = sum(rpn),
+                                              .by = c(year)) %>% 
+                         tidytable::mutate(type = "RPN")) -> plot_dat
+
+
+ggplot(data = plot_dat, aes(x = year, y = index, col = type)) +
+  geom_point() +
+  geom_line(linetype = "dashed") +
+  theme_bw(base_size = 14) +
+  facet_wrap(~ type, 
+             ncol = 1, 
+             scales = "free_y") +
+  scico::scale_color_scico_d(palette = 'roma') +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none") +
+  labs(x = "Year", y = "Pacific cod Longline survey index")
+
+# Save plot
+ggsave(here::here("2025", "rsch", "ll_srv", 'figures', "indexcomp_plot.png"), width = 16, height = 12, dpi = 300, bg = 'transparent')
+
+ggsave(filename = "indexcomp_plot.png",
+       path = here::here("2025", "rsch", "ll_srv", 'figures'),
+       width = 6.5,
+       height = 7,
+       units = "in")
+
 # compute historical
 rpn_hist <- ll_rpn_og %>% 
   tidytable::summarise(rpn = sum(rpn),
