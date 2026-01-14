@@ -266,11 +266,20 @@ plot_auxind <- function(new_year = NULL){
                            tidytable::mutate(type = "Proportion of Pcod catch in Shallow water flatfish",
                                              index = "Adult") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
-    tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"), 
+    # tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"), 
+    #                                   progress = FALSE, 
+    #                                   show_col_types = FALSE) %>% 
+    #                        tidytable::mutate(pcod = index_wt,
+    #                                          type = "ADF&G trawl survey (density)",
+    #                                          index = "Adult") %>% 
+    #                        tidytable::select(year, pcod, type, index)) %>% 
+    tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "adfg_srvy_index.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::mutate(pcod = index_wt,
-                                             type = "ADF&G trawl survey (density)",
+                           tidytable::mutate(ncpue = total_number_caught / area_swept_km2) %>% 
+                           tidytable::summarize(pcod = mean(ncpue), .by = year) %>% 
+                           tidytable::filter(year >= 2000) %>% 
+                           tidytable::mutate(type = "ADF&G trawl survey (Numbers CPUE)",
                                              index = "Adult") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "other_indices.csv"), 
@@ -1765,14 +1774,14 @@ plot_rec <- function(rec_mdl_res = NULL,
   
   # get plot data
   rec_mdl_res$parameters %>% 
-    tidytable::filter(Label %in% paste0("Main_RecrDev_", seq(1978, new_year))) %>% 
+    tidytable::filter(Label %in% paste0("Main_RecrDev_", seq(1978, new_year - 1))) %>% 
     tidytable::select(value = Value, sd = Parm_StDev) %>% 
-    tidytable::mutate(year = seq(1978, new_year),
+    tidytable::mutate(year = seq(1978, new_year - 1),
                       type = "Recruitment deviation") %>% 
     tidytable::bind_rows(rec_mdl_res$derived_quants %>% 
-                           tidytable::filter(Label %in% paste0("Recr_", seq(1978, new_year))) %>% 
+                           tidytable::filter(Label %in% paste0("Recr_", seq(1978, new_year - 1))) %>% 
                            tidytable::select(value = Value, sd = StdDev) %>% 
-                           tidytable::mutate(year = seq(1978, new_year),
+                           tidytable::mutate(year = seq(1978, new_year - 1),
                                              value = value / 1000000,
                                              sd = sd / 1000000,
                                              type = "Age-0 Recruitment (millions)")) -> rec_dat

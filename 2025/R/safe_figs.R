@@ -140,8 +140,10 @@ safe_figs <- function(new_year = NULL,
                            tidytable::filter(Yr >= 2000,
                                              Yr <= new_year) %>% 
                            tidytable::select(-Label) %>% 
-                           tidytable::mutate(model1 = case_when(Yr == new_year ~ NA,
-                                                                .default = model1)) %>% 
+                           tidytable::mutate(model1 = case_when(Yr >= new_year - 2 ~ NA,
+                                                                .default = model1),
+                                             model2 = case_when(Yr >= new_year - 1 ~ NA,
+                                                                .default = model2)) %>% 
                            tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
                            tidytable::mutate(value = value / 1000000,
                                              name = case_when(name == "model1" ~ "24.0 (2024)",
