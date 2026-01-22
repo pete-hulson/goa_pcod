@@ -1075,6 +1075,13 @@ safe_tbls <- function(new_year = NULL,
   # in-text tables ----
   
   ## exec summ table ----
+  # get specs from previous assessment
+  adopt_specs <- specs %>% 
+    tidytable::filter(year >= new_year,
+                      area_label == 'GOA') %>% 
+    tidytable::select(year, ofl = overfishing_level, abc = acceptable_biological_catch)
+  
+  # set up table
   exec_summ_tbl <- data.table::data.table(Quantity = c("M (natural mortality rate)", 
                                                        "Tier", 
                                                        "Projected total (age 0+) biomass (t)",
@@ -1102,9 +1109,9 @@ safe_tbls <- function(new_year = NULL,
                                                     round(prev_2yr$F35[1], digits = 2),
                                                     round(prev_2yr$F40[1], digits = 2),
                                                     round(prev_2yr$F40[1], digits = 2),
-                                                    format(round(prev_2yr$C_OFL[1], digits = 0), big.mark = ","),
-                                                    format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ","),
-                                                    format(round(prev_2yr$C_ABC[1], digits = 0), big.mark = ",")),
+                                                    format(round(adopt_specs$ofl[1], digits = 0), big.mark = ","),
+                                                    format(round(adopt_specs$abc[1], digits = 0), big.mark = ","),
+                                                    format(round(adopt_specs$abc[1], digits = 0), big.mark = ",")),
                                           prev2 = c(paste0(round(prev_mdl_res$parameters$Value[which(prev_mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
                                                     ifelse(prev_2yr$SSB_PER[2] > 0.4, "3a", "3b"), 
                                                     format(round(prev_mdl_res$timeseries$Bio_all[which(prev_mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
@@ -1117,9 +1124,9 @@ safe_tbls <- function(new_year = NULL,
                                                     round(prev_2yr$F35[2], digits = 2),
                                                     round(prev_2yr$F40[2], digits = 2),
                                                     round(prev_2yr$F40[2], digits = 2),
-                                                    format(round(prev_2yr$C_OFL[2], digits = 0), big.mark = ","),
-                                                    format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ","),
-                                                    format(round(prev_2yr$C_ABC[2], digits = 0), big.mark = ",")),
+                                                    format(round(adopt_specs$ofl[2], digits = 0), big.mark = ","),
+                                                    format(round(adopt_specs$abc[2], digits = 0), big.mark = ","),
+                                                    format(round(adopt_specs$abc[2], digits = 0), big.mark = ",")),
                                           curr1 = c(paste0(round(mdl_res$parameters$Value[which(mdl_res$parameters$Label == "NatM_uniform_Fem_GP_1" )], digits = 2), "*"), 
                                                     ifelse(curr_2yr$SSB_PER[1] > 0.4, "3a", "3b"), 
                                                     format(round(mdl_res$timeseries$Bio_all[which(mdl_res$timeseries$Yr == new_year + 1)], digits = 0), big.mark = ","),
