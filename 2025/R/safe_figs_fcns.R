@@ -686,7 +686,7 @@ plot_ts_comp <- function(ssb_rec_comp = NULL){
   
   # plot
   ssb_rec_comp_plot <- ggplot(data = ssb_rec_comp,
-         aes(x = year, y = value, col = name)) +
+                              aes(x = year, y = value, col = name)) +
     geom_point(position = position_dodge(width = 0.25)) +
     geom_line(position = position_dodge(width = 0.25)) +
     geom_errorbar(aes(ymin = value - 1.96 * sd, 
@@ -1305,7 +1305,7 @@ plot_indx <- function(rec_mdl_res = NULL){
     tidytable::mutate(name = case_when(srv == 4 ~ "AFSC trawl survey numbers (1000s)",
                                        srv == 5 ~ "AFSC longline survey RPNs")) %>% 
     tidytable::select(-srv) -> indx_dat
-
+  
   # plot
   srv_indx <- ggplot(data = indx_dat, aes(x = year, y = obs, col = name)) +
     geom_point() +
@@ -1763,6 +1763,135 @@ plot_tot_ssb <- function(rec_mdl_res = NULL,
          units = "in")
   
 }
+
+#' function to plot total biomass compared to marine heatwave index
+#' 
+#' @param rec_mdl_res list of ss3 results for recommended model (default = NULL)
+#' @param new_year current assessment year (default = NULL) 
+#' 
+plot_biom_mhwi <- function(rec_mdl_res = NULL,
+                           new_year = NULL){
+  
+  # plot marine heatwave index
+  mhwi <- vroom::vroom(here::here(new_year, 'data', 'MHWI.csv'), 
+                       progress = FALSE, 
+                       show_col_types = FALSE) %>% 
+    tidytable::select(-Summer) %>% 
+    tidytable::pivot_longer(cols = c(Annual, Winter, Spawning)) %>% 
+    tidytable::rename(Season = name) %>% 
+    tidytable::mutate(size = case_when(Season == 'Annual' ~ 0.6,
+                                       Season == 'Winter' ~ 0.55,
+                                       Season == 'Spawning' ~ 0.5),
+                      type = 'mhwi') %>% 
+    tidytable::mutate(Season = factor(Season, levels = c('Annual', 'Winter', 'Spawning'))) %>% 
+    tidytable::bind_rows(data.table(Year = seq(1977, 1981),
+                                    Season = 'Annual',
+                                    value = NA))
+  
+  mhwi_plot <- ggplot(mhwi, aes(x = Year, y = value, color = Season)) +
+    geom_point(data = mhwi %>% filter(Season == 'Annual'), size = 3) +
+    geom_segment(data = mhwi %>% filter(Season == 'Annual'),
+                 aes(x = Year, xend = Year, y = 0, yend = value),
+                 linewidth = 1.5) +
+    geom_point(data = mhwi %>% filter(Season == 'Winter'), size = 2) +
+    geom_segment(data = mhwi %>% filter(Season == 'Winter'),
+                 aes(x = Year, xend = Year, y = 0, yend = value),
+                 linewidth = 1) +
+    geom_point(data = mhwi %>% filter(Season == 'Spawning'), size = 1) +
+    geom_segment(data = mhwi %>% filter(Season == 'Spawning'),
+                 aes(x = Year, xend = Year, y = 0, yend = value),
+                 linewidth = 0.5) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme_bw(base_size = 14) +
+    labs(x = NULL, y = bquote(degree*C*" days"), col = "") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.position = c(0, 1), 
+          legend.justification = c(0, 1),
+          legend.background = element_rect(fill = "transparent", color = NA))
+  
+  
+  # plot total biomass
+  tb <- rec_mdl_res$timeseries %>% 
+    tidytable::select(year = Yr, value = Bio_all) %>% 
+    tidytable::mutate(value = value / 1000) %>% 
+    tidytable::filter(year %in% seq(1977, new_year)) %>% 
+    tidytable::left_join(rec_mdl_res$derived_quants %>% 
+                           tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
+                           tidytable::select(value = Value, sd = StdDev) %>% 
+                           tidytable::mutate(year = seq(1977, new_year + 5),
+                                             cv = sd / value) %>% 
+                           tidytable::select(-value, -sd)) %>% 
+    tidytable::mutate(sd = cv * value,
+                      type = "Total biomass (1,000s t)") %>% 
+    tidytable::select(-cv)
+  
+  tb_plot <- ggplot(data = tb,
+                    aes(x = year, y = value, color = type)) +
+    geom_point() +
+    geom_line() +
+    geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                      ymax = value + 1.96 * sd), 
+                  linewidth = 0.777, width = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme_bw(base_size = 14) +
+    labs(x = "Year", y = "Total biomass (1,000s t)", col = "") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key.width = unit(0.25, 'cm'),
+          legend.position = "none")
+  
+  # plot spawning biomass
+  sb <- rec_mdl_res$derived_quants %>% 
+    tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year))) %>% 
+    tidytable::select(value = Value, sd = StdDev) %>% 
+    tidytable::mutate(year = seq(1977, new_year),
+                      value = value / 2 / 1000,
+                      sd = sd / 2 / 1000,
+                      type = "Spawning biomass (1,000s t)")
+  
+  sb_plot <- ggplot(data = sb,
+                    aes(x = year, y = value, color = type)) +
+    geom_point() +
+    geom_line() +
+    geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                      ymax = value + 1.96 * sd), 
+                  linewidth = 0.777, width = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme_bw(base_size = 14) +
+    labs(x = "Year", y = "Spawning biomass (1,000s t)", col = "") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key.width = unit(0.25, 'cm'),
+          legend.position = "none")
+  
+  # plot and save
+  plot_grid(mhwi_plot, tb_plot, 
+            ncol = 1)
+  
+  # save
+  ggsave(filename = "tb_mhwi.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 7,
+         units = "in")
+  
+  
+  # plot and save
+  plot_grid(mhwi_plot, sb_plot, 
+            ncol = 1)
+  
+  # save
+  ggsave(filename = "sb_mhwi.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 7,
+         units = "in")
+  
+}
+
+
+
 
 #' function to plot recruitment and dev estimates
 #' 

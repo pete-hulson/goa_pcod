@@ -304,6 +304,11 @@ safe_figs <- function(new_year = NULL,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("Total & SSB plot"), crayon::green$underline$bold$italic("DONE"), "\n")
   
+  # tot bio & ssb compared to marine heat wave index ----
+  plot_biom_mhwi(rec_mdl_res, new_year)
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Total & SSB vs MHWI plot"), crayon::green$underline$bold$italic("DONE"), "\n")
+
   # rec & devs ----
   plot_rec(rec_mdl_res, new_year)
   # print message when done

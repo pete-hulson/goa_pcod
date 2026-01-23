@@ -9,7 +9,8 @@ pkg_cran <- c("tidyverse",
               "scales",
               "SimDesign",
               "data.table",
-              "adnuts")
+              "adnuts",
+              "cowplot")
 
 # if not installed, then install
 if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
