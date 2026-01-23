@@ -1782,11 +1782,11 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
     tidytable::mutate(size = case_when(Season == 'Annual' ~ 0.6,
                                        Season == 'Winter' ~ 0.55,
                                        Season == 'Spawning' ~ 0.5),
-                      type = 'mhwi') %>% 
-    tidytable::mutate(Season = factor(Season, levels = c('Annual', 'Winter', 'Spawning'))) %>% 
-    tidytable::bind_rows(data.table(Year = seq(1977, 1981),
-                                    Season = 'Annual',
-                                    value = NA))
+                      type = "Marine Heatwave Index") %>% 
+    tidytable::mutate(Season = factor(Season, levels = c('Annual', 'Winter', 'Spawning')))
+    # tidytable::bind_rows(data.table(Year = seq(1977, 1981),
+    #                                 Season = 'Annual',
+    #                                 value = NA))
   
   mhwi_plot <- ggplot(mhwi, aes(x = Year, y = value, color = Season)) +
     geom_point(data = mhwi %>% filter(Season == 'Annual'), size = 3) +
@@ -1841,6 +1841,40 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
           legend.key.width = unit(0.25, 'cm'),
           legend.position = "none")
   
+  
+  # plot total biomass and marine heatwave index within same plot
+  tb_plot2 <- ggplot(data = tb,
+         aes(x = year, y = value, color = type)) +
+    geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                      ymax = value + 1.96 * sd), 
+                  linewidth = 0.777, width = 0) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme_bw(base_size = 14) +
+    geom_point(data = mhwi %>% 
+                 filter(Season == 'Annual') %>% 
+                 mutate(value = value) %>% 
+                 rename(year = Year),
+               size = 3,
+               alpha = 0.75) +
+    geom_segment(data = mhwi %>% 
+                   filter(Season == 'Annual') %>% 
+                   mutate(value = value) %>% 
+                   rename(year = Year),
+                 aes(x = year, xend = year, y = 0, yend = value),
+                 linewidth = 1.5,
+                 alpha = 0.25) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Year", y = NULL, col = "") +
+    theme(legend.key.width = unit(0.25, 'cm'),
+          legend.position = "top")
+  
+  ggsave(filename = "tb_mhwi2.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 5,
+         units = "in")
+  
   # plot spawning biomass
   sb <- rec_mdl_res$derived_quants %>% 
     tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year))) %>% 
@@ -1887,7 +1921,7 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
          width = 6.5,
          height = 7,
          units = "in")
-  
+
 }
 
 
