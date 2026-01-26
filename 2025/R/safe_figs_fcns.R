@@ -1782,12 +1782,12 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
     tidytable::mutate(size = case_when(Season == 'Annual' ~ 0.6,
                                        Season == 'Winter' ~ 0.55,
                                        Season == 'Spawning' ~ 0.5),
-                      type = "Marine Heatwave Index") %>% 
-    tidytable::mutate(Season = factor(Season, levels = c('Annual', 'Winter', 'Spawning')))
-    # tidytable::bind_rows(data.table(Year = seq(1977, 1981),
-    #                                 Season = 'Annual',
-    #                                 value = NA))
-  
+                      type = "Annual Marine Heatwave Index") %>% 
+    tidytable::mutate(Season = factor(Season, levels = c('Annual', 'Winter', 'Spawning'))) %>% 
+    tidytable::bind_rows(data.table(Year = seq(1977, 1981),
+                                    Season = 'Annual',
+                                    value = NA))
+
   mhwi_plot <- ggplot(mhwi, aes(x = Year, y = value, color = Season)) +
     geom_point(data = mhwi %>% filter(Season == 'Annual'), size = 3) +
     geom_segment(data = mhwi %>% filter(Season == 'Annual'),
@@ -1851,12 +1851,14 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
     scico::scale_color_scico_d(palette = 'roma') +
     theme_bw(base_size = 14) +
     geom_point(data = mhwi %>% 
+                 drop_na() %>% 
                  filter(Season == 'Annual') %>% 
                  mutate(value = value) %>% 
                  rename(year = Year),
                size = 3,
                alpha = 0.75) +
     geom_segment(data = mhwi %>% 
+                   drop_na() %>% 
                    filter(Season == 'Annual') %>% 
                    mutate(value = value) %>% 
                    rename(year = Year),
@@ -1866,8 +1868,9 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
     geom_point() +
     geom_line() +
     labs(x = "Year", y = NULL, col = "") +
-    theme(legend.key.width = unit(0.25, 'cm'),
-          legend.position = "top")
+    theme(legend.position = c(1, 1), 
+          legend.justification = c(1, 1),
+          legend.background = element_rect(fill = "transparent", color = NA))
   
   ggsave(filename = "tb_mhwi2.png",
          path = here::here(new_year, "output", "safe_plots"),
