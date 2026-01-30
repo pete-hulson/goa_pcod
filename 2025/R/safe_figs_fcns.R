@@ -2282,3 +2282,58 @@ plot_apport <- function(new_year = NULL){
          units = "in")
   
 }
+
+
+
+#' function to plot recruitment comparison between model and beach seine
+#' 
+#' @param rec_mdl_res list of ss3 results for recommended model (default = NULL)
+#' @param new_year current assessment year (default = NULL) 
+#' 
+plot_rec <- function(rec_mdl_res = NULL,
+                     new_year = NULL){
+  
+  # get plot data
+  plot_dat <- rec_mdl_res$derived_quants %>% 
+    tidytable::filter(Label %in% paste0("Recr_", seq(1978, new_year - 1))) %>% 
+    tidytable::select(Value, StdDev) %>%
+    tidytable::mutate(year = seq(1978, new_year - 1)) %>% 
+    tidytable::filter(year >= 2006) %>% 
+    tidytable::mutate(value = (Value - mean(Value)) / sd(Value),
+                      sd = abs(value * StdDev / Value),
+                      type = "Model 24.0 recruitment deviation") %>% 
+    tidytable::select(year, value, sd, type) %>% 
+    tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "other_indices.csv"), 
+                                      progress = FALSE, 
+                                      show_col_types = FALSE) %>% 
+                           tidytable::filter(index == -7) %>% 
+                           tidytable::mutate(value = (obs - mean(obs)) / sd(obs),
+                                             sd = abs(value * se_log / obs),
+                                             type = "Beach seine survey deviation") %>% 
+                           tidytable::select(year, value, sd, type))
+  
+  # plot
+  ggplot(plot_dat, aes(x = year, y = value, col = type)) +
+    geom_point(position = position_dodge(width = 0.25)) +
+    geom_line(position = position_dodge(width = 0.25),
+              linetype = "dotted") +
+    geom_hline(aes(yintercept = 0)) +
+    geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                      ymax = value + 1.96 * sd), 
+                  linewidth = 0.777, width = 0,
+                  position = position_dodge(width = 0.25)) +
+    scico::scale_color_scico_d(palette = 'roma') +
+    theme_bw(base_size = 14) +
+    labs(x = "Year", y = "Recruitment deviation", col = "") +
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key.width = unit(0.25, 'cm'),
+          legend.position = "top")
+  
+  # save
+  ggsave(filename = "rec_comp.png",
+         path = here::here(new_year, "output", "safe_plots"),
+         width = 6.5,
+         height = 4.5,
+         units = "in")
+}
