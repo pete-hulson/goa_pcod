@@ -88,13 +88,12 @@ ggplot() +
   coord_sf(xlim = c(-170, -154),  # Longitude (Negative for West)
            ylim = c(52, 58),      # Latitude
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
-  labs(title = "2025 survey strata",
+  labs(title = "2025 survey strata (age collections)",
        x = "Longitude",
        y = "Latitude",
        fill = 'Strata')
 
 ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', '2025_GOA_Survey_Map.png'), width = 10, height = 10, units = "in", dpi = 300)
-
 
 
 # plot pre-2023 surveys
@@ -111,11 +110,11 @@ ggplot() +
   coord_sf(xlim = c(-170, -154),  # Longitude (Negative for West)
            ylim = c(52, 58),      # Latitude
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
-  labs(title = "Historical survey strata",
+  labs(title = "Historical survey strata (age collections)",
        x = "Longitude",
        y = "Latitude",
        fill = 'Strata',
-       color = 'Age sample')
+       color = 'Year collected')
 
 ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Hist_GOA_Survey_Map.png'), width = 10, height = 10, units = "in", dpi = 300)
 
