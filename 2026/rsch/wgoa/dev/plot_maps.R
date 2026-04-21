@@ -120,3 +120,209 @@ ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Hist_GOA_Survey_Map.png'), 
 
 
 
+# plot tag releases
+
+tag_data <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'ALL_LENGTH_TAGS.csv'))
+
+tag_data_goa <- tag_data %>% 
+  dplyr::rename_all(tolower) %>% 
+  filter(rel_area %in% c(610, 620, 630)) # focus on goa
+
+tag_points <- st_as_sf(tag_data_goa, coords = c("long_rel", "lat_rel"), crs = 4326)
+nmfs_areas <- get_nmfs_areas(set.crs = "EPSG:4326") %>% 
+  filter(REP_AREA %in% c(517, 610, 620, 630))
+
+# get centroids of the geometry for plotting
+centroids <- nmfs_areas %>%
+  group_by(REP_AREA) %>%
+  summarise(geometry = st_centroid(geometry)) %>%
+  ungroup()
+
+# get movement rates
+move_df <- tag_data %>% 
+  dplyr::rename_all(tolower) %>%
+  tidytable::drop_na(rec_area) %>%
+  tidytable::filter(rel_area %in% c(610, 620)) %>% 
+  tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
+                                                rec_area >= 630 ~ 630,
+                                                .default = rec_area)),
+                    rel_area = factor(rel_area)) %>% 
+  tidytable::count(rel_area, rec_area) %>% 
+  tidytable::mutate(sum = sum(n),
+                    prop = n / sum,
+                    season = 'ALL',
+                    .by = rel_area) %>% 
+  tidytable::bind_rows(tag_data %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::drop_na(rec_area) %>%
+                         tidytable::filter(rel_area %in% c(610, 620),
+                                           rel_month <= 3) %>% 
+                         tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
+                                                                       rec_area >= 630 ~ 630,
+                                                                       .default = rec_area)),
+                                           rel_area = factor(rel_area)) %>% 
+                         tidytable::count(rel_area, rec_area) %>% 
+                         tidytable::mutate(sum = sum(n),
+                                           prop = n / sum,
+                                           season = 'A',
+                                           .by = rel_area)) %>% 
+  tidytable::bind_rows(tag_data %>% 
+                         dplyr::rename_all(tolower) %>%
+                         tidytable::drop_na(rec_area) %>%
+                         tidytable::filter(rel_area %in% c(610, 620),
+                                           rel_month > 3) %>% 
+                         tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
+                                                                       rec_area >= 630 ~ 630,
+                                                                       .default = rec_area)),
+                                           rel_area = factor(rel_area)) %>% 
+                         tidytable::count(rel_area, rec_area) %>% 
+                         tidytable::mutate(sum = sum(n),
+                                           prop = n / sum,
+                                           season = 'B',
+                                           .by = rel_area))
+
+# function to shift text/arrows for plotting
+shift_coords <- function(move_df){
+  move_df %>%
+    tidytable::left_join(centroids, by = c("rel_area" = "REP_AREA")) %>%
+    tidytable::rename(from_geometry = geometry) %>%
+    tidytable::left_join(centroids, by = c("rec_area" = "REP_AREA")) %>%
+    tidytable::rename(to_geometry = geometry) %>%
+    tidytable::mutate(from_x = st_coordinates(from_geometry)[, 1], # get from centroids
+                      from_y = st_coordinates(from_geometry)[, 2],
+                      to_x = st_coordinates(to_geometry)[, 1], # get to centroids
+                      to_y = st_coordinates(to_geometry)[, 2]) %>% 
+    tidytable::select(rel_area, rec_area, prop, from_x, from_y, to_x, to_y) %>% 
+    tidytable::mutate(to_x = case_when(rel_area == '610' & rec_area == '610' ~ -165.3,
+                                       rel_area == '610' & rec_area == '620' ~ -157,
+                                       rel_area == '610' & rec_area == '630' ~ -153,
+                                       rel_area == '620' & rec_area == '610' ~ -161,
+                                       rel_area == '620' & rec_area == '630' ~ -153,
+                                       .default = to_x),
+                      to_y = case_when(rel_area == '610' & rec_area == '620' ~ 53.5,
+                                       rel_area == '610' & rec_area == '630' ~ 54,
+                                       rel_area == '620' & rec_area == '610' ~ 53.5,
+                                       rel_area == '620' & rec_area == '630' ~ 56,
+                                       rel_area == '620' & rec_area == '620' ~ 54.3,
+                                       .default = to_y))
+}
+
+
+# plot for all seasons
+move_df_with_coords <- shift_coords(move_df %>% filter(season == 'ALL'))
+
+ggplot() +
+  geom_sf(data = nmfs_areas %>% filter(REP_AREA != 517), alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
+  # geom_sf_text(data = goa_west_curr, aes(label = STRATUM)) +
+  geom_sf(data = tag_points, aes(geometry = geometry, color = as.factor(program))) +
+  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
+           ylim = c(52, 58),      # Latitude
+           crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
+  labs(title = "610 & 620 tag releases (Year-round)",
+       x = "Longitude",
+       y = "Latitude",
+       fill = 'Strata',
+       color = 'Program') +
+  geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
+             aes(x = from_x, y = from_y, 
+                 xend = to_x - 0.07 * (to_x - from_x), 
+                 yend = to_y - 0.07 * (to_y - from_y)),
+             linewidth = 1, curvature = 0.4, lineend = 'round', color = "grey",
+             arrow = arrow(length = unit(0.3, "cm"), type = "closed", ends = "last")) + # movement arrows (from != to)
+  geom_text(data = move_df_with_coords %>% filter(rel_area != rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) + # from != to
+  geom_text(data = move_df_with_coords %>% filter(rel_area == rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) +
+  theme(panel.background = element_rect(fill = "aliceblue"))
+
+ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Tag_Release_Map_All.png'), width = 10, height = 10, units = "in", dpi = 300)
+
+
+
+# plot for A season
+move_df_with_coords <- shift_coords(move_df %>% filter(season == 'A'))
+
+ggplot() +
+  geom_sf(data = nmfs_areas %>% filter(REP_AREA != 517), alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
+  # geom_sf_text(data = goa_west_curr, aes(label = STRATUM)) +
+  geom_sf(data = tag_points, aes(geometry = geometry, color = as.factor(program))) +
+  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
+           ylim = c(52, 58),      # Latitude
+           crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
+  labs(title = "610 & 620 tag releases (A season)",
+       x = "Longitude",
+       y = "Latitude",
+       fill = 'Strata',
+       color = 'Program') +
+  geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
+             aes(x = from_x, y = from_y, 
+                 xend = to_x - 0.07 * (to_x - from_x), 
+                 yend = to_y - 0.07 * (to_y - from_y)),
+             linewidth = 1, curvature = 0.4, lineend = 'round', color = "grey",
+             arrow = arrow(length = unit(0.3, "cm"), type = "closed", ends = "last")) + # movement arrows (from != to)
+  geom_text(data = move_df_with_coords %>% filter(rel_area != rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) + # from != to
+  geom_text(data = move_df_with_coords %>% filter(rel_area == rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) +
+  theme(panel.background = element_rect(fill = "aliceblue"))
+
+ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Tag_Release_Map_A.png'), width = 10, height = 10, units = "in", dpi = 300)
+
+
+# plot for B season
+move_df_with_coords <- shift_coords(move_df %>% filter(season == 'B'))
+
+ggplot() +
+  geom_sf(data = nmfs_areas %>% filter(REP_AREA != 517), alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
+  # geom_sf_text(data = goa_west_curr, aes(label = STRATUM)) +
+  geom_sf(data = tag_points, aes(geometry = geometry, color = as.factor(program))) +
+  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
+           ylim = c(52, 58),      # Latitude
+           crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
+  labs(title = "610 & 620 tag releases (B season)",
+       x = "Longitude",
+       y = "Latitude",
+       fill = 'Strata',
+       color = 'Program') +
+  geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
+             aes(x = from_x, y = from_y, 
+                 xend = to_x - 0.07 * (to_x - from_x), 
+                 yend = to_y - 0.07 * (to_y - from_y)),
+             linewidth = 1, curvature = 0.4, lineend = 'round', color = "grey",
+             arrow = arrow(length = unit(0.3, "cm"), type = "closed", ends = "last")) + # movement arrows (from != to)
+  geom_text(data = move_df_with_coords %>% filter(rel_area != rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) + # from != to
+  geom_text(data = move_df_with_coords %>% filter(rel_area == rec_area),
+            aes(x = to_x, y = to_y, label = paste(round(prop * 100, 1), "%", sep = '')), alpha = 1, size = 6.5) +
+  theme(panel.background = element_rect(fill = "aliceblue"))
+
+ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Tag_Release_Map_B.png'), width = 10, height = 10, units = "in", dpi = 300)
+
+
+
+
+
+
+
+
+# create table of release/recovery locations
+tag_data %>% 
+  dplyr::rename_all(tolower) %>%
+  tidytable::drop_na() %>% 
+  tidytable::mutate(rel_area = case_when(rel_area < 600 ~ 599,
+                                         rel_area >= 630 ~ 639,
+                                         .default = rel_area),
+                    rec_area = case_when(rec_area < 600 ~ 599,
+                                         rec_area >= 630 ~ 639,
+                                         .default = rec_area)) %>% 
+  tidytable::count(rel_area, rec_area) %>% 
+  tidytable::pivot_wider(names_from = rec_area, values_from = n, values_fill = 0)
+ 
+
+
