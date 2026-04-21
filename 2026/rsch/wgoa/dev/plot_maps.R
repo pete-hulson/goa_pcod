@@ -142,7 +142,8 @@ centroids <- nmfs_areas %>%
 move_df <- tag_data %>% 
   dplyr::rename_all(tolower) %>%
   tidytable::drop_na(rec_area) %>%
-  tidytable::filter(rel_area %in% c(610, 620)) %>% 
+  tidytable::filter(rel_area %in% c(610, 620),
+                    dal > 30) %>% 
   tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
                                                 rec_area >= 630 ~ 630,
                                                 .default = rec_area)),
@@ -156,7 +157,8 @@ move_df <- tag_data %>%
                          dplyr::rename_all(tolower) %>%
                          tidytable::drop_na(rec_area) %>%
                          tidytable::filter(rel_area %in% c(610, 620),
-                                           rel_month <= 3) %>% 
+                                           rel_month <= 3,
+                                           dal > 90) %>% 
                          tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
                                                                        rec_area >= 630 ~ 630,
                                                                        .default = rec_area)),
@@ -170,7 +172,8 @@ move_df <- tag_data %>%
                          dplyr::rename_all(tolower) %>%
                          tidytable::drop_na(rec_area) %>%
                          tidytable::filter(rel_area %in% c(610, 620),
-                                           rel_month > 3) %>% 
+                                           rel_month > 3,
+                                           dal > 90) %>% 
                          tidytable::mutate(rec_area = factor(case_when(rec_area < 600 ~ 517,
                                                                        rec_area >= 630 ~ 630,
                                                                        .default = rec_area)),
@@ -223,7 +226,6 @@ ggplot() +
   labs(title = "610 & 620 tag releases (Year-round)",
        x = "Longitude",
        y = "Latitude",
-       fill = 'Strata',
        color = 'Program') +
   geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
              aes(x = from_x, y = from_y, 
@@ -256,7 +258,6 @@ ggplot() +
   labs(title = "610 & 620 tag releases (A season)",
        x = "Longitude",
        y = "Latitude",
-       fill = 'Strata',
        color = 'Program') +
   geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
              aes(x = from_x, y = from_y, 
@@ -287,8 +288,7 @@ ggplot() +
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
   labs(title = "610 & 620 tag releases (B season)",
        x = "Longitude",
-       y = "Latitude",
-       fill = 'Strata',
+       y = "Latitude",\
        color = 'Program') +
   geom_curve(data = move_df_with_coords %>% filter(rel_area != rec_area),
              aes(x = from_x, y = from_y, 
