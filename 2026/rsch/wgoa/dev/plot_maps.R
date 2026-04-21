@@ -305,12 +305,6 @@ ggplot() +
 ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Tag_Release_Map_B.png'), width = 10, height = 10, units = "in", dpi = 300)
 
 
-
-
-
-
-
-
 # create table of release/recovery locations
 tag_data %>% 
   dplyr::rename_all(tolower) %>%
@@ -323,6 +317,54 @@ tag_data %>%
                                          .default = rec_area)) %>% 
   tidytable::count(rel_area, rec_area) %>% 
   tidytable::pivot_wider(names_from = rec_area, values_from = n, values_fill = 0)
- 
+
+
+# plot fishery locations ----
+
+obs_fish <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'fish_obs_catch.csv'))
+
+obs_catch <- obs_fish %>% 
+  tidytable::drop_na(lat, lon) %>% 
+  tidytable::mutate(month = month(hday),
+                    season = case_when(month <= 3 ~ 'A',
+                                       month > 3 ~ 'B')) %>% 
+  st_as_sf(., coords = c("lon", "lat"), crs = 4326)
+
+
+ggplot() +
+  geom_sf(data = nmfs_areas %>% filter(REP_AREA != 517), alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = obs_catch %>% filter(season == 'A'), aes(geometry = geometry, color = as.factor(gear))) +
+  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
+           ylim = c(52, 58),      # Latitude
+           crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
+  labs(title = "Fishery events (A season, 77%)",
+       x = "Longitude",
+       y = "Latitude",
+       color = 'Gear') +
+  theme(panel.background = element_rect(fill = "aliceblue"))
+
+ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Fishery_A.png'), width = 10, height = 10, units = "in", dpi = 300)
+
+
+ggplot() +
+  geom_sf(data = nmfs_areas %>% filter(REP_AREA != 517), alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
+  geom_sf(data = obs_catch %>% filter(season == 'B'), aes(geometry = geometry, color = as.factor(gear))) +
+  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
+           ylim = c(52, 58),      # Latitude
+           crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
+  labs(title = "Fishery events (B season, 23%)",
+       x = "Longitude",
+       y = "Latitude",
+       color = 'Gear') +
+  theme(panel.background = element_rect(fill = "aliceblue"))
+
+ggsave(here::here(new_year, 'rsch', 'wgoa', 'figs', 'Fishery_B.png'), width = 10, height = 10, units = "in", dpi = 300)
+
+
+
 
 
