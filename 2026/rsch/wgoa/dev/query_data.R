@@ -1,5 +1,6 @@
 library(afscdata)
 library(DR4SS)
+library(tidyverse)
 
 # get connected
 db = 'akfin'
@@ -8,6 +9,43 @@ twl_srvy = 47
 srv_sp = 21720
 fsh_sp_code = 202
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+
+# trawl cpue query ----
+# get gap_products cpue
+dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
+  dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_cruise')),
+                    by = c('CRUISEJOIN')) %>% 
+  dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('gap_products.akfin_cpue')),
+                    by = c('HAULJOIN')) %>% 
+  dplyr::rename_all(tolower) %>% 
+  dplyr::select(year,
+                survey_definition_id,
+                species_code,
+                stratum,
+                hauljoin,
+                latitude_dd_start,
+                latitude_dd_end,
+                longitude_dd_start,
+                longitude_dd_end,
+                cpue_nokm2,
+                cpue_kgkm2) %>% 
+  dplyr::filter(survey_definition_id %in% twl_srvy,
+                species_code %in% srv_sp,
+                year >= 1990) %>% 
+  dplyr::mutate(lat_mid = (latitude_dd_start + latitude_dd_end) / 2,
+                long_mid = (longitude_dd_start + longitude_dd_end) / 2) %>% 
+  dplyr::select(year,
+                species_code,
+                stratum,
+                hauljoin,
+                survey = survey_definition_id,
+                numcpue = cpue_nokm2,
+                wt_cpue = cpue_kgkm2,
+                lat_mid,
+                long_mid) -> cpue_q
+
+dplyr::collect(cpue_q) %>% 
+  vroom::vroom_write(., here::here(new_year, 'rsch', 'wgoa', 'data', 'twl_srvy_cpue.csv'), delim = ",")
 
 # trawl age query ----
 dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>% 
@@ -91,6 +129,8 @@ dplyr::tbl(conn, dplyr::sql('gap_products.akfin_haul')) %>%
 dplyr::collect(twl_q) %>% 
   vroom::vroom_write(., here::here(new_year, 'rsch', 'wgoa', 'data', 'twl_srvy_lenfreq.csv'), delim = ",")
 
+
+
 # domestic fishery observer catch data ----
 dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
   dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')) %>% 
@@ -160,6 +200,7 @@ dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>%
                 numb = extrapolated_number,
                 cruise = cruise.x,
                 permit = permit.y,
+                ves_akr_adfg = catcher_boat_adfg,
                 haul = haul.x,
                 weight = extrapolated_weight,
                 sex = sex.y,

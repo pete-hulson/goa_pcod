@@ -1,15 +1,10 @@
 
 # load libraries
-library(sf)
-library(ggplot2)
 library(tidyverse)
+library(sf)
 library(akgfmaps)
-library(geosphere)
-library(janitor)
 library(gridExtra)
 library(grid)
-# remotes::install_github("afsc-gap-products/akgfmaps", build_vignettes = TRUE)
-
 
 # get year folder
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
@@ -172,13 +167,22 @@ move_df <- all_tags %>%
 
 
 # filter to goa releases and get centroids of the geometry for plotting
-tag_points <- st_as_sf(all_tags %>% filter(rel_area %in% c(610, 620)), coords = c("long_rel", "lat_rel"), crs = 4326)
+nmfs_areas <- akgfmaps::get_nmfs_areas(set.crs = "EPSG:4326")
 nmfs_areas_plot <- nmfs_areas %>% 
   dplyr::filter(REP_AREA %in% c(517, 610, 620, 630))
 centroids <- nmfs_areas_plot %>%
   dplyr::group_by(REP_AREA) %>%
   dplyr::summarise(geometry = st_centroid(geometry)) %>%
   dplyr::ungroup()
+goa_layers <- akgfmaps::get_base_layers(select.region = "goa", set.crs = "EPSG:3338")
+tag_points <- st_as_sf(all_tags %>% filter(rel_area %in% c(610, 620)), coords = c("long_rel", "lat_rel"), crs = 4326)
+
+# filter strata west of -156
+strata_with_coords_curr <- akgfmaps::get_base_layers(select.region = "goa", set.crs = "EPSG:3338")$survey.strata %>%
+  st_centroid() %>%
+  st_transform(crs = 4326) %>% # Transform to WGS84 (Lat/Lon)
+  st_coordinates() %>%
+  as.data.frame()
 
 # get 610 and 620 survey strata for plotting
 goa_west_curr <- akgfmaps::get_base_layers(select.region = "goa", set.crs = "EPSG:3338")$survey.strata %>%
@@ -251,7 +255,7 @@ ggplot() +
   geom_sf(data = nmfs_areas %>% filter(REP_AREA %in% c(610, 620)), alpha = 0, color = "black", size = 0.1) +
   geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
   geom_sf(data = tag_points, aes(geometry = geometry, color = as.factor(program))) +
-  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  geom_sf(data = goa_layers$akland, fill = "#2c3e50", color = "white") +
   coord_sf(xlim = c(-170, -153),
            ylim = c(52, 58),
            crs = "+proj=longlat +datum=WGS84") +
@@ -312,7 +316,7 @@ ggplot() +
   geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
   # geom_sf_text(data = goa_west_curr, aes(label = STRATUM)) +
   geom_sf(data = tag_points %>% dplyr::filter(rel_season == 'A'), aes(geometry = geometry, color = as.factor(program))) +
-  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  geom_sf(data = goa_layers$akland, fill = "#2c3e50", color = "white") +
   coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
            ylim = c(52, 58),      # Latitude
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
@@ -346,7 +350,7 @@ ggplot() +
   geom_sf(data = goa_west_curr, alpha = 0, color = "black", size = 0.1) +
   # geom_sf_text(data = goa_west_curr, aes(label = STRATUM)) +
   geom_sf(data = tag_points, aes(geometry = geometry, color = as.factor(program))) +
-  geom_sf(data = goa_layers_hist$akland, fill = "#2c3e50", color = "white") +
+  geom_sf(data = goa_layers$akland, fill = "#2c3e50", color = "white") +
   coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
            ylim = c(52, 58),      # Latitude
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
