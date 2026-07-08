@@ -17,8 +17,16 @@ ggplot() +
   coord_sf(xlim = c(-170, -153),  # Longitude (Negative for West)
            ylim = c(52, 58),      # Latitude
            crs = "+proj=longlat +datum=WGS84") + # View in Lat/Lon for easier verification
-  geom_point(data = srvy_cpue %>% filter(year >=2015), aes(x = long_mid, y = lat_mid, color = wt_cpue), size = 0.5) +
+  geom_point(data = srvy_cpue %>% 
+    tidytable::mutate(wt_index = (wt_cpue - mean(wt_cpue, na.rm = TRUE)) / sd(wt_cpue, na.rm = TRUE)) %>% 
+    tidytable::filter(wt_index <= 5), 
+  aes(x = long_mid, y = lat_mid, color = wt_index), size = 0.5) +
+  scale_color_gradient(low = "blue", high = "red") +
   theme_minimal() +
   labs(title = "GOA NMFS Management Areas and Survey CPUE",
        x = "Longitude",
        y = "Latitude")
+
+srvy_cpue %>% 
+  tidytable::mutate(wt_index = (wt_cpue - mean(wt_cpue, na.rm = TRUE)) / sd(wt_cpue, na.rm = TRUE))
+
