@@ -8,7 +8,7 @@ new_year = 2026
 
 
 # release joined with recoveries for all available data
-rel_rec <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'all_tags.csv'))
+rel_rec <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'tag_data', 'all_tags.csv'))
 
 
 # release data

@@ -10,7 +10,7 @@ new_year = 2026
 
 # get external data ----
 
-# read in ss3 files
+## read in ss3 files ----
 bs_dat_ss3 <- r4ss::SS_readdat(here::here(new_year, 'rsch', 'wgoa', 'data', 'ss3_files', 'bs', 'BSPcod24_OCT_5cm_NB.dat'))
 bs_rep_ss3 <- r4ss::SS_output(dir = here::here(new_year, 'rsch', 'wgoa', 'data', 'ss3_files', 'bs'),
                               verbose = FALSE,
@@ -20,16 +20,13 @@ goa_rep_ss3 <- r4ss::SS_output(dir = here::here(new_year, 'rsch', 'wgoa', 'data'
                                verbose = FALSE,
                                printstats = FALSE)
 
+## fishery data (from steve) ----
+fshry_dat <- readRDS(here::here(new_year, 'rsch', 'wgoa', 'data', 'fshry_data', 'PETE_DATA.rds'))
 
-
-
-# fishery data (from steve)
-fshry_dat <- readRDS(here::here(new_year, 'rsch', 'wgoa', 'data', 'PETE_DATA.rds'))
-
-# fishery specimen data
+## fishery specimen data ----
 if('fish_specimen_goa.csv' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 'data', 'fshry_data'))){
-  goa_spec_fsry <- vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'fshry_data', 'fish_specimen_goa.csv')
-  bs_spec_fsry <- vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'fshry_data', 'fish_specimen_bs.csv')
+  goa_spec_fsry <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'fshry_data', 'fish_specimen_goa.csv'))
+  bs_spec_fsry <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'fshry_data', 'fish_specimen_bs.csv'))
 } else{
   db = 'akfin'
   conn = afscdata::connect(db) 
@@ -97,21 +94,18 @@ if('fish_specimen_goa.csv' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 
   
 }
 
-
-
-
-# survey data
+## survey data ----
 if('srvy_data' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 'data'))){
-  goa_srv_dat <- list(lfreq = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'lfreq.csv'),
-                      specimen = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'specimen.csv'),
-                      cpue = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'cpue.csv'),
-                      strata = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'strata.csv'))
-  bs_srv_dat <- list(lfreq = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'lfreq.csv'),
-                     specimen = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'specimen.csv'),
-                     cpue = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'cpue.csv'),
-                     strata = vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'strata.csv'))
-  goa_spec_srvy <- vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'specimen_wt.csv')
-  bs_spec_srvy <- vroom::vroom(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'specimen_wt.csv')
+  goa_srv_dat <- list(lfreq = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'lfreq.csv')),
+                      specimen = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'specimen.csv')),
+                      cpue = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'cpue.csv')),
+                      strata = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'strata.csv')))
+  bs_srv_dat <- list(lfreq = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'lfreq.csv')),
+                     specimen = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'specimen.csv')),
+                     cpue = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'cpue.csv')),
+                     strata = vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'strata.csv')))
+  goa_spec_srvy <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'specimen_wt.csv'))
+  bs_spec_srvy <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'nebs', 'specimen_wt.csv'))
   
 } else{
   # surveyISS data
@@ -213,17 +207,83 @@ if('srvy_data' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 'data'))){
 
 }
 
-# specimen data
+## survey comps ----
+if('srvy_index' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 'data'))){
+  goa_acomp <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_index', 'goa', 'cod_resampled_age_w_c_egoa.csv'))
+  goa_lcomp <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_index', 'goa', 'cod_resampled_length_w_c_egoa.csv'))
+} else{
+  
+  surveyISS::srvy_iss_goa_w_c_e(iters = 1,
+                                lfreq_data = goa_srv_dat$lfreq,
+                                specimen_data = goa_srv_dat$specimen,
+                                cpue_data = goa_srv_dat$cpue,
+                                strata_data = goa_srv_dat$strata,
+                                yrs = 1990,
+                                bin = 1,
+                                boot_hauls = FALSE,
+                                boot_lengths = FALSE,
+                                boot_ages = FALSE,
+                                al_var = FALSE,
+                                al_var_ann = FALSE,
+                                age_err = FALSE,
+                                len_samples = NULL,
+                                age_samples = NULL,
+                                plus_len = NULL,
+                                plus_age = NULL,
+                                by_strata = FALSE,
+                                global = FALSE,
+                                region = "goa",
+                                save_interm = TRUE,
+                                save_stats = FALSE,
+                                save = 'cod')
+  
+  old_folder <- here::here('output')
+  new_folder <- here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_index')
+  fs::dir_copy(path = old_folder, new_path = new_folder)
+  fs::dir_delete(path = old_folder)
+}
 
-
-
-
-
-
+## goa survey index ----
+if('index.csv' %in% list.files(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_index', 'goa'))){
+  goa_twl_indx <- vroom::vroom(here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'index.csv'))
+} else{
+  # survey index data
+  db = 'akfin'
+  conn = afscdata::connect(db)  
+  
+  ## trawl survey index data ----
+  goa_twl_indx <- dplyr::tbl(conn, dplyr::sql('gap_products.akfin_biomass')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(year,
+                  survey_definition_id,
+                  area_id,
+                  species_code,
+                  population_count,
+                  population_var) %>% 
+    dplyr::filter(year <= new_year,
+                  survey_definition_id == 47,
+                  species_code == 21720,
+                  area_id %in% c(803, 804, 805)) %>% 
+    dplyr::select(year,
+                  survey = survey_definition_id, 
+                  strata = area_id, 
+                  species_code,
+                  num = population_count,
+                  num_var = population_var) %>%  
+    dplyr::mutate(region = case_when(strata == 803 ~ 'cgoa',
+                                     strata == 804 ~ 'cgoa',
+                                     strata == 805 ~ 'wgoa')) %>% 
+    dplyr::summarise(num = sum(num, na.rm = TRUE),
+                     num_var = sum(num_var, na.rm = TRUE),
+                     .by = c(year, region)) %>% 
+    dplyr::collect()
+  
+  vroom::vroom_write(goa_twl_indx, here::here(new_year, 'rsch', 'wgoa', 'data', 'srvy_data', 'goa', 'index.csv'), delim = ",")
+}
 
 
 # model dim ----
-cod_data <- list(years = min(bs_dat_ss3$styr, goa_dat_ss3$styr):max(bs_dat_ss3$endyr, goa_dat_ss3$endyr),
+cod_data <- list(years = 1991:max(bs_dat_ss3$endyr, goa_dat_ss3$endyr),
                  ages = goa_dat_ss3$agebin_vector,
                  lens = bs_dat_ss3$lbin_vector,
                  n_pop = 3,
@@ -238,7 +298,7 @@ cod_data <- list(years = min(bs_dat_ss3$styr, goa_dat_ss3$styr):max(bs_dat_ss3$e
 
 # bio processes ----
 
-# weight-at-age: empirical waa for combined fishery-survey
+## weight-at-age: empirical waa for combined fishery-survey ----
 waa <- goa_spec_srvy %>% 
   tidytable::left_join(goa_srv_dat$strata %>% 
                          tidytable::mutate(region = case_when(area_id == 805 ~ 'wgoa',
@@ -258,7 +318,7 @@ waa <- goa_spec_srvy %>%
                                     .default = age)) %>% 
   tidytable::summarise(waa = mean(weight), .by = c(region, age))
 
-# maturity-at-age
+## maturity-at-age ----
 mataa <- bs_rep_ss3$endgrowth %>% 
   dplyr::rename_all(tolower) %>% 
   tidytable::select(age = real_age,
@@ -282,103 +342,391 @@ mataa <- bs_rep_ss3$endgrowth %>%
                          tidytable::select(region, age, mataa = len_mat))
 
 
-# ageing error
+## ageing error ----
+bs_ageingerror1 <- tidytable::bind_cols(age_c = 12:0,
+                                        as.data.frame(bs_rep_ss3$AAK[1,,2]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,3]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,4]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,5]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,6]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,7]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,8]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,9]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,10]),
+                                        as.data.frame(bs_rep_ss3$AAK[1,,11])) %>% 
+  tidytable::arrange(age_c) %>% 
+  pivot_longer(cols = 2:length(colnames(.))) %>% 
+  tidytable::select(-name) %>% 
+  tidytable::bind_cols(., expand.grid(age_r = 1:10, age_c = 0:12) %>% tidytable::select(-age_c)) %>% 
+  tidytable::mutate(age_c = case_when(age_c == 0 ~ 1,
+                                      age_c >= 10 ~ 10,
+                                      .default = age_c)) %>% 
+  tidytable::summarise(value = sum(value), .by = c(age_c, age_r)) %>% 
+  tidytable::pivot_wider(names_from = age_c, values_from = value) %>% 
+  select(-age_r)
+
+bs_ageingerror2 <- tidytable::bind_cols(age_c = 12:0,
+                                        as.data.frame(bs_rep_ss3$AAK[2,,2]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,3]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,4]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,5]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,6]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,7]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,8]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,9]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,10]),
+                                        as.data.frame(bs_rep_ss3$AAK[2,,11])) %>% 
+  tidytable::arrange(age_c) %>% 
+  pivot_longer(cols = 2:length(colnames(.))) %>% 
+  tidytable::select(-name) %>% 
+  tidytable::bind_cols(., expand.grid(age_r = 1:10, age_c = 0:12) %>% tidytable::select(-age_c)) %>% 
+  tidytable::mutate(age_c = case_when(age_c == 0 ~ 1,
+                                      age_c >= 10 ~ 10,
+                                      .default = age_c)) %>% 
+  tidytable::summarise(value = sum(value), .by = c(age_c, age_r)) %>% 
+  tidytable::pivot_wider(names_from = age_c, values_from = value) %>% 
+  select(-age_r)
+
+goa_ageingerror1 <- tidytable::bind_cols(age_c = 10:1,
+                                         as.data.frame(goa_rep_ss3$AAK[1,,2]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,3]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,4]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,5]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,6]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,7]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,8]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,9]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,10]),
+                                         as.data.frame(goa_rep_ss3$AAK[1,,11])) %>% 
+  tidytable::arrange(age_c) %>% 
+  pivot_longer(cols = 2:length(colnames(.))) %>% 
+  tidytable::select(-name) %>% 
+  tidytable::bind_cols(., expand.grid(age_r = 1:10, age_c = 1:10) %>% tidytable::select(-age_c)) %>% 
+  tidytable::pivot_wider(names_from = age_c, values_from = value) %>% 
+  select(-age_r)
+
+goa_ageingerror2 <- tidytable::bind_cols(age_c = 10:1,
+                                         as.data.frame(goa_rep_ss3$AAK[2,,2]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,3]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,4]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,5]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,6]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,7]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,8]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,9]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,10]),
+                                         as.data.frame(goa_rep_ss3$AAK[2,,11])) %>% 
+  tidytable::arrange(age_c) %>% 
+  pivot_longer(cols = 2:length(colnames(.))) %>% 
+  tidytable::select(-name) %>% 
+  tidytable::bind_cols(., expand.grid(age_r = 1:10, age_c = 1:10) %>% tidytable::select(-age_c)) %>% 
+  tidytable::pivot_wider(names_from = age_c, values_from = value) %>% 
+  select(-age_r)
+
+# bs block 1
+bs_ageingerror1 %>% 
+  tidytable::mutate(region = 'bs',
+                    time_block = 1) %>% 
+  tidytable::bind_cols(age = 1:10) %>% 
+  tidytable::select(region, time_block, age, as.character(1:10)) %>% 
+  tidytable::bind_rows(# bs block 2
+    bs_ageingerror2 %>% 
+      tidytable::mutate(region = 'bs',
+                        time_block = 2) %>% 
+      tidytable::bind_cols(age = 1:10) %>% 
+      tidytable::select(region, time_block, age, as.character(1:10))) %>% 
+  tidytable::bind_rows(# goa block 1
+    goa_ageingerror1 %>% 
+      tidytable::mutate(region = 'wgoa',
+                        time_block = 1) %>% 
+      tidytable::bind_cols(age = 1:10) %>% 
+      tidytable::select(region, time_block, age, as.character(1:10))) %>% 
+  tidytable::bind_rows(# goa block 2
+    goa_ageingerror2 %>% 
+      tidytable::mutate(region = 'wgoa',
+                        time_block = 2) %>% 
+      tidytable::bind_cols(age = 1:10) %>% 
+      tidytable::select(region, time_block, age, as.character(1:10))) %>% 
+  tidytable::bind_rows(# goa block 1
+    goa_ageingerror1 %>% 
+      tidytable::mutate(region = 'cgoa',
+                        time_block = 1) %>% 
+      tidytable::bind_cols(age = 1:10) %>% 
+      tidytable::select(region, time_block, age, as.character(1:10))) %>% 
+  tidytable::bind_rows(# goa block 2
+    goa_ageingerror2 %>% 
+      tidytable::mutate(region = 'cgoa',
+                        time_block = 2) %>% 
+      tidytable::bind_cols(age = 1:10) %>% 
+      tidytable::select(region, time_block, age, as.character(1:10))) -> ageingerror
 
 
-bs_rep_ss3$age_error_mean %>% 
-  tidytable::pivot_longer(cols = c(type1, type2)) %>% 
-  tidytable::mutate(mean_age = value - 0.5) %>% 
-  tidytable::select(-value) %>% 
-  tidytable::filter(age %in% 1:10) %>% 
-  tidytable::left_join(bs_rep_ss3$age_error_sd %>% 
-                         tidytable::pivot_longer(cols = c(type1, type2)) %>% 
-                         tidytable::rename(sd_ae = value) %>% 
-                         tidytable::filter(age %in% 1:10)) %>% 
-  tidytable::left_join(expand.grid(age = 1:10, mod_age = 1:10)) %>% 
-  tidytable::mutate(ae = stats::dnorm(mod_age, mean = mean_age, sd = sd_ae),
-                    .by = age) %>% 
-  tidytable::pivot_wider(names_from = mod_age, values_from = ae)
 
-goa_rep_ss3$agedbase
-goa_rep_ss3$age_error_sd
+## size-age transition ----
+
+# bs
+as.data.frame(bs_rep_ss3$ALK[,,2]) %>% 
+  tidytable::mutate(length = as.numeric(rownames(.))) %>% 
+  tidytable::arrange(length) %>% 
+  pivot_longer(cols = 1:(length(colnames(.)) - 1)) %>% 
+  tidytable::mutate(age = as.numeric(name)) %>% 
+  tidytable::filter(age != 0,
+                    age <= 10) %>% 
+  tidytable::mutate(length = case_when(length <= 4.5 ~ ceiling(length / 4.5) * 4.5,
+                                       length > 4.5 ~ ceiling(length / 5) * 5 - 0.5)) %>% 
+  tidytable::summarise(value = sum(value), .by = c(age, length)) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = value) %>% 
+  tidytable::mutate(region = 'bs') %>% 
+  tidytable::select(region, length, as.character(1:10)) %>% 
+  tidytable::bind_rows(
+    # wgoa 
+    goa_acomp %>% 
+      tidytable::filter(region == 'wgoa',
+                        sex == 0) %>% 
+      tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                        age >= 10 ~ 10,
+                                        .default = age)) %>% 
+      tidytable::summarise(mean_len = mean(mean_length),
+                           sd_len = mean(sd_length),
+                           .by = c(region, age)) %>% 
+      tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+      tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                          length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
+      tidytable::select(-mean_len, -sd_len) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = szage)) %>% 
+  tidytable::bind_rows(
+    #cgoa
+    goa_acomp %>% 
+      tidytable::filter(region != 'wgoa',
+                        sex == 0) %>% 
+      tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                        age >= 10 ~ 10,
+                                        .default = age)) %>% 
+      tidytable::summarise(mean_len = mean(mean_length),
+                           sd_len = mean(sd_length),
+                           .by = c(age)) %>% 
+      tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+      tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                          length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len)),
+                        region = 'cgoa') %>% 
+      tidytable::select(-mean_len, -sd_len) %>% 
+      tidytable::pivot_wider(names_from = age, values_from = szage) %>% 
+      tidytable::select(region, length, as.character(1:10))) -> sizeagetrans
+
+## concat ----
+
+cod_data <- c(cod_data,
+              list(WAA = waa,
+                   MatAA = mataa,
+                   AgeingError = ageingerror,
+                   SizeAgeTrans = sizeagetrans))
+
+
+# fishery data ----
+
+## total catch ----
+obscatch <- fshry_dat$DATA_610$CATCH %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::mutate(region = tolower(region_grp)) %>% 
+  tidytable::select(region, year, seas = season, catch)
+
+usecatch <- obscatch %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(usecatch = 1)
+
+## age comps ----
+obsfishagecomps <- fshry_dat$DATA_610$ACOMP %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::mutate(region = tolower(region_grp)) %>% 
+  tidytable::select(region, year, seas = season, as.character(1:10))
+
+usefishagecomps <- obsfishagecomps %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(use = 1)
+
+iss_fishagecomps <- obsfishagecomps %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(iss = case_when(region == 'bs' ~ 100,
+                                    region != 'bs' ~ 50))
+
+wt_fishagecomps <- obsfishagecomps %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(wt = 1)
 
 
 
+## length comps ----
+obsfishlencomps <- fshry_dat$DATA_610$LCOMP %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::mutate(region = tolower(region_grp)) %>% 
+  tidytable::select(region, year, seas = season, as.character(bs_dat_ss3$lbin_vector))
+
+usefishlencomps <- obsfishlencomps %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(lencomp = 1) %>% 
+  tidytable::left_join(obsfishagecomps %>% 
+                         tidytable::select(region, year, seas) %>% 
+                         tidytable::mutate(agecomp = 1)) %>% 
+  tidytable::mutate(agecomp = replace_na(agecomp, 0),
+                    use = case_when(lencomp == 1 & agecomp == 0 ~ 1,
+                                    .default = 0)) %>% 
+  tidytable::select(region, year, seas, use)
+
+iss_fishlencomps <- obsfishlencomps %>% 
+  tidytable::select(region, year, seas) %>% 
+  tidytable::mutate(iss = case_when(region == 'bs' ~ 500,
+                                    region != 'bs' ~ 250))
+
+wt_fishlencomps <- usefishlencomps %>% 
+  tidytable::rename(wt = use)
+
+## concat ----
+cod_data <- c(cod_data,
+              list(ObsCatch = obscatch,
+                   catch_units = 1,
+                   UseCatch = usecatch,
+                   ObsFishAgeComps = obsfishagecomps,
+                   UseFishAgeComps = usefishagecomps,
+                   Wt_FishAgeComps = wt_fishagecomps,
+                   ISS_FishAgeComps = iss_fishagecomps,
+                   ObsFishLenComps = obsfishlencomps,
+                   UseFishLenComps = usefishlencomps,
+                   ISS_FishLenComps = iss_fishlencomps,
+                   Wt_FishLenComps = wt_fishlencomps,
+                   FishAgeComps_LikeType = 0,
+                   FishLenComps_LikeType = 0))
 
 
-
-
-
-
-
-
-
-
-# get connected
-db = 'akfin'
-conn = afscdata::connect(db)  
-
-new_year = 2025
-twl_srvy = 47
-srv_sp = 20510
-area = 'goa'
 
 # survey data ----
 
-## trawl survey index data ----
-twl_indx <- dplyr::tbl(conn, dplyr::sql('gap_products.akfin_biomass')) %>% 
-  dplyr::rename_all(tolower) %>% 
-  dplyr::select(year,
-                survey_definition_id,
-                area_id,
-                species_code,
-                biomass_mt,
-                biomass_var,
-                population_count,
-                population_var) %>% 
-  dplyr::filter(year <= new_year,
-                survey_definition_id == twl_srvy,
-                species_code == srv_sp,
-                area_id %in% c(803, 804, 805, 99903)) %>% 
-  dplyr::select(year,
-                survey = survey_definition_id, 
-                strata = area_id, 
-                species_code,
-                biom = biomass_mt, 
-                biom_var = biomass_var,
-                num = population_count,
-                num_var = population_var) %>%  
-  dplyr::mutate(area = case_when(strata == 803 ~ 'central',
-                                 strata == 804 ~ 'eastern',
-                                 strata == 805 ~ 'western',
-                                 strata == 99903 ~ 'goa')) %>% 
-  dplyr::collect()
+## index ----
+obssrvidx <- bs_dat_ss3$CPUE %>% 
+  tidytable::filter(index > 0) %>% 
+  tidytable::select(year, index = obs) %>% 
+  tidytable::mutate(region = 'bs',
+                    index = index * 1000) %>% 
+  tidytable::select(year, region, index) %>% 
+  tidytable::bind_rows(goa_twl_indx %>% 
+                         tidytable::select(year, region, index = num) %>% 
+                         tidytable::arrange(region)) %>% 
+  tidytable::filter(year >= 1991)
 
+# index se
+obssrvidx_se <- bs_dat_ss3$CPUE %>% 
+  tidytable::filter(index > 0) %>% 
+  tidytable::mutate(se = obs * se_log * 1000,
+                    region = 'bs') %>% 
+  tidytable::select(year, region, se) %>% 
+  tidytable::bind_rows(goa_twl_indx %>% 
+                         tidytable::mutate(se = sqrt(num_var)) %>% 
+                         tidytable::select(year, region, se) %>% 
+                         tidytable::arrange(region)) %>% 
+  tidytable::filter(year >= 1991)
 
-lls_rpn <- afscdata::q_lls_rpn_length(year = new_year,
-                                      species = srv_sp,
-                                      by = 'depth',
-                                      area = area,
-                                      db = conn,
-                                      save = FALSE)
+usesrvidx <- obssrvidx_se %>% 
+  tidytable::mutate(use = 1) %>% 
+  tidytable::select(-se)
 
-dat <- twl_indx %>% 
-  tidytable::filter(strata == 99903) %>% 
-  tidytable::select(year, num) %>% 
-  tidytable::mutate(index = "Trawl survey numbers") %>% 
-  tidytable::bind_rows(lls_rpn %>% 
-                         tidytable::select(year, length, rpn) %>% 
-                         tidytable::filter(length <= 50) %>% 
-                         tidytable::summarise(num = sum(rpn), .by = year) %>% 
-                         tidytable::mutate(index = "LL survey numbers (<50 cm)")) %>% 
-  tidytable::mutate(stnzd_index = num / mean(num), .by = index)
+## age comps ----
+obssrvagecomps <- bs_dat_ss3$agecomp %>% 
+  tidytable::filter(fleet == 2) %>% 
+  tidytable::select(year, paste0('a', 0:12)) %>% 
+  tidytable::pivot_longer(cols = paste0('a', 0:12)) %>% 
+  tidytable::mutate(age = as.numeric(stringr::str_remove(name, 'a')),
+                    age = case_when(age == 0 ~ 1,
+                                    age >= 10 ~ 10,
+                                    .default = age),
+                    region = 'bs') %>% 
+  tidytable::summarise(value = sum(value), .by = c(region, year, age)) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = value) %>% 
+  tidytable::bind_rows(goa_acomp %>% 
+                         tidytable::filter(sex == 0,
+                                           region != 'goa') %>% 
+                         tidytable::mutate(age = case_when(age == 0 ~ 1,
+                                                           age >= 10 ~ 10,
+                                                           .default = age),
+                                           region = case_when(region == 'egoa' ~ 'cgoa',
+                                                              .default = region)) %>% 
+                         tidytable::summarise(agepop = sum(agepop), .by = c(region, year, age)) %>% 
+                         tidytable::mutate(value = agepop / sum(agepop), .by = c(region, year)) %>% 
+                         tidytable::select(-agepop) %>% 
+                         tidytable::pivot_wider(names_from = age, values_from = value) %>% 
+                         tidytable::mutate(tidytable::across(as.character(1:10), ~ tidytable::coalesce(.x, 0)))) %>% 
+  tidytable::filter(year >= 1991)
 
-ggplot(dat, aes(x = year, y = stnzd_index, color = index)) +
-  geom_line() +
-  geom_point() +
-  theme_minimal() +
-  xlab("Year") +
-  ylab("Standardized Index") +
-  theme(legend.position = "top",
-        legend.title = element_blank())
+usesrvagecomps <- obssrvagecomps %>% 
+  tidytable::select(region, year) %>% 
+  tidytable::mutate(use = 1)
+
+iss_srvagecomps <- obssrvagecomps %>% 
+  tidytable::select(region, year) %>% 
+  tidytable::mutate(iss = case_when(region == 'bs' ~ 100,
+                                    region != 'bs' ~ 50))
+
+wt_srvagecomps <- obssrvagecomps %>% 
+  tidytable::select(region, year) %>% 
+  tidytable::mutate(wt = 1)
+
+## length comps ----
+obssrvlencomps <- bs_dat_ss3$lencomp %>% 
+  tidytable::filter(fleet == 2,
+                    year >= 1991) %>% 
+  tidytable::select(year, paste0('l', bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::pivot_longer(cols = paste0('l', bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::mutate(length = as.numeric(stringr::str_remove(name, 'l')),
+                    region = 'bs') %>% 
+  tidytable::select(region, year, length, value) %>% 
+  tidytable::pivot_wider(names_from = length, values_from = value) %>% 
+  tidytable::bind_rows(expand.grid(region = c('cgoa', 'wgoa'), year = unique(goa_lcomp$year), length = bs_dat_ss3$lbin_vector) %>% 
+                         tidytable::left_join(goa_lcomp %>% 
+                                                tidytable::filter(sex == 0,
+                                                                  region != 'goa') %>% 
+                                                tidytable::select(region, year, length, abund) %>% 
+                                                tidytable::mutate(length_bin = case_when(length <= 4.5 ~ ceiling(length / 4.5) * 4.5,
+                                                                                         length > 4.5 ~ ceiling((length + 1) / 5) * 5 - 0.5)) %>% 
+                                                tidytable::summarise(abund = sum(abund), .by = c(region, year, length_bin)) %>% 
+                                                tidytable::mutate(value = abund / sum(abund), .by = c(region, year)) %>% 
+                                                tidytable::select(region, year, length = length_bin, value)) %>% 
+                         tidytable::mutate(value = replace_na(value, 0)) %>% 
+                         tidytable::pivot_wider(names_from = length, values_from = value)) %>% 
+  tidytable::filter(year >= 1991)
   
+usesrvlencomps <- obssrvlencomps %>% 
+  tidytable::select(region, year) %>% 
+  tidytable::mutate(lencomp = 1) %>% 
+  tidytable::left_join(obssrvagecomps %>% 
+                         tidytable::select(region, year) %>% 
+                         tidytable::mutate(agecomp = 1)) %>% 
+  tidytable::mutate(agecomp = replace_na(agecomp, 0),
+                    use = case_when(lencomp == 1 & agecomp == 0 ~ 1,
+                                    .default = 0)) %>% 
+  tidytable::select(region, year, use)
+
+iss_srvlencomps <- obssrvlencomps %>% 
+  tidytable::select(region, year) %>% 
+  tidytable::mutate(iss = case_when(region == 'bs' ~ 500,
+                                    region != 'bs' ~ 250))
+
+wt_srvlencomps <- usesrvlencomps %>% 
+  tidytable::rename(wt = use)
+
+## concat ----
+cod_data <- c(cod_data,
+              list(ObsSrvIdx = obssrvidx,
+                   ObsSrvIdx_SE = obssrvidx_se,
+                   UseSrvIdx = usesrvidx,
+                   srv_idx_type = 0,
+                   ObsSrvAgeComps = obssrvagecomps,
+                   UseSrvAgeComps = usesrvagecomps,
+                   ISS_SrvAgeComps = iss_srvagecomps,
+                   Wt_SrvAgeComps = wt_srvagecomps,
+                   ObsSrvLenComps = obssrvlencomps,
+                   UseSrvLenComps = usesrvlencomps,
+                   ISS_SrvLenComps = iss_srvlencomps,
+                   Wt_SrvLenComps = wt_srvlencomps))
+
+
+saveRDS(cod_data, file = here::here(new_year, 'rsch', 'wgoa', 'data', 'cod_data.rds'))
+
+
