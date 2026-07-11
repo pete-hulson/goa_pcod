@@ -298,25 +298,107 @@ cod_data <- list(years = 1991:max(bs_dat_ss3$endyr, goa_dat_ss3$endyr),
 
 # bio processes ----
 
-## weight-at-age: empirical waa for combined fishery-survey ----
-waa <- goa_spec_srvy %>% 
+## weight-at-age ----
+# empirical waa for combined fishery-survey
+# waa <- goa_spec_srvy %>% 
+#   tidytable::left_join(goa_srv_dat$strata %>% 
+#                          tidytable::mutate(region = case_when(area_id == 805 ~ 'wgoa',
+#                                                               area_id < 805 ~ 'cgoa')) %>% 
+#                          tidytable::select(stratum, region)) %>% 
+#   tidytable::bind_rows(bs_spec_srvy %>% 
+#                          tidytable::mutate(region = 'bs')) %>% 
+#   tidytable::select(year, age, weight, region) %>% 
+#   tidytable::bind_rows(goa_spec_fsry %>% 
+#                          tidytable::bind_rows(bs_spec_fsry) %>% 
+#                          tidytable::mutate(region = case_when(area == 610 ~ 'wgoa',
+#                                                               area >= 620 ~ 'cgoa',
+#                                                               area < 600 ~ 'bs')) %>% 
+#                          tidytable::select(year, age, weight, region)) %>% 
+#   tidytable::drop_na() %>% 
+#   tidytable::mutate(age = case_when(age >= 10 ~ 10,
+#                                     .default = age)) %>% 
+#   tidytable::summarise(waa = mean(weight), .by = c(region, age))
+
+
+# using ss3 seasonal difference cludged with empirical
+bs_seas_diff <- r4ss::SS_readwtatage(here::here(new_year, 'rsch', 'wgoa', 'data', 'ss3_files', 'bs', 'wtatage.ss_new')) %>% 
+  tidytable::filter(year == 1977,
+                    fleet %in% c(0, -1)) %>% 
+  tidytable::select(-year, -seas, -sex, -bio_pattern, -birthseas, -`0`, -as.character(11:20)) %>% 
+  tidytable::pivot_longer(cols = as.character(1:10)) %>% 
+  tidytable::mutate(age = as.numeric(name),
+                    seas = case_when(fleet == 0 ~ 'A',
+                                     fleet == -1 ~ 'B')) %>% 
+  tidytable::select(seas, age, waa = value) %>% 
+  tidytable::pivot_wider(names_from = seas, values_from = waa) %>% 
+  tidytable::mutate(diff = B - A) %>% 
+  tidytable::select(age, diff)
+
+bs_waa_b <- bs_spec_srvy %>% 
+  tidytable::select(year, age, weight) %>% 
+  tidytable::bind_rows(bs_spec_fsry %>% 
+                         tidytable::bind_rows(bs_spec_fsry) %>% 
+                         tidytable::filter(season != 'A') %>% 
+                         tidytable::select(year, age, weight)) %>% 
+  tidytable::drop_na() %>% 
+  tidytable::mutate(age = case_when(age >= 10 ~ 10,
+                                    .default = age)) %>% 
+  tidytable::summarise(waa = mean(weight), .by = c(age)) %>% 
+  tidytable::mutate(seas = 'B',
+                    region = 'bs') %>% 
+  tidytable::select(region, seas, age, waa)
+
+bs_waa_a <- bs_waa_b %>% 
+  tidytable::left_join(bs_seas_diff) %>% 
+  tidytable::mutate(waa_a = waa - diff,
+                    seas = 'A') %>% 
+  tidytable::select(region, seas, age, waa = waa_a)
+
+goa_seas_diff <- r4ss::SS_readwtatage(here::here(new_year, 'rsch', 'wgoa', 'data', 'ss3_files', 'goa', 'wtatage.ss_new')) %>% 
+  tidytable::filter(year == 1977,
+                    fleet %in% c(0, -1)) %>% 
+  tidytable::select(-year, -seas, -sex, -bio_pattern, -birthseas, -`0`) %>% 
+  tidytable::pivot_longer(cols = as.character(1:10)) %>% 
+  tidytable::mutate(age = as.numeric(name),
+                    seas = case_when(fleet == 0 ~ 'A',
+                                     fleet == -1 ~ 'B')) %>% 
+  tidytable::select(seas, age, waa = value) %>% 
+  tidytable::pivot_wider(names_from = seas, values_from = waa) %>% 
+  tidytable::mutate(diff = B - A) %>% 
+  tidytable::select(age, diff)
+
+goa_waa_b <- goa_spec_srvy %>% 
   tidytable::left_join(goa_srv_dat$strata %>% 
                          tidytable::mutate(region = case_when(area_id == 805 ~ 'wgoa',
                                                               area_id < 805 ~ 'cgoa')) %>% 
                          tidytable::select(stratum, region)) %>% 
-  tidytable::bind_rows(bs_spec_srvy %>% 
-                         tidytable::mutate(region = 'bs')) %>% 
   tidytable::select(year, age, weight, region) %>% 
   tidytable::bind_rows(goa_spec_fsry %>% 
                          tidytable::bind_rows(bs_spec_fsry) %>% 
                          tidytable::mutate(region = case_when(area == 610 ~ 'wgoa',
                                                               area >= 620 ~ 'cgoa',
                                                               area < 600 ~ 'bs')) %>% 
+                         tidytable::filter(region != 'bs',
+                                           season != 'A') %>% 
                          tidytable::select(year, age, weight, region)) %>% 
   tidytable::drop_na() %>% 
   tidytable::mutate(age = case_when(age >= 10 ~ 10,
                                     .default = age)) %>% 
-  tidytable::summarise(waa = mean(weight), .by = c(region, age))
+  tidytable::summarise(waa = mean(weight), .by = c(region, age)) %>% 
+  tidytable::mutate(seas = 'B') %>% 
+  tidytable::select(region, seas, age, waa)
+
+goa_waa_a <- goa_waa_b %>% 
+  tidytable::left_join(goa_seas_diff) %>% 
+  tidytable::mutate(waa_a = waa - diff,
+                    seas = 'A') %>% 
+  tidytable::select(region, seas, age, waa = waa_a)
+
+waa <- bs_waa_a %>% 
+  tidytable::bind_rows(bs_waa_b) %>% 
+  tidytable::bind_rows(goa_waa_a) %>% 
+  tidytable::bind_rows(goa_waa_b) %>% 
+  tidytable::arrange(region, seas)
 
 ## maturity-at-age ----
 mataa <- bs_rep_ss3$endgrowth %>% 
