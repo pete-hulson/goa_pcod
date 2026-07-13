@@ -545,9 +545,11 @@ bs_ageingerror1 %>%
 
 
 ## size-age transition ----
+# for bs, use ss3 results
+# for goa, use specimen data with ss3 sd and difference in seasonal growth
 
 # bs
-as.data.frame(bs_rep_ss3$ALK[,,2]) %>% 
+sizeagetrans_bs_a <- as.data.frame(bs_rep_ss3$ALK[,,1]) %>% 
   tidytable::mutate(length = as.numeric(rownames(.))) %>% 
   tidytable::arrange(length) %>% 
   pivot_longer(cols = 1:(length(colnames(.)) - 1)) %>% 
@@ -558,42 +560,120 @@ as.data.frame(bs_rep_ss3$ALK[,,2]) %>%
                                        length > 4.5 ~ ceiling(length / 5) * 5 - 0.5)) %>% 
   tidytable::summarise(value = sum(value), .by = c(age, length)) %>% 
   tidytable::pivot_wider(names_from = age, values_from = value) %>% 
-  tidytable::mutate(region = 'bs') %>% 
-  tidytable::select(region, length, as.character(1:10)) %>% 
-  tidytable::bind_rows(
-    # wgoa 
-    goa_acomp %>% 
-      tidytable::filter(region == 'wgoa',
-                        sex == 0) %>% 
-      tidytable::mutate(age = case_when(age <= 1 ~ 1,
-                                        age >= 10 ~ 10,
-                                        .default = age)) %>% 
-      tidytable::summarise(mean_len = mean(mean_length),
-                           sd_len = mean(sd_length),
-                           .by = c(region, age)) %>% 
-      tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
-      tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
-                                          length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
-      tidytable::select(-mean_len, -sd_len) %>% 
-      tidytable::pivot_wider(names_from = age, values_from = szage)) %>% 
-  tidytable::bind_rows(
-    #cgoa
-    goa_acomp %>% 
-      tidytable::filter(region != 'wgoa',
-                        sex == 0) %>% 
-      tidytable::mutate(age = case_when(age <= 1 ~ 1,
-                                        age >= 10 ~ 10,
-                                        .default = age)) %>% 
-      tidytable::summarise(mean_len = mean(mean_length),
-                           sd_len = mean(sd_length),
-                           .by = c(age)) %>% 
-      tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
-      tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
-                                          length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len)),
-                        region = 'cgoa') %>% 
-      tidytable::select(-mean_len, -sd_len) %>% 
-      tidytable::pivot_wider(names_from = age, values_from = szage) %>% 
-      tidytable::select(region, length, as.character(1:10))) -> sizeagetrans
+  tidytable::mutate(region = 'bs',
+                    seas = 'A') %>% 
+  tidytable::select(region, seas, length, as.character(1:10))
+
+sizeagetrans_bs_b <- as.data.frame(bs_rep_ss3$ALK[,,2]) %>% 
+  tidytable::mutate(length = as.numeric(rownames(.))) %>% 
+  tidytable::arrange(length) %>% 
+  pivot_longer(cols = 1:(length(colnames(.)) - 1)) %>% 
+  tidytable::mutate(age = as.numeric(name)) %>% 
+  tidytable::filter(age != 0,
+                    age <= 10) %>% 
+  tidytable::mutate(length = case_when(length <= 4.5 ~ ceiling(length / 4.5) * 4.5,
+                                       length > 4.5 ~ ceiling(length / 5) * 5 - 0.5)) %>% 
+  tidytable::summarise(value = sum(value), .by = c(age, length)) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = value) %>% 
+  tidytable::mutate(region = 'bs',
+                    seas = 'B') %>% 
+  tidytable::select(region, seas, length, as.character(1:10))
+
+# goa
+# wgoa
+sizeagetrans_wgoa_a <- goa_acomp %>% 
+  tidytable::filter(region == 'wgoa',
+                    sex == 0) %>% 
+  tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                    age >= 10 ~ 10,
+                                    .default = age)) %>% 
+  tidytable::summarise(mean_len = mean(mean_length),
+                       .by = c(region, age)) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           sd_len = c(4.00851,4.88844,5.61639,6.2186,6.71679,7.12893,7.46988,7.75194,7.98528,9.10287)))) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           mean_len_a = c(11.9252,25.039,37.8937,48.5281,57.3255,64.6035,70.6243,75.6052,79.7257,88.2707),
+                                           mean_len_b = c(17.6378,31.7708,43.4628,53.1352,61.1369,67.7565,73.2327,77.763,81.5108,89.2829))) %>% 
+                         tidytable::mutate(diff = mean_len_b - mean_len_a) %>% 
+                         tidytable::select(age, diff)) %>% 
+  tidytable::mutate(mean_len = mean_len - diff,
+                    seas = 'A') %>% 
+  tidytable::select(region, seas, age, mean_len, sd_len) %>% 
+  tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                      length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
+  tidytable::select(-mean_len, -sd_len) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = szage)
+
+sizeagetrans_wgoa_b <- goa_acomp %>% 
+  tidytable::filter(region == 'wgoa',
+                    sex == 0) %>% 
+  tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                    age >= 10 ~ 10,
+                                    .default = age)) %>% 
+  tidytable::summarise(mean_len = mean(mean_length),
+                       .by = c(region, age)) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           sd_len = c(4.00851,4.88844,5.61639,6.2186,6.71679,7.12893,7.46988,7.75194,7.98528,9.10287)))) %>% 
+  tidytable::mutate(seas = 'B') %>% 
+  tidytable::select(region, seas, age, mean_len, sd_len) %>% 
+  tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                      length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
+  tidytable::select(-mean_len, -sd_len) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = szage)
+
+# cgoa
+sizeagetrans_cgoa_a <- goa_acomp %>% 
+  tidytable::filter(region != 'wgoa',
+                    sex == 0) %>% 
+  tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                    age >= 10 ~ 10,
+                                    .default = age)) %>% 
+  tidytable::summarise(mean_len = mean(mean_length),
+                       .by = c(age)) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           sd_len = c(4.00851,4.88844,5.61639,6.2186,6.71679,7.12893,7.46988,7.75194,7.98528,9.10287)))) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           mean_len_a = c(11.9252,25.039,37.8937,48.5281,57.3255,64.6035,70.6243,75.6052,79.7257,88.2707),
+                                           mean_len_b = c(17.6378,31.7708,43.4628,53.1352,61.1369,67.7565,73.2327,77.763,81.5108,89.2829))) %>% 
+                         tidytable::mutate(diff = mean_len_b - mean_len_a) %>% 
+                         tidytable::select(age, diff)) %>% 
+  tidytable::mutate(mean_len = mean_len - diff,
+                    seas = 'A',
+                    region = 'cgoa') %>% 
+  tidytable::select(region, seas, age, mean_len, sd_len) %>% 
+  tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                      length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
+  tidytable::select(-mean_len, -sd_len) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = szage)
+
+sizeagetrans_cgoa_b <- goa_acomp %>% 
+  tidytable::filter(region != 'wgoa',
+                    sex == 0) %>% 
+  tidytable::mutate(age = case_when(age <= 1 ~ 1,
+                                    age >= 10 ~ 10,
+                                    .default = age)) %>% 
+  tidytable::summarise(mean_len = mean(mean_length),
+                       .by = c(age)) %>% 
+  tidytable::left_join(as.data.frame(cbind(age = 1:10,
+                                           sd_len = c(4.00851,4.88844,5.61639,6.2186,6.71679,7.12893,7.46988,7.75194,7.98528,9.10287)))) %>% 
+  tidytable::mutate(seas = 'A',
+                    region = 'cgoa') %>% 
+  tidytable::select(region, seas, age, mean_len, sd_len) %>% 
+  tidytable::left_join(expand.grid(age = 1:10, length = bs_dat_ss3$lbin_vector)) %>% 
+  tidytable::mutate(szage = case_when(length == 4.5 ~ pnorm(length, mean_len, sd_len),
+                                      length > 4.5 ~ pnorm(length, mean_len, sd_len) - pnorm(length - 5, mean_len, sd_len))) %>% 
+  tidytable::select(-mean_len, -sd_len) %>% 
+  tidytable::pivot_wider(names_from = age, values_from = szage)
+
+sizeagetrans <- sizeagetrans_bs_a %>% 
+  tidytable::bind_rows(sizeagetrans_bs_b) %>% 
+  tidytable::bind_rows(sizeagetrans_cgoa_a) %>% 
+  tidytable::bind_rows(sizeagetrans_cgoa_b) %>% 
+  tidytable::bind_rows(sizeagetrans_wgoa_a) %>% 
+  tidytable::bind_rows(sizeagetrans_wgoa_b)
 
 ## concat ----
 
@@ -809,6 +889,6 @@ cod_data <- c(cod_data,
                    Wt_SrvLenComps = wt_srvlencomps))
 
 
-saveRDS(cod_data, file = here::here(new_year, 'rsch', 'wgoa', 'data', 'cod_data.rds'))
+saveRDS(cod_data, file = here::here(new_year, 'rsch', 'wgoa', 'sporc_data', 'cod_data.rds'))
 
 
