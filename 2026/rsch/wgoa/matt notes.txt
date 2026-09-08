@@ -1,0 +1,17 @@
+matt notes
+- plus age 14, rec age 0
+- area O fishery, what to do?
+- rec split between ebs/wgoa: rec happens in bs, then apportioned by apport param into wgoa, then also bs and wgoa deviation
+
+sensitivities
+- switch from continuous movement to movement steps: move, then mortality
+- define wgoa as it's own pop'n (defined by summer abundance)
+- split off egoa on it's own
+- add area O as fleet (once enough comp data available)
+
+
+plan team
+- uncertainties
+- adding sat tag tracks
+- implement tagging program
+
