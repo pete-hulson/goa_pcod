@@ -202,3 +202,7 @@ ggplot(szaa, aes(x = age, y = szaa, color = region, group = region, shape = regi
   scale_color_nmfs(palette = "waves")
 
 
+spec_data %>% 
+  tidytable::summarise(n_samp = .N, .by = c(year, region)) %>% 
+  tidytable::pivot_wider(names_from = region, values_from = n_samp) %>% 
+  tidytable::drop_na()
