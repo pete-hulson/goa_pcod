@@ -317,8 +317,8 @@ ss3_age_com <- function(data = NULL,
                       gender = ss3_args[3],
                       part = ss3_args[4],
                       ageerr = ss3_args[5],
-                      lgin_lo = ss3_args[6],
-                      lgin_hi = ss3_args[7]) -> acomp_part
+                      lbin_lo = ss3_args[6],
+                      lbin_hi = ss3_args[7]) -> acomp_part
   
   # switch if input sample size time-dependent (e.g., from surveyISS package) or constant
   if(isTRUE(iss)){
@@ -361,11 +361,11 @@ ss3_age_com_fsh <- function(data = NULL,
                       gender = ss3_args[2],
                       part = ss3_args[3],
                       ageerr = ss3_args[4],
-                      lgin_lo = ss3_args[5],
-                      lgin_hi = ss3_args[6],
+                      lbin_lo = ss3_args[5],
+                      lbin_hi = ss3_args[6],
                       age = tidytable::case_when(age > max_age ~ max_age,
                                                  .default = age)) %>% 
-    tidytable::summarise(agecomp = sum(agecomp), .by = c(year, seas, fltsrv, gender, part, ageerr, lgin_lo, lgin_hi, age)) -> acomp_part
+    tidytable::summarise(agecomp = sum(agecomp), .by = c(year, seas, fltsrv, gender, part, ageerr, lbin_lo, lbin_hi, age)) -> acomp_part
   
   # test if input sample size constant or read-in (e.g., from surveyISS package)
   if(isTRUE(iss)){
@@ -409,8 +409,8 @@ ss3_caal <- function(data = NULL,
                                  gender = ss3_args[3],
                                  part = ss3_args[4],
                                  ageerr = ss3_args[5],
-                                 lgin_lo = length,
-                                 lgin_hi = length) %>% 
+                                 lbin_lo = length,
+                                 lbin_hi = length) %>% 
                tidytable::left_join(nsamp) %>% 
                tidytable::select(-length) %>% 
                tidytable::mutate(age = paste0('a', age),
@@ -434,8 +434,8 @@ ss3_caal_fsh <- function(data = NULL,
                                  gender = ss3_args[2],
                                  part = ss3_args[3],
                                  ageerr = ss3_args[4],
-                                 lgin_lo = length,
-                                 lgin_hi = length) %>% 
+                                 lbin_lo = length,
+                                 lbin_hi = length) %>% 
                tidytable::left_join(nsamp) %>% 
                tidytable::select(-gear, -length) %>% 
                tidytable::mutate(age = paste0('a', age),
