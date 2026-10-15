@@ -259,29 +259,30 @@ plot_auxind <- function(new_year = NULL){
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "swf_catch.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::summarise(cod = sum(weight_kg[species == 202]),
-                                                tot = sum(weight_kg),
+                           tidytable::filter(target %in% c('Halibut')) %>% 
+                           tidytable::summarise(cod = sum(weight_kg[species == 202], na.rm = TRUE),
+                                                tot = sum(weight_kg, na.rm = TRUE),
                                                 .by = year) %>% 
                            tidytable::mutate(pcod = cod / tot) %>% 
-                           tidytable::mutate(type = "Proportion of Pcod catch in Shallow water flatfish",
+                           tidytable::mutate(type = "Proportion of Pcod catch in shallow water fisheries",
                                              index = "Adult") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
-    # tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"), 
+    tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"),
+                                      progress = FALSE,
+                                      show_col_types = FALSE) %>%
+                           tidytable::mutate(pcod = index_wt,
+                                             type = "ADF&G trawl survey (Weight CPUE)",
+                                             index = "Adult") %>%
+                           tidytable::select(year, pcod, type, index)) %>%
+    # tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "adfg_srvy_index.csv"), 
     #                                   progress = FALSE, 
     #                                   show_col_types = FALSE) %>% 
-    #                        tidytable::mutate(pcod = index_wt,
-    #                                          type = "ADF&G trawl survey (density)",
+    #                        tidytable::mutate(ncpue = total_number_caught / area_swept_km2) %>% 
+    #                        tidytable::summarize(pcod = mean(ncpue), .by = year) %>% 
+    #                        tidytable::filter(year >= 2000) %>% 
+    #                        tidytable::mutate(type = "ADF&G trawl survey (Numbers CPUE)",
     #                                          index = "Adult") %>% 
     #                        tidytable::select(year, pcod, type, index)) %>% 
-    tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "adfg_srvy_index.csv"), 
-                                      progress = FALSE, 
-                                      show_col_types = FALSE) %>% 
-                           tidytable::mutate(ncpue = total_number_caught / area_swept_km2) %>% 
-                           tidytable::summarize(pcod = mean(ncpue), .by = year) %>% 
-                           tidytable::filter(year >= 2000) %>% 
-                           tidytable::mutate(type = "ADF&G trawl survey (Numbers CPUE)",
-                                             index = "Adult") %>% 
-                           tidytable::select(year, pcod, type, index)) %>% 
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "other_indices.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
@@ -291,6 +292,7 @@ plot_auxind <- function(new_year = NULL){
                                              index = "Recruitment") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
     tidytable::filter(year >= 2006) -> aux_indx_dat
+  
   
   # plot
   aux_indx <- ggplot(aux_indx_dat, aes(year, pcod, colour = index)) +
