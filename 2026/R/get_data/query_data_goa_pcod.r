@@ -665,22 +665,25 @@ query_goa_pcod <- function(new_year = 9999,
   ## shallow water flats pcod catch ----
   cat("\u231b", crayon::blue("working on shallow water flats catch query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
-    dplyr::filter(TRIP_TARGET_NAME == "Shallow Water Flatfish - GOA",
-                  GEAR_TYPE == 1) %>% 
+    dplyr::filter(TRIP_TARGET_NAME %in% c("Arrowtooth Flounder", "Halibut"),
+                  FMP_AREA == "GOA",
+                  BOTTOM_DEPTH_FATHOMS < 165) %>% 
     dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
                       by = c('HAUL_JOIN')) %>% 
     dplyr::rename_all(tolower) %>% 
-    dplyr::select(species,
+    dplyr::select(year = year.x,
+                  species,
                   gear = gear_type,
+                  gear_desc = gear_description,
                   weight_kg = extrapolated_weight,
-                  hday = haul_date.x,
-                  area = nmfs_area) %>% 
+                  area = nmfs_area,
+                  target = trip_target_name,
+                  bottom_depth_f = bottom_depth_fathoms) %>% 
     dplyr::filter(area > 609,
-                  area < 650) -> swf_catch
-  
+                  area < 650,
+                  year > 2007) -> swf_catch
+
   dplyr::collect(swf_catch) %>% 
-    dplyr::mutate(year = lubridate::year(hday)) %>%  
-    dplyr::filter(year > 2007) %>% 
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'swf_catch.csv'), delim = ",")
   
   capture.output(dplyr::show_query(swf_catch), 
