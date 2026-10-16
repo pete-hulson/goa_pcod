@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Oct15"
+dat_day <- "Oct16"
 
 # 2025 accepted model
 base_mdl <- "24.0"
@@ -120,6 +120,20 @@ update_ss3_files(asmnt_yr = new_year,
                  dat_filename = paste0('GOAPcod2026', dat_day, '_24_0a.dat'),
                  ctl_filename = 'Model24_0.ctl')
 
+## 24.0b ----
+## copy ss files from last year's accepted assessment
+start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
+              to = here::here(new_year, 'mgmt', '24.0b'),
+              update_exe = TRUE,
+              ver_exe = 'v3.30.25')
+
+## update dat/ctl/etc files
+update_ss3_files(asmnt_yr = new_year, 
+                 folder = 'mgmt',
+                 mdl = '24.0b', 
+                 dat_filename = paste0('GOAPcod2026', dat_day, '_24_0b.dat'),
+                 ctl_filename = 'Model24_0.ctl')
+
 # run models ----
 # 24.0
 run_ss3_model(asmnt_yr = new_year, 
@@ -132,6 +146,14 @@ run_ss3_model(asmnt_yr = new_year,
 run_ss3_model(asmnt_yr = new_year, 
               folder = 'mgmt',
               mdl = '24.0a', 
+              ctl_filename = 'Model24_0.ctl',
+              iters = 2)
+
+
+# 24.0b
+run_ss3_model(asmnt_yr = new_year, 
+              folder = 'mgmt',
+              mdl = '24.0b', 
               ctl_filename = 'Model24_0.ctl',
               iters = 2)
 

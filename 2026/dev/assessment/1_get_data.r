@@ -24,7 +24,7 @@ old_dat_filename <- "GOAPcod2025Dec08.dat"
 old_ctl_filename <- "Model24_0.ctl"
 
 # run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
-query = TRUE
+query = FALSE
 
 # run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
 run_glm = FALSE
@@ -155,6 +155,21 @@ for(i in 1:length(new_data_24_0a$agecomp$year)){
 r4ss::SS_writedat_3.30(new_data_24_0a,
                        here::here(new_year, "output", "mdl_input",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0a.dat")), overwrite = TRUE)
+
+# get a model with 1 cm nins for comparison
+new_data <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_year,
+                              query = query,
+                              run_glm = run_glm,
+                              len_bins = seq(0.5, 104.5))
+
+new_data$Lbin_method <- 3
+r4ss::SS_writedat_3.30(new_data,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0b.dat")), overwrite = TRUE)
+
+
 
 # get ss3 ctl files ----
 
