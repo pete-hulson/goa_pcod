@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Dec08"
+dat_day <- "Sep30"
 
 # 2024 accepted model
 base_mdl <- "24.0"
@@ -55,8 +55,8 @@ pkg_git <- c("r4ss",
 
 # if not installed, then install
 if(length(pkg_git[which(pkg_git %in% rownames(installed.packages()) == FALSE )]) > 0) {
-  devtools::install_github("r4ss/r4ss", force = TRUE)
-  devtools::install_github("afsc-assessments/rema", dependencies = TRUE, build_vignettes = TRUE)
+  pak::pak("r4ss/r4ss")
+  pak::pak("afsc-assessments/rema", dependencies = TRUE)
 }
 
 # load packages
@@ -96,13 +96,13 @@ if(isTRUE(remove_files)){
 start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
               to = here::here(new_year, 'mgmt', base_mdl),
               update_exe = TRUE,
-              ver_exe = 'v3.30.22.1')
+              ver_exe = 'v3.30.25')
 
 ## update dat/ctl/etc files ----
 update_ss3_files(asmnt_yr = new_year, 
                  folder = 'mgmt',
                  mdl = base_mdl, 
-                 dat_filename = paste0('GOAPcod2025', dat_day, '.dat'),
+                 dat_filename = paste0('GOAPcod2026', dat_day, '.dat'),
                  ctl_filename = 'Model24_0.ctl')
 
 
