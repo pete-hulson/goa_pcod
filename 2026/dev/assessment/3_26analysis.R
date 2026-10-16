@@ -1,22 +1,33 @@
+# analyses and plots for 2026 model alternatives
 
+# load libraries
 library(tidyverse)
 library(data.table)
+
+# set parameters ----
 
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 # recommended model name
-prev_mdl <- "24.0"
+base_mdl <- "24.0"
 rec_mdl <- "24.0a"
 
+# read model results ----
 rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
                                verbose = FALSE,
                                printstats = FALSE)
 
 
-prev_rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", prev_mdl),
-                               verbose = FALSE,
-                               printstats = FALSE)
+base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
+                                verbose = FALSE,
+                                printstats = FALSE)
 
+# set up directory to plop plots into
+if (!dir.exists(here::here(new_year, "output", "safe_plots", "2026_analysis"))) {
+  dir.create(here::here(new_year, "output", "safe_plots", "2026_analysis"), recursive = TRUE)
+}
+
+# plot growth estimates ----
 
 # get growth data
 vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), 
@@ -49,18 +60,36 @@ vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'),
                                                 tidytable::rename(age = Real_Age, pred = Len_Mid) %>% 
                                                 tidytable::filter(age > 0) %>% 
                                                 tidytable::mutate(name = "Length (cm)"))) %>% 
-  tidytable::left_join(prev_rec_mdl_res$wtatage %>% 
+  tidytable::left_join(base_mdl_res$wtatage %>% 
                          tidytable::filter(fleet == -1) %>% 
                          tidytable::select(-year, -seas, -sex, -bio_pattern, -birthseas, -fleet, -'0') %>% 
                          tidytable::pivot_longer() %>% 
-                         tidytable::summarise(pred_prev = mean(value), .by = name) %>% 
+                         tidytable::summarise(pred_base = mean(value), .by = name) %>% 
                          tidytable::mutate(age = as.numeric(name),
                                            name = "Weight (kg)") %>% 
-                         tidytable::bind_rows(prev_rec_mdl_res$endgrowth[,c('Real_Age', 'Len_Mid')] %>% 
-                                                tidytable::rename(age = Real_Age, pred_prev = Len_Mid) %>% 
+                         tidytable::bind_rows(base_mdl_res$endgrowth[,c('Real_Age', 'Len_Mid')] %>% 
+                                                tidytable::rename(age = Real_Age, pred_base = Len_Mid) %>% 
                                                 tidytable::filter(age > 0) %>% 
                                                 tidytable::mutate(name = "Length (cm)"))) %>%
   tidytable::drop_na() -> grwth_data
+
+# compute ssq
+ssq <- grwth_data %>% 
+  tidytable::filter(year == "All") %>% 
+  tidytable::mutate(SSQ_base = (value - pred_base)^2,
+                    SSQ_rec = (value - pred)^2) %>% 
+  tidytable::summarise(SSQ_base = sum(SSQ_base),
+                       SSQ_rec = sum(SSQ_rec),
+                       .by = name) %>% 
+  tidytable::pivot_longer(cols = c(SSQ_base, SSQ_rec), names_to = "type") %>% 
+  tidytable::mutate(label = paste(type, "=", round(value, digits = 1)),
+                    x = 1,
+                    y = case_when(name == "Length (cm)" & type == "SSQ_base" ~ 105,
+                                  name == "Length (cm)" & type == "SSQ_rec" ~ 90,
+                                  name == "Weight (kg)" & type == "SSQ_base" ~ 17,
+                                  name == "Weight (kg)" & type == "SSQ_rec" ~ 14)) %>% 
+  tidytable::select(x, y, name, label)
+
 
 # plot
 ggplot(data = grwth_data %>% filter(year != "All"),
@@ -69,14 +98,16 @@ ggplot(data = grwth_data %>% filter(year != "All"),
                   aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
                   position = position_jitter(width = 0.05),
                   linetype = 'dotted',
-                  fatten = 2) +
+                  fatten = 1) +
+  geom_line(aes(y = pred), col = "black", linewidth = 0.777) +
+  geom_line(aes(y = pred_base), col = "red", linewidth = 0.777, linetype = "dashed") +
   geom_pointrange(data = grwth_data %>% filter(year == "All"),
                   aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
-                  # linetype = 'dotted',
-                  pch = 18,
-                  fatten = 7) +
-  geom_line(aes(y = pred), col = "black", linewidth = 0.777) +
-  geom_line(aes(y = pred_prev), col = "red", linewidth = 0.777, linetype = "dashed") +
+                  pch = 5,
+                  fatten = 3) +
+  geom_text(data = data.frame(ssq), aes(x = x, y = y, label = label), 
+            inherit.aes = FALSE,
+            hjust = 0) +
   facet_wrap(~ name, 
              ncol = 1, 
              scales = "free_y") +
@@ -86,57 +117,114 @@ ggplot(data = grwth_data %>% filter(year != "All"),
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank()) +
   labs(x = "Age", y = "Pacific cod size", col = "Year")
-
-
-grwth_data %>% 
-  tidytable::filter(year == "All") %>% 
-  tidytable::mutate(ssq_prev = (value - pred_prev)^2,
-                    ssq_rec = (value - pred)^2) %>% 
-  tidytable::summarise(ssq_prev = sum(ssq_prev),
-                       ssq_rec = sum(ssq_rec),
-                       .by = name)
-
-
-# plot fit to survey
-
-
-# get plot data
-data.table(rec_mdl_res$cpue) %>% 
-  tidytable::mutate(obs = as.numeric(Obs),
-                    sd = as.numeric(SE_input) * obs,
-                    pred = as.numeric(Exp)) %>% 
-  tidytable::select(srv = Fleet, year = Yr, obs, pred, sd) %>% 
-  tidytable::filter(srv %in% c(4, 5)) %>% 
-  tidytable::mutate(name = case_when(srv == 4 ~ "AFSC trawl survey numbers (1000s)",
-                                     srv == 5 ~ "AFSC longline survey RPNs")) %>% 
-  tidytable::select(-srv) -> indx_dat
-
-# plot
-ggplot(data = indx_dat, aes(x = year, y = obs, col = name)) +
-  geom_point() +
-  geom_line(aes(y = pred), linewidth = 0.777) +
-  theme_bw(base_size = 14) +
-  facet_wrap(~ name, 
-             ncol = 1, 
-             scales = "free_y") +
-  geom_errorbar(aes(ymin = obs - 1.96 * sd, ymax = obs + 1.96 * sd), width = 0) +
-  scico::scale_color_scico_d(palette = 'roma') +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        axis.text.x = element_text(vjust = 0.5, angle = 90),
-        legend.position = "none") +
-  labs(x = "Year", y = "Pacific cod survey index") +
-  scale_x_continuous(breaks = c(min(indx_dat$year):max(indx_dat$year)), limits = c(min(indx_dat$year), max(indx_dat$year)))
-
+  
 # save
-ggsave(filename = "srv_indx.png",
-       path = here::here(new_year, "output", "safe_plots"),
+ggsave(filename = "growth_ests.png",
+       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
        width = 6.5,
-       height = 5.5,
+       height = 6.5,
        units = "in")
 
 
-# plot biomass
+# plot size-age ----
+
+
+# age-length key
+
+
+size_age <- data.table(length = seq(104.5, 0.5), rec_mdl_res$ALK[,,2]) %>% 
+  tidytable::pivot_longer(cols = -length, names_to = "age", values_to = "Recommended") %>% 
+  tidytable::left_join(data.table(length = seq(104.5, 0.5), base_mdl_res$ALK[,,2]) %>% 
+                         tidytable::pivot_longer(cols = -length, names_to = "age", values_to = "Base")) %>% 
+  tidytable::mutate(Residual = Base - Recommended) %>% 
+  tidytable::pivot_longer(cols = c("Recommended", "Base", "Residual"), names_to = "type", values_to = "SzAge") %>% 
+  tidytable::filter(age > 0) %>% 
+  tidytable::mutate(age = factor(age, levels = seq(0, 10)))
+
+# compare models
+ggplot(size_age %>% filter(type != "Residual"), aes(x = age, y = length, fill = SzAge)) +
+  geom_tile(color = "white", linewidth = 0.5) +  # Grid border lines
+  scale_fill_viridis_c(option = "magma") +
+  facet_wrap(~type, ncol = 1) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Age", y = "Length (cm)")
+
+# save
+ggsave(filename = "size_age.png",
+       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+# residuals
+ggplot(size_age %>% filter(type == "Residual") %>% mutate(type = "Residual (Base - Recommended)"),
+       aes(x = age, y = length, fill = SzAge)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  scale_fill_distiller(palette = "RdBu", limits = c(-0.03, 0.03)) +
+  facet_wrap(~type, ncol = 1) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Age", y = "Length (cm)")
+
+
+# save
+ggsave(filename = "size_age_resid.png",
+       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+       width = 6.5,
+       height = 4.5,
+       units = "in")
+
+
+# tables of stats ----
+
+likes <- base_mdl_res$likelihoods_by_fleet %>% 
+  tidytable::select(Label, ALL) %>% 
+  tidytable::drop_na() %>% 
+  tidytable::rename("Data set" = Label, "Base" = ALL) %>% 
+  tidytable::left_join(rec_mdl_res$likelihoods_by_fleet %>% 
+                         tidytable::select(Label, ALL) %>% 
+                         tidytable::drop_na() %>% 
+                         tidytable::rename("Data set" = Label, "Recommended" = ALL)) %>% 
+  tidytable::filter(`Data set` %in% c("Surv_like", "Length_like", 'Age_like')) %>% 
+  tidytable::mutate(`Data set` = c("Survey Index", "Length composition", "CAAL"),
+                    Base = round(Base, digits = 2),
+                    Recommended = round(Recommended, digits = 2))
+
+vroom::vroom_write(likes, here::here(new_year, "output", "safe_plots", "2026_analysis", "likes.csv"), delim = ",")
+
+ss_rat <- base_mdl_res$len_comp_fit_table %>% 
+  tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+  tidytable::mutate(ss_ratio = Nsamp_in / effN) %>% 
+  tidytable::summarise(base_len_ss_ratio = round(mean(ss_ratio), digits = 2),
+                       .by = Fleet) %>% 
+  tidytable::left_join(rec_mdl_res$len_comp_fit_table %>% 
+                         tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                         tidytable::mutate(ss_ratio = Nsamp_in / effN) %>% 
+                         tidytable::summarise(rec_len_ss_ratio = round(mean(ss_ratio), digits = 2),
+                                              .by = Fleet)) %>% 
+  tidytable::left_join(base_mdl_res$age_comp_fit_table %>% 
+                         tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                         tidytable::mutate(ss_ratio = Nsamp_in / effN) %>% 
+                         tidytable::summarise(base_caal_ss_ratio = round(mean(ss_ratio), digits = 2),
+                                              .by = Fleet)) %>% 
+  tidytable::left_join(rec_mdl_res$age_comp_fit_table %>% 
+                         tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
+                         tidytable::mutate(ss_ratio = Nsamp_in / effN) %>% 
+                         tidytable::summarise(rec_caal_ss_ratio = round(mean(ss_ratio), digits = 2),
+                                              .by = Fleet)) %>% 
+  tidytable::rename("Base Length ISS/ESS" = base_len_ss_ratio,
+                    "Rec Length ISS/ESS" = rec_len_ss_ratio,
+                    "Base CAAL ISS/ESS" = base_caal_ss_ratio,
+                    "Rec CAAL ISS/ESS" = rec_caal_ss_ratio) %>% 
+  tidytable::mutate(Fleet = c("Trawl fishery", "Longline fishery", "Pot fishery", "Trawl survey", "Longline survey"))
+  
+vroom::vroom_write(ss_rat, here::here(new_year, "output", "safe_plots", "2026_analysis", "ss_rat.csv"), delim = ",")
+
+
+# plot biomass ----
 # get plot data
 rec_mdl_res$derived_quants %>% 
   tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
@@ -160,18 +248,18 @@ rec_mdl_res$derived_quants %>%
                          tidytable::select(-cv)) %>% 
   tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
                     model = "Recommended") %>% 
-  tidytable::bind_rows(prev_rec_mdl_res$derived_quants %>% 
+  tidytable::bind_rows(base_mdl_res$derived_quants %>% 
                          tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
                          tidytable::select(value = Value, sd = StdDev) %>% 
                          tidytable::mutate(year = seq(1977, new_year + 5),
                                            value = value / 2 / 1000,
                                            sd = sd / 2 / 1000,
                                            type = "Spawning biomass (1,000s t)") %>% 
-                         tidytable::bind_rows(prev_rec_mdl_res$timeseries %>% 
+                         tidytable::bind_rows(base_mdl_res$timeseries %>% 
                                                 tidytable::select(year = Yr, value = Bio_all) %>% 
                                                 tidytable::mutate(value = value / 1000) %>% 
                                                 tidytable::filter(year %in% seq(1977, new_year + 5)) %>% 
-                                                tidytable::left_join(prev_rec_mdl_res$derived_quants %>% 
+                                                tidytable::left_join(base_mdl_res$derived_quants %>% 
                                                                        tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
                                                                        tidytable::select(value = Value, sd = StdDev) %>% 
                                                                        tidytable::mutate(year = seq(1977, new_year + 5),
@@ -183,36 +271,157 @@ rec_mdl_res$derived_quants %>%
                          tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
                                            model = "Previous")) -> biom_dat
 
+
+
+
+biom_text <- biom_dat %>% 
+  tidytable::select(-sd) %>% 
+  tidytable::mutate(type = case_when(type == "Spawning biomass (1,000s t)" ~ "ssb",
+                                     type == "Total biomass (1,000s t)" ~ "tot")) %>% 
+  tidytable::pivot_wider(names_from = c(type, model)) %>% 
+  tidytable::mutate(tp = case_when(year <= 2026 ~ 1,
+                                   year > 2026 ~ 2),
+                    ssb_diff = (ssb_Recommended - ssb_Previous) / ssb_Previous,
+                    tot_diff = (tot_Recommended - tot_Previous) / tot_Previous) %>% 
+  tidytable::summarise(ssb_diff = mean(ssb_diff),
+                       tot_diff = mean(tot_diff),
+                       .by = tp) %>% 
+  tidytable::pivot_longer(cols = c(ssb_diff, tot_diff)) %>% 
+  tidytable::mutate(type = case_when(name == "ssb_diff" ~ "Spawning biomass (1,000s t)",
+                                     name == "tot_diff" ~ "Total biomass (1,000s t)"),
+                    x = case_when(tp == 1 ~ 2021,
+                                  tp == 2 ~ 2028),
+                    y = case_when(name == "ssb_diff" ~ 100,
+                                  name == "tot_diff" ~ 400),
+                    value = scales::percent(value, accuracy = 0.1))
+
+
+
 # plot
 ggplot(data = biom_dat,
-                  aes(x = year, y = value, color = type, shape = model)) +
+                  aes(x = year, y = value, shape = model)) +
   geom_point() +
   geom_line(data = biom_dat %>% filter(model == "Recommended")) +
   facet_wrap(~type, ncol = 1, scales = "free_y") +
-  # geom_errorbar(aes(ymin = value - 1.96 * sd, 
-  #                   ymax = value + 1.96 * sd), 
-  #               linewidth = 0.777, width = 0) +
   scico::scale_color_scico_d(palette = 'roma') +
   geom_point(data = biom_dat %>% tidytable::filter(year > new_year),
              colour = "darkgreen") +
   geom_line(data = biom_dat %>% tidytable::filter(year > new_year, model == "Recommended"),
             colour = "darkgreen",
             linetype = "dashed") +
-  # geom_errorbar(data = biom_dat %>% tidytable::filter(year > new_year),
-  #               colour = "darkgreen",
-  #               aes(ymin = value - 1.96 * sd, 
-  #                   ymax = value + 1.96 * sd), 
-  #               linewidth = 0.777, width = 0,
-  #               linetype = "dashed") +
   geom_vline(xintercept = new_year + 0.5,
              colour = "darkgreen",
              linetype = "dashed") +
+  geom_text(data = data.frame(biom_text), aes(x = x, y = y, label = value), 
+            inherit.aes = FALSE,
+            hjust = 0) +
   theme_bw(base_size = 14) +
-  labs(x = "Year", y = "Estimated quantity", col = "") +
+  labs(x = "Year", y = "Estimated quantity", shape = "Model") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         legend.key.width = unit(0.25, 'cm'),
-        legend.position = "none")
+        legend.position = "top")
+
+
+# save
+ggsave(filename = "biomass.png",
+       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+# forecast selex ----
+
+# get plot data
+rec_mdl_res$sizeselex %>% 
+  dplyr::rename_all(tolower) %>% 
+  tidytable::filter(yr == new_year + 1,
+                    fleet <= 3,
+                    factor == "Lsel") %>% 
+  tidytable::select(-factor, -yr, -sex, -label) %>% 
+  tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+  tidytable::rename(length = name) %>% 
+  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
+                                      fleet == 2 ~ "Longline",
+                                      fleet == 3 ~ "Pot"),
+                    length = as.numeric(length),
+                    type = "Recommended",
+                    category = "Length") %>% 
+  filter(length >= 5) %>% 
+  tidytable::bind_rows(base_mdl_res$sizeselex %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::filter(yr == new_year + 1,
+                                           fleet <= 3,
+                                           factor == "Lsel") %>% 
+                         tidytable::select(-factor, -yr, -sex, -label) %>% 
+                         tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+                         tidytable::rename(length = name) %>% 
+                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
+                                                             fleet == 2 ~ "Longline",
+                                                             fleet == 3 ~ "Pot"),
+                                           length = as.numeric(length),
+                                           type = "Previous",
+                                           category = "Length") %>% 
+                         filter(length >= 5)) %>% 
+  tidytable::bind_rows(rec_mdl_res$ageselex %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::filter(yr == new_year + 1,
+                                           fleet <= 3,
+                                           factor == "Asel2") %>% 
+                         tidytable::select(-factor, -yr, -seas, -sex, - morph, -label) %>% 
+                         tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
+                         tidytable::rename(length = name) %>% 
+                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
+                                                             fleet == 2 ~ "Longline",
+                                                             fleet == 3 ~ "Pot"),
+                                           length = as.numeric(length),
+                                           type = "Recommended",
+                                           category = "Age") %>% 
+                         filter(length >= 1)) %>% 
+  tidytable::bind_rows(base_mdl_res$ageselex %>% 
+                         dplyr::rename_all(tolower) %>% 
+                         tidytable::filter(yr == new_year + 1,
+                                           fleet <= 3,
+                                           factor == "Asel2") %>% 
+                         tidytable::select(-factor, -yr, -seas, -sex, - morph, -label) %>% 
+                         tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
+                         tidytable::rename(length = name) %>% 
+                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
+                                                             fleet == 2 ~ "Longline",
+                                                             fleet == 3 ~ "Pot"),
+                                           length = as.numeric(length),
+                                           type = "Previous",
+                                           category = "Age") %>% 
+                         filter(length >= 1)) -> selex_dat
+
+
+# plot
+ggplot(data = selex_dat,
+                     aes(x = length, y = value, col = fleet, linetype = type)) +
+  geom_line(linewidth = 0.777) +
+  facet_wrap(~category, ncol = 1, scales = "free_x") +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        # legend.position = "top",
+        legend.key.width = unit(0.25, 'cm')) +
+  labs(x = "Age / Length (cm)", y = "Forecast Selectivity", col = "Fishery", linetype = "Model") +
+  scico::scale_color_scico_d(palette = 'roma')
+
+
+# save
+ggsave(filename = "fore_selex.png",
+       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
+
+
+
+
+
+
 
 
 
@@ -234,168 +443,6 @@ base_2yr <- mscen_base$Two_year
 (base_2yr$C_ABC[1] - rec_2yr$C_ABC[1]) / base_2yr$C_ABC[1]
 
 (base_2yr$SSB[1] - rec_2yr$SSB[1]) / base_2yr$SSB[1]
-
-
-
-
-# forecast selex
-
-# get plot data
-
-
-rec_mdl_res$sizeselex %>% 
-  dplyr::rename_all(tolower) %>% 
-  tidytable::filter(yr == new_year + 1,
-                    fleet <= 3,
-                    factor == "Lsel") %>% 
-  tidytable::select(-factor, -yr, -sex, -label) %>% 
-  tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
-  tidytable::rename(length = name) %>% 
-  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                      fleet == 2 ~ "Longline fishery",
-                                      fleet == 3 ~ "Pot fishery"),
-                    length = as.numeric(length),
-                    type = "Recommended",
-                    category = "Length") %>% 
-  filter(length >= 5) %>% 
-  tidytable::bind_rows(prev_rec_mdl_res$sizeselex %>% 
-                         dplyr::rename_all(tolower) %>% 
-                         tidytable::filter(yr == new_year + 1,
-                                           fleet <= 3,
-                                           factor == "Lsel") %>% 
-                         tidytable::select(-factor, -yr, -sex, -label) %>% 
-                         tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
-                         tidytable::rename(length = name) %>% 
-                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                                             fleet == 2 ~ "Longline fishery",
-                                                             fleet == 3 ~ "Pot fishery"),
-                                           length = as.numeric(length),
-                                           type = "Previous",
-                                           category = "Length") %>% 
-                         filter(length >= 5)) %>% 
-  tidytable::bind_rows(rec_mdl_res$ageselex %>% 
-                         dplyr::rename_all(tolower) %>% 
-                         tidytable::filter(yr == new_year + 1,
-                                           fleet <= 3,
-                                           factor == "Asel2") %>% 
-                         tidytable::select(-factor, -yr, -seas, -sex, - morph, -label) %>% 
-                         tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
-                         tidytable::rename(length = name) %>% 
-                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                                             fleet == 2 ~ "Longline fishery",
-                                                             fleet == 3 ~ "Pot fishery"),
-                                           length = as.numeric(length),
-                                           type = "Recommended",
-                                           category = "Age") %>% 
-                         filter(length >= 1)) %>% 
-  tidytable::bind_rows(prev_rec_mdl_res$ageselex %>% 
-                         dplyr::rename_all(tolower) %>% 
-                         tidytable::filter(yr == new_year + 1,
-                                           fleet <= 3,
-                                           factor == "Asel2") %>% 
-                         tidytable::select(-factor, -yr, -seas, -sex, - morph, -label) %>% 
-                         tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
-                         tidytable::rename(length = name) %>% 
-                         tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                                             fleet == 2 ~ "Longline fishery",
-                                                             fleet == 3 ~ "Pot fishery"),
-                                           length = as.numeric(length),
-                                           type = "Previous",
-                                           category = "Age") %>% 
-                         filter(length >= 1)) -> selex_dat
-
-
-# plot
-ggplot(data = selex_dat,
-                     aes(x = length, y = value, col = fleet, linetype = type)) +
-  geom_line(linewidth = 0.777) +
-  facet_wrap(~category, ncol = 1, scales = "free_x") +
-  theme_bw(base_size = 14) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        legend.position = "top",
-        legend.key.width = unit(0.25, 'cm')) +
-  labs(x = "Age / Length (cm)", y = "Forecast Selectivity", col = "Fishery", linetype = "Model") +
-  scico::scale_color_scico_d(palette = 'roma')
-
-
-
-
-# get plot data
-rec_mdl_res$ageselex %>% 
-  dplyr::rename_all(tolower) %>% 
-  tidytable::filter(yr == new_year,
-                    fleet <= 5,
-                    factor == "Asel2") %>% 
-  tidytable::select(-factor, -yr, -sex, -label) %>% 
-  tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
-  tidytable::rename(age = name) %>% 
-  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                      fleet == 2 ~ "Longline fishery",
-                                      fleet == 3 ~ "Pot fishery",
-                                      fleet == 4 ~ "AFSC bottom trawl survey",
-                                      fleet == 5 ~ "AFSC longline survey"),
-                    age = as.numeric(age)) %>% 
-  filter(age >= 1) -> selex_dat
-
-# plot
-ggplot(data = selex_dat,
-       aes(x = age, y = value, col = fleet)) +
-  geom_line(linewidth = 0.777) +
-  theme_bw(base_size = 14) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        legend.position = "top",
-        legend.key.width = unit(0.25, 'cm')) +
-  labs(x = "Length (cm)", y = paste(new_year, "Selectivity"), col = "") +
-  scico::scale_color_scico_d(palette = 'roma') + 
-  guides(color = guide_legend(nrow = 2))
-
-
-# get plot data
-prev_rec_mdl_res$ageselex %>% 
-  dplyr::rename_all(tolower) %>% 
-  tidytable::filter(yr >= new_year - 4,
-                    fleet <= 3,
-                    factor == "Asel2") %>% 
-  print(n=100)
-  tidytable::select(-factor, -yr, -sex, -label) %>% 
-  tidytable::pivot_longer(cols = as.character(seq(0, 10))) %>% 
-  tidytable::rename(age = name) %>% 
-  tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl fishery",
-                                      fleet == 2 ~ "Longline fishery",
-                                      fleet == 3 ~ "Pot fishery",
-                                      fleet == 4 ~ "AFSC bottom trawl survey",
-                                      fleet == 5 ~ "AFSC longline survey"),
-                    age = as.numeric(age)) %>% 
-  filter(age >= 1) -> selex_dat
-
-# plot
-ggplot(data = selex_dat,
-       aes(x = age, y = value, col = fleet)) +
-  geom_line(linewidth = 0.777) +
-  theme_bw(base_size = 14) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        legend.position = "top",
-        legend.key.width = unit(0.25, 'cm')) +
-  labs(x = "Length (cm)", y = paste(new_year, "Selectivity"), col = "") +
-  scico::scale_color_scico_d(palette = 'roma') + 
-  guides(color = guide_legend(nrow = 2))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
