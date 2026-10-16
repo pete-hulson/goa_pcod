@@ -82,8 +82,8 @@ lapply(pkg_git, library, character.only = TRUE)
 ## data file specs ----
 # current year ss3 dat filename
 new_dat_filename <- paste0("GOAPcod", 
-                              format(Sys.Date(), format = "%Y%b%d"),
-                              ".dat")
+                           format(Sys.Date(), format = "%Y%b%d"),
+                           ".dat")
 
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
@@ -139,61 +139,27 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               run_glm = run_glm,
                               len_bins = len_bins)
 
-## make 2025 changes ----
-# changes were:
-# 1. remove IPHC index
-# 2. Remove spawn index
-# fleet info
-new_data$fleetinfo <- data.frame(new_data$fleetinfo %>% 
-                         tidytable::filter(!(fleetname %in% c('IPHCLL', 'SPAWN'))))
-new_data$Nfleets <- length(new_data$fleetinfo$fleetname)
-# cpue info
-new_data$CPUEinfo <- new_data$CPUEinfo[-which(rownames(new_data$CPUEinfo) %in% c('IPHCLL', 'SPAWN')),]
-new_data$CPUEinfo$fleet <- seq(1, length(new_data$CPUEinfo$fleet))
-# length info
-new_data$len_info <- new_data$len_info[-which(rownames(new_data$len_info) %in% c('IPHCLL', 'SPAWN')),]
-# age info
-new_data$age_info <- new_data$age_info[-which(rownames(new_data$age_info) %in% c('IPHCLL', 'SPAWN')),]
-# change number of environmental variables
-new_data$N_environ_variables <- 1
-
-## write data file ----
+## make 2026 changes ----
+# write base model data
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
 
 
+# change lbin_method to 3 and caal data to 5 cm bins
+new_data_24_0a <- new_data
+new_data_24_0a$Lbin_method <- 3
+for(i in 1:length(new_data_24_0a$agecomp$year)){
+  if(new_data_24_0a$agecomp$lbin_lo[i] > 0){new_data_24_0a$agecomp$lbin_hi[i] <- new_data_24_0a$agecomp$lbin_lo[i] + 4}
+}
+r4ss::SS_writedat_3.30(new_data_24_0a,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0a.dat")), overwrite = TRUE)
+
 # get ss3 ctl files ----
 
 # read in previous assessment ss3 ctl
 old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
-
-## make 2025 changes ----
-# changes were:
-# 1. remove IPHC index
-# 2. Remove spawn index
-# fleet names
-old_ctl$fleetnames <- old_ctl$fleetnames[-which(old_ctl$fleetnames %in% c('IPHCLL', 'SPAWN'))]
-old_ctl$Nfleets <- length(old_ctl$fleetnames)
-# q params
-old_ctl$Q_options <- old_ctl$Q_options[-which(rownames(old_ctl$Q_options) %in% c('IPHCLL', 'SPAWN')),]
-old_ctl$Q_options$fleet <- seq(4, 7)
-old_ctl$Q_parms <- old_ctl$Q_parms[-which(rownames(old_ctl$Q_parms) %in% c('LnQ_base_IPHCLL(6)', 'LnQ_base_SPAWN(8)', 'Q_power_SPAWN(8)')),]
-# selex patterns
-old_ctl$size_selex_types <- old_ctl$size_selex_types[-which(rownames(old_ctl$size_selex_types) %in% c('IPHCLL', 'SPAWN')),]
-old_ctl$age_selex_types <- old_ctl$age_selex_types[-which(rownames(old_ctl$age_selex_types) %in% c('IPHCLL', 'SPAWN')),]
-# lambdas
-old_ctl$lambdas <- old_ctl$lambdas[-which(rownames(old_ctl$lambdas) %in% c('Surv_IPHCLL_Phz1', 'Surv_SPAWN_Phz1')),]
-old_ctl$lambdas$fleet <- c(6, 7)
-old_ctl$N_lambdas <- length(old_ctl$lambdas$fleet)
-# reset variance adjustment list
-old_ctl$Variance_adjustment_list <- rbind(expand.grid(factor = 1, fleet = seq(1, 7), value = 0),
-                                          expand.grid(factor = 4, fleet = seq(1, 6), value = 1),
-                                          expand.grid(factor = 5, fleet = seq(1, 4), value = 1),
-                                          expand.grid(factor = 6, fleet = seq(1, 4), value = 1))
-# reset max phase from 10 to 7
-old_ctl$MG_parms$PHASE[which(rownames(old_ctl$MG_parms) == 'CV_young_Fem_GP_1')] <- 7
-old_ctl$MG_parms$PHASE[which(rownames(old_ctl$MG_parms) == 'CV_old_Fem_GP_1')] <- 7
 
 ## reset params annually ----
 # reset end year in block designs
