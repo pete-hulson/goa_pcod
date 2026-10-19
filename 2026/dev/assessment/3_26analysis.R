@@ -4,23 +4,41 @@
 library(tidyverse)
 library(data.table)
 
+# 24.0 = accepted 2025 model
+# 24.0a = caal fixes; lbin method = 3, lbin_lo and lbin_hi corrected
+# 24.0b = 1 cm bins, lbin method = 3
+# 24.0c = 5 cm bins length comp, 1 cm bins caal, lbin method = 3
+# 24.0d = 24.0a with population bins matching data bins
+
 # set parameters ----
 
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+
 # recommended model name
 base_mdl <- "24.0"
-rec_mdl <- "24.0a"
 
 # read model results ----
-rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
-                               verbose = FALSE,
-                               printstats = FALSE)
-
-
 base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
                                 verbose = FALSE,
                                 printstats = FALSE)
+
+mdl_res_24_0a <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0a"),
+                               verbose = FALSE,
+                               printstats = FALSE)
+
+mdl_res_24_0b <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0b"),
+                                 verbose = FALSE,
+                                 printstats = FALSE)
+
+mdl_res_24_0c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0c"),
+                                 verbose = FALSE,
+                                 printstats = FALSE)
+
+mdl_res_24_0d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0d"),
+                                 verbose = FALSE,
+                                 printstats = FALSE)
+
 
 # set up directory to plop plots into
 if (!dir.exists(here::here(new_year, "output", "safe_plots", "2026_analysis"))) {
@@ -28,6 +46,9 @@ if (!dir.exists(here::here(new_year, "output", "safe_plots", "2026_analysis"))) 
 }
 
 # plot growth estimates ----
+
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0c
 
 # get growth data
 vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), 
@@ -93,7 +114,7 @@ ssq <- grwth_data %>%
 
 # plot
 ggplot(data = grwth_data %>% filter(year != "All"),
-                     aes(x = age, y = value, col = factor(year))) +
+       aes(x = age, y = value, col = factor(year))) +
   geom_pointrange(data = grwth_data %>% filter(year != "All"),
                   aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
                   position = position_jitter(width = 0.05),
@@ -117,7 +138,7 @@ ggplot(data = grwth_data %>% filter(year != "All"),
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank()) +
   labs(x = "Age", y = "Pacific cod size", col = "Year")
-  
+
 # save
 ggsave(filename = "growth_ests.png",
        path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
@@ -128,11 +149,11 @@ ggsave(filename = "growth_ests.png",
 
 # plot size-age ----
 
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0c
 
-# age-length key
-
-
-size_age <- data.table(length = seq(104.5, 0.5), rec_mdl_res$ALK[,,2]) %>% 
+# size-age transition matrix
+size_age <- data.table(length = seq(from = 104.5, to = 0.5), rec_mdl_res$ALK[,,2]) %>% 
   tidytable::pivot_longer(cols = -length, names_to = "age", values_to = "Recommended") %>% 
   tidytable::left_join(data.table(length = seq(104.5, 0.5), base_mdl_res$ALK[,,2]) %>% 
                          tidytable::pivot_longer(cols = -length, names_to = "age", values_to = "Base")) %>% 
@@ -180,6 +201,10 @@ ggsave(filename = "size_age_resid.png",
 
 # tables of stats ----
 
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0c
+
+# likelihoods
 likes <- base_mdl_res$likelihoods_by_fleet %>% 
   tidytable::select(Label, ALL) %>% 
   tidytable::drop_na() %>% 
@@ -195,6 +220,7 @@ likes <- base_mdl_res$likelihoods_by_fleet %>%
 
 vroom::vroom_write(likes, here::here(new_year, "output", "safe_plots", "2026_analysis", "likes.csv"), delim = ",")
 
+# sample size ratio
 ss_rat <- base_mdl_res$len_comp_fit_table %>% 
   tidytable::select(Fleet, Yr, Nsamp_in, effN) %>% 
   tidytable::mutate(ss_ratio = Nsamp_in / effN) %>% 
@@ -220,11 +246,15 @@ ss_rat <- base_mdl_res$len_comp_fit_table %>%
                     "Base CAAL ISS/ESS" = base_caal_ss_ratio,
                     "Rec CAAL ISS/ESS" = rec_caal_ss_ratio) %>% 
   tidytable::mutate(Fleet = c("Trawl fishery", "Longline fishery", "Pot fishery", "Trawl survey", "Longline survey"))
-  
+
 vroom::vroom_write(ss_rat, here::here(new_year, "output", "safe_plots", "2026_analysis", "ss_rat.csv"), delim = ",")
 
 
 # plot biomass ----
+
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0a
+
 # get plot data
 rec_mdl_res$derived_quants %>% 
   tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
@@ -299,7 +329,7 @@ biom_text <- biom_dat %>%
 
 # plot
 ggplot(data = biom_dat,
-                  aes(x = year, y = value, shape = model)) +
+       aes(x = year, y = value, shape = model)) +
   geom_point() +
   geom_line(data = biom_dat %>% filter(model == "Recommended")) +
   facet_wrap(~type, ncol = 1, scales = "free_y") +
@@ -331,7 +361,68 @@ ggsave(filename = "biomass.png",
        units = "in")
 
 
+
+# plot recruitment ----
+
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0a
+
+
+# get plot data
+rec_mdl_res$parameters %>% 
+  tidytable::filter(Label %in% paste0("Main_RecrDev_", seq(1978, new_year - 1))) %>% 
+  tidytable::select(value = Value, sd = Parm_StDev) %>% 
+  tidytable::mutate(year = seq(1978, new_year - 1),
+                    type = "Recruitment deviation") %>% 
+  tidytable::bind_rows(rec_mdl_res$derived_quants %>% 
+                         tidytable::filter(Label %in% paste0("Recr_", seq(1978, new_year - 1))) %>% 
+                         tidytable::select(value = Value, sd = StdDev) %>% 
+                         tidytable::mutate(year = seq(1978, new_year - 1),
+                                           value = value / 1000000,
+                                           sd = sd / 1000000,
+                                           type = "Age-0 Recruitment (millions)")) %>% 
+  tidytable::mutate(model = "Recommended",
+                    year = year + 0.25) %>% 
+  tidytable::bind_rows(base_mdl_res$parameters %>% 
+                         tidytable::filter(Label %in% paste0("Main_RecrDev_", seq(1978, new_year - 1))) %>% 
+                         tidytable::select(value = Value, sd = Parm_StDev) %>% 
+                         tidytable::mutate(year = seq(1978, new_year - 1),
+                                           type = "Recruitment deviation") %>% 
+                         tidytable::bind_rows(base_mdl_res$derived_quants %>% 
+                                                tidytable::filter(Label %in% paste0("Recr_", seq(1978, new_year - 1))) %>% 
+                                                tidytable::select(value = Value, sd = StdDev) %>% 
+                                                tidytable::mutate(year = seq(1978, new_year - 1),
+                                                                  value = value / 1000000,
+                                                                  sd = sd / 1000000,
+                                                                  type = "Age-0 Recruitment (millions)")) %>% 
+                         tidytable::mutate(model = "Base")) -> rec_dat
+
+# plot
+ggplot(data = rec_dat,
+                   aes(x = year, y = value, color = model, pch = model)) +
+  geom_point() +
+  geom_line(linetype = "dotted") +
+  geom_hline(data = rec_dat %>% tidytable::filter(type == "Recruitment deviation"), aes(yintercept = 0)) +
+  facet_wrap(~type, ncol = 1, scales = "free_y") +
+  geom_errorbar(aes(ymin = value - 1.96 * sd, 
+                    ymax = value + 1.96 * sd), 
+                linewidth = 0.777, width = 0) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  theme_bw(base_size = 14) +
+  labs(x = "Year", y = "Estimated quantity", col = "", pch = "") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.key.width = unit(0.25, 'cm'),
+        legend.position = "top")
+
+
+
+
+
 # forecast selex ----
+
+# set up model to compare with base
+rec_mdl_res <- mdl_res_24_0a
 
 # get plot data
 rec_mdl_res$sizeselex %>% 
@@ -340,7 +431,7 @@ rec_mdl_res$sizeselex %>%
                     fleet <= 3,
                     factor == "Lsel") %>% 
   tidytable::select(-factor, -yr, -sex, -label) %>% 
-  tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+  tidytable::pivot_longer(cols = -fleet) %>% 
   tidytable::rename(length = name) %>% 
   tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
                                       fleet == 2 ~ "Longline",
@@ -355,7 +446,7 @@ rec_mdl_res$sizeselex %>%
                                            fleet <= 3,
                                            factor == "Lsel") %>% 
                          tidytable::select(-factor, -yr, -sex, -label) %>% 
-                         tidytable::pivot_longer(cols = as.character(seq(1, 105))) %>% 
+                         tidytable::pivot_longer(cols = -fleet) %>% 
                          tidytable::rename(length = name) %>% 
                          tidytable::mutate(fleet = case_when(fleet == 1 ~ "Trawl",
                                                              fleet == 2 ~ "Longline",
@@ -398,7 +489,7 @@ rec_mdl_res$sizeselex %>%
 
 # plot
 ggplot(data = selex_dat,
-                     aes(x = length, y = value, col = fleet, linetype = type)) +
+       aes(x = length, y = value, col = fleet, linetype = type)) +
   geom_line(linewidth = 0.777) +
   facet_wrap(~category, ncol = 1, scales = "free_x") +
   theme_bw(base_size = 14) +
@@ -418,25 +509,50 @@ ggsave(filename = "fore_selex.png",
        units = "in")
 
 
+# ref points ----
 
-
-
-
-
-
-
-
-# ref points
-
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_rec.RData"))
-mscen_rec <- mscen
-rec_2yr <- mscen_rec$Two_year
-
-
+# 24.0
 load(here::here(new_year, "output", "mscen", "mgmnt_scen_base.RData"))
 mscen_base <- mscen
-base_2yr <- mscen_base$Two_year
 
+# 24.0a
+load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0a.RData"))
+mscen_24_0a <- mscen
+
+# 24.0b
+load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0b.RData"))
+mscen_24_0b <- mscen
+
+# 24.0c
+load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0c.RData"))
+mscen_24_0c <- mscen
+
+# 24.0d
+load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0d.RData"))
+mscen_24_0d <- mscen
+
+# table of key quantities
+data.table(names = c("SSB_status", "Bzero","F40", "ABC"),
+           "base" = c(round(mscen_base$Two_year$SSB_PER[1], digits = 3),
+                      round(mscen_base$Two_year$SB100[1], digits = 0),
+                      round(mscen_base$Two_year$F40[1], digits = 3),
+                      round(mscen_base$Two_year$C_ABC[1], digits = 0)),
+           "24.0a" = c(round(mscen_24_0a$Two_year$SSB_PER[1], digits = 3),
+                       round(mscen_24_0a$Two_year$SB100[1], digits = 0),
+                       round(mscen_24_0a$Two_year$F40[1], digits = 3),
+                       round(mscen_24_0a$Two_year$C_ABC[1], digits = 0)),
+           "24.0b" = c(round(mscen_24_0b$Two_year$SSB_PER[1], digits = 3),
+                       round(mscen_24_0b$Two_year$SB100[1], digits = 0),
+                       round(mscen_24_0b$Two_year$F40[1], digits = 3),
+                       round(mscen_24_0b$Two_year$C_ABC[1], digits = 0)),
+           "24.0c" = c(round(mscen_24_0c$Two_year$SSB_PER[1], digits = 3),
+                       round(mscen_24_0c$Two_year$SB100[1], digits = 0),
+                       round(mscen_24_0c$Two_year$F40[1], digits = 3),
+                       round(mscen_24_0c$Two_year$C_ABC[1], digits = 0)),
+           "24.0d" = c(round(mscen_24_0d$Two_year$SSB_PER[1], digits = 3),
+                       round(mscen_24_0d$Two_year$SB100[1], digits = 0),
+                       round(mscen_24_0d$Two_year$F40[1], digits = 3),
+                       round(mscen_24_0d$Two_year$C_ABC[1], digits = 0)))
 
 
 

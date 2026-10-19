@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Oct16"
+dat_day <- "Oct18"
 
 # 2025 accepted model
 base_mdl <- "24.0"
@@ -91,6 +91,11 @@ if(isTRUE(remove_files)){
 
 
 # set up model folders ----
+# 24.0 = accepted 2025 model
+# 24.0a = caal fixes; lbin method = 3, lbin_lo and lbin_hi corrected
+# 24.0b = 1 cm bins, lbin method = 3
+# 24.0c = 5 cm bins length comp, 1 cm bins caal, lbin method = 3
+# 24.0d = 24.0a with population bins matching data bins
 
 ## 24.0 ----
 ## copy ss files from last year's accepted assessment
@@ -134,6 +139,35 @@ update_ss3_files(asmnt_yr = new_year,
                  dat_filename = paste0('GOAPcod2026', dat_day, '_24_0b.dat'),
                  ctl_filename = 'Model24_0.ctl')
 
+## 24.0c ----
+## copy ss files from last year's accepted assessment
+start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
+              to = here::here(new_year, 'mgmt', '24.0c'),
+              update_exe = TRUE,
+              ver_exe = 'v3.30.25')
+
+## update dat/ctl/etc files
+update_ss3_files(asmnt_yr = new_year, 
+                 folder = 'mgmt',
+                 mdl = '24.0c', 
+                 dat_filename = paste0('GOAPcod2026', dat_day, '_24_0c.dat'),
+                 ctl_filename = 'Model24_0.ctl')
+
+## 24.0d ----
+## copy ss files from last year's accepted assessment
+start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
+              to = here::here(new_year, 'mgmt', '24.0d'),
+              update_exe = TRUE,
+              ver_exe = 'v3.30.25')
+
+## update dat/ctl/etc files
+update_ss3_files(asmnt_yr = new_year, 
+                 folder = 'mgmt',
+                 mdl = '24.0d', 
+                 dat_filename = paste0('GOAPcod2026', dat_day, '_24_0d.dat'),
+                 ctl_filename = 'Model24_0.ctl')
+
+
 # run models ----
 # 24.0
 run_ss3_model(asmnt_yr = new_year, 
@@ -157,11 +191,51 @@ run_ss3_model(asmnt_yr = new_year,
               ctl_filename = 'Model24_0.ctl',
               iters = 2)
 
-# run model analyses ----
+# 24.0c
+run_ss3_model(asmnt_yr = new_year, 
+              folder = 'mgmt',
+              mdl = '24.0c', 
+              ctl_filename = 'Model24_0.ctl',
+              iters = 2)
+
+# 24.0d
+run_ss3_model(asmnt_yr = new_year, 
+              folder = 'mgmt',
+              mdl = '24.0d', 
+              ctl_filename = 'Model24_0.ctl',
+              iters = 2)
+
+# run magagement scens ----
 # 24.0
-run_mdl_anlys(new_year = new_year,
-              base_mdl = base_mdl,
-              rec_mdl = '24.0a',
-              full_run = full_run,
-              rec_ctl = 'Model24_0.ctl',
-              run_mcmcz = run_mcmcz)
+run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", base_mdl),
+                   cyr = new_year,
+                   output_name = "mgmnt_scen_base")
+
+# 24.0a
+run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", "24.0a"),
+                   cyr = new_year,
+                   output_name = "mgmnt_scen_24_0a")
+
+# 24.0b
+run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", "24.0b"),
+                   cyr = new_year,
+                   output_name = "mgmnt_scen_24_0b")
+
+# 24.0c
+run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", "24.0c"),
+                   cyr = new_year,
+                   output_name = "mgmnt_scen_24_0c")
+
+# 24.0d
+run_ss3_mgmnt_scen(dir = here::here(new_year, "mgmt", "24.0d"),
+                   cyr = new_year,
+                   output_name = "mgmnt_scen_24_0d")
+
+
+# run model analyses ----
+# run_mdl_anlys(new_year = new_year,
+#               base_mdl = base_mdl,
+#               rec_mdl = '24.0a',
+#               full_run = full_run,
+#               rec_ctl = 'Model24_0.ctl',
+#               run_mcmcz = run_mcmcz)
