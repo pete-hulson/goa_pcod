@@ -48,7 +48,7 @@ if (!dir.exists(here::here(new_year, "output", "safe_plots", "2026_analysis"))) 
 # plot growth estimates ----
 
 # set up model to compare with base
-rec_mdl_res <- mdl_res_24_0c
+rec_mdl_res <- mdl_res_24_0a
 
 # get growth data
 vroom::vroom(here::here(new_year, 'data', 'raw', 'twl_srvy_age.csv'), 
@@ -150,7 +150,7 @@ ggsave(filename = "growth_ests.png",
 # plot size-age ----
 
 # set up model to compare with base
-rec_mdl_res <- mdl_res_24_0c
+rec_mdl_res <- mdl_res_24_0a
 
 # size-age transition matrix
 size_age <- data.table(length = seq(from = 104.5, to = 0.5), rec_mdl_res$ALK[,,2]) %>% 
@@ -362,6 +362,107 @@ ggsave(filename = "biomass.png",
 
 
 
+# plot biomass 1 cm vs 5 cm
+
+# get plot data
+mdl_res_24_0a$derived_quants %>% 
+  tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
+  tidytable::select(value = Value, sd = StdDev) %>% 
+  tidytable::mutate(year = seq(1977, new_year + 5),
+                    value = value / 2 / 1000,
+                    sd = sd / 2 / 1000,
+                    type = "Spawning biomass (1,000s t)") %>% 
+  tidytable::bind_rows(mdl_res_24_0a$timeseries %>% 
+                         tidytable::select(year = Yr, value = Bio_all) %>% 
+                         tidytable::mutate(value = value / 1000) %>% 
+                         tidytable::filter(year %in% seq(1977, new_year + 5)) %>% 
+                         tidytable::left_join(mdl_res_24_0a$derived_quants %>% 
+                                                tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
+                                                tidytable::select(value = Value, sd = StdDev) %>% 
+                                                tidytable::mutate(year = seq(1977, new_year + 5),
+                                                                  cv = sd / value) %>% 
+                                                tidytable::select(-value, -sd)) %>% 
+                         tidytable::mutate(sd = cv * value,
+                                           type = "Total biomass (1,000s t)") %>% 
+                         tidytable::select(-cv)) %>% 
+  tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
+                    model = "Recommended") %>% 
+  tidytable::bind_rows(mdl_res_24_0b$derived_quants %>% 
+                         tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
+                         tidytable::select(value = Value, sd = StdDev) %>% 
+                         tidytable::mutate(year = seq(1977, new_year + 5),
+                                           value = value / 2 / 1000,
+                                           sd = sd / 2 / 1000,
+                                           type = "Spawning biomass (1,000s t)") %>% 
+                         tidytable::bind_rows(mdl_res_24_0b$timeseries %>% 
+                                                tidytable::select(year = Yr, value = Bio_all) %>% 
+                                                tidytable::mutate(value = value / 1000) %>% 
+                                                tidytable::filter(year %in% seq(1977, new_year + 5)) %>% 
+                                                tidytable::left_join(mdl_res_24_0b$derived_quants %>% 
+                                                                       tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
+                                                                       tidytable::select(value = Value, sd = StdDev) %>% 
+                                                                       tidytable::mutate(year = seq(1977, new_year + 5),
+                                                                                         cv = sd / value) %>% 
+                                                                       tidytable::select(-value, -sd)) %>% 
+                                                tidytable::mutate(sd = cv * value,
+                                                                  type = "Total biomass (1,000s t)") %>% 
+                                                tidytable::select(-cv)) %>% 
+                         tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
+                                           model = "Previous")) -> biom_dat
+
+
+
+
+biom_text <- biom_dat %>% 
+  tidytable::select(-sd) %>% 
+  tidytable::mutate(type = case_when(type == "Spawning biomass (1,000s t)" ~ "ssb",
+                                     type == "Total biomass (1,000s t)" ~ "tot")) %>% 
+  tidytable::pivot_wider(names_from = c(type, model)) %>% 
+  tidytable::mutate(tp = case_when(year <= 2026 ~ 1,
+                                   year > 2026 ~ 2),
+                    ssb_diff = (ssb_Recommended - ssb_Previous) / ssb_Previous,
+                    tot_diff = (tot_Recommended - tot_Previous) / tot_Previous) %>% 
+  tidytable::summarise(ssb_diff = mean(ssb_diff),
+                       tot_diff = mean(tot_diff),
+                       .by = tp) %>% 
+  tidytable::pivot_longer(cols = c(ssb_diff, tot_diff)) %>% 
+  tidytable::mutate(type = case_when(name == "ssb_diff" ~ "Spawning biomass (1,000s t)",
+                                     name == "tot_diff" ~ "Total biomass (1,000s t)"),
+                    x = case_when(tp == 1 ~ 2021,
+                                  tp == 2 ~ 2028),
+                    y = case_when(name == "ssb_diff" ~ 100,
+                                  name == "tot_diff" ~ 400),
+                    value = scales::percent(value, accuracy = 0.1))
+
+
+
+# plot
+ggplot(data = biom_dat,
+       aes(x = year, y = value, shape = model)) +
+  geom_point() +
+  geom_line(data = biom_dat %>% filter(model == "Recommended")) +
+  facet_wrap(~type, ncol = 1, scales = "free_y") +
+  scico::scale_color_scico_d(palette = 'roma') +
+  geom_point(data = biom_dat %>% tidytable::filter(year > new_year),
+             colour = "darkgreen") +
+  geom_line(data = biom_dat %>% tidytable::filter(year > new_year, model == "Recommended"),
+            colour = "darkgreen",
+            linetype = "dashed") +
+  geom_vline(xintercept = new_year + 0.5,
+             colour = "darkgreen",
+             linetype = "dashed") +
+  geom_text(data = data.frame(biom_text), aes(x = x, y = y, label = value), 
+            inherit.aes = FALSE,
+            hjust = 0) +
+  theme_bw(base_size = 14) +
+  labs(x = "Year", y = "Estimated quantity", shape = "Model") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.key.width = unit(0.25, 'cm'),
+        legend.position = "top")
+
+
+
 # plot recruitment ----
 
 # set up model to compare with base
@@ -381,8 +482,7 @@ rec_mdl_res$parameters %>%
                                            value = value / 1000000,
                                            sd = sd / 1000000,
                                            type = "Age-0 Recruitment (millions)")) %>% 
-  tidytable::mutate(model = "Recommended",
-                    year = year + 0.25) %>% 
+  tidytable::mutate(model = "Recommended") %>% 
   tidytable::bind_rows(base_mdl_res$parameters %>% 
                          tidytable::filter(Label %in% paste0("Main_RecrDev_", seq(1978, new_year - 1))) %>% 
                          tidytable::select(value = Value, sd = Parm_StDev) %>% 
@@ -404,9 +504,9 @@ ggplot(data = rec_dat,
   geom_line(linetype = "dotted") +
   geom_hline(data = rec_dat %>% tidytable::filter(type == "Recruitment deviation"), aes(yintercept = 0)) +
   facet_wrap(~type, ncol = 1, scales = "free_y") +
-  geom_errorbar(aes(ymin = value - 1.96 * sd, 
-                    ymax = value + 1.96 * sd), 
-                linewidth = 0.777, width = 0) +
+  # geom_errorbar(aes(ymin = value - 1.96 * sd, 
+  #                   ymax = value + 1.96 * sd), 
+  #               linewidth = 0.777, width = 0) +
   scico::scale_color_scico_d(palette = 'roma') +
   theme_bw(base_size = 14) +
   labs(x = "Year", y = "Estimated quantity", col = "", pch = "") +
