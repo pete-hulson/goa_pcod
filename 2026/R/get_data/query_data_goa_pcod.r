@@ -326,7 +326,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "twl_srvy_lenfreq_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey length freq data query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## trawl survey strata data ----
   cat("\u231b", crayon::blue("working on trawl survey strata data query..."), "\n")
   # strata with area sizes
@@ -364,27 +364,27 @@ query_goa_pcod <- function(new_year = 9999,
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'twl_srvy_strata.csv'), delim = ",")
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("trawl survey strata data query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## longline survey index data ----
   cat("\u231b", crayon::blue("working on longline survey index query..."), "\n")
   SimDesign::quiet(afscdata::q_lls_rpn(year = new_year,
-                      species = srv_sp,
-                      area = area,
-                      by = 'geoarea',
-                      use_historical = FALSE,
-                      db = conn))
+                                       species = srv_sp,
+                                       area = area,
+                                       by = 'geoarea',
+                                       use_historical = FALSE,
+                                       db = conn))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey index query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## longline survey length data ----
   cat("\u231b", crayon::blue("working on longline survey length rpn query..."), "\n")
   SimDesign::quiet(afscdata::q_lls_rpn_length(year = new_year,
-                             species = srv_sp,
-                             area = area,
-                             db = conn))
+                                              species = srv_sp,
+                                              area = area,
+                                              db = conn))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey length rpn query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## longline survey catch data ----
   cat("\u231b", crayon::blue("working on longline survey catch query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('afsc.lls_catch_summary_with_nulls_mv')) %>% 
@@ -413,17 +413,17 @@ query_goa_pcod <- function(new_year = 9999,
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'lls_catch.csv'), delim = ',')
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("longline survey catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   # fishery data ----
   
   ## catch data ----
   cat("\u231b", crayon::blue("working on catch query..."), "\n")
   ### query catch data and write raw data to folder ----
   SimDesign::quiet(afscdata::q_catch(year = new_year,
-                    species = fsh_sp,
-                    area = fsh_subarea,
-                    db = conn,
-                    add_fields = c("akr_state_fishery_flag", "vessel_id")))
+                                     species = fsh_sp,
+                                     area = fsh_subarea,
+                                     db = conn,
+                                     add_fields = c("akr_state_fishery_flag", "vessel_id")))
   ### query ADF&G data from 1997-2002 and write raw data to folder ----
   dplyr::tbl(conn, dplyr::sql('council.comprehensive_ft')) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -545,7 +545,7 @@ query_goa_pcod <- function(new_year = 9999,
     dplyr::filter(area >= 600,
                   area <= 699,
                   area != 670) -> akfin_obsc
-
+  
   dplyr::collect(akfin_obsc) %>% 
     dplyr::mutate(year = lubridate::year(hday),
                   gear = dplyr::case_when(gear %in% c(1, 2, 3, 4) ~ 'trawl',
@@ -559,7 +559,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "fsh_obs_catch_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("domestic fishery observer catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## foreign fishery length data ----
   cat("\u231b", crayon::blue("working on foreign fishery length query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('pre1991.foreign_haul')) %>% 
@@ -583,7 +583,7 @@ query_goa_pcod <- function(new_year = 9999,
                   area <= 699,
                   area != 670) %>% 
     dplyr::mutate(haul_join = paste0('H', haul_join)) -> afsc_len
-
+  
   dplyr::collect(afsc_len) %>% 
     dplyr::mutate(weight = weight / 1000,
                   year = lubridate::year(dt),
@@ -636,7 +636,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "fsh_age_domestic_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("fishery age query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## pelagic trawl catch data ----
   cat("\u231b", crayon::blue("working on domestic pelagic trawl catch query..."), "\n")
   dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
@@ -649,7 +649,7 @@ query_goa_pcod <- function(new_year = 9999,
                   hday = haul_date.x,
                   area = nmfs_area) %>% 
     dplyr::filter(area %in% c(620, 630)) -> pel_twl
-
+  
   dplyr::collect(pel_twl) %>% 
     dplyr::mutate(year = lubridate::year(hday),
                   month = lubridate::month(hday)) %>% 
@@ -682,7 +682,7 @@ query_goa_pcod <- function(new_year = 9999,
     dplyr::filter(area > 609,
                   area < 650,
                   year > 2007) -> swf_catch
-
+  
   dplyr::collect(swf_catch) %>% 
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'swf_catch.csv'), delim = ",")
   
@@ -690,7 +690,7 @@ query_goa_pcod <- function(new_year = 9999,
                  file = here::here(new_year, "data", "sql", "swf_catch_sql.txt"))
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("swf catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
- 
+  
   ## nontarget catch ----
   SimDesign::quiet(afscdata::q_nontarget(year = new_year,
                                          target = fsh_target,
@@ -706,7 +706,7 @@ query_goa_pcod <- function(new_year = 9999,
                                    db = conn,
                                    save = TRUE))
   cat(crayon::green$bold("\u2713"), crayon::blue("prohib species catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
   ## specs ----
   SimDesign::quiet(afscdata::q_specs(year = new_year,
                                      species = fsh_sp,
@@ -741,7 +741,7 @@ query_goa_pcod <- function(new_year = 9999,
     dplyr::filter(subarea %in% fsh_subarea,
                   species == fsh_sp_code,
                   year >= new_year - 5) -> em_catch
-
+  
   dplyr::collect(em_catch) %>% 
     dplyr::mutate(haul_date = lubridate::date(haul_date),
                   lat = (start_lat + end_lat) / 2,
@@ -752,5 +752,5 @@ query_goa_pcod <- function(new_year = 9999,
     tidytable::select(-start_lat, -end_lat, -start_lon, -end_lon) %>% 
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'fish_em_catch.csv'), delim = ",")
   cat(crayon::green$bold("\u2713"), crayon::blue("em catch query"), crayon::green$underline$bold$italic("DONE"), "\n")
-
+  
 }
