@@ -351,7 +351,7 @@ run_retro <- function(new_year = NULL,
   
   # define how many retro years you want to go back
   if(isTRUE(full_run)){
-    ret_yr <- 10
+    ret_yr <- 9 # changed in 2026 as r4ss version 1.56.0 breaks when retro year 10 or greater
   } else{ret_yr <- 1}
   
   if(base_mdl != rec_mdl){
@@ -391,11 +391,13 @@ run_retro <- function(new_year = NULL,
     retro_res <- list(retrosumm_rec = retrosumm_rec, retrosumm_base = retrosumm_base)
     
   } else{
-    ## run retro
+    ## run retro (in parallel)
+    ncores <- parallelly::availableCores(omit = 1)
+    future::plan(future::multisession, workers = ncores)
     r4ss::retro(dir = here::here(new_year, "mgmt", rec_mdl),
                 years = 0:-ret_yr)
-    
-    
+    future::plan(future::sequential)
+
     # load the retrospective results
     retro_rec <- r4ss::SSgetoutput(dirvec = here::here(new_year, "mgmt", rec_mdl, "retrospectives", paste("retro", 0:-ret_yr, sep = "")),
                                    verbose = FALSE)
