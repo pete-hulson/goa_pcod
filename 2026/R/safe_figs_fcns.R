@@ -784,7 +784,17 @@ plot_retro <- function(rec_mdl_res = NULL,
   rec_mdl_res$derived_quants %>% 
     tidytable::select(Label, Value, StdDev) %>% 
     tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
-    tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+    tidytable::filter(!(Label %in% c("SSB_Virgin", 
+                                     "SSB_Initial", 
+                                     "SSB_unfished",
+                                     "SSB_Btgt", 
+                                     "SSB_SPR", 
+                                     "SSB_MSY", 
+                                     "B_MSY/SSB_unfished",
+                                     "SSB_for_SRR_bench",
+                                     "ln(SSB)_1977",
+                                     "ln(SSB)_2001",
+                                     "ln(SSB)_2026"))) %>% 
     tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
     tidytable::filter(Year <= new_year) %>% 
     tidytable::select(year = Year, Value, sd = StdDev) %>% 
@@ -819,10 +829,8 @@ plot_retro <- function(rec_mdl_res = NULL,
                       replist9 = case_when(Yr >= new_year - 7 ~ NA,
                                            .default = replist9),
                       replist10 = case_when(Yr >= new_year - 8 ~ NA,
-                                            .default = replist10),
-                      replist11 = case_when(Yr >= new_year - 9 ~ NA,
-                                            .default = replist11)) %>% 
-    tidytable::pivot_longer(cols = c(paste0("replist", seq(1, 11)))) %>% 
+                                            .default = replist10)) %>% 
+    tidytable::pivot_longer(cols = c(paste0("replist", seq(1, 10)))) %>% 
     tidytable::mutate(peel = case_when(name == "replist1" ~ "0 years",
                                        name == "replist2" ~ "-1 years",
                                        name == "replist3" ~ "-2 years",
@@ -832,8 +840,7 @@ plot_retro <- function(rec_mdl_res = NULL,
                                        name == "replist7" ~ "-6 years",
                                        name == "replist8" ~ "-7 years",
                                        name == "replist9" ~ "-8 years",
-                                       name == "replist10" ~ "-9 years",
-                                       name == "replist11" ~ "-10 years"),
+                                       name == "replist10" ~ "-9 years"),
                       type = "Data retrospective (10 years)") %>% 
     tidytable::select(type, peel, year = Yr, ssb = value) %>% 
     tidytable::drop_na() %>% 
