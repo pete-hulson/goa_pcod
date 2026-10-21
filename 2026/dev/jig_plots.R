@@ -26,8 +26,6 @@ dplyr::tbl(conn, dplyr::sql('akr.v_cas_account')) %>%
 # query total catch for number of vessels
 tot_catch <- vroom::vroom(here::here(new_year, 'data', 'raw', 'fish_catch_data.csv'))
 
-
-
 # set up plot data
 catch_q %>% 
   tidytable::mutate(week = lubridate::week(week_end_date)) %>% 
@@ -112,17 +110,23 @@ vess_table_data <- tot_catch %>%
 ggplot(data = cumul_catch, 
        aes(x = week, y = prop_alloc, color = factor(period))) + 
   geom_point() + 
-  geom_path(aes(group = period)) +
+  geom_path(aes(group = period), linetype = "dotted") +
   facet_grid(gear ~ area, scale = "free_y") +
-  theme_bw(base_size = 14) +
+  theme_bw(base_size = 12) +
   theme(axis.text.x = element_text(vjust = 0.5, angle = 90),
         panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank()) +
+        panel.grid.minor = element_blank(),
+        legend.position = "top") +
   scico::scale_color_scico_d(palette = 'roma') +
   labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year") +
   ggpp::geom_table(data = vess_table_data, aes(x = x, y = y, label = tb),
-                   table.theme = ggpp::ttheme_gtminimal(base_size = 12))
+                   table.theme = ggpp::ttheme_gtminimal(base_size = 10))
   
+ggsave(filename = "cumul_prop.png",
+       path = here::here(new_year, "dev", "misc", "prop_quota_plots"),
+       width = 7,
+       height = 7,
+       units = "in")
 
 # plot for all years ----
 
@@ -147,13 +151,18 @@ tidytable::expand_grid(year = seq(min(catch.y$year), max(catch.y$year) - 1),
 ggplot(data = cumul_catch, 
        aes(x = week, y = prop_alloc, color = factor(year))) + 
   geom_point() + 
-  geom_path(aes(group = year)) +
+  geom_path(aes(group = year), linetype = "dotted") +
   facet_grid(gear ~ area, scale = "free_y") +
-  theme_bw(base_size = 14) +
+  theme_bw(base_size = 12) +
   theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +
   scico::scale_color_scico_d(palette = 'roma') +
   labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year")
 
+ggsave(filename = "yr_cumul_prop.png",
+       path = here::here(new_year, "dev", "misc", "prop_quota_plots"),
+       width = 7,
+       height = 7,
+       units = "in")
 
 
 # plot for cgoa jig----
@@ -187,12 +196,18 @@ ggplot(data = cumul_catch,
   geom_path(aes(group = year)) +
   facet_grid(gear ~ area, scale = "free_y") +
   geom_text(data = vess_text, aes(x = week, y = prop_alloc, label = year), show.legend = FALSE) +
-  theme_bw(base_size = 14) +
-  theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +
+  theme_bw(base_size = 12) +
+  theme(axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none") +
   scico::scale_color_scico_d(palette = 'roma') +
   ylim(0, 1) +
   labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year")
 
+ggsave(filename = "cgoa_jig_cumul_prop.png",
+       path = here::here(new_year, "dev", "misc", "prop_quota_plots"),
+       width = 7,
+       height = 7,
+       units = "in")
 
 
 
