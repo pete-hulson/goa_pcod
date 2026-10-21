@@ -662,10 +662,10 @@ query_goa_pcod <- function(new_year = 9999,
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("pelagic trawl query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
-  ## shallow water flats pcod catch ----
+  ## shallow water fishery pcod catch ----
   cat("\u231b", crayon::blue("working on shallow water flats catch query..."), "\n")
-  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
-    dplyr::filter(TRIP_TARGET_NAME %in% c("Arrowtooth Flounder", "Halibut"),
+  swf_catch <- dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::filter(TRIP_TARGET_NAME != "Pacific Cod",
                   FMP_AREA == "GOA",
                   BOTTOM_DEPTH_FATHOMS < 165) %>% 
     dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
@@ -678,10 +678,15 @@ query_goa_pcod <- function(new_year = 9999,
                   weight_kg = extrapolated_weight,
                   area = nmfs_area,
                   target = trip_target_name,
-                  bottom_depth_f = bottom_depth_fathoms) %>% 
+                  bottom_depth_f = bottom_depth_fathoms,
+                  haul_date = haul_date.x,
+                  permit = permit.x,
+                  haul = haul.x) %>% 
     dplyr::filter(area > 609,
                   area < 650,
-                  year > 2007) -> swf_catch
+                  year > 2007,
+                  gear_desc != "PELAGIC",
+                  target %in% c("Arrowtooth Flounder", "Halibut", "Pollock - bottom", "Rockfish", "Sablefish", "Shallow Water Flatfish - GOA"))
   
   dplyr::collect(swf_catch) %>% 
     vroom::vroom_write(., here::here(new_year, 'data', 'raw', 'swf_catch.csv'), delim = ",")

@@ -259,12 +259,23 @@ plot_auxind <- function(new_year = NULL){
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "swf_catch.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::filter(target %in% c('Halibut')) %>% 
                            tidytable::summarise(cod = sum(weight_kg[species == 202], na.rm = TRUE),
                                                 tot = sum(weight_kg, na.rm = TRUE),
-                                                .by = year) %>% 
+                                                .by = c(year, target)) %>% 
                            tidytable::mutate(pcod = cod / tot) %>% 
-                           tidytable::mutate(type = "Proportion of Pcod catch in shallow water fisheries",
+                           tidytable::mutate(mean = mean(pcod),
+                                             sd = sd(pcod), .by = c(target)) %>% 
+                           tidytable::mutate(index = (pcod - mean) / sd) %>% 
+                           tidytable::left_join(vroom::vroom(here::here(new_year, "data", "raw", "swf_catch.csv"), 
+                                                             progress = FALSE, 
+                                                             show_col_types = FALSE) %>% 
+                                                  tidytable::mutate(test_haul = as.numeric(paste0(lubridate::month(haul_date), lubridate::day(haul_date), permit, haul))) %>% 
+                                                  tidytable::distinct(test_haul, .by = c(target, year)) %>% 
+                                                  tidytable::rename(target = .by1, year = .by2) %>% 
+                                                  tidytable::summarise(num_hauls = .N, .by = c(year, target))) %>% 
+                           tidytable::summarise(pcod = sum(index * num_hauls) / sum(num_hauls), 
+                                                .by = year) %>% 
+                           tidytable::mutate(type = "Index of Pcod catch in shallow water fisheries",
                                              index = "Adult") %>% 
                            tidytable::select(year, pcod, type, index)) %>% 
     tidytable::bind_rows(vroom::vroom(here::here(new_year, "data", "raw", "adfg_srvy_glm.csv"),
@@ -1149,12 +1160,12 @@ plot_llq <- function(rec_mdl_res = NULL,
 #' 
 plot_profile <- function(new_year = NULL){
   
-  profilevec <- list(rec = seq(12.7, 13.5, length.out = 9),
-                     m = seq(0.45, 0.54, length.out = 9),
-                     m14 = seq(0.73, 0.95, length.out = 9),
-                     q_twl = seq(0.09, 0.43, length.out = 9),
-                     q_ll = seq(0.04, 0.34, length.out = 9),
-                     q_ll_env = seq(0.4, 2.1, length.out = 9))
+  profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
+                     m = seq(0.41, 0.57, by = 0.02),
+                     m14 = seq(0.73, 0.89, by = 0.02),
+                     q_twl = seq(0.17, 0.33, by = 0.02),
+                     q_ll = seq(0.07, 0.23, by = 0.02),
+                     q_ll_env = seq(0.76, 1.08, by = 0.04))
   
   # m
   load(here::here(new_year, "output", "profile", "m_prof.RData"))
