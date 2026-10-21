@@ -117,12 +117,12 @@ run_mdl_anlys <- function(new_year = NULL,
   linenums = c(84, 56, 72, 134, 135, 141)
   # define parameter value vector
   if(isTRUE(full_run)){
-    profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
-                       m = seq(0.41, 0.57, by = 0.02),
-                       m14 = seq(0.73, 0.89, by = 0.02),
-                       q_twl = seq(0.17, 0.33, by = 0.02),
-                       q_ll = seq(0.07, 0.23, by = 0.02),
-                       q_ll_env = seq(0.76, 1.08, by = 0.04))
+    profilevec <- list(rec = seq(12.7, 13.5, length.out = 9),
+                       m = seq(0.45, 0.54, length.out = 9),
+                       m14 = seq(0.73, 0.95, length.out = 9),
+                       q_twl = seq(0.09, 0.43, length.out = 9),
+                       q_ll = seq(0.04, 0.34, length.out = 9),
+                       q_ll_env = seq(0.4, 2.1, length.out = 9))
   } else{
     profilevec <- list(rec = c(12, 13, 14),
                        m = c(0.4, 0.5, 0.6),
@@ -131,7 +131,7 @@ run_mdl_anlys <- function(new_year = NULL,
                        q_ll = c(0.1, 0.15, 0.2),
                        q_ll_env = c(0.8, 0.9, 1))
   }
-  
+
   # run profiles in parallel
   run_profile(mdl_dir = here::here(new_year, "mgmt", rec_mdl),
               res_dir = here::here(new_year, "output", "profile"),
