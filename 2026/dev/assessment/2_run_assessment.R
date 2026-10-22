@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Sep30"
+dat_day <- "Oct18"
 
 # 2024 accepted model
 base_mdl <- "24.0"
@@ -19,7 +19,7 @@ full_run = FALSE
 run_mcmcz = FALSE
 
 # remove previous run files?
-remove_files = TRUE
+remove_files = FALSE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
@@ -95,8 +95,7 @@ if(isTRUE(remove_files)){
 ## copy ss files from last year's accepted assessment ----
 start_ss_fldr(from = here::here(new_year - 1, 'mgmt', base_mdl), 
               to = here::here(new_year, 'mgmt', base_mdl),
-              update_exe = TRUE,
-              ver_exe = 'v3.30.25')
+              update_exe = TRUE)
 
 ## update dat/ctl/etc files ----
 update_ss3_files(asmnt_yr = new_year, 
@@ -105,6 +104,16 @@ update_ss3_files(asmnt_yr = new_year,
                  dat_filename = paste0('GOAPcod2026', dat_day, '.dat'),
                  ctl_filename = 'Model24_0.ctl')
 
+## make ss3 version changes ----
+# these changes are to get rid of some of the warnings, but don't change results
+# forecast file
+fore <- r4ss::SS_readforecast(file = here::here(new_year, 'mgmt', base_mdl, "forecast.ss"))
+fore$HCR_anchor <- 2
+r4ss::SS_writeforecast(fore, dir = here::here(new_year, 'mgmt', base_mdl), overwrite = TRUE)
+
+srtr <- r4ss::SS_readstarter(file = here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
+srtr$depl_basis <- 6
+r4ss::SS_writestarter(srtr, dir = here::here(new_year, 'mgmt', base_mdl), overwrite = TRUE)
 
 # run model ----
 run_ss3_model(asmnt_yr = new_year, 
