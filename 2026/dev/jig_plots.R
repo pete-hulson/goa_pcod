@@ -165,16 +165,12 @@ ggsave(filename = "yr_cumul_prop.png",
        units = "in")
 
 
-# plot for cgoa jig----
+# plot during crash and collapse ----
 
-tidytable::expand_grid(year = seq(min(catch.y$year), max(catch.y$year) - 1), #c(2015:2018, seq(new_year - 2, new_year - 1)),
-                       gear = c("Jig"), 
-                       area = c("Central gulf"),
+tidytable::expand_grid(year = 2015:2021, 
+                       gear = c("Jig", "Pot"), 
+                       area = c("Western gulf", "Central gulf"),
                        week = 1:52) %>% 
-  tidytable::bind_rows(expand.grid(year = new_year, 
-                                   gear = c("Jig"), 
-                                   area = c("Central gulf"),
-                                   week = 1:as.numeric(format(Sys.Date(), format = "%W")))) %>% 
   tidytable::left_join(catch.x %>% 
                          tidytable::select(-quota)) %>% 
   tidytable::mutate(week_catch = replace_na(week_catch, 0)) %>% 
@@ -186,8 +182,6 @@ tidytable::expand_grid(year = seq(min(catch.y$year), max(catch.y$year) - 1), #c(
 
 vess_text <- cumul_catch %>% 
   tidytable::filter(week == 52) %>% 
-  tidytable::bind_rows(cumul_catch %>% 
-                         tidytable::filter(year == new_year & week == as.numeric(format(Sys.Date(), format = "%W")))) %>% 
   tidytable::mutate(week = 55)
 
 ggplot(data = cumul_catch, 
@@ -203,7 +197,7 @@ ggplot(data = cumul_catch,
   ylim(0, 1) +
   labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year")
 
-ggsave(filename = "cgoa_jig_cumul_prop.png",
+ggsave(filename = "crash_cumul_prop.png",
        path = here::here(new_year, "dev", "misc", "prop_quota_plots"),
        width = 7,
        height = 7,
