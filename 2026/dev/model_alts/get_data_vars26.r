@@ -1,0 +1,226 @@
+## Get SS3 data file for GOA Pacific cod
+## adapted/generalized from Steve Barbeaux' files for generating SS files for EBS/AI Greenland Turbot ZTA, 2021-10-07, R version 4.05.01 64 bit
+## Altered in 2022 by Pete Hulson
+## Completely re-developed in 2024 by Pete Hulson
+## Sections denoted with ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< need to be updated at the start of each assessment cycle
+
+# user-defined function arguments ----
+
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+
+# previous ss3 dat filename
+# note: need to copy in the following files into the 'data' folder:
+# 1. accepted model dat file from previous assessment
+# 2. accepted model ctl file from previous assessment
+# 3. data_echo.ss_new file from accepted model
+# 4. data/historical folder
+# 5. delta_glm_1-7-2.get file to get adf&g trawl survey index
+# 6. other_indices.csv that includes age-0 beach seine indices (updated by hand)
+# 7. fish_lfreq_state.csv in the data/raw folder (updated by hand)
+# 8. data/ageing_error folder (note to updated reader-tester data on occasion)
+# 9. beachseine_lw.csv to data/raw (updated by hand)
+old_dat_filename <- "GOAPcod2025Dec08.dat"
+old_ctl_filename <- "Model24_0.ctl"
+
+# run data queries? TRUE if first time running this script, or if data needs to be updated, FALSE for every run thereafter
+query = FALSE
+
+# run glm model for adf&g survey index? TRUE if first time running this script, FALSE for every run thereafter
+run_glm = FALSE
+
+# do you want to remove previous dat files
+remove_dat = TRUE
+
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
+
+# load necessary packages ----
+## cran packages ----
+pkg_cran <- c("data.table",
+              "FSA",
+              "lubridate",
+              "tidyverse",
+              "vroom",
+              "here",
+              "tictoc",
+              "SimDesign")
+
+# if not installed, then install
+if(length(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE )]) > 0) {
+  install.packages(pkg_cran[which(pkg_cran %in% rownames(installed.packages()) == FALSE)])
+}
+
+# load packages
+lapply(pkg_cran, library, character.only = TRUE)
+
+## github packages ----
+pkg_git <- c("r4ss",
+             "afscdata",
+             "afscISS",
+             "AgeingError")
+
+# if not installed, then install
+if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
+  pak::pak("r4ss/r4ss")
+}
+if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
+  pak::pak("afsc-assessments/afscdata")
+}
+if(!isTRUE("afscISS" %in% rownames(installed.packages()))) {
+  pak::pak("afsc-assessments/afscISS")
+}
+if(!isTRUE("AgeingError" %in% rownames(installed.packages()))) {
+  pak::pak("pfmc-assessments/AgeingError")
+}
+
+# load packages
+lapply(pkg_git, library, character.only = TRUE)
+
+# automated function arguments ----
+
+## data file specs ----
+# current year ss3 dat filename
+new_dat_filename <- paste0("GOAPcod", 
+                           format(Sys.Date(), format = "%Y%b%d"),
+                           ".dat")
+
+# Current assessment year
+new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
+
+## comp data arguments ----
+# length bins to use for length comp data
+len_bins <- c(4.5, 9.5, 14.5, 19.5, 24.5, 29.5, 34.5, 39.5, 44.5, 49.5, 54.5, 59.5, 64.5, 69.5, 74.5, 79.5, 84.5, 89.5, 94.5, 99.5, 104.5)
+
+# set up needed folders ----
+
+# Make folders for data queries, raw data, and model input files
+if (!file.exists(here::here(new_year, "data", "raw"))){
+  dir.create(here::here(new_year, "data", "raw"), recursive = TRUE)
+}
+if (!file.exists(here::here(new_year, "data", "output"))){
+  dir.create(here::here(new_year, "data", "output"), recursive = TRUE)
+}
+if (!file.exists(here::here(new_year, "data", "sql"))){
+  dir.create(here::here(new_year, "data", "sql"), recursive = TRUE)
+}
+if (!file.exists(here::here(new_year, "output", "mdl_input"))){
+  dir.create(here::here(new_year, "output", "mdl_input"), recursive = TRUE)
+}
+if (!file.exists(here::here(new_year, "output", "ageing_error"))){
+  dir.create(here::here(new_year, "output", "ageing_error"), recursive = TRUE)
+}
+
+# Remove previous dat files from output folder
+if(isTRUE(remove_dat)){
+  if(file.exists(here::here(new_year, "output", "mdl_input")) & length(setdiff(list.files(here::here(new_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_year, "output", "mdl_input"), pattern = "_old"))) > 0) {
+    file.remove(here::here(new_year, "output", "mdl_input", setdiff(list.files(here::here(new_year, "output", "mdl_input"), pattern = "GOAPcod"), list.files(here::here(new_year, "output", "mdl_input"), pattern = "_old"))))
+  }
+  if(file.exists(here::here(new_year, "output", "mdl_input")) & length(list.files(here::here(new_year, "output", "mdl_input"), pattern = ".ctl")) > 0) {
+    file.remove(here::here(new_year, "output", "mdl_input", list.files(here::here(new_year, "output", "mdl_input"), pattern = ".ctl")))
+  }
+}
+
+# source functions ----
+source_files <- list.files(here::here(new_year, "R", "get_data"), "*.r$")
+purrr::map(here::here(new_year, "R", "get_data", source_files), source)
+source(here::here(new_year, "R", "utils.r"))
+
+# get ss3 data files ----
+
+# read in previous assessment ss3 datafile
+old_data <- r4ss::SS_readdat_3.30(here::here(new_year, "data", old_dat_filename))
+
+## get data file ----
+new_data_5 <- get_data_goa_pcod(new_data = old_data,
+                                new_file = new_dat_filename,
+                                new_year = new_year,
+                                query = query,
+                                run_glm = run_glm,
+                                len_bins = len_bins)
+
+# get a model with 1 cm bins for comparison
+new_data_1 <- get_data_goa_pcod(new_data = old_data,
+                              new_file = new_dat_filename,
+                              new_year = new_year,
+                              query = query,
+                              run_glm = run_glm,
+                              len_bins = seq(0.5, 104.5))
+
+
+
+## make 2026 changes ----
+# 24.0 = accepted 2025 model
+# 24.0a = caal fixes; lbin method = 3, lbin_lo and lbin_hi corrected
+# 24.0b = 1 cm bins, lbin method = 3
+# 24.0c = 5 cm bins length comp, 1 cm bins caal, lbin method = 3
+# 24.0d = 24.0a with population bins matching data bins
+
+# write base model data (24.0)
+r4ss::SS_writedat_3.30(new_data_5,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
+
+
+# change lbin_method to 3 and caal data to 5 cm bins (24.0a)
+new_data_24_0a <- new_data_5
+new_data_24_0a$Lbin_method <- 3
+for(i in 1:length(new_data_24_0a$agecomp$year)){
+  if(new_data_24_0a$agecomp$lbin_lo[i] > 0){new_data_24_0a$agecomp$lbin_hi[i] <- new_data_24_0a$agecomp$lbin_lo[i] + 4}
+}
+r4ss::SS_writedat_3.30(new_data_24_0a,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0a.dat")), overwrite = TRUE)
+
+# get a model with 1 cm bins for comparison (24.0b)
+new_data_24_0b <- new_data_1
+new_data_24_0b$Lbin_method <- 3
+r4ss::SS_writedat_3.30(new_data_24_0b,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0b.dat")), overwrite = TRUE)
+
+# merge 5 cm bins with 1 cm bins for caal
+new_data_24_0c <- new_data_5
+new_data_24_0c$agecomp <- new_data_1$agecomp
+
+r4ss::SS_writedat_3.30(new_data_24_0c,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0c.dat")), overwrite = TRUE)
+
+# change population bins to be consistent with data bins
+# merge 5 cm bins with 1 cm bins for caal
+new_data_24_0d <- new_data_5
+new_data_24_0d$Lbin_method <- 3
+new_data_24_0d$binwidth <- 5
+new_data_24_0d$minimum_size <- 4.5
+
+r4ss::SS_writedat_3.30(new_data_24_0d,
+                       here::here(new_year, "output", "mdl_input",
+                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0d.dat")), overwrite = TRUE)
+
+
+# get ss3 ctl files ----
+
+# read in previous assessment ss3 ctl
+old_ctl <- r4ss::SS_readctl_3.30(here::here(new_year, "data", old_ctl_filename))
+
+## reset params annually ----
+# reset end year in block designs
+old_ctl$Block_Design[[1]][length(old_ctl$Block_Design[[1]])] <- new_year
+old_ctl$Block_Design[[2]][length(old_ctl$Block_Design[[2]])] <- new_year
+old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
+
+# reset end year for recr_devs
+# note: when fcast_rec_option = 0 in forecast file, then use the following:
+# old_ctl$MainRdevYrLast <- new_year - 2
+# note: when fcast_rec_option = 4 in forecast file, then use the following:
+old_ctl$MainRdevYrLast <- new_year
+
+## write model ctl ----
+r4ss::SS_writectl_3.30(ctllist = old_ctl,
+                       outfile = here::here(new_year, "output", "mdl_input", "Model24_0.ctl"),
+                       overwrite = TRUE)
+
+
+
+

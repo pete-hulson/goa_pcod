@@ -132,72 +132,17 @@ source(here::here(new_year, "R", "utils.r"))
 old_data <- r4ss::SS_readdat_3.30(here::here(new_year, "data", old_dat_filename))
 
 ## get data file ----
-new_data_5 <- get_data_goa_pcod(new_data = old_data,
-                                new_file = new_dat_filename,
-                                new_year = new_year,
-                                query = query,
-                                run_glm = run_glm,
-                                len_bins = len_bins)
-
-# get a model with 1 cm bins for comparison
-new_data_1 <- get_data_goa_pcod(new_data = old_data,
+new_data <- get_data_goa_pcod(new_data = old_data,
                               new_file = new_dat_filename,
                               new_year = new_year,
                               query = query,
                               run_glm = run_glm,
-                              len_bins = seq(0.5, 104.5))
-
-
-
-## make 2026 changes ----
-# 24.0 = accepted 2025 model
-# 24.0a = caal fixes; lbin method = 3, lbin_lo and lbin_hi corrected
-# 24.0b = 1 cm bins, lbin method = 3
-# 24.0c = 5 cm bins length comp, 1 cm bins caal, lbin method = 3
-# 24.0d = 24.0a with population bins matching data bins
+                              len_bins = len_bins)
 
 # write base model data (24.0)
-r4ss::SS_writedat_3.30(new_data_5,
+r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
                                   paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), ".dat")), overwrite = TRUE)
-
-
-# change lbin_method to 3 and caal data to 5 cm bins (24.0a)
-new_data_24_0a <- new_data_5
-new_data_24_0a$Lbin_method <- 3
-for(i in 1:length(new_data_24_0a$agecomp$year)){
-  if(new_data_24_0a$agecomp$lbin_lo[i] > 0){new_data_24_0a$agecomp$lbin_hi[i] <- new_data_24_0a$agecomp$lbin_lo[i] + 4}
-}
-r4ss::SS_writedat_3.30(new_data_24_0a,
-                       here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0a.dat")), overwrite = TRUE)
-
-# get a model with 1 cm bins for comparison (24.0b)
-new_data_24_0b <- new_data_1
-new_data_24_0b$Lbin_method <- 3
-r4ss::SS_writedat_3.30(new_data_24_0b,
-                       here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0b.dat")), overwrite = TRUE)
-
-# merge 5 cm bins with 1 cm bins for caal
-new_data_24_0c <- new_data_5
-new_data_24_0c$agecomp <- new_data_1$agecomp
-
-r4ss::SS_writedat_3.30(new_data_24_0c,
-                       here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0c.dat")), overwrite = TRUE)
-
-# change population bins to be consistent with data bins
-# merge 5 cm bins with 1 cm bins for caal
-new_data_24_0d <- new_data_5
-new_data_24_0d$Lbin_method <- 3
-new_data_24_0d$binwidth <- 5
-new_data_24_0d$minimum_size <- 4.5
-
-r4ss::SS_writedat_3.30(new_data_24_0d,
-                       here::here(new_year, "output", "mdl_input",
-                                  paste0(substr(new_dat_filename, start = 1, stop = (nchar(new_dat_filename) - 4)), "_24_0d.dat")), overwrite = TRUE)
-
 
 # get ss3 ctl files ----
 
