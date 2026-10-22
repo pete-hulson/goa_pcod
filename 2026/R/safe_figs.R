@@ -278,12 +278,7 @@ safe_figs <- function(new_year = NULL,
   plot_srv_osa(rec_mdl_res, new_year)
   # print message when done
   cat(crayon::green$bold("\u2713"), crayon::blue("One-step-ahead residual plots"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
-  # pearson resids ----
-  plot_pearson(rec_mdl_res, new_year)
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("Pearson residual plot"), crayon::green$underline$bold$italic("DONE"), "\n")
-  
+
   # growth fits ----
   suppressWarnings(plot_grwth(rec_mdl_res, new_year))
   # print message when done

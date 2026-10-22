@@ -29,20 +29,21 @@ pkg_git <- c("r4ss",
 
 # if not installed, then install
 if(!isTRUE("r4ss" %in% rownames(installed.packages()))) {
-  devtools::install_github("r4ss/r4ss", force = TRUE)
+  remotes::install_github("r4ss/r4ss", force = TRUE)
 }
 if(!isTRUE("afscdata" %in% rownames(installed.packages()))) {
-  devtools::install_github("afsc-assessments/afscdata", force = TRUE)
-}
-if(!isTRUE("afscOSA" %in% rownames(installed.packages()))){
-  devtools::install_github("noaa-afsc/afscOSA", dependencies = TRUE, force = TRUE)
+  remotes::install_github("afsc-assessments/afscdata", force = TRUE)
 }
 if(!isTRUE("compResidual" %in% rownames(installed.packages()))){
   TMB:::install.contrib("https://github.com/vtrijoulet/OSA_multivariate_dists/archive/main.zip")
-  devtools::install_github("fishfollower/compResidual/compResidual", force = TRUE)
+  remotes::install_github("fishfollower/compResidual/compResidual", force = TRUE)
 }
+if(!isTRUE("afscOSA" %in% rownames(installed.packages()))){
+  remotes::install_github("noaa-afsc/afscOSA", ref = 'v0.0.1', force = TRUE)
+}
+
 if(!isTRUE("afscassess" %in% rownames(installed.packages()))){
-  devtools::install_github("BenWilliams-NOAA/afscassess")
+  remotes::install_github("BenWilliams-NOAA/afscassess", force = TRUE)
 }
 
 

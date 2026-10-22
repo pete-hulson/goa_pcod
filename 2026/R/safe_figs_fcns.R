@@ -1435,27 +1435,14 @@ plot_fsh_osa <- function(rec_mdl_res = NULL,
   # plot
   fsh_osa <- SimDesign::quiet(afscOSA::plot_osa(osa_out_fsh,
                                                 outpath = NULL))
-  fsh_osa_new <- SimDesign::quiet(cowplot::plot_grid(fsh_osa$bubble +
-                                                       theme_bw(base_size = 12) +
-                                                       theme(legend.position = "top",
-                                                             legend.key.width = unit(0.1, 'cm')),
-                                                     fsh_osa$qq +
-                                                       theme_bw(base_size = 12),
-                                                     fsh_osa$aggcomp +
-                                                       theme_bw(base_size = 12),
-                                                     nrow = 3, 
-                                                     rel_heights = c(4,3,3)))
-  
+
   # save
   ggsave(filename = "fsh_osa.png",
          path = here::here(new_year, "output", "safe_plots"),
          width = 6.5,
          height = 7,
          units = "in")
-  
-  # delete osa standard plot
-  invisible(file.remove(here::here("osa_length_diagnostics.png")))
-  
+
 }
 
 #' function to plot survey one-step-ahead length comp residuals
@@ -1481,27 +1468,14 @@ plot_srv_osa <- function(rec_mdl_res = NULL,
   # plot
   srv_osa <- SimDesign::quiet(afscOSA::plot_osa(osa_out_srv,
                                                 outpath = NULL))
-  srv_osa_new <- SimDesign::quiet(cowplot::plot_grid(srv_osa$bubble +
-                                                       theme_bw(base_size = 12) +
-                                                       theme(legend.position = "top",
-                                                             legend.key.width = unit(0.1, 'cm')),
-                                                     srv_osa$qq +
-                                                       theme_bw(base_size = 12),
-                                                     srv_osa$aggcomp +
-                                                       theme_bw(base_size = 12),
-                                                     nrow = 3, 
-                                                     rel_heights = c(4,3,3)))
-  
+
   # save
   ggsave(filename = "srv_osa.png",
          path = here::here(new_year, "output", "safe_plots"),
          width = 6.5,
          height = 7,
          units = "in")
-  
-  # delete osa standard plot
-  invisible(file.remove(here::here("osa_length_diagnostics.png")))
-  
+
 }
 
 #' function to plot pearson residuals
@@ -1923,8 +1897,8 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
           legend.position = "none")
   
   # plot and save
-  plot_grid(mhwi_plot, tb_plot, 
-            ncol = 1)
+  cowplot::plot_grid(mhwi_plot, tb_plot, 
+                     ncol = 1)
   
   # save
   ggsave(filename = "tb_mhwi.png",
@@ -1935,8 +1909,8 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
   
   
   # plot and save
-  plot_grid(mhwi_plot, sb_plot, 
-            ncol = 1)
+  cowplot::plot_grid(mhwi_plot, sb_plot, 
+                     ncol = 1)
   
   # save
   ggsave(filename = "sb_mhwi.png",
@@ -2082,7 +2056,17 @@ plot_phspln <- function(rec_mdl_res = NULL,
     tidytable::left_join(rec_mdl_res$derived_quants %>% 
                            tidytable::select(Label, Value, StdDev) %>% 
                            tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
-                           tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+                           tidytable::filter(!(Label %in% c("SSB_Virgin", 
+                                                            "SSB_Initial", 
+                                                            "SSB_unfished", 
+                                                            "SSB_Btgt", 
+                                                            "SSB_SPR", 
+                                                            "SSB_MSY", 
+                                                            "B_MSY/SSB_unfished",
+                                                            "SSB_for_SRR_bench",
+                                                            "ln(SSB)_1977",
+                                                            "ln(SSB)_2001",
+                                                            "ln(SSB)_2026"))) %>% 
                            tidytable::mutate(year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
                            tidytable::filter(year <= new_year + 2) %>% 
                            tidytable::mutate(ssb = Value / 2,
