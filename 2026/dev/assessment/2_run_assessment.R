@@ -7,19 +7,19 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Oct18"
+dat_day <- "Oct22"
 
 # 2024 accepted model
 base_mdl <- "24.0"
 
-# full run for retro/jitter/mcmc/etc
+# full run for retro/jitter/etc
 full_run = FALSE
 
 # run mcmc?
 run_mcmcz = FALSE
 
 # remove previous run files?
-remove_files = FALSE
+remove_files = TRUE
 
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
@@ -109,11 +109,18 @@ update_ss3_files(asmnt_yr = new_year,
 # forecast file
 fore <- r4ss::SS_readforecast(file = here::here(new_year, 'mgmt', base_mdl, "forecast.ss"))
 fore$HCR_anchor <- 2
+fore$Fcast_years <- data.table(c(10, 11, 12), 
+                               c(1, 1, 1), 
+                               c(2000 - new_year, -5, -999),
+                               c(-2, -1, -2))
 r4ss::SS_writeforecast(fore, dir = here::here(new_year, 'mgmt', base_mdl), overwrite = TRUE)
-
+# starter file
 srtr <- r4ss::SS_readstarter(file = here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
 srtr$depl_basis <- 6
 r4ss::SS_writestarter(srtr, dir = here::here(new_year, 'mgmt', base_mdl), overwrite = TRUE)
+srtr2 <- readLines(here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
+srtr2[32] <- "0 #_timevary_bio_4SRR"
+writeLines(srtr2, here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
 
 # run model ----
 run_ss3_model(asmnt_yr = new_year, 
