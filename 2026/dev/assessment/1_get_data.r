@@ -161,6 +161,9 @@ old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
 # note: when fcast_rec_option = 4 in forecast file, then use the following:
 old_ctl$MainRdevYrLast <- new_year
 
+# make 2026 changes - change min for lmin parameter
+old_ctl$MG_parms$LO[which(rownames(old_ctl$MG_parms) == "L_at_Amin_Fem_GP_1")] <- min(new_data$lbin_vector_pop)
+
 ## write model ctl ----
 r4ss::SS_writectl_3.30(ctllist = old_ctl,
                        outfile = here::here(new_year, "output", "mdl_input", "Model24_0.ctl"),
