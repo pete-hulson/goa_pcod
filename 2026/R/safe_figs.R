@@ -21,21 +21,9 @@ safe_figs <- function(new_year = NULL,
   rec_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", rec_mdl),
                                  verbose = FALSE,
                                  printstats = FALSE)
-  # base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
-  #                                 verbose = FALSE,
-  #                                 printstats = FALSE)
   prev_mdl_res <- r4ss::SS_output(dir = here::here(new_year - 1, "mgmt", prev_mdl),
                                   verbose = FALSE,
                                   printstats = FALSE)
-  # res_19_1c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1c"),
-  #                              verbose = FALSE,
-  #                              printstats = FALSE)
-  # res_19_1d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1d"),
-  #                              verbose = FALSE,
-  #                              printstats = FALSE)
-  # res_19_1e <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "19.1e"),
-  #                              verbose = FALSE,
-  #                              printstats = FALSE)
   res_mdl_comp <- suppressWarnings(r4ss::SSsummarize(biglist = list(prev_mdl_res,
                                                                     # base_mdl_res,
                                                                     # res_19_1c,
@@ -43,9 +31,6 @@ safe_figs <- function(new_year = NULL,
                                                                     # res_19_1e,
                                                                     rec_mdl_res),
                                                      verbose = FALSE))
-  # res_bin_comp <- r4ss::SSsummarize(biglist = list(res_19_1e,
-  #                                                  rec_mdl_res),
-  #                                   verbose = FALSE)
   
   # run r4ss for recommended model ----
   cat("\u231b", crayon::blue("Working on r4ss plots..."), "\n")
