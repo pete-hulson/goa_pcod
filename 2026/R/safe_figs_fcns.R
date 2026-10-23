@@ -1365,17 +1365,17 @@ run_osa_ss3 <- function(mdl_res = NULL,
                         sx = 1, 
                         fleet_name = NULL, 
                         comp_name = NULL){
-  
+
   # length bins
   lens = unique(mdl_res$lendbase$Bin)
-  
+
   # input sample sizes and years (vector)
   data.frame(mdl_res$lendbase[,c(1,6,13,16,22)]) %>% 
     dplyr::rename_all(tolower) %>% 
     tidytable::filter(bin == min(bin)) %>% 
     tidytable::filter(fleet == flt,
                       sex %in% sx) %>% 
-    tidytable::select(yr, effn) %>% 
+    tidytable::select(yr, n = effn) %>% 
     as.vector(.) -> N
   
   # observed values (matrix)
@@ -1388,7 +1388,7 @@ run_osa_ss3 <- function(mdl_res = NULL,
     tidytable::pivot_wider(names_from = bin, values_from = value) %>% 
     tidytable::select(-yr, -fleet, -sex, -name) %>% 
     as.matrix(.) -> obs
-  
+
   # expected values (matrix)
   data.frame(mdl_res$lendbase[,c(1,6,13,16:18)]) %>% 
     dplyr::rename_all(tolower) %>% 
@@ -1405,7 +1405,7 @@ run_osa_ss3 <- function(mdl_res = NULL,
                           index_label = comp_name,
                           obs = obs, 
                           exp = exp,
-                          N = N$effn, 
+                          N = N$n, 
                           index = lens,
                           years = N$yr)
   
@@ -1424,7 +1424,7 @@ plot_fsh_osa <- function(rec_mdl_res = NULL,
   fsh_flt = seq(1, 3)
   fsh_fleet_name = c("Trawl fishery", "Longline fishery", "Pot fishery")
   comp_name = "Length"
-  
+
   # get osa plot data
   osa_out_fsh <- purrr::map(1:length(fsh_flt), ~run_osa_ss3(rec_mdl_res, 
                                                             fsh_flt[.], 
