@@ -15,34 +15,31 @@ library(data.table)
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# recommended model name
-base_mdl <- "24.0"
-
 # read model results ----
-base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "mgmt", base_mdl),
+base_mdl_res <- r4ss::SS_output(dir = here::here(new_year, "dev", "model_alts", "24.0"),
                                 verbose = FALSE,
                                 printstats = FALSE)
 
-mdl_res_24_0a <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0a"),
+mdl_res_24_0a <- r4ss::SS_output(dir = here::here(new_year, "dev", "model_alts", "24.0a"),
                                verbose = FALSE,
                                printstats = FALSE)
 
-mdl_res_24_0b <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0b"),
+mdl_res_24_0b <- r4ss::SS_output(dir = here::here(new_year, "dev", "model_alts", "24.0b"),
                                  verbose = FALSE,
                                  printstats = FALSE)
 
-mdl_res_24_0c <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0c"),
+mdl_res_24_0c <- r4ss::SS_output(dir = here::here(new_year, "dev", "model_alts", "24.0c"),
                                  verbose = FALSE,
                                  printstats = FALSE)
 
-mdl_res_24_0d <- r4ss::SS_output(dir = here::here(new_year, "mgmt", "24.0d"),
+mdl_res_24_0d <- r4ss::SS_output(dir = here::here(new_year, "dev", "model_alts", "24.0d"),
                                  verbose = FALSE,
                                  printstats = FALSE)
 
 
 # set up directory to plop plots into
-if (!dir.exists(here::here(new_year, "output", "safe_plots", "2026_analysis"))) {
-  dir.create(here::here(new_year, "output", "safe_plots", "2026_analysis"), recursive = TRUE)
+if (!dir.exists(here::here(new_year, "dev", "model_alts", "2026_analysis_plots"))) {
+  dir.create(here::here(new_year, "dev", "model_alts", "2026_analysis_plots"), recursive = TRUE)
 }
 
 # plot growth estimates ----
@@ -119,7 +116,7 @@ ggplot(data = grwth_data %>% filter(year != "All"),
                   aes(ymin = value - 1.96 * sd_value, ymax = value + 1.96 * sd_value),
                   position = position_jitter(width = 0.05),
                   linetype = 'dotted',
-                  fatten = 1) +
+                  size = 0.5) +
   geom_line(aes(y = pred), col = "black", linewidth = 0.777) +
   geom_line(aes(y = pred_base), col = "red", linewidth = 0.777, linetype = "dashed") +
   geom_pointrange(data = grwth_data %>% filter(year == "All"),
@@ -140,8 +137,8 @@ ggplot(data = grwth_data %>% filter(year != "All"),
   labs(x = "Age", y = "Pacific cod size", col = "Year")
 
 # save
-ggsave(filename = "growth_ests.png",
-       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+ggsave(filename = "growth_ests_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
        width = 6.5,
        height = 6.5,
        units = "in")
@@ -173,8 +170,8 @@ ggplot(size_age %>% filter(type != "Residual"), aes(x = age, y = length, fill = 
   labs(x = "Age", y = "Length (cm)")
 
 # save
-ggsave(filename = "size_age.png",
-       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+ggsave(filename = "size_age_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
        width = 6.5,
        height = 6.5,
        units = "in")
@@ -192,8 +189,8 @@ ggplot(size_age %>% filter(type == "Residual") %>% mutate(type = "Residual (Base
 
 
 # save
-ggsave(filename = "size_age_resid.png",
-       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+ggsave(filename = "size_age_resid_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
        width = 6.5,
        height = 4.5,
        units = "in")
@@ -202,7 +199,7 @@ ggsave(filename = "size_age_resid.png",
 # tables of stats ----
 
 # set up model to compare with base
-rec_mdl_res <- mdl_res_24_0c
+rec_mdl_res <- mdl_res_24_0a
 
 # likelihoods
 likes <- base_mdl_res$likelihoods_by_fleet %>% 
@@ -218,7 +215,7 @@ likes <- base_mdl_res$likelihoods_by_fleet %>%
                     Base = round(Base, digits = 2),
                     Recommended = round(Recommended, digits = 2))
 
-vroom::vroom_write(likes, here::here(new_year, "output", "safe_plots", "2026_analysis", "likes.csv"), delim = ",")
+vroom::vroom_write(likes, here::here(new_year, "dev", "model_alts", "2026_analysis_tbls", "likes_24_0a.csv"), delim = ",")
 
 # sample size ratio
 ss_rat <- base_mdl_res$len_comp_fit_table %>% 
@@ -247,7 +244,7 @@ ss_rat <- base_mdl_res$len_comp_fit_table %>%
                     "Rec CAAL ISS/ESS" = rec_caal_ss_ratio) %>% 
   tidytable::mutate(Fleet = c("Trawl fishery", "Longline fishery", "Pot fishery", "Trawl survey", "Longline survey"))
 
-vroom::vroom_write(ss_rat, here::here(new_year, "output", "safe_plots", "2026_analysis", "ss_rat.csv"), delim = ",")
+vroom::vroom_write(ss_rat, here::here(new_year, "dev", "model_alts", "2026_analysis_tbls", "ss_rat_24_0a.csv"), delim = ",")
 
 
 # plot biomass ----
@@ -354,113 +351,11 @@ ggplot(data = biom_dat,
 
 
 # save
-ggsave(filename = "biomass.png",
-       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+ggsave(filename = "biomass_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
        width = 6.5,
        height = 6.5,
        units = "in")
-
-
-
-# plot biomass 1 cm vs 5 cm
-
-# get plot data
-mdl_res_24_0a$derived_quants %>% 
-  tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
-  tidytable::select(value = Value, sd = StdDev) %>% 
-  tidytable::mutate(year = seq(1977, new_year + 5),
-                    value = value / 2 / 1000,
-                    sd = sd / 2 / 1000,
-                    type = "Spawning biomass (1,000s t)") %>% 
-  tidytable::bind_rows(mdl_res_24_0a$timeseries %>% 
-                         tidytable::select(year = Yr, value = Bio_all) %>% 
-                         tidytable::mutate(value = value / 1000) %>% 
-                         tidytable::filter(year %in% seq(1977, new_year + 5)) %>% 
-                         tidytable::left_join(mdl_res_24_0a$derived_quants %>% 
-                                                tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
-                                                tidytable::select(value = Value, sd = StdDev) %>% 
-                                                tidytable::mutate(year = seq(1977, new_year + 5),
-                                                                  cv = sd / value) %>% 
-                                                tidytable::select(-value, -sd)) %>% 
-                         tidytable::mutate(sd = cv * value,
-                                           type = "Total biomass (1,000s t)") %>% 
-                         tidytable::select(-cv)) %>% 
-  tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
-                    model = "Recommended") %>% 
-  tidytable::bind_rows(mdl_res_24_0b$derived_quants %>% 
-                         tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
-                         tidytable::select(value = Value, sd = StdDev) %>% 
-                         tidytable::mutate(year = seq(1977, new_year + 5),
-                                           value = value / 2 / 1000,
-                                           sd = sd / 2 / 1000,
-                                           type = "Spawning biomass (1,000s t)") %>% 
-                         tidytable::bind_rows(mdl_res_24_0b$timeseries %>% 
-                                                tidytable::select(year = Yr, value = Bio_all) %>% 
-                                                tidytable::mutate(value = value / 1000) %>% 
-                                                tidytable::filter(year %in% seq(1977, new_year + 5)) %>% 
-                                                tidytable::left_join(mdl_res_24_0b$derived_quants %>% 
-                                                                       tidytable::filter(Label %in% paste0("SSB_", seq(1977, new_year + 5))) %>% 
-                                                                       tidytable::select(value = Value, sd = StdDev) %>% 
-                                                                       tidytable::mutate(year = seq(1977, new_year + 5),
-                                                                                         cv = sd / value) %>% 
-                                                                       tidytable::select(-value, -sd)) %>% 
-                                                tidytable::mutate(sd = cv * value,
-                                                                  type = "Total biomass (1,000s t)") %>% 
-                                                tidytable::select(-cv)) %>% 
-                         tidytable::mutate(type = factor(type, levels = c("Total biomass (1,000s t)", "Spawning biomass (1,000s t)")),
-                                           model = "Previous")) -> biom_dat
-
-
-
-
-biom_text <- biom_dat %>% 
-  tidytable::select(-sd) %>% 
-  tidytable::mutate(type = case_when(type == "Spawning biomass (1,000s t)" ~ "ssb",
-                                     type == "Total biomass (1,000s t)" ~ "tot")) %>% 
-  tidytable::pivot_wider(names_from = c(type, model)) %>% 
-  tidytable::mutate(tp = case_when(year <= 2026 ~ 1,
-                                   year > 2026 ~ 2),
-                    ssb_diff = (ssb_Recommended - ssb_Previous) / ssb_Previous,
-                    tot_diff = (tot_Recommended - tot_Previous) / tot_Previous) %>% 
-  tidytable::summarise(ssb_diff = mean(ssb_diff),
-                       tot_diff = mean(tot_diff),
-                       .by = tp) %>% 
-  tidytable::pivot_longer(cols = c(ssb_diff, tot_diff)) %>% 
-  tidytable::mutate(type = case_when(name == "ssb_diff" ~ "Spawning biomass (1,000s t)",
-                                     name == "tot_diff" ~ "Total biomass (1,000s t)"),
-                    x = case_when(tp == 1 ~ 2021,
-                                  tp == 2 ~ 2028),
-                    y = case_when(name == "ssb_diff" ~ 100,
-                                  name == "tot_diff" ~ 400),
-                    value = scales::percent(value, accuracy = 0.1))
-
-
-
-# plot
-ggplot(data = biom_dat,
-       aes(x = year, y = value, shape = model)) +
-  geom_point() +
-  geom_line(data = biom_dat %>% filter(model == "Recommended")) +
-  facet_wrap(~type, ncol = 1, scales = "free_y") +
-  scico::scale_color_scico_d(palette = 'roma') +
-  geom_point(data = biom_dat %>% tidytable::filter(year > new_year),
-             colour = "darkgreen") +
-  geom_line(data = biom_dat %>% tidytable::filter(year > new_year, model == "Recommended"),
-            colour = "darkgreen",
-            linetype = "dashed") +
-  geom_vline(xintercept = new_year + 0.5,
-             colour = "darkgreen",
-             linetype = "dashed") +
-  geom_text(data = data.frame(biom_text), aes(x = x, y = y, label = value), 
-            inherit.aes = FALSE,
-            hjust = 0) +
-  theme_bw(base_size = 14) +
-  labs(x = "Year", y = "Estimated quantity", shape = "Model") +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        legend.key.width = unit(0.25, 'cm'),
-        legend.position = "top")
-
 
 
 # plot recruitment ----
@@ -516,6 +411,13 @@ ggplot(data = rec_dat,
         legend.position = "top")
 
 
+
+# save
+ggsave(filename = "rec_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
+       width = 6.5,
+       height = 6.5,
+       units = "in")
 
 
 
@@ -602,8 +504,8 @@ ggplot(data = selex_dat,
 
 
 # save
-ggsave(filename = "fore_selex.png",
-       path = here::here(new_year, "output", "safe_plots", "2026_analysis"),
+ggsave(filename = "fore_selex_24_0a.png",
+       path = here::here(new_year, "dev", "model_alts", "2026_analysis_plots"),
        width = 6.5,
        height = 6.5,
        units = "in")
@@ -611,57 +513,153 @@ ggsave(filename = "fore_selex.png",
 
 # ref points ----
 
+# get results from management scen runs
+
+if(!dir.exists(here::here(new_year, "dev", "model_alts", "mscen"))){
+  scenarios <- paste0("scenario_", seq(1, 8))
+  mdls <- c("24.0", "24.0a", "24.0b", "24.0c", "24.0d")
+  cyr <- new_year
+  syr = 1977
+  sex = 2
+  fleets = c(1:3)
+  Scenario2 = 1
+  s2_F = 0.4
+  s4_F = 0.75
+  
+  for(i in 1:length(mdls)){
+    
+    # get model outputs
+    mod_outs <- r4ss::SSgetoutput(dirvec = here::here(new_year, "dev", "model_alts", mdls[i], "mscen", scenarios),
+                                  verbose = FALSE)
+    mod_summ <- r4ss::SSsummarize(mod_outs,
+                                  verbose = FALSE)
+    
+    # ssb
+    mscen_ssb <- mod_summ$quants %>% 
+      tidytable::filter(Label %in% paste0("SSB_", seq(cyr, cyr + 13))) %>% 
+      tidytable::select(-Label, -replist8) %>% 
+      tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+      tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+      tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(. / sex, digits = 0)),
+                        across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))
+    
+    
+    # catch
+    cyr_c <- format(round(as.numeric(mod_outs[[1]]$catch %>% 
+                                       tidytable::filter(Yr == cyr) %>% 
+                                       tidytable::summarise(catch = sum(Obs))), digits = 0), big.mark = ",")
+    mscen_catch <- data.table(Year = cyr,
+                              "Scenario 1" = cyr_c,
+                              "Scenario 2" = cyr_c,
+                              "Scenario 3" = cyr_c,
+                              "Scenario 4" = cyr_c,
+                              "Scenario 5" = cyr_c,
+                              "Scenario 6" = cyr_c,
+                              "Scenario 7" = cyr_c) %>% 
+      tidytable::bind_rows(mod_summ$quants %>% 
+                             tidytable::filter(Label %in% paste0("ForeCatch_", seq(cyr, cyr + 13))) %>% 
+                             tidytable::select(-Label, -replist8) %>% 
+                             tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+                             tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+                             tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 0)),
+                                               across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))))
+    
+    # f
+    mscen_f <- mod_summ$Fvalue %>% 
+      tidytable::filter(Yr %in% seq(cyr, cyr + 13)) %>% 
+      tidytable::select(-Label, -replist8) %>% 
+      tidytable::rename_with(~paste("Scenario", seq(1, 7)), paste0("replist", seq(1,7))) %>% 
+      tidytable::select(Year = Yr, paste("Scenario", seq(1, 7))) %>% 
+      tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~round(., digits = 2)),
+                        across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ",")))
+    
+    
+    # get 2-year projections for catch and F
+    SB100 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_unfished"), 1] / sex
+    SB40 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_SPR"), 1] / sex
+    SB35 <- mod_summ$quants[which(mod_summ$quants$Label == "SSB_SPR"), 8] / sex
+    F40_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 1)), 1]
+    F35_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 1)), 6]
+    catchABC_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 1)), 1]
+    catchOFL_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 1)), 6]
+    F40_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 1]
+    F35_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("F_", cyr + 2)), 6]
+    catchABC_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 1]
+    catchOFL_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("ForeCatch_", cyr + 2)), 8]
+    SSB_1 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 1)), 1] / sex
+    SSB_2 <- mod_summ$quants[which(mod_summ$quants$Label == paste0("SSB_", cyr + 2)), 1] / sex
+    
+    Two_Year <- data.table(Yr = c((cyr + 1):(cyr + 2)),
+                           SSB = c(SSB_1, SSB_2),
+                           SSB_PER = c(SSB_1 / SB100, SSB_2 / SB100),
+                           SB100 = rep(SB100, 2),
+                           SB40 = rep(SB40, 2),
+                           SB35 = rep(SB35, 2),
+                           F40 = c(F40_1, F40_2),
+                           F35 = c(F35_1, F35_2),
+                           C_ABC = c(catchABC_1, catchABC_2),
+                           C_OFL = c(catchOFL_1, catchOFL_2))
+    
+    # output list
+    mscen <- list(mscen_ssb = mscen_ssb,
+                  mscen_catch = mscen_catch,
+                  mscen_f = mscen_f,
+                  Two_year = Two_Year)
+    
+    # save results
+    if (!dir.exists(here::here(new_year, "dev", "model_alts", "mscen"))) {
+      dir.create(here::here(new_year, "dev", "model_alts", "mscen"), recursive = TRUE)
+    }
+    save(mscen, file = here::here(new_year, "dev", "model_alts", "mscen", paste0("mgmnt_scen_", mdls[i], ".RData")))
+    
+  }
+}
+
+# read in results
 # 24.0
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_base.RData"))
+load(here::here(new_year, "dev", "model_alts", "mscen", "mgmnt_scen_24.0.RData"))
 mscen_base <- mscen
 
 # 24.0a
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0a.RData"))
+load(here::here(new_year, "dev", "model_alts", "mscen", "mgmnt_scen_24.0a.RData"))
 mscen_24_0a <- mscen
 
 # 24.0b
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0b.RData"))
+load(here::here(new_year, "dev", "model_alts", "mscen", "mgmnt_scen_24.0b.RData"))
 mscen_24_0b <- mscen
 
 # 24.0c
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0c.RData"))
+load(here::here(new_year, "dev", "model_alts", "mscen", "mgmnt_scen_24.0c.RData"))
 mscen_24_0c <- mscen
 
 # 24.0d
-load(here::here(new_year, "output", "mscen", "mgmnt_scen_24_0d.RData"))
+load(here::here(new_year, "dev", "model_alts", "mscen", "mgmnt_scen_24.0d.RData"))
 mscen_24_0d <- mscen
 
 # table of key quantities
-data.table(names = c("SSB_status", "Bzero","F40", "ABC"),
-           "base" = c(round(mscen_base$Two_year$SSB_PER[1], digits = 3),
-                      round(mscen_base$Two_year$SB100[1], digits = 0),
-                      round(mscen_base$Two_year$F40[1], digits = 3),
-                      round(mscen_base$Two_year$C_ABC[1], digits = 0)),
-           "24.0a" = c(round(mscen_24_0a$Two_year$SSB_PER[1], digits = 3),
-                       round(mscen_24_0a$Two_year$SB100[1], digits = 0),
-                       round(mscen_24_0a$Two_year$F40[1], digits = 3),
-                       round(mscen_24_0a$Two_year$C_ABC[1], digits = 0)),
-           "24.0b" = c(round(mscen_24_0b$Two_year$SSB_PER[1], digits = 3),
-                       round(mscen_24_0b$Two_year$SB100[1], digits = 0),
-                       round(mscen_24_0b$Two_year$F40[1], digits = 3),
-                       round(mscen_24_0b$Two_year$C_ABC[1], digits = 0)),
-           "24.0c" = c(round(mscen_24_0c$Two_year$SSB_PER[1], digits = 3),
-                       round(mscen_24_0c$Two_year$SB100[1], digits = 0),
-                       round(mscen_24_0c$Two_year$F40[1], digits = 3),
-                       round(mscen_24_0c$Two_year$C_ABC[1], digits = 0)),
-           "24.0d" = c(round(mscen_24_0d$Two_year$SSB_PER[1], digits = 3),
-                       round(mscen_24_0d$Two_year$SB100[1], digits = 0),
-                       round(mscen_24_0d$Two_year$F40[1], digits = 3),
-                       round(mscen_24_0d$Two_year$C_ABC[1], digits = 0)))
+ref_pnts <- data.table(names = c("SSB_status", "Bzero","F40", "ABC"),
+                       "base" = c(round(mscen_base$Two_year$SSB_PER[1], digits = 3),
+                                  round(mscen_base$Two_year$SB100[1], digits = 0),
+                                  round(mscen_base$Two_year$F40[1], digits = 3),
+                                  round(mscen_base$Two_year$C_ABC[1], digits = 0)),
+                       "24.0a" = c(round(mscen_24_0a$Two_year$SSB_PER[1], digits = 3),
+                                   round(mscen_24_0a$Two_year$SB100[1], digits = 0),
+                                   round(mscen_24_0a$Two_year$F40[1], digits = 3),
+                                   round(mscen_24_0a$Two_year$C_ABC[1], digits = 0)),
+                       "24.0b" = c(round(mscen_24_0b$Two_year$SSB_PER[1], digits = 3),
+                                   round(mscen_24_0b$Two_year$SB100[1], digits = 0),
+                                   round(mscen_24_0b$Two_year$F40[1], digits = 3),
+                                   round(mscen_24_0b$Two_year$C_ABC[1], digits = 0)),
+                       "24.0c" = c(round(mscen_24_0c$Two_year$SSB_PER[1], digits = 3),
+                                   round(mscen_24_0c$Two_year$SB100[1], digits = 0),
+                                   round(mscen_24_0c$Two_year$F40[1], digits = 3),
+                                   round(mscen_24_0c$Two_year$C_ABC[1], digits = 0)),
+                       "24.0d" = c(round(mscen_24_0d$Two_year$SSB_PER[1], digits = 3),
+                                   round(mscen_24_0d$Two_year$SB100[1], digits = 0),
+                                   round(mscen_24_0d$Two_year$F40[1], digits = 3),
+                                   round(mscen_24_0d$Two_year$C_ABC[1], digits = 0)))
 
-
-
-(base_2yr$C_ABC[1] - rec_2yr$C_ABC[1]) / base_2yr$C_ABC[1]
-
-(base_2yr$SSB[1] - rec_2yr$SSB[1]) / base_2yr$SSB[1]
-
-
-
+vroom::vroom_write(ref_pnts, here::here(new_year, "dev", "model_alts", "2026_analysis_tbls", "ref_pnts.csv"), delim = ",")
 
 
 
