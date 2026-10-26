@@ -139,6 +139,14 @@ new_data <- get_data_goa_pcod(new_data = old_data,
                               run_glm = run_glm,
                               len_bins = len_bins)
 
+
+# make 2026 changes ----
+# change lbin_method to 3 and caal data to 5 cm bins
+new_data$Lbin_method <- 3
+for(i in 1:length(new_data$agecomp$year)){
+  if(new_data$agecomp$lbin_lo[i] > 0){new_data$agecomp$lbin_hi[i] <- new_data$agecomp$lbin_lo[i] + 4}
+}
+
 # write base model data (24.0)
 r4ss::SS_writedat_3.30(new_data,
                        here::here(new_year, "output", "mdl_input",
@@ -161,7 +169,8 @@ old_ctl$Block_Design[[3]][length(old_ctl$Block_Design[[3]])] <- new_year
 # note: when fcast_rec_option = 4 in forecast file, then use the following:
 old_ctl$MainRdevYrLast <- new_year
 
-# make 2026 changes - change min for lmin parameter
+# make 2026 changes ----
+# change min for lmin parameter
 old_ctl$MG_parms$LO[which(rownames(old_ctl$MG_parms) == "L_at_Amin_Fem_GP_1")] <- min(new_data$lbin_vector_pop)
 
 ## write model ctl ----
