@@ -7,7 +7,7 @@
 ## ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))< ~~~~ <*)))<
 
 # day data pulled
-dat_day <- "Oct22"
+dat_day <- "Oct26"
 
 # 2024 accepted model
 base_mdl <- "24.0"
@@ -118,9 +118,6 @@ r4ss::SS_writeforecast(fore, dir = here::here(new_year, 'mgmt', base_mdl), overw
 srtr <- r4ss::SS_readstarter(file = here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
 srtr$depl_basis <- 6
 r4ss::SS_writestarter(srtr, dir = here::here(new_year, 'mgmt', base_mdl), overwrite = TRUE)
-srtr2 <- readLines(here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
-srtr2[32] <- "0 #_timevary_bio_4SRR"
-writeLines(srtr2, here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
 
 # run model ----
 run_ss3_model(asmnt_yr = new_year, 
@@ -136,6 +133,17 @@ run_mdl_anlys(new_year = new_year,
               full_run = full_run,
               rec_ctl = 'Model24_0.ctl',
               run_mcmcz = run_mcmcz)
+
+# run rec model one more time to get rid of warnings ----
+# change starter file
+srtr2 <- readLines(here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
+srtr2[32] <- "0 #_timevary_bio_4SRR"
+writeLines(srtr2, here::here(new_year, 'mgmt', base_mdl, "starter.ss"))
+# run model
+r4ss::run(dir = here::here(new_year, 'mgmt', base_mdl),
+          skipfinished = FALSE,
+          show_in_console = FALSE,
+          verbose = FALSE)
 
 
 

@@ -1,7 +1,7 @@
 #C file created using an r4ss function
-#C file write time: 2026-10-18  16:59:02
+#C file write time: 2026-10-26  10:33:57
 #
-GOAPcod2026Oct18.dat #_datfile
+GOAPcod2026Oct26.dat #_datfile
 Model24_0.ctl #_ctlfile
 1 #_init_values_src
 1 #_run_display_detail
@@ -22,13 +22,13 @@ Model24_0.ctl #_ctlfile
 1e-05 #_converge_criterion
 0 #_retro_yr
 1 #_min_age_summary_bio
-1 #_depl_basis
+6 #_depl_basis
 1 #_depl_denom_frac
 4 #_SPR_basis
 3 #_F_std_units
 0 #_F_std_basis
 0 #_MCMC_output_detail
 0 #_ALK_tolerance
-#
+0 #_timevary_bio_4SRR
 -1 #_seed
 3.3 #_final
