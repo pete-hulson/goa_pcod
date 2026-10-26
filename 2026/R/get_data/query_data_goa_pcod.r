@@ -663,7 +663,7 @@ query_goa_pcod <- function(new_year = 9999,
   cat(crayon::green$bold("\u2713"), crayon::blue("pelagic trawl query"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   ## shallow water fishery pcod catch ----
-  cat("\u231b", crayon::blue("working on shallow water flats catch query..."), "\n")
+  cat("\u231b", crayon::blue("working on shallow water fishery catch query..."), "\n")
   swf_catch <- dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
     dplyr::filter(TRIP_TARGET_NAME != "Pacific Cod",
                   FMP_AREA == "GOA",
