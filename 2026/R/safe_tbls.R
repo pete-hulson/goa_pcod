@@ -330,9 +330,18 @@ safe_tbls <- function(new_year = NULL,
   
   vroom::vroom_write(apport_tbl, here::here(new_year, "output", "safe_tables", 'tbl3_apport.csv'), delim = ",")
   
-  # print message when done
-  cat(crayon::green$bold("\u2713"), crayon::blue("Apportionment table"), crayon::green$underline$bold$italic("DONE"), "\n")
+  # brd table ----
+  specs %>% 
+    tidytable::filter(year <= new_year) %>% 
+    dplyr::select(year, area = area_label, abc = acceptable_biological_catch) %>% 
+    tidyr::pivot_wider(names_from = area, values_from = abc) %>% 
+    tail(11) %>% 
+    dplyr::relocate(year, W, C, E) %>% 
+    tidytable::mutate(across(.cols = names(.)[2:length(names(.))], ~format(., big.mark = ","))) %>% 
+    vroom::vroom_write(., here::here(new_year, "output", "safe_tables", 'tbl3_brd.csv'), delim = ",")
   
+  # print message when done
+  cat(crayon::green$bold("\u2713"), crayon::blue("Apportionment tables"), crayon::green$underline$bold$italic("DONE"), "\n")
   
   # retained/discarded table ----
   fed_raw %>% 
