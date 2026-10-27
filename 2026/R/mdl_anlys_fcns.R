@@ -1106,7 +1106,9 @@ run_apport <- function(new_year = NULL){
   
   # run rema model for trawl survey only
   apport_in <- SimDesign::quiet(rema::prepare_rema_input(model_name = paste0("pcod trawl survey"),
-                                                         biomass_dat = biomass_dat))
+                                                         biomass_dat = biomass_dat,
+                                                         extra_biomass_cv = list(assumption = "extra_cv"),
+                                                         PE_options = list(pointer_PE_biomass = c(1, 1, 1))))
   apport_mdl <- SimDesign::quiet(rema::fit_rema(apport_in))
   apport_out <- SimDesign::quiet(rema::tidy_rema(rema_model = apport_mdl))
   
