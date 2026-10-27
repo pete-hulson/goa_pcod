@@ -118,11 +118,11 @@ run_mdl_anlys <- function(new_year = NULL,
   # define parameter value vector
   if(isTRUE(full_run)){
     profilevec <- list(rec = seq(12.7, 13.5, length.out = 9),
-                       m = seq(0.45, 0.54, length.out = 9),
-                       m14 = seq(0.73, 0.95, length.out = 9),
-                       q_twl = seq(0.09, 0.43, length.out = 9),
-                       q_ll = seq(0.04, 0.34, length.out = 9),
-                       q_ll_env = seq(0.4, 2.1, length.out = 9))
+                       m = seq(0.48, 0.57, length.out = 9),
+                       m14 = seq(0.77, 0.97, length.out = 9),
+                       q_twl = seq(0.05, 0.43, length.out = 9),
+                       q_ll = seq(0.02, 0.34, length.out = 9),
+                       q_ll_env = seq(0.4, 2.2, length.out = 9))
   } else{
     profilevec <- list(rec = c(12, 13, 14),
                        m = c(0.4, 0.5, 0.6),

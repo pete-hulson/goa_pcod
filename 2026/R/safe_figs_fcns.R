@@ -1160,12 +1160,12 @@ plot_llq <- function(rec_mdl_res = NULL,
 #' 
 plot_profile <- function(new_year = NULL){
   
-  profilevec <- list(rec = seq(12.2, 13.8, by = 0.2),
-                     m = seq(0.41, 0.57, by = 0.02),
-                     m14 = seq(0.73, 0.89, by = 0.02),
-                     q_twl = seq(0.17, 0.33, by = 0.02),
-                     q_ll = seq(0.07, 0.23, by = 0.02),
-                     q_ll_env = seq(0.76, 1.08, by = 0.04))
+  profilevec <- list(rec = seq(12.7, 13.5, length.out = 9),
+                     m = seq(0.48, 0.57, length.out = 9),
+                     m14 = seq(0.77, 0.97, length.out = 9),
+                     q_twl = seq(0.05, 0.43, length.out = 9),
+                     q_ll = seq(0.02, 0.34, length.out = 9),
+                     q_ll_env = seq(0.4, 2.2, length.out = 9))
   
   # m
   load(here::here(new_year, "output", "profile", "m_prof.RData"))
