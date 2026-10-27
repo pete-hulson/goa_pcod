@@ -1,44 +1,56 @@
 
-# get connected
-db = 'akfin'
-conn = afscdata::connect(db)  
+# libraries
+library(tidyverse)
 
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
 
-# query shallow water fishery data
-dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
-dplyr::filter(TRIP_TARGET_NAME != "Pacific Cod",
-              FMP_AREA == "GOA",
-              BOTTOM_DEPTH_FATHOMS < 165) %>% 
-  dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
-                    by = c('HAUL_JOIN')) %>% 
-  dplyr::rename_all(tolower) %>% 
-  dplyr::select(year = year.x,
-                species,
-                gear = gear_type,
-                gear_desc = gear_description,
-                weight_kg = extrapolated_weight,
-                area = nmfs_area,
-                target = trip_target_name,
-                bottom_depth_f = bottom_depth_fathoms,
-                haul_date = haul_date.x,
-                permit = permit.x,
-                haul = haul.x) %>% 
-  dplyr::filter(area > 609,
-                area < 650,
-                year > 2007,
-                gear_desc != "PELAGIC",
-                target %in% c("Arrowtooth Flounder", "Halibut", "Pollock - bottom", "Rockfish", "Sablefish", "Shallow Water Flatfish - GOA")) %>% 
-  dplyr::collect() -> swf_catch
+if(file.exists(here::here(new_year, "data", "raw", "swf_catch.csv"))){
+  swf_catch <- vroom::vroom(here::here(new_year, "data", "raw", "swf_catch.csv"), delim = ",")
+} else{
+  # get connected
+  db = 'akfin'
+  conn = afscdata::connect(db)  
+  
+  # query shallow water fishery data
+  dplyr::tbl(conn, dplyr::sql('norpac.debriefed_haul_mv')) %>% 
+    dplyr::filter(TRIP_TARGET_NAME != "Pacific Cod",
+                  FMP_AREA == "GOA",
+                  BOTTOM_DEPTH_FATHOMS < 165) %>% 
+    dplyr::inner_join(dplyr::tbl(conn, dplyr::sql('norpac.debriefed_spcomp_mv')),
+                      by = c('HAUL_JOIN')) %>% 
+    dplyr::rename_all(tolower) %>% 
+    dplyr::select(year = year.x,
+                  species,
+                  gear = gear_type,
+                  gear_desc = gear_description,
+                  weight_kg = extrapolated_weight,
+                  area = nmfs_area,
+                  target = trip_target_name,
+                  bottom_depth_f = bottom_depth_fathoms,
+                  haul_date = haul_date.x,
+                  permit = permit.x,
+                  haul = haul.x) %>% 
+    dplyr::filter(area > 609,
+                  area < 650,
+                  year > 2007,
+                  gear_desc != "PELAGIC",
+                  target %in% c("Arrowtooth Flounder", "Halibut", "Pollock - bottom", "Rockfish", "Sablefish", "Shallow Water Flatfish - GOA")) %>% 
+    dplyr::collect() -> swf_catch
+}
 
 # plot shallow water fishery catch of pcod
 # pcod catch by target
 swf_catch %>% 
+  tidytable::mutate(haul_code = as.numeric(paste0(lubridate::month(haul_date), lubridate::day(haul_date), permit, haul))) %>% 
   tidytable::summarise(cod = sum(weight_kg[species == 202], na.rm = TRUE),
                        tot = sum(weight_kg, na.rm = TRUE),
-                       .by = c(year, target)) %>% 
-  tidytable::mutate(pcod = cod / tot) %>% 
+                       .by = c(year, target, haul_code)) %>% 
+  # tidytable::mutate(pcod = cod / tot) %>% 
+  # tidytable::summarise(pcod = mean(pcod),
+  #                      .by = c(year, target)) %>% 
+  tidytable::summarise(pcod = sum(cod) / sum(tot),
+                       .by = c(year, target)) %>%
   tidytable::mutate(type = "Proportion of Pcod catch in shallow water fisheries") %>% 
   tidytable::select(year, target, pcod, type) %>% 
   tidytable::filter(year >= 2006) -> plot_dat
