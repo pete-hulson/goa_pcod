@@ -207,7 +207,7 @@ plot_cumcatch <- function(new_year = NULL){
     tidytable::left_join(vroom::vroom(here::here(new_year, "data", "raw", "fish_catch_data.csv"), 
                                       progress = FALSE, 
                                       show_col_types = FALSE) %>% 
-                           tidytable::mutate(week = as.numeric(as.character(format(as.Date(week_end_date), "%W")))) %>% 
+                           tidytable::mutate(week = lubridate::week(week_end_date), "%W") %>% 
                            tidytable::filter(year >= new_year - 4,
                                              fmp_subarea %in% c("CG", "WG")) %>% 
                            tidytable::mutate(gear = case_when(fmp_gear == "HAL" ~ "Longline",
@@ -223,7 +223,7 @@ plot_cumcatch <- function(new_year = NULL){
   
   cumul_plot <- ggplot(data = cumul_catch, 
                        aes(x = week, y = catch, color = factor(year))) + 
-    geom_point() + 
+    geom_point(size = 0.5) + 
     geom_path(aes(group = year)) +
     facet_grid(gear ~ area, scale = "free_y") +
     theme_bw(base_size = 14) +
@@ -1722,7 +1722,7 @@ plot_tot_ssb <- function(rec_mdl_res = NULL,
   tot_ssb <- ggplot(data = biom_dat,
                     aes(x = year, y = value, color = type)) +
     geom_point() +
-    geom_line() +
+    geom_line(linetype = "dotted") +
     facet_wrap(~type, ncol = 1, scales = "free_y") +
     geom_errorbar(aes(ymin = value - 1.96 * sd, 
                       ymax = value + 1.96 * sd), 
@@ -1823,7 +1823,7 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
   tb_plot <- ggplot(data = tb,
                     aes(x = year, y = value, color = type)) +
     geom_point() +
-    geom_line() +
+    geom_line(linetype = "dotted") +
     geom_errorbar(aes(ymin = value - 1.96 * sd, 
                       ymax = value + 1.96 * sd), 
                   linewidth = 0.777, width = 0) +
@@ -1860,7 +1860,7 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
                  linewidth = 1.5,
                  alpha = 0.25) +
     geom_point() +
-    geom_line() +
+    geom_line(linetype = "dotted") +
     labs(x = "Year", y = NULL, col = "") +
     theme(legend.position = c(1, 1), 
           legend.justification = c(1, 1),
@@ -1884,7 +1884,7 @@ plot_biom_mhwi <- function(rec_mdl_res = NULL,
   sb_plot <- ggplot(data = sb,
                     aes(x = year, y = value, color = type)) +
     geom_point() +
-    geom_line() +
+    geom_line(linetype = "dotted") +
     geom_errorbar(aes(ymin = value - 1.96 * sd, 
                       ymax = value + 1.96 * sd), 
                   linewidth = 0.777, width = 0) +
@@ -2007,7 +2007,7 @@ plot_f <- function(rec_mdl_res = NULL,
   # plot
   f_plot <- ggplot(data = f_data,
                    aes(x = year, y = f, col = fleet)) +
-    geom_line(linewidth = 0.777) +
+    geom_line(linewidth = 0.777, linetype = "dotted") +
     geom_point() +
     facet_wrap(~type, ncol = 1, scales = "free_y") +
     theme_bw(base_size = 14) +

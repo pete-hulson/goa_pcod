@@ -929,7 +929,17 @@ safe_tbls <- function(new_year = NULL,
   prev_mdl_res$derived_quants %>% 
     tidytable::select(Label, Value, StdDev) %>% 
     tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
-    tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+    tidytable::filter(!(Label %in% c("SSB_Virgin", 
+                                     "SSB_Initial", 
+                                     "SSB_unfished", 
+                                     "SSB_Btgt", 
+                                     "SSB_SPR", 
+                                     "SSB_MSY", 
+                                     "B_MSY/SSB_unfished",
+                                     "SSB_for_SRR_bench",
+                                     "ln(SSB)_1977",
+                                     "ln(SSB)_2001",
+                                     "ln(SSB)_2026"))) %>% 
     tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
     tidytable::filter(Year <= new_year) %>% 
     tidytable::mutate("Previous Sp.Bio" = round(Value / 2, digits = 0),
@@ -944,7 +954,17 @@ safe_tbls <- function(new_year = NULL,
     tidytable::full_join(mdl_res$derived_quants %>% 
                            tidytable::select(Label, Value, StdDev) %>% 
                            tidytable::slice(grep("SSB", Label, perl = TRUE)) %>% 
-                           tidytable::filter(!(Label %in% c("SSB_Virgin", "SSB_Initial", "SSB_unfished", "SSB_Btgt", "SSB_SPR", "SSB_MSY", "B_MSY/SSB_unfished"))) %>% 
+                           tidytable::filter(!(Label %in% c("SSB_Virgin", 
+                                                            "SSB_Initial", 
+                                                            "SSB_unfished", 
+                                                            "SSB_Btgt", 
+                                                            "SSB_SPR", 
+                                                            "SSB_MSY", 
+                                                            "B_MSY/SSB_unfished",
+                                                            "SSB_for_SRR_bench",
+                                                            "ln(SSB)_1977",
+                                                            "ln(SSB)_2001",
+                                                            "ln(SSB)_2026"))) %>% 
                            tidytable::mutate(Year = as.numeric(substr(Label, start = nchar(Label) - 3, stop = nchar(Label)))) %>% 
                            tidytable::filter(Year <= new_year + 1) %>% 
                            tidytable::mutate("Current Sp.Bio" = round(Value / 2, digits = 0),
@@ -1197,8 +1217,8 @@ safe_tbls <- function(new_year = NULL,
                       ABC_yr2 = 'y2_corr') -> abc_apport
   
   apport_tbl <- data.table::data.table(" " = c("Area apportionment", 
-                                               paste(new_year + 1, "ABC"), 
-                                               paste(new_year + 2, "ABC")),
+                                               paste(new_year + 1, "BRD"), 
+                                               paste(new_year + 2, "BRD")),
                                        Western = c(paste0(abc_apport$apport[which(abc_apport$region == 'western')] * 100, "%"),
                                                    format(abc_apport$ABC_yr1[which(abc_apport$region == 'western')], big.mark = ","),
                                                    format(abc_apport$ABC_yr2[which(abc_apport$region == 'western')], big.mark = ",")),
