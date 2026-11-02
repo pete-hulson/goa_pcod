@@ -74,7 +74,7 @@ safe_figs <- function(new_year = NULL,
                    fleetcol = scico::scico(5, palette = 'roma'),
                    plot = FALSE,
                    print = TRUE,
-                   pheight = 7,
+                   pheight = 6,
                    plotdir = here::here(new_year, "output", "safe_plots"))
   invisible(file.rename(from = here::here(new_year, "output", "safe_plots", "data_plot2.png"),
                         to = here::here(new_year, "output", "safe_plots", "data.png")))

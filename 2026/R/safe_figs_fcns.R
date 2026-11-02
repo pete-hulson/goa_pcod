@@ -316,14 +316,13 @@ plot_auxind <- function(new_year = NULL){
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           axis.text.x = element_text(vjust = 0.5, angle = 90),
-          legend.position = "top") +
-    scale_x_continuous(breaks = c(2006:new_year), limits = c(2006, new_year))
+          legend.position = "top")
   
   # save
   ggsave(filename = "aux_indx.png",
          path = here::here(new_year, "output", "safe_plots"),
          width = 6.5,
-         height = 7,
+         height = 6,
          units = "in")
   
 }
