@@ -869,15 +869,18 @@ plot_retro <- function(rec_mdl_res = NULL,
                            tidytable::drop_na()) %>% 
     tidytable::mutate(peel = factor(peel, levels = paste(seq(0, 2003 - new_year), "years"))) %>% 
     tidytable::left_join(rec_ssb %>% 
-                           tidytable::select(year, uci, lci)) -> retro_dat
+                           tidytable::select(year, uci, lci)) %>% 
+    tidytable::mutate(ssb = ssb / 1000 / 2,
+                      uci = uci / 1000 / 2,
+                      lci = lci / 1000 / 2)-> retro_dat
   
   
   dat_text <- data.frame(
     text = c(paste0("Mohn's = ", mohn), ""),
     type = c('Data retrospective (10 years)', 'Model retrospective (to 2003 assessment)'),
     x = new_year - 5,
-    y = c(2.5e+05,
-          2.5e+05))
+    y = c(150,
+          150))
   
   # plot
   retro_plot <- ggplot(data = retro_dat, 
@@ -886,7 +889,7 @@ plot_retro <- function(rec_mdl_res = NULL,
     geom_line(linewidth = 0.777) +
     facet_wrap(~ type, ncol = 1, scale = "free_y") +
     scico::scale_color_scico_d(palette = 'roma') +
-    labs(x = "Year", y = "Spawning biomass (t)", color = "Retrospective peel") +
+    labs(x = "Year", y = "Spawning biomass (1,000s t)", color = "Retrospective peel") +
     theme_bw(base_size = 14) +
     theme(panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
@@ -967,10 +970,13 @@ plot_loo <- function(rec_mdl_res = NULL,
                                        Label == "annF_Btgt" ~ "F40%",
                                        Label == paste0("SSB_", new_year + 1) ~ "One-year forecasted Spawning Biomass"),
                       value = case_when(Label == "LnQ_base_Srv(4)" ~ exp(value),
+                                        Label == paste0("SSB_", new_year + 1) ~ value / 2,
                                         .default = value),
-                      sd = case_when(Label == "LnQ_base_Srv(4)" ~ sd* exp(value),
+                      sd = case_when(Label == "LnQ_base_Srv(4)" ~ sd * exp(value),
+                                     Label == paste0("SSB_", new_year + 1) ~ sd / 2,
                                      .default = sd),
                       base = case_when(Label == "LnQ_base_Srv(4)" ~ exp(base),
+                                       Label == paste0("SSB_", new_year + 1) ~ base / 2,
                                        .default = base)) -> loo_plot_dat
   
   # plot
@@ -1058,10 +1064,13 @@ plot_aoi <- function(new_year = NULL){
                                       Label == "annF_Btgt" ~ "F40%",
                                       Label == paste0("SSB_", new_year + 1) ~ "One-year forecasted Spawning Biomass"),
                       value = case_when(Label == "LnQ_base_Srv(4)" ~ exp(value),
+                                        Label == paste0("SSB_", new_year + 1) ~ value / 2,
                                         .default = value),
                       sd = case_when(Label == "LnQ_base_Srv(4)" ~ sd * exp(value),
+                                     Label == paste0("SSB_", new_year + 1) ~ sd / 2,
                                      .default = sd),
                       base = case_when(Label == "LnQ_base_Srv(4)" ~ exp(base),
+                                       Label == paste0("SSB_", new_year + 1) ~ base / 2,
                                        .default = base)) -> aoi_plot_dat
   
   # plot

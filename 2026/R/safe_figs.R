@@ -121,6 +121,8 @@ safe_figs <- function(new_year = NULL,
                            tidytable::mutate(Yr = seq(2000, new_year),
                                              sd = sd / 2 / 1000,
                                              name = "24.0 (2025)")) %>% 
+    tidytable::mutate(value = value / 2,
+                      sd = sd / 2) %>% 
     tidytable::bind_rows(res_mdl_comp$recruits %>% 
                            tidytable::filter(Yr >= 2000,
                                              Yr <= new_year) %>% 
