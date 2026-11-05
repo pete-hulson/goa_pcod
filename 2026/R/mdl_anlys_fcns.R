@@ -1133,9 +1133,9 @@ run_mcmc <- function(full_run = NULL,
   
   # define number of iterations
   if(isTRUE(full_run)){
-    iter <- 350000
-    thin <- 50
-    warmup <- 250
+    iter <- 3500000
+    thin <- 500
+    warmup <- 2500
   } else{
     iter <-5000
     thin <- 5
