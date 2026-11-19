@@ -156,7 +156,8 @@ ggplot(data = cumul_catch,
   theme_bw(base_size = 12) +
   theme(axis.text.x = element_text(vjust = 0.5, angle = 90)) +
   scico::scale_color_scico_d(palette = 'roma') +
-  labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year")
+  labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year") +
+  ylim(0, 1)
 
 ggsave(filename = "yr_cumul_prop.png",
        path = here::here(new_year, "dev", "misc", "prop_quota_plots"),
@@ -195,6 +196,7 @@ ggplot(data = cumul_catch,
         legend.position = "none") +
   scico::scale_color_scico_d(palette = 'roma') +
   ylim(0, 1) +
+  xlim(0, 57) +
   labs(x = "Week", y = "Cummulative Proportion of Allocated Quota", color = "Year")
 
 ggsave(filename = "crash_cumul_prop.png",

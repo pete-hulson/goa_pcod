@@ -112,15 +112,15 @@ safe_figs <- function(new_year = NULL,
                                          .default = model1)) %>% 
     tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
     tidytable::mutate(value = value / 1000,
-                      name = case_when(name == "model1" ~ "24.0 (2024)",
-                                       name == "model2" ~ "24.0 (2025)")) %>% 
+                      name = case_when(name == "model1" ~ "24.0 (2025)",
+                                       name == "model2" ~ "24.0 (2026)")) %>% 
     tidytable::mutate(type = "Spawning biomass (1,000s t)") %>% 
     tidytable::left_join(rec_mdl_res$derived_quants %>% 
                            tidytable::filter(Label %in% paste0("SSB_", seq(2000, new_year))) %>% 
                            tidytable::select(sd = StdDev) %>% 
                            tidytable::mutate(Yr = seq(2000, new_year),
                                              sd = sd / 2 / 1000,
-                                             name = "24.0 (2025)")) %>% 
+                                             name = "24.0 (2026)")) %>% 
     tidytable::mutate(value = value / 2,
                       sd = sd / 2) %>% 
     tidytable::bind_rows(res_mdl_comp$recruits %>% 
@@ -133,15 +133,15 @@ safe_figs <- function(new_year = NULL,
                                                                 .default = model2)) %>% 
                            tidytable::pivot_longer(cols = paste0("model", seq(1, length(colnames(.)) - 1))) %>% 
                            tidytable::mutate(value = value / 1000000,
-                                             name = case_when(name == "model1" ~ "24.0 (2024)",
-                                                              name == "model2" ~ "24.0 (2025)")) %>% 
+                                             name = case_when(name == "model1" ~ "24.0 (2025)",
+                                                              name == "model2" ~ "24.0 (2026)")) %>% 
                            tidytable::mutate(type = "Age-0 recruitment (millions)") %>% 
                            tidytable::left_join(rec_mdl_res$derived_quants %>% 
                                                   tidytable::filter(Label %in% paste0("Recr_", seq(2000, new_year))) %>% 
                                                   tidytable::select(sd = StdDev) %>% 
                                                   tidytable::mutate(Yr = seq(2000, new_year),
                                                                     sd = sd / 1000000,
-                                                                    name = "24.0 (2025)"))) %>% 
+                                                                    name = "24.0 (2026)"))) %>% 
     tidytable::rename(year = Yr) -> ssb_rec_comp
   # plot
   suppressWarnings(plot_ts_comp(ssb_rec_comp))

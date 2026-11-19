@@ -1,6 +1,7 @@
 
 # libraries
 library(tidyverse)
+library(cowplot)
 
 # Current assessment year
 new_year <- as.numeric(format(Sys.Date(), format = "%Y"))
@@ -37,6 +38,7 @@ if(file.exists(here::here(new_year, "data", "raw", "swf_catch.csv"))){
                   gear_desc != "PELAGIC",
                   target %in% c("Arrowtooth Flounder", "Halibut", "Pollock - bottom", "Rockfish", "Sablefish", "Shallow Water Flatfish - GOA")) %>% 
     dplyr::collect() -> swf_catch
+
 }
 
 # plot shallow water fishery catch of pcod
@@ -46,9 +48,6 @@ swf_catch %>%
   tidytable::summarise(cod = sum(weight_kg[species == 202], na.rm = TRUE),
                        tot = sum(weight_kg, na.rm = TRUE),
                        .by = c(year, target, haul_code)) %>% 
-  # tidytable::mutate(pcod = cod / tot) %>% 
-  # tidytable::summarise(pcod = mean(pcod),
-  #                      .by = c(year, target)) %>% 
   tidytable::summarise(pcod = sum(cod) / sum(tot),
                        .by = c(year, target)) %>%
   tidytable::mutate(type = "Proportion of Pcod catch in shallow water fisheries") %>% 
@@ -73,6 +72,43 @@ index_plot %>%
   tidytable::left_join(trip_plot) %>% 
   tidytable::summarise(index = sum(index * num_hauls) / sum(num_hauls), 
                        .by = c(year, type)) -> comp_plot
+
+
+# plot for shallow water flats
+
+p1 <- ggplot(plot_dat %>% filter(target == "Shallow Water Flatfish - GOA"), aes(year, pcod, col = target)) +
+  geom_line(linetype = 2) +
+  geom_point() +
+  facet_wrap( ~ target, ncol = 2, scale = "free_y", labeller = labeller(type = label_wrap_gen(30))) +
+  scico::scale_color_scico_d(palette = 'roma') +
+  labs(x = "Year", y = str_wrap("Proportion of Pacific cod catch by target fishery", width = 25)) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none") +
+  scale_x_continuous(breaks = c(2008:new_year), limits = c(2008, new_year))
+
+p2 <- ggplot(trip_plot %>% filter(target == "Shallow Water Flatfish - GOA"), aes(year, num_hauls, fill = target)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ target, ncol = 2, labeller = labeller(type = label_wrap_gen(30))) +
+  scico::scale_fill_scico_d(palette = 'roma') +
+  labs(x = "Year", y = "Number of observed hauls") +
+  theme_bw(base_size = 14) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(vjust = 0.5, angle = 90),
+        legend.position = "none") +
+  scale_x_continuous(breaks = 2008:new_year, limits = c(2007.5, new_year + 0.5))
+
+cowplot::plot_grid(p1, p2, ncol = 1)
+
+ggsave(filename = "swf_step1.png",
+       path = here::here(new_year, "dev", "misc", "fish_indx_plots"),
+       width = 6.5,
+       height = 7,
+       units = "in")
+
 
 
 # plot by target

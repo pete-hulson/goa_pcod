@@ -47,7 +47,8 @@ gen_abc <- data.frame(iter = 1:niters, gen_abc = exp(rnorm(1000, log_abc, sd_log
 apport_out$biomass_by_strata %>% 
   tidytable::select(strata, year, pred) %>% 
   tidytable::filter(year == max(year)) %>% 
-  tidytable::mutate(brd = abc * pred / sum(pred)) %>% 
+  tidytable::mutate(p_brd = round(pred / sum(pred), digits = 3),
+                    brd = round(abc * p_brd, digits = 0)) %>% 
   tidytable::select(strata, brd) %>% 
   tidytable::left_join(gen_apport %>% 
                          tidytable::left_join(gen_abc) %>% 
@@ -57,5 +58,8 @@ apport_out$biomass_by_strata %>%
                                               uci = quantile(gen_brd, probs = 0.975),
                                               lci = quantile(gen_brd, probs = 0.025),
                                               cv = sd(gen_brd) / mean(gen_brd),
-                                              .by = strata))
+                                              .by = strata)) -> sim_out
+
+vroom::vroom_write(sim_out, here::here(new_year, "dev", "apport_sim.csv"), delim = ",")
+
                        
